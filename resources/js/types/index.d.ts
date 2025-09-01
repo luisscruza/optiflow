@@ -54,6 +54,9 @@ export interface Workspace {
     created_at: string;
     updated_at: string;
     owner?: User;
+    users?: User[];
+    users_count?: number;
+    is_owner?: boolean;
     pivot?: {
         role: string;
         joined_at: string;

@@ -1,10 +1,9 @@
-import { Head, Link, router } from '@inertiajs/react';
 import { Building2, Crown, MoreHorizontal, Plus, Settings, Users } from 'lucide-react';
 import { useState } from 'react';
 
 import AppLayout from '@/layouts/app-layout';
+import HeadingSmall from '@/components/heading-small';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,8 +12,18 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { create, destroy, edit, show } from '@/actions/App/Http/Controllers/WorkspaceController';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { create, destroy, edit, index, show } from '@/actions/App/Http/Controllers/WorkspaceController';
 import { update as switchWorkspace } from '@/actions/App/Http/Controllers/WorkspaceContextController';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link, router } from '@inertiajs/react';
+
+const breadcrumbs: BreadcrumbItem[] = [
+  {
+    title: 'Espacios de Trabajo',
+    href: index().url,
+  },
+];
 
 interface Workspace {
   id: number;
@@ -51,7 +60,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
     <AppLayout>
       <Head title="Workspaces" />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
