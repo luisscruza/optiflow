@@ -164,8 +164,8 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
-                          <Link href={show(workspace.id.toString()).url}>
-                            View Details
+                          <Link href={show(workspace.slug.toString()).url}>
+                            View
                           </Link>
                         </DropdownMenuItem>
                         {current_workspace?.id !== workspace.id && (
