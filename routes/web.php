@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\WorkspaceContextController;
+use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -13,6 +15,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
+
+    Route::resource('workspaces', WorkspaceController::class);
+
+    Route::prefix('workspace-context')->name('workspace-context.')->group(function () {
+        Route::patch('{workspace}', [WorkspaceContextController::class, 'update'])->name('update');
+        Route::delete('{workspace}', [WorkspaceContextController::class, 'destroy'])->name('destroy');
+    });
 });
 
 require __DIR__.'/settings.php';

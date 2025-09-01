@@ -26,6 +26,7 @@ export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
+    workspace?: WorkspaceData;
     sidebarOpen: boolean;
     [key: string]: unknown;
 }
@@ -38,5 +39,28 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
+    current_workspace_id?: number | null;
     [key: string]: unknown; // This allows for additional properties...
+}
+
+export interface Workspace {
+    id: number;
+    name: string;
+    slug: string;
+    description?: string | null;
+    owner_id: number;
+    settings?: Record<string, unknown> | null;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+    owner?: User;
+    pivot?: {
+        role: string;
+        joined_at: string;
+    };
+}
+
+export interface WorkspaceData {
+    current: Workspace | null;
+    available: Workspace[];
 }
