@@ -62,7 +62,7 @@ export default function EditWorkspace({ workspace }: Props) {
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title={`Configuración - ${workspace.name}`} />
       
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
           <div className="text-center">
             <div className="mx-auto w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-4">
