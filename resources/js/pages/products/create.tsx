@@ -28,6 +28,9 @@ interface Props {
 }
 
 export default function ProductsCreate({ taxes }: Props) {
+
+    const defaultTax = taxes.find((tax) => tax.is_default);
+
   const { data, setData, post, processing, errors, reset } = useForm({
     name: '',
     sku: '',
@@ -35,7 +38,7 @@ export default function ProductsCreate({ taxes }: Props) {
     price: '',
     cost: '',
     track_stock: false,
-    default_tax_id: 'none',
+    default_tax_id: defaultTax ? defaultTax.id.toString() : 'none',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
