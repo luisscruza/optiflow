@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\WorkspaceContextController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +23,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('{workspace}', [WorkspaceContextController::class, 'update'])->name('update');
         Route::delete('{workspace}', [WorkspaceContextController::class, 'destroy'])->name('destroy');
     });
+
+    Route::resource('products', ProductController::class);
 });
 
 require __DIR__.'/settings.php';

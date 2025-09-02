@@ -67,3 +67,74 @@ export interface WorkspaceData {
     current: Workspace | null;
     available: Workspace[];
 }
+
+export interface Tax {
+    id: number;
+    name: string;
+    rate: number;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface ProductStock {
+    id: number;
+    product_id: number;
+    workspace_id: number;
+    quantity: number;
+    minimum_quantity: number;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface StockMovement {
+    id: number;
+    product_id: number;
+    workspace_id: number;
+    type: 'in' | 'out' | 'adjustment' | 'transfer' | 'initial';
+    quantity: number;
+    reference_number?: string | null;
+    notes?: string | null;
+    created_by: number;
+    created_at: string;
+    updated_at: string;
+    created_by_user?: User;
+}
+
+export interface Product {
+    id: number;
+    name: string;
+    sku: string;
+    description?: string | null;
+    price: number;
+    cost?: number | null;
+    track_stock: boolean;
+    default_tax_id?: number | null;
+    workspace_id: number;
+    created_at: string;
+    updated_at: string;
+    default_tax?: Tax;
+    stock_in_current_workspace?: ProductStock;
+    stock_movements?: StockMovement[];
+}
+
+export interface PaginatedProducts {
+    data: Product[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from?: number;
+    to?: number;
+    links: {
+        first?: string;
+        last?: string;
+        prev?: string;
+        next?: string;
+    };
+}
+
+export interface ProductFilters {
+    search?: string;
+    track_stock?: boolean;
+    low_stock?: boolean;
+}

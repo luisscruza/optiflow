@@ -9,6 +9,48 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property int $workspace_id
+ * @property string $name
+ * @property string|null $email
+ * @property string|null $phone
+ * @property string|null $address
+ * @property string $contact_type
+ * @property array<array-key, mixed>|null $metadata
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Document> $documents
+ * @property-read int|null $documents_count
+ * @property-read string|null $full_address
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Document> $invoices
+ * @property-read int|null $invoices_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Document> $quotations
+ * @property-read int|null $quotations_count
+ * @property-read Workspace $workspace
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact customers()
+ * @method static \Database\Factories\ContactFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact forWorkspace(\App\Models\Workspace|int $workspace)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact ofType(string $type)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact suppliers()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereContactType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereMetadata($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact wherePhone($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereWorkspaceId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact withoutWorkspaceScope()
+ *
+ * @mixin \Eloquent
+ */
 final class Contact extends Model
 {
     /** @use HasFactory<\Database\Factories\ContactFactory> */

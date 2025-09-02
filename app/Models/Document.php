@@ -10,6 +10,58 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property int $workspace_id
+ * @property int $contact_id
+ * @property string $type
+ * @property int $document_subtype_id
+ * @property string $status
+ * @property string $document_number
+ * @property \Carbon\CarbonImmutable $issue_date
+ * @property \Carbon\CarbonImmutable|null $due_date
+ * @property numeric $total_amount
+ * @property string|null $notes
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ * @property-read Contact $contact
+ * @property-read DocumentSubtype $documentSubtype
+ * @property-read float $subtotal
+ * @property-read float $total_discount
+ * @property-read float $total_tax
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, DocumentItem> $items
+ * @property-read int|null $items_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, StockMovement> $stockMovements
+ * @property-read int|null $stock_movements_count
+ * @property-read Workspace $workspace
+ *
+ * @method static \Database\Factories\DocumentFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document forWorkspace(\App\Models\Workspace|int $workspace)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document invoices()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document ofType(string $type)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document overdue()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document quotations()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document whereContactId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document whereDocumentNumber($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document whereDocumentSubtypeId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document whereDueDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document whereIssueDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document whereNotes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document whereTotalAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document whereType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document whereWorkspaceId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document withStatus(string $status)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document withoutWorkspaceScope()
+ *
+ * @mixin \Eloquent
+ */
 final class Document extends Model
 {
     /** @use HasFactory<\Database\Factories\DocumentFactory> */

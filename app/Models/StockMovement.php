@@ -9,6 +9,49 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $workspace_id
+ * @property int $product_id
+ * @property string $type
+ * @property numeric $quantity
+ * @property numeric|null $unit_cost
+ * @property numeric|null $total_cost
+ * @property int|null $related_document_id
+ * @property string|null $note
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ * @property-read string $description
+ * @property-read float $effective_quantity
+ * @property-read Product $product
+ * @property-read Document|null $relatedDocument
+ * @property-read Workspace $workspace
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement betweenDates($startDate, $endDate)
+ * @method static \Database\Factories\StockMovementFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement forProduct(\App\Models\Product|int $product)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement forWorkspace(\App\Models\Workspace|int $workspace)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement incoming()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement ofType(string $type)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement outgoing()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereNote($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereProductId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereQuantity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereRelatedDocumentId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereTotalCost($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereUnitCost($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereWorkspaceId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement withoutWorkspaceScope()
+ *
+ * @mixin \Eloquent
+ */
 final class StockMovement extends Model
 {
     /** @use HasFactory<\Database\Factories\StockMovementFactory> */

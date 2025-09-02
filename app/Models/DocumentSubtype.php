@@ -8,6 +8,28 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $sequence
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Document> $documents
+ * @property-read int|null $documents_count
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype byName(string $name)
+ * @method static \Database\Factories\DocumentSubtypeFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereSequence($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereUpdatedAt($value)
+ *
+ * @mixin \Eloquent
+ */
 final class DocumentSubtype extends Model
 {
     /** @use HasFactory<\Database\Factories\DocumentSubtypeFactory> */

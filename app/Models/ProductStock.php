@@ -9,6 +9,37 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $product_id
+ * @property int $workspace_id
+ * @property numeric $quantity
+ * @property numeric $minimum_quantity
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ * @property-read float $level_percentage
+ * @property-read string $status
+ * @property-read Product $product
+ * @property-read Workspace $workspace
+ *
+ * @method static \Database\Factories\ProductStockFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock forWorkspace(\App\Models\Workspace|int $workspace)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock lowStock()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock sufficientStock(float $requiredQuantity = 1)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock whereMinimumQuantity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock whereProductId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock whereQuantity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock whereWorkspaceId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock withoutWorkspaceScope()
+ *
+ * @mixin \Eloquent
+ */
 final class ProductStock extends Model
 {
     /** @use HasFactory<\Database\Factories\ProductStockFactory> */
