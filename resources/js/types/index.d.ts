@@ -72,6 +72,7 @@ export interface Tax {
     id: number;
     name: string;
     rate: number;
+    is_default: boolean;
     created_at: string;
     updated_at: string;
 }
@@ -84,20 +85,90 @@ export interface ProductStock {
     minimum_quantity: number;
     created_at: string;
     updated_at: string;
+    product?: Product;
 }
 
 export interface StockMovement {
     id: number;
     product_id: number;
     workspace_id: number;
-    type: 'in' | 'out' | 'adjustment' | 'transfer' | 'initial';
+    from_workspace_id?: number | null;
+    to_workspace_id?: number | null;
+    type: 'in' | 'out' | 'adjustment' | 'transfer' | 'initial' | 'transfer_in' | 'transfer_out' | 'set_quantity' | 'add_quantity' | 'remove_quantity';
     quantity: number;
     reference_number?: string | null;
     notes?: string | null;
+    unit_cost?: number | null;
+    created_at: string;
+    updated_at: string;
+    created_by?: User;
+    product?: Product;
+    from_workspace?: Workspace;
+    to_workspace?: Workspace;
+}
+
+export interface StockAdjustment {
+    id: number;
+    product_id: number;
+    workspace_id: number;
+    adjustment_type: 'set_quantity' | 'add_quantity' | 'remove_quantity';
+    quantity: number;
+    previous_quantity?: number;
+    new_quantity?: number;
+    note?: string | null;
     created_by: number;
     created_at: string;
     updated_at: string;
-    created_by_user?: User;
+    product?: Product;
+    created_by?: User;
+}
+
+export interface StockTransfer {
+    id: number;
+    product_id: number;
+    from_workspace_id: number;
+    to_workspace_id: number;
+    quantity: number;
+    note?: string | null;
+    created_by: number;
+    created_at: string;
+    updated_at: string;
+    product?: Product;
+    from_workspace?: Workspace;
+    to_workspace?: Workspace;
+    created_by?: User;
+}
+
+export interface PaginatedStockMovements {
+    data: StockMovement[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from?: number;
+    to?: number;
+    links: {
+        first?: string;
+        last?: string;
+        prev?: string;
+        next?: string;
+    };
+}
+
+export interface PaginatedStockAdjustments {
+    data: ProductStock[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from?: number;
+    to?: number;
+    links: {
+        first?: string;
+        last?: string;
+        prev?: string;
+        next?: string;
+    };
 }
 
 export interface Product {
@@ -109,11 +180,11 @@ export interface Product {
     cost?: number | null;
     track_stock: boolean;
     default_tax_id?: number | null;
-    workspace_id: number;
     created_at: string;
     updated_at: string;
     default_tax?: Tax;
     stock_in_current_workspace?: ProductStock;
+    stocks?: ProductStock[];
     stock_movements?: StockMovement[];
 }
 

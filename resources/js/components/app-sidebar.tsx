@@ -7,7 +7,7 @@ import { dashboard } from '@/routes';
 import { index } from '@/actions/App/Http/Controllers/WorkspaceController';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Building2, Folder, LayoutGrid } from 'lucide-react';
+import { BookOpen, Building2, Folder, LayoutGrid, Package, RotateCcw } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -15,6 +15,16 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Products',
+        href: '/products',
+        icon: Package,
+    },
+    {
+        title: 'Inventory',
+        href: '/inventory',
+        icon: RotateCcw,
     },
     {
         title: 'Workspaces',

@@ -32,6 +32,9 @@ final class CreateProductRequest extends FormRequest
             'cost' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
             'track_stock' => ['boolean'],
             'default_tax_id' => ['nullable', 'exists:taxes,id'],
+            'initial_quantity' => ['nullable', 'numeric', 'min:0'],
+            'minimum_quantity' => ['nullable', 'numeric', 'min:0'],
+            'unit_cost' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
         ];
     }
 
@@ -50,6 +53,9 @@ final class CreateProductRequest extends FormRequest
             'price.min' => 'Price must be greater than or equal to 0.',
             'cost.min' => 'Cost must be greater than or equal to 0.',
             'default_tax_id.exists' => 'The selected tax rate does not exist.',
+            'initial_quantity.min' => 'Initial quantity must be greater than or equal to 0.',
+            'minimum_quantity.min' => 'Minimum quantity must be greater than or equal to 0.',
+            'unit_cost.min' => 'Unit cost must be greater than or equal to 0.',
         ];
     }
 
@@ -63,6 +69,9 @@ final class CreateProductRequest extends FormRequest
         return [
             'default_tax_id' => 'default tax rate',
             'track_stock' => 'stock tracking',
+            'initial_quantity' => 'initial quantity',
+            'minimum_quantity' => 'minimum quantity',
+            'unit_cost' => 'unit cost',
         ];
     }
 

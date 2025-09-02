@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Models\Product;
-use App\Models\ProductStock;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 final class CreateProductAction
 {
+    public function __construct(
+        private readonly SetInitialStockAction $setInitialStockAction
+    ) {}
+
     /**
      * Create a new product.
      *
@@ -30,14 +33,17 @@ final class CreateProductAction
                 'default_tax_id' => $data['default_tax_id'] ?? null,
             ]);
 
-            // If the product tracks stock, create initial stock record for current workspace
-            if ($product->track_stock && $user->current_workspace_id) {
-                ProductStock::create([
+            // If the product tracks stock and we have initial stock data, set it up
+            if ($product->track_stock && $user->current_workspace_id && isset($data['initial_quantity'])) {
+                $stockData = [
                     'product_id' => $product->id,
-                    'workspace_id' => $user->current_workspace_id,
-                    'quantity' => $data['initial_stock'] ?? 0,
-                    'minimum_quantity' => $data['minimum_quantity'] ?? 5,
-                ]);
+                    'quantity' => $data['initial_quantity'] ?? 0,
+                    'minimum_quantity' => $data['minimum_quantity'] ?? null,
+                    'unit_cost' => $data['unit_cost'] ?? null,
+                    'notes' => 'Initial stock setup during product creation',
+                ];
+
+                $this->setInitialStockAction->handle($user, $stockData);
             }
 
             return $product->load(['defaultTax']);

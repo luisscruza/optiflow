@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Edit, Trash2, Package, TrendingUp, DollarSign, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Package, TrendingUp, DollarSign, BarChart3, RotateCcw, ArrowLeftRight } from 'lucide-react';
 
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
@@ -99,6 +99,36 @@ export default function ProductsShow({ product }: Props) {
             </div>
           </div>
           <div className="flex gap-2">
+            {product.track_stock && (
+              <>
+                <Button variant="outline" asChild>
+                  <Link href={`/stock-adjustments/${product.id}`}>
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Stock History
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link href="/stock-adjustments/create">
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Adjust Stock
+                  </Link>
+                </Button>
+                {!product.stock_in_current_workspace && (
+                  <Button variant="outline" asChild>
+                    <Link href="/initial-stock/create">
+                      <Package className="h-4 w-4 mr-2" />
+                      Set Initial Stock
+                    </Link>
+                  </Button>
+                )}
+                <Button variant="outline" asChild>
+                  <Link href="/stock-transfers/create">
+                    <ArrowLeftRight className="h-4 w-4 mr-2" />
+                    Transfer Stock
+                  </Link>
+                </Button>
+              </>
+            )}
             <Button asChild>
               <Link href={edit(product.id).url}>
                 <Edit className="h-4 w-4 mr-2" />

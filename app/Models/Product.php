@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Auth;
  * @property-read int|null $document_items_count
  * @property-read float|null $profit
  * @property-read float|null $profit_margin
+ * @property-read ProductStock|null $stockInCurrentWorkspace
  * @property-read \Illuminate\Database\Eloquent\Collection<int, StockMovement> $stockMovements
  * @property-read int|null $stock_movements_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, ProductStock> $stocks
@@ -114,6 +115,20 @@ final class Product extends Model
     public function stockInCurrentWorkspace(): HasOne
     {
         return $this->hasOne(ProductStock::class)->when(
+            Auth::check() && Auth::user()->current_workspace_id,
+            fn ($query) => $query->where('workspace_id', Auth::user()->current_workspace_id)
+        );
+    }
+
+    /**
+     * Get the stock records for the current workspace.
+     * This method uses a more reliable approach for checking existence.
+     *
+     * @return HasMany<ProductStock, $this>
+     */
+    public function stocksInCurrentWorkspace(): HasMany
+    {
+        return $this->hasMany(ProductStock::class)->when(
             Auth::check() && Auth::user()->current_workspace_id,
             fn ($query) => $query->where('workspace_id', Auth::user()->current_workspace_id)
         );

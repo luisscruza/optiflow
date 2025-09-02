@@ -65,7 +65,11 @@ final class StockMovement extends Model
         'unit_cost',
         'total_cost',
         'related_document_id',
+        'user_id',
         'note',
+        'from_workspace_id',
+        'to_workspace_id',
+        'reference_number',
     ];
 
     /**
@@ -79,6 +83,16 @@ final class StockMovement extends Model
     }
 
     /**
+     * Get the user for this movement.
+     *
+     * @return BelongsTo<Product, $this>
+     */
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
      * Get the related document if any.
      *
      * @return BelongsTo<Document, $this>
@@ -86,6 +100,26 @@ final class StockMovement extends Model
     public function relatedDocument(): BelongsTo
     {
         return $this->belongsTo(Document::class, 'related_document_id');
+    }
+
+    /**
+     * Get the source workspace for transfers.
+     *
+     * @return BelongsTo<Workspace, $this>
+     */
+    public function fromWorkspace(): BelongsTo
+    {
+        return $this->belongsTo(Workspace::class, 'from_workspace_id');
+    }
+
+    /**
+     * Get the destination workspace for transfers.
+     *
+     * @return BelongsTo<Workspace, $this>
+     */
+    public function toWorkspace(): BelongsTo
+    {
+        return $this->belongsTo(Workspace::class, 'to_workspace_id');
     }
 
     /**

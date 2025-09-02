@@ -1,4 +1,4 @@
-import { Package, Plus, Search, Filter, AlertTriangle, MoreHorizontal, Eye, Edit, Trash2 } from 'lucide-react';
+import { Package, Plus, Search, Filter, AlertTriangle, MoreHorizontal, Eye, Edit, Trash2, RotateCcw, ArrowLeftRight, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 
 import AppLayout from '@/layouts/app-layout';
@@ -89,12 +89,20 @@ export default function ProductsIndex({ products, filters }: Props) {
               Manage your product catalog and inventory.
             </p>
           </div>
-          <Button asChild>
-            <Link href={create().url}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Product
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" asChild>
+              <Link href="/stock-adjustments">
+                <Package className="h-4 w-4 mr-2" />
+                Stock Management
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href={create().url}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Product
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -147,6 +155,53 @@ export default function ProductsIndex({ products, filters }: Props) {
                   </label>
                 </div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quick Inventory Actions */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Inventory Management</CardTitle>
+            <CardDescription>
+              Quick access to stock management features
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button variant="outline" asChild className="h-auto p-4">
+                <Link href="/stock-adjustments">
+                  <div className="flex flex-col items-center space-y-2">
+                    <RotateCcw className="h-6 w-6" />
+                    <div className="text-center">
+                      <div className="font-medium">Stock Adjustments</div>
+                      <div className="text-sm text-muted-foreground">Manage stock levels</div>
+                    </div>
+                  </div>
+                </Link>
+              </Button>
+              <Button variant="outline" asChild className="h-auto p-4">
+                <Link href="/stock-transfers">
+                  <div className="flex flex-col items-center space-y-2">
+                    <ArrowLeftRight className="h-6 w-6" />
+                    <div className="text-center">
+                      <div className="font-medium">Stock Transfers</div>
+                      <div className="text-sm text-muted-foreground">Move between workspaces</div>
+                    </div>
+                  </div>
+                </Link>
+              </Button>
+              <Button variant="outline" asChild className="h-auto p-4">
+                <Link href="/initial-stock">
+                  <div className="flex flex-col items-center space-y-2">
+                    <TrendingUp className="h-6 w-6" />
+                    <div className="text-center">
+                      <div className="font-medium">Initial Stock</div>
+                      <div className="text-sm text-muted-foreground">Set up product stock</div>
+                    </div>
+                  </div>
+                </Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -273,6 +328,37 @@ export default function ProductsIndex({ products, filters }: Props) {
                                 Edit
                               </Link>
                             </DropdownMenuItem>
+                            {product.track_stock && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/stock-adjustments/${product.id}`}>
+                                    <RotateCcw className="h-4 w-4 mr-2" />
+                                    Stock History
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link href="/stock-adjustments/create" preserveState={false}>
+                                    <TrendingUp className="h-4 w-4 mr-2" />
+                                    Adjust Stock
+                                  </Link>
+                                </DropdownMenuItem>
+                                {!product.stock_in_current_workspace && (
+                                  <DropdownMenuItem asChild>
+                                    <Link href="/initial-stock/create" preserveState={false}>
+                                      <Package className="h-4 w-4 mr-2" />
+                                      Set Initial Stock
+                                    </Link>
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem asChild>
+                                  <Link href="/stock-transfers/create" preserveState={false}>
+                                    <ArrowLeftRight className="h-4 w-4 mr-2" />
+                                    Transfer Stock
+                                  </Link>
+                                </DropdownMenuItem>
+                              </>
+                            )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem 
                               onClick={() => handleDeleteProduct(product.id)}

@@ -2,9 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\InitialStockController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\StockAdjustmentController;
+use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\WorkspaceContextController;
 use App\Http\Controllers\WorkspaceController;
+use App\Http\Middleware\SetWorkspaceContext;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -12,7 +17,7 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
@@ -25,6 +30,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::resource('products', ProductController::class);
+
+    // Inventory overview page
+    Route::get('inventory', function () {
+        $workspace = Context::get('workspace');
+
+        return Inertia::render('inventory/index', [
+            'workspace' => $workspace,
+        ]);
+    })->name('inventory.index');
+
+    Route::resource('stock-adjustments', StockAdjustmentController::class)->only(['index', 'create', 'store', 'show'])->parameters([
+        'stock-adjustments' => 'product',
+    ]);
+    Route::resource('stock-transfers', StockTransferController::class)->only(['index', 'create', 'store', 'show'])->parameters([
+        'stock-transfers' => 'stockMovement',
+    ]);
+    Route::resource('initial-stock', InitialStockController::class)->only(['index', 'create', 'store', 'show']);
 });
 
 require __DIR__.'/settings.php';

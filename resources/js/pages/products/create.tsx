@@ -39,6 +39,9 @@ export default function ProductsCreate({ taxes }: Props) {
     cost: '',
     track_stock: false,
     default_tax_id: defaultTax ? defaultTax.id.toString() : 'none',
+    initial_quantity: '',
+    minimum_quantity: '',
+    unit_cost: '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -159,7 +162,21 @@ export default function ProductsCreate({ taxes }: Props) {
                     step="0.01"
                     min="0"
                     value={data.cost}
-                    onChange={(e) => setData('cost', e.target.value)}
+                    onChange={(e) => {
+                      const newCost = e.target.value;
+                      
+                      // If stock tracking is enabled and unit cost is empty or matches current cost,
+                      // inherit the new cost as unit cost
+                      if (data.track_stock && (!data.unit_cost || data.unit_cost === data.cost)) {
+                        setData(prevData => ({
+                          ...prevData,
+                          cost: newCost,
+                          unit_cost: newCost,
+                        }));
+                      } else {
+                        setData('cost', newCost);
+                      }
+                    }}
                     placeholder="0.00"
                   />
                   {errors.cost && (
@@ -197,12 +214,23 @@ export default function ProductsCreate({ taxes }: Props) {
                 Configure how inventory is tracked for this product.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-6">
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="track_stock"
                   checked={data.track_stock}
-                  onCheckedChange={(checked) => setData('track_stock', checked as boolean)}
+                  onCheckedChange={(checked) => {
+                    // When enabling stock tracking, inherit unit cost from cost price if available
+                    if (checked && data.cost && !data.unit_cost) {
+                      setData(prevData => ({
+                        ...prevData,
+                        track_stock: checked as boolean,
+                        unit_cost: data.cost,
+                      }));
+                    } else {
+                      setData('track_stock', checked as boolean);
+                    }
+                  }}
                 />
                 <div className="grid gap-1.5 leading-none">
                   <Label htmlFor="track_stock" className="text-sm font-medium">
@@ -215,6 +243,61 @@ export default function ProductsCreate({ taxes }: Props) {
               </div>
               {errors.track_stock && (
                 <p className="text-sm text-red-600 dark:text-red-400 mt-2">{errors.track_stock}</p>
+              )}
+
+              {data.track_stock && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t">
+                  <div className="space-y-2">
+                    <Label htmlFor="initial_quantity">Initial Quantity</Label>
+                    <Input
+                      id="initial_quantity"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={data.initial_quantity}
+                      onChange={(e) => setData('initial_quantity', e.target.value)}
+                      placeholder="0"
+                    />
+                    {errors.initial_quantity && (
+                      <p className="text-sm text-red-600 dark:text-red-400">{errors.initial_quantity}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="minimum_quantity">Minimum Quantity</Label>
+                    <Input
+                      id="minimum_quantity"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={data.minimum_quantity}
+                      onChange={(e) => setData('minimum_quantity', e.target.value)}
+                      placeholder="5"
+                    />
+                    {errors.minimum_quantity && (
+                      <p className="text-sm text-red-600 dark:text-red-400">{errors.minimum_quantity}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="unit_cost">Unit Cost</Label>
+                    <Input
+                      id="unit_cost"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={data.unit_cost}
+                      onChange={(e) => setData('unit_cost', e.target.value)}
+                      placeholder="0.00"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Defaults to cost price when available
+                    </p>
+                    {errors.unit_cost && (
+                      <p className="text-sm text-red-600 dark:text-red-400">{errors.unit_cost}</p>
+                    )}
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
