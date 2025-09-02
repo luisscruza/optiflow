@@ -16,14 +16,12 @@ final class DeleteProductAction
     public function execute(Product $product): bool
     {
         return DB::transaction(function () use ($product): bool {
-            // Check if product has been used in any document items
             if ($product->documentItems()->exists()) {
                 throw new InvalidArgumentException(
                     'Cannot delete product that has been used in invoices or quotations.'
                 );
             }
 
-            // Check if product has stock movements (except initial stock creation)
             $hasMovements = $product->stockMovements()
                 ->whereNotIn('type', ['initial', 'adjustment'])
                 ->exists();
@@ -34,13 +32,10 @@ final class DeleteProductAction
                 );
             }
 
-            // Delete related stock records first
             $product->stocks()->delete();
 
-            // Delete any remaining stock movements (initial/adjustment only)
             $product->stockMovements()->delete();
 
-            // Delete the product
             return (bool) $product->delete();
         });
     }

@@ -85,7 +85,7 @@ final class ProductController extends Controller
     {
         $product->load(['defaultTax', 'stockInCurrentWorkspace', 'stockMovements.createdBy']);
 
-        return Inertia::render('Products/Show', [
+        return Inertia::render('products/show', [
             'product' => $product,
         ]);
     }
@@ -97,7 +97,7 @@ final class ProductController extends Controller
     {
         $product->load(['defaultTax']);
 
-        return Inertia::render('Products/Edit', [
+        return Inertia::render('products/edit', [
             'product' => $product,
             'taxes' => Tax::select('id', 'name', 'rate')->get(),
         ]);

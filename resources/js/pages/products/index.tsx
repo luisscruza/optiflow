@@ -166,7 +166,7 @@ export default function ProductsIndex({ products, filters }: Props) {
                 }
               </p>
               <Button asChild>
-                <Link href={create().url}>
+                <Link prefetch href={create().url}>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Product
                 </Link>
