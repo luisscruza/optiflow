@@ -48,7 +48,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
   };
 
   const handleDeleteWorkspace = (slug: string) => {
-    if (confirm('Are you sure you want to delete this workspace? This action cannot be undone.')) {
+    if (confirm('¿Estás seguro de que deseas eliminar este espacio de trabajo? Esta acción no se puede deshacer.')) {
       setDeletingWorkspace(slug);
       router.delete(destroy(slug.toString()).url, {
         onFinish: () => setDeletingWorkspace(null),
@@ -67,13 +67,13 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
               Sucursales
             </h1>
             <p className="mt-2 text-gray-600 dark:text-gray-400">
-              Manage your workspaces and switch between different contexts.
+              Gestiona tus espacios de trabajo y cambia entre diferentes contextos.
             </p>
           </div>
           <Button asChild>
             <Link href={create().url}>
               <Plus className="h-4 w-4 mr-2" />
-              Create Workspace
+              Crear espacio de trabajo
             </Link>
           </Button>
         </div>
@@ -85,7 +85,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                 <div className="flex items-center gap-2">
                   <Crown className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   <CardTitle className="text-blue-900 dark:text-blue-100">
-                    Current Workspace
+                    Espacio de trabajo actual
                   </CardTitle>
                 </div>
               </CardHeader>
@@ -104,12 +104,12 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                   <div className="flex items-center gap-2">
                     {current_workspace.is_owner && (
                       <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                        Owner
+                        Propietario
                       </Badge>
                     )}
                     <div className="flex items-center text-sm text-blue-700 dark:text-blue-300">
                       <Users className="h-4 w-4 mr-1" />
-                      {current_workspace.members_count} member{current_workspace.members_count !== 1 ? 's' : ''}
+                      {current_workspace.members_count} miembro{current_workspace.members_count !== 1 ? 's' : ''}
                     </div>
                   </div>
                 </div>
@@ -123,15 +123,15 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Building2 className="h-12 w-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                No workspaces yet
+                No hay espacios de trabajo aún
               </h3>
               <p className="text-gray-600 dark:text-gray-400 text-center mb-6 max-w-md">
-                Get started by creating your first workspace. Sucursales help you organize your work and collaborate with others.
+                Comienza creando tu primer espacio de trabajo. Los espacios de trabajo te ayudan a organizar tu trabajo y colaborar con otros.
               </p>
               <Button asChild>
                 <Link href={create().url}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Create your first workspace
+                  Crear tu primer espacio de trabajo
                 </Link>
               </Button>
             </CardContent>
@@ -155,7 +155,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                         {workspace.name}
                         {current_workspace?.id === workspace.id && (
                           <Badge variant="outline" className="ml-auto">
-                            Current
+                            Actual
                           </Badge>
                         )}
                       </CardTitle>
@@ -174,14 +174,14 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
                           <Link href={show(workspace.slug.toString()).url}>
-                            View
+                            Ver
                           </Link>
                         </DropdownMenuItem>
                         {current_workspace?.id !== workspace.id && (
                           <DropdownMenuItem 
                             onClick={() => handleSwitchWorkspace(workspace.slug)}
                           >
-                            Switch to this workspace
+                            Cambiar a este espacio de trabajo
                           </DropdownMenuItem>
                         )}
                         {workspace.is_owner && (
@@ -190,7 +190,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                             <DropdownMenuItem asChild>
                               <Link href={edit(workspace.id.toString()).url}>
                                 <Settings className="h-4 w-4 mr-2" />
-                                Settings
+                                Configuración
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem 
@@ -198,7 +198,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                               className="text-red-600 dark:text-red-400"
                               disabled={deletingWorkspace === workspace.slug}
                             >
-                              {deletingWorkspace === workspace.slug ? 'Deleting...' : 'Delete Workspace'}
+                              {deletingWorkspace === workspace.slug ? 'Eliminando...' : 'Eliminar espacio de trabajo'}
                             </DropdownMenuItem>
                           </>
                         )}
@@ -211,16 +211,16 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                     <div className="flex items-center gap-4">
                       <div className="flex items-center">
                         <Users className="h-4 w-4 mr-1" />
-                        {workspace.members_count} member{workspace.members_count !== 1 ? 's' : ''}
+                        {workspace.members_count} miembro{workspace.members_count !== 1 ? 's' : ''}
                       </div>
                       {workspace.is_owner && (
                         <Badge variant="secondary">
-                          Owner
+                          Propietario
                         </Badge>
                       )}
                     </div>
                     <div className="text-xs">
-                      Created {new Date(workspace.created_at).toLocaleDateString()}
+                      Creado {new Date(workspace.created_at).toLocaleDateString()}
                     </div>
                   </div>
                 </CardContent>
