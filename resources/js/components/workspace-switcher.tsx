@@ -77,7 +77,7 @@ export function WorkspaceSwitcher() {
                         sideOffset={4}
                     >
                         <DropdownMenuLabel className="text-xs text-muted-foreground">
-                            Workspaces
+                            Sucursales
                         </DropdownMenuLabel>
                         {available.map((workspace: Workspace) => (
                             <DropdownMenuItem

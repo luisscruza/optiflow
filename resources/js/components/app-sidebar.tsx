@@ -17,17 +17,17 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Products',
+        title: 'Productos',
         href: '/products',
         icon: Package,
     },
     {
-        title: 'Inventory',
+        title: 'Inventario',
         href: '/inventory',
         icon: RotateCcw,
     },
     {
-        title: 'Workspaces',
+        title: 'Sucursales',
         href: index(),
         icon: Building2,
     },

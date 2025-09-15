@@ -14,7 +14,7 @@ import { type BreadcrumbItem, type Product, type Tax } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: 'Products',
+    title: 'Productos',
     href: index().url,
   },
   {
@@ -212,7 +212,7 @@ export default function ProductsEdit({ product, taxes }: Props) {
 
           <Card>
             <CardHeader>
-              <CardTitle>Inventory Settings</CardTitle>
+              <CardTitle>Inventario Settings</CardTitle>
               <CardDescription>
                 Configure how inventory is tracked for this product.
               </CardDescription>

@@ -19,7 +19,7 @@ import { type BreadcrumbItem, type Product, type StockMovement } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: 'Products',
+    title: 'Productos',
     href: index().url,
   },
   {
@@ -86,7 +86,7 @@ export default function ProductsShow({ product }: Props) {
             <Button variant="outline" asChild>
               <Link href={index().url}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Products
+                Back to Productos
               </Link>
             </Button>
             <div>
@@ -117,7 +117,7 @@ export default function ProductsShow({ product }: Props) {
                   <Button variant="outline" asChild>
                     <Link href="/initial-stock/create">
                       <Package className="h-4 w-4 mr-2" />
-                      Set Initial Stock
+                      Set Inventario inicial
                     </Link>
                   </Button>
                 )}

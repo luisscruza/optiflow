@@ -9,7 +9,7 @@ import { Head, Link, usePage } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: 'Inventory',
+    title: 'Inventario',
     href: '/inventory',
   },
 ];
@@ -36,16 +36,16 @@ export default function InventoryOverview({ stats }: Props) {
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title="Inventory Management" />
+      <Head title="Inventario" />
 
       <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Inventory Management</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Inventario</h1>
             <p className="text-muted-foreground">
-              Manage stock levels and movements for {workspace?.current?.name || 'your workspace'}
+              Maneja el inventario y movimientos de {workspace?.current?.name || 'your workspace'}
             </p>
           </div>
         </div>
@@ -55,7 +55,7 @@ export default function InventoryOverview({ stats }: Props) {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+                <CardTitle className="text-sm font-medium">Total Productos</CardTitle>
                 <Package className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -112,7 +112,7 @@ export default function InventoryOverview({ stats }: Props) {
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
             <CardDescription>
-              Common inventory management tasks
+              Common Inventario tasks
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -122,8 +122,8 @@ export default function InventoryOverview({ stats }: Props) {
                   <div className="flex flex-col items-center space-y-3">
                     <RotateCcw className="h-8 w-8" />
                     <div className="text-center">
-                      <div className="font-medium">Stock Adjustments</div>
-                      <div className="text-sm text-muted-foreground">Adjust quantities</div>
+                      <div className="font-medium">Ajuste de inventario</div>
+                      <div className="text-sm text-muted-foreground">Ajustar cantidades</div>
                     </div>
                   </div>
                 </Link>
@@ -134,8 +134,8 @@ export default function InventoryOverview({ stats }: Props) {
                   <div className="flex flex-col items-center space-y-3">
                     <ArrowLeftRight className="h-8 w-8" />
                     <div className="text-center">
-                      <div className="font-medium">Stock Transfers</div>
-                      <div className="text-sm text-muted-foreground">Move between workspaces</div>
+                      <div className="font-medium">Transferencia de inventario</div>
+                      <div className="text-sm text-muted-foreground">Mover entre sucursales</div>
                     </div>
                   </div>
                 </Link>
@@ -146,8 +146,8 @@ export default function InventoryOverview({ stats }: Props) {
                   <div className="flex flex-col items-center space-y-3">
                     <TrendingUp className="h-8 w-8" />
                     <div className="text-center">
-                      <div className="font-medium">Initial Stock</div>
-                      <div className="text-sm text-muted-foreground">Set up new products</div>
+                      <div className="font-medium">Inventario inicial</div>
+                      <div className="text-sm text-muted-foreground">Inventario inicial</div>
                     </div>
                   </div>
                 </Link>
@@ -158,7 +158,7 @@ export default function InventoryOverview({ stats }: Props) {
                   <div className="flex flex-col items-center space-y-3">
                     <Package className="h-8 w-8" />
                     <div className="text-center">
-                      <div className="font-medium">Manage Products</div>
+                      <div className="font-medium">Manage Productos</div>
                       <div className="text-sm text-muted-foreground">View all products</div>
                     </div>
                   </div>
@@ -191,7 +191,7 @@ export default function InventoryOverview({ stats }: Props) {
               <Button asChild variant="outline" className="w-full justify-start">
                 <Link href="/products?low_stock=true">
                   <AlertTriangle className="h-4 w-4 mr-2" />
-                  Low Stock Products
+                  Low Stock Productos
                 </Link>
               </Button>
               <Button asChild variant="outline" className="w-full justify-start">
@@ -230,7 +230,7 @@ export default function InventoryOverview({ stats }: Props) {
               <Button asChild variant="outline" className="w-full justify-start">
                 <Link href="/initial-stock/create">
                   <TrendingUp className="h-4 w-4 mr-2" />
-                  Set Initial Stock
+                  Set Inventario inicial
                 </Link>
               </Button>
             </CardContent>

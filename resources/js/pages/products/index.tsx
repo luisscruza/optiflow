@@ -28,7 +28,7 @@ import { Head, Link, router } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: 'Products',
+    title: 'Productos',
     href: index().url,
   },
 ];
@@ -77,13 +77,13 @@ export default function ProductsIndex({ products, filters }: Props) {
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title="Products" />
+      <Head title="Productos" />
       
       <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Products
+              Productos
             </h1>
             <p className="mt-2 text-gray-600 dark:text-gray-400">
               Manage your product catalog and inventory.
@@ -114,7 +114,7 @@ export default function ProductsIndex({ products, filters }: Props) {
             <div className="flex flex-col gap-4 md:flex-row md:items-end">
               <div className="flex-1">
                 <label htmlFor="search" className="block text-sm font-medium mb-2">
-                  Search Products
+                  Search Productos
                 </label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -159,10 +159,10 @@ export default function ProductsIndex({ products, filters }: Props) {
           </CardContent>
         </Card>
 
-        {/* Quick Inventory Actions */}
+        {/* Quick Inventario Actions */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-lg">Inventory Management</CardTitle>
+            <CardTitle className="text-lg">Inventario</CardTitle>
             <CardDescription>
               Quick access to stock management features
             </CardDescription>
@@ -174,7 +174,7 @@ export default function ProductsIndex({ products, filters }: Props) {
                   <div className="flex flex-col items-center space-y-2">
                     <RotateCcw className="h-6 w-6" />
                     <div className="text-center">
-                      <div className="font-medium">Stock Adjustments</div>
+                      <div className="font-medium">Ajuste de inventario</div>
                       <div className="text-sm text-muted-foreground">Manage stock levels</div>
                     </div>
                   </div>
@@ -185,8 +185,8 @@ export default function ProductsIndex({ products, filters }: Props) {
                   <div className="flex flex-col items-center space-y-2">
                     <ArrowLeftRight className="h-6 w-6" />
                     <div className="text-center">
-                      <div className="font-medium">Stock Transfers</div>
-                      <div className="text-sm text-muted-foreground">Move between workspaces</div>
+                      <div className="font-medium">Transferencia de inventario</div>
+                      <div className="text-sm text-muted-foreground">Mover entre sucursales</div>
                     </div>
                   </div>
                 </Link>
@@ -196,7 +196,7 @@ export default function ProductsIndex({ products, filters }: Props) {
                   <div className="flex flex-col items-center space-y-2">
                     <TrendingUp className="h-6 w-6" />
                     <div className="text-center">
-                      <div className="font-medium">Initial Stock</div>
+                      <div className="font-medium">Inventario inicial</div>
                       <div className="text-sm text-muted-foreground">Set up product stock</div>
                     </div>
                   </div>
@@ -206,7 +206,7 @@ export default function ProductsIndex({ products, filters }: Props) {
           </CardContent>
         </Card>
 
-        {/* Products Table */}
+        {/* Productos Table */}
         {products.data.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
@@ -232,7 +232,7 @@ export default function ProductsIndex({ products, filters }: Props) {
           <Card>
             <CardHeader>
               <CardTitle>
-                Products ({products.total})
+                Productos ({products.total})
               </CardTitle>
               <CardDescription>
                 Showing {products.from} to {products.to} of {products.total} products
@@ -347,7 +347,7 @@ export default function ProductsIndex({ products, filters }: Props) {
                                   <DropdownMenuItem asChild>
                                     <Link href="/initial-stock/create" preserveState={false}>
                                       <Package className="h-4 w-4 mr-2" />
-                                      Set Initial Stock
+                                      Set Inventario inicial
                                     </Link>
                                   </DropdownMenuItem>
                                 )}

@@ -58,13 +58,13 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
 
   return (
     <AppLayout>
-      <Head title="Workspaces" />
+      <Head title="Sucursales" />
       
       <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Workspaces
+              Sucursales
             </h1>
             <p className="mt-2 text-gray-600 dark:text-gray-400">
               Manage your workspaces and switch between different contexts.
@@ -126,7 +126,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                 No workspaces yet
               </h3>
               <p className="text-gray-600 dark:text-gray-400 text-center mb-6 max-w-md">
-                Get started by creating your first workspace. Workspaces help you organize your work and collaborate with others.
+                Get started by creating your first workspace. Sucursales help you organize your work and collaborate with others.
               </p>
               <Button asChild>
                 <Link href={create().url}>

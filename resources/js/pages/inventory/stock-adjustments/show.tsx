@@ -17,11 +17,11 @@ import { Head, Link } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: 'Inventory',
+    title: 'Inventario',
     href: '#',
   },
   {
-    title: 'Stock Adjustments',
+    title: 'Ajuste de inventario',
     href: '/stock-adjustments',
   },
   {
@@ -66,7 +66,7 @@ export default function StockAdjustmentsShow({ product, currentStock, stockHisto
   const getMovementBadge = (type: string) => {
     switch (type) {
       case 'initial':
-        return <Badge variant="secondary">Initial Stock</Badge>;
+        return <Badge variant="secondary">Inventario inicial</Badge>;
       case 'add_quantity':
         return <Badge variant="default">Add Quantity</Badge>;
       case 'remove_quantity':

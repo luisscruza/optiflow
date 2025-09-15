@@ -19,11 +19,11 @@ import { Head, Link, useForm } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: 'Inventory',
+    title: 'Inventario',
     href: '#',
   },
   {
-    title: 'Stock Adjustments',
+    title: 'Ajuste de inventario',
     href: '/stock-adjustments',
   },
   {

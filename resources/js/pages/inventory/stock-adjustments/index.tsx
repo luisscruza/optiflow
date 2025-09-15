@@ -19,11 +19,11 @@ import { Head, Link, router } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: 'Inventory',
+    title: 'Inventario',
     href: '#',
   },
   {
-    title: 'Stock Adjustments',
+    title: 'Ajuste de inventario',
     href: '/stock-adjustments',
   },
 ];
@@ -63,14 +63,14 @@ export default function StockAdjustmentsIndex({ stockAdjustments, workspace }: P
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title="Stock Adjustments" />
+      <Head title="Ajuste de inventario" />
 
       <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Stock Adjustments</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Ajuste de inventario</h1>
             <p className="text-muted-foreground">
               Manage and track stock level adjustments for your products
             </p>
@@ -105,7 +105,7 @@ export default function StockAdjustmentsIndex({ stockAdjustments, workspace }: P
               </div>
             </div>
 
-            {/* Stock Adjustments Table */}
+            {/* Ajuste de inventario Table */}
             <div className="rounded-md border">
               <Table>
                 <TableHeader>

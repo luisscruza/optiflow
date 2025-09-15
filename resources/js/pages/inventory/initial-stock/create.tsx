@@ -19,15 +19,15 @@ import { Head, Link, useForm } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: 'Inventory',
+    title: 'Inventario',
     href: '/inventory',
   },
   {
-    title: 'Initial Stock',
+    title: 'Inventario inicial',
     href: '/initial-stock',
   },
   {
-    title: 'Set Initial Stock',
+    title: 'Set Inventario inicial',
     href: '/initial-stock/create',
   },
 ];
@@ -75,7 +75,7 @@ export default function InitialStockCreate({ products, workspace }: Props) {
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title="Set Initial Stock" />
+      <Head title="Set Inventario inicial" />
 
       <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
@@ -88,9 +88,9 @@ export default function InitialStockCreate({ products, workspace }: Props) {
             </Link>
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Set Initial Stock</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Set Inventario inicial</h1>
             <p className="text-muted-foreground">
-              Set up initial stock levels for products in {workspace.name}
+              Set up Inventario inicial levels for products in {workspace.name}
             </p>
           </div>
         </div>
@@ -99,9 +99,9 @@ export default function InitialStockCreate({ products, workspace }: Props) {
         <div className="max-w-2xl">
           <Card>
             <CardHeader>
-              <CardTitle>Initial Stock Details</CardTitle>
+              <CardTitle>Inventario inicial Details</CardTitle>
               <CardDescription>
-                Select a product and set its initial stock quantity
+                Select a product and set its Inventario inicial quantity
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -177,7 +177,7 @@ export default function InitialStockCreate({ products, workspace }: Props) {
                     min="0"
                     value={data.quantity}
                     onChange={(e) => setData('quantity', e.target.value)}
-                    placeholder="Enter initial stock quantity"
+                    placeholder="Enter Inventario inicial quantity"
                   />
                   {errors.quantity && (
                     <p className="text-sm text-destructive">{errors.quantity}</p>
@@ -226,7 +226,7 @@ export default function InitialStockCreate({ products, workspace }: Props) {
                     id="note"
                     value={data.note}
                     onChange={(e) => setData('note', e.target.value)}
-                    placeholder="Optional note about this initial stock setup"
+                    placeholder="Optional note about this Inventario inicial setup"
                     rows={3}
                   />
                   {errors.note && (
@@ -239,7 +239,7 @@ export default function InitialStockCreate({ products, workspace }: Props) {
                   <div className="p-4 border rounded-lg bg-green-50 dark:bg-green-950/20">
                     <h4 className="font-medium mb-2 flex items-center">
                       <TrendingUp className="h-4 w-4 mr-2" />
-                      Initial Stock Summary
+                      Inventario inicial Summary
                     </h4>
                     <div className="space-y-1 text-sm">
                       <p>
@@ -269,7 +269,7 @@ export default function InitialStockCreate({ products, workspace }: Props) {
                     <Link href="/initial-stock">Cancel</Link>
                   </Button>
                   <Button type="submit" disabled={processing || products.length === 0}>
-                    {processing ? 'Setting up...' : 'Set Initial Stock'}
+                    {processing ? 'Setting up...' : 'Set Inventario inicial'}
                   </Button>
                 </div>
               </form>
@@ -279,12 +279,12 @@ export default function InitialStockCreate({ products, workspace }: Props) {
           {/* Help Card */}
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle className="text-lg">What is Initial Stock?</CardTitle>
+              <CardTitle className="text-lg">What is Inventario inicial?</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2 text-sm text-muted-foreground">
                 <p>
-                  Initial stock is the starting quantity for a product in this workspace. 
+                  Inventario inicial is the starting quantity for a product in this workspace. 
                   This is typically used when:
                 </p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
@@ -293,7 +293,7 @@ export default function InitialStockCreate({ products, workspace }: Props) {
                   <li>Importing existing stock into a new workspace</li>
                 </ul>
                 <p className="mt-3">
-                  After setting initial stock, you can use stock adjustments and transfers 
+                  After setting Inventario inicial, you can use Ajuste de inventario and transfers 
                   to manage ongoing inventory changes.
                 </p>
               </div>

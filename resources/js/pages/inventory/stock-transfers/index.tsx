@@ -19,11 +19,11 @@ import { Head, Link, router } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: 'Inventory',
+    title: 'Inventario',
     href: '#',
   },
   {
-    title: 'Stock Transfers',
+    title: 'Transferencia de inventario',
     href: '/stock-transfers',
   },
 ];
@@ -79,16 +79,16 @@ export default function StockTransfersIndex({ transfers, workspace }: Props) {
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title="Stock Transfers" />
+      <Head title="Transferencia de inventario" />
 
       <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Stock Transfers</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Transferencia de inventario</h1>
             <p className="text-muted-foreground">
-              Manage stock transfers between workspaces
+              Manage Transferencia de inventario between workspaces
             </p>
           </div>
 
@@ -105,7 +105,7 @@ export default function StockTransfersIndex({ transfers, workspace }: Props) {
           <CardHeader>
             <CardTitle>Transfer History</CardTitle>
             <CardDescription>
-              Stock transfers involving {workspace.name}
+              Transferencia de inventario involving {workspace.name}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -142,7 +142,7 @@ export default function StockTransfersIndex({ transfers, workspace }: Props) {
                       <TableCell colSpan={8} className="text-center py-8">
                         <div className="flex flex-col items-center space-y-2">
                           <ArrowLeftRight className="h-8 w-8 text-muted-foreground" />
-                          <p className="text-muted-foreground">No stock transfers found</p>
+                          <p className="text-muted-foreground">No Transferencia de inventario found</p>
                           <Button asChild size="sm" variant="outline">
                             <Link href="/stock-transfers/create">Create your first transfer</Link>
                           </Button>
