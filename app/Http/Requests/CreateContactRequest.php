@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Enums\ContactType;
 use App\Enums\IdentificationType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -28,7 +27,6 @@ final class CreateContactRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'contact_type' => ['required', Rule::enum(ContactType::class)],
             'identification_type' => ['nullable', Rule::enum(IdentificationType::class)],
             'identification_number' => ['nullable', 'string', 'max:50'],
             'email' => ['nullable', 'email', 'max:255'],
@@ -39,8 +37,6 @@ final class CreateContactRequest extends FormRequest
             'status' => ['required', 'string', 'in:active,inactive'],
             'observations' => ['nullable', 'string'],
             'credit_limit' => ['nullable', 'numeric', 'min:0'],
-            'statement_attached' => ['boolean'],
-            
             // Address validation
             'address.province' => ['nullable', 'string', 'max:255'],
             'address.municipality' => ['nullable', 'string', 'max:255'],

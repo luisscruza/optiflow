@@ -10,17 +10,6 @@ enum ContactType: string
     case Supplier = 'supplier';
 
     /**
-     * Get the display label for the contact type.
-     */
-    public function label(): string
-    {
-        return match ($this) {
-            self::Customer => 'Cliente',
-            self::Supplier => 'Proveedor',
-        };
-    }
-
-    /**
      * Get all contact types as an array for form options.
      *
      * @return array<string, string>
@@ -31,6 +20,17 @@ enum ContactType: string
             self::Customer->value => self::Customer->label(),
             self::Supplier->value => self::Supplier->label(),
         ];
+    }
+
+    /**
+     * Get the display label for the contact type.
+     */
+    public function label(): string
+    {
+        return match ($this) {
+            self::Customer => 'Cliente',
+            self::Supplier => 'Proveedor',
+        };
     }
 
     /**

@@ -10,6 +10,7 @@ use App\Models\Concerns\BelongsToWorkspace;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -72,7 +73,6 @@ final class Contact extends Model
         'status',
         'observations',
         'credit_limit',
-        'statement_attached',
         'metadata',
     ];
 
@@ -88,12 +88,10 @@ final class Contact extends Model
 
     /**
      * Get the primary address for this contact.
-     *
-     * @return Address|null
      */
-    public function primaryAddress(): ?Address
+    public function primaryAddress(): HasOne
     {
-        return $this->addresses()->where('is_primary', true)->first();
+        return $this->addresses()->one()->where('is_primary', true);
     }
 
     /**
@@ -199,12 +197,12 @@ final class Contact extends Model
      */
     public function getIdentificationObjectAttribute(): ?array
     {
-        if (!$this->identification_type || !$this->identification_number) {
+        if (! $this->identification_type || ! $this->identification_number) {
             return null;
         }
 
         return [
-            'type' => strtoupper($this->identification_type),
+            'type' => mb_strtoupper($this->identification_type),
             'number' => $this->identification_number,
         ];
     }
@@ -222,7 +220,8 @@ final class Contact extends Model
      */
     public function getFullAddressAttribute(): ?string
     {
-        $primaryAddress = $this->primaryAddress();
+        $primaryAddress = $this->primaryAddress;
+
         return $primaryAddress?->full_address;
     }
 
@@ -231,7 +230,6 @@ final class Contact extends Model
         return [
             'metadata' => 'array',
             'credit_limit' => 'decimal:2',
-            'statement_attached' => 'boolean',
         ];
     }
 }

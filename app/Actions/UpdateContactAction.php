@@ -6,6 +6,7 @@ namespace App\Actions;
 
 use App\Models\Contact;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 final readonly class UpdateContactAction
 {
@@ -14,8 +15,26 @@ final readonly class UpdateContactAction
      */
     public function handle(User $user, Contact $contact, array $data): Contact
     {
-        $contact->update($data);
+        return DB::transaction(function () use ($contact, $data) {
+            // Extract address data if present
+            $addressData = $data['address'] ?? null;
+            unset($data['address']);
 
-        return $contact->fresh();
+            // Update the contact
+            $contact->update($data);
+
+            // Update or create the primary address if provided
+            if ($addressData && ! empty(array_filter($addressData))) {
+                $primaryAddress = $contact->addresses()->first();
+
+                if ($primaryAddress) {
+                    $primaryAddress->update($addressData);
+                } else {
+                    $contact->addresses()->create($addressData);
+                }
+            }
+
+            return $contact->fresh('addresses');
+        });
     }
 }

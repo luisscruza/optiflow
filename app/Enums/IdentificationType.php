@@ -11,18 +11,6 @@ enum IdentificationType: string
     case Pasaporte = 'pasaporte';
 
     /**
-     * Get the display label for the identification type.
-     */
-    public function label(): string
-    {
-        return match ($this) {
-            self::Cedula => 'Cédula',
-            self::RNC => 'RNC',
-            self::Pasaporte => 'Pasaporte',
-        };
-    }
-
-    /**
      * Get all identification types as an array for form options.
      *
      * @return array<string, string>
@@ -34,5 +22,17 @@ enum IdentificationType: string
             self::RNC->value => self::RNC->label(),
             self::Pasaporte->value => self::Pasaporte->label(),
         ];
+    }
+
+    /**
+     * Get the display label for the identification type.
+     */
+    public function label(): string
+    {
+        return match ($this) {
+            self::Cedula => 'Cédula',
+            self::RNC => 'RNC',
+            self::Pasaporte => 'Pasaporte',
+        };
     }
 }

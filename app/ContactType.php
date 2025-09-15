@@ -11,18 +11,6 @@ enum ContactType: string
     case Both = 'both';
 
     /**
-     * Get the display label for the contact type.
-     */
-    public function label(): string
-    {
-        return match ($this) {
-            self::Customer => 'Cliente',
-            self::Supplier => 'Proveedor',
-            self::Both => 'Cliente y Proveedor',
-        };
-    }
-
-    /**
      * Get all contact types as an array for form options.
      *
      * @return array<string, string>
@@ -34,22 +22,6 @@ enum ContactType: string
             self::Supplier->value => self::Supplier->label(),
             self::Both->value => self::Both->label(),
         ];
-    }
-
-    /**
-     * Check if the contact type is a customer.
-     */
-    public function isCustomer(): bool
-    {
-        return $this === self::Customer || $this === self::Both;
-    }
-
-    /**
-     * Check if the contact type is a supplier.
-     */
-    public function isSupplier(): bool
-    {
-        return $this === self::Supplier || $this === self::Both;
     }
 
     /**
@@ -90,5 +62,33 @@ enum ContactType: string
     public static function supplierValues(): array
     {
         return array_map(fn (ContactType $type) => $type->value, self::supplierTypes());
+    }
+
+    /**
+     * Get the display label for the contact type.
+     */
+    public function label(): string
+    {
+        return match ($this) {
+            self::Customer => 'Cliente',
+            self::Supplier => 'Proveedor',
+            self::Both => 'Cliente y Proveedor',
+        };
+    }
+
+    /**
+     * Check if the contact type is a customer.
+     */
+    public function isCustomer(): bool
+    {
+        return $this === self::Customer || $this === self::Both;
+    }
+
+    /**
+     * Check if the contact type is a supplier.
+     */
+    public function isSupplier(): bool
+    {
+        return $this === self::Supplier || $this === self::Both;
     }
 }

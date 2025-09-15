@@ -55,7 +55,7 @@ export default function ProductsCreate({ taxes }: Props) {
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Create Product" />
       
-      <div className="max-w-4xl px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">

@@ -6,6 +6,8 @@ namespace App\Actions;
 
 use App\Models\Contact;
 use App\Models\User;
+use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\DB;
 
 final readonly class CreateContactAction
 {
@@ -14,8 +16,22 @@ final readonly class CreateContactAction
      */
     public function handle(User $user, array $data): Contact
     {
-        $workspace = $user->currentWorkspace();
+        $workspace = Context::get('workspace');
 
-        return $workspace->contacts()->create($data);
+        return DB::transaction(function () use ($workspace, $data) {
+            // Extract address data if present
+            $addressData = $data['address'] ?? null;
+            unset($data['address']);
+
+            // Create the contact
+            $contact = $workspace->contacts()->create($data);
+
+            // Create the address if provided
+            if ($addressData && ! empty(array_filter($addressData))) {
+                $contact->addresses()->create($addressData);
+            }
+
+            return $contact->load('addresses');
+        });
     }
 }

@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\InitialStockController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockTransferController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\WorkspaceContextController;
 use App\Http\Controllers\WorkspaceController;
@@ -32,6 +34,10 @@ Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(funct
     Route::resource('products', ProductController::class);
 
     Route::resource('taxes', TaxController::class);
+
+    Route::resource('clients', ClientController::class);
+
+    Route::resource('suppliers', SupplierController::class);
 
     // Inventory overview page
     Route::get('inventory', function () {

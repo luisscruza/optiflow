@@ -41,7 +41,7 @@ export default function TaxesShow({ tax }: Props) {
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title={`Impuesto: ${tax.name}`} />
       
-      <div className="max-w-4xl px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
             <div className="flex items-center space-x-3">
