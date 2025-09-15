@@ -9,7 +9,6 @@ use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\WorkspaceContextController;
 use App\Http\Controllers\WorkspaceController;
 use App\Http\Middleware\SetWorkspaceContext;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -33,11 +32,7 @@ Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(funct
 
     // Inventory overview page
     Route::get('inventory', function () {
-        $workspace = Context::get('workspace');
-
-        return Inertia::render('inventory/index', [
-            'workspace' => $workspace,
-        ]);
+        return Inertia::render('inventory/index');
     })->name('inventory.index');
 
     Route::resource('stock-adjustments', StockAdjustmentController::class)->only(['index', 'create', 'store', 'show'])->parameters([

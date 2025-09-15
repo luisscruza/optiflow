@@ -4,8 +4,8 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { type BreadcrumbItem, type Workspace } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link, usePage } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -15,7 +15,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 interface Props {
-  workspace: Workspace;
   stats?: {
     totalProducts: number;
     lowStockProducts: number;
@@ -25,7 +24,9 @@ interface Props {
   };
 }
 
-export default function InventoryOverview({ workspace, stats }: Props) {
+export default function InventoryOverview({ stats }: Props) {
+  const { workspace } = usePage().props as { workspace?: { current: any } };
+  
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -44,7 +45,7 @@ export default function InventoryOverview({ workspace, stats }: Props) {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Inventory Management</h1>
             <p className="text-muted-foreground">
-              Manage stock levels and movements for {workspace.name}
+              Manage stock levels and movements for {workspace?.current?.name || 'your workspace'}
             </p>
           </div>
         </div>

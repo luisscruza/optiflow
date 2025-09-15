@@ -34,7 +34,6 @@ final class InitialStockController extends Controller
 
         return Inertia::render('inventory/initial-stock/index', [
             'productsWithStock' => $productsWithStock,
-            'workspace' => $workspace,
         ]);
     }
 
@@ -42,7 +41,6 @@ final class InitialStockController extends Controller
     {
         $workspace = Context::get('workspace');
 
-        // Only show products that don't have initial stock set yet
         $products = Product::query()
             ->where('track_stock', true)
             ->whereDoesntHave('stocks', function ($query) use ($workspace) {
@@ -53,7 +51,6 @@ final class InitialStockController extends Controller
 
         return Inertia::render('inventory/initial-stock/create', [
             'products' => $products,
-            'workspace' => $workspace,
         ]);
     }
 
@@ -115,7 +112,6 @@ final class InitialStockController extends Controller
             'product' => $product,
             'currentStock' => $currentStock,
             'initialStockMovement' => $initialStockMovement,
-            'workspace' => $workspace,
         ]);
     }
 }

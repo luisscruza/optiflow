@@ -31,7 +31,6 @@ final class StockAdjustmentController extends Controller
 
         return Inertia::render('inventory/stock-adjustments/index', [
             'stockAdjustments' => $stockAdjustments,
-            'workspace' => $workspace,
         ]);
     }
 
@@ -59,7 +58,6 @@ final class StockAdjustmentController extends Controller
 
         return Inertia::render('inventory/stock-adjustments/create', [
             'products' => $products,
-            'workspace' => $workspace,
         ]);
     }
 
@@ -103,7 +101,6 @@ final class StockAdjustmentController extends Controller
             'product' => $product,
             'currentStock' => $currentStock,
             'stockHistory' => $stockHistory,
-            'workspace' => $workspace,
         ]);
     }
 }

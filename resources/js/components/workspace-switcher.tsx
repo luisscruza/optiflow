@@ -15,7 +15,7 @@ import { create, index } from '@/actions/App/Http/Controllers/WorkspaceControlle
 
 export function WorkspaceSwitcher() {
     const { workspace } = usePage().props as { workspace?: { current: Workspace | null; available: Workspace[] } };
-    
+
     if (!workspace || !workspace.available?.length) {
         return null;
     }

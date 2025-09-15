@@ -37,7 +37,6 @@ final class StockTransferController extends Controller
 
         return Inertia::render('inventory/stock-transfers/index', [
             'transfers' => $transfers,
-            'workspace' => $workspace,
         ]);
     }
 
@@ -65,7 +64,6 @@ final class StockTransferController extends Controller
         return Inertia::render('inventory/stock-transfers/create', [
             'products' => $products,
             'availableWorkspaces' => $availableWorkspaces,
-            'workspace' => $workspace,
         ]);
     }
 
@@ -102,7 +100,6 @@ final class StockTransferController extends Controller
 
         return Inertia::render('inventory/stock-transfers/show', [
             'transfer' => $stockMovement,
-            'workspace' => $workspace,
         ]);
     }
 }
