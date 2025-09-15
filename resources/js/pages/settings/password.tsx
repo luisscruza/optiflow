@@ -30,7 +30,10 @@ export default function Password() {
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall title="Actualizar contraseña" description="Asegúrate de que tu cuenta esté usando una contraseña larga y aleatoria para mantenerla segura" />
+                    <HeadingSmall
+                        title="Actualizar contraseña"
+                        description="Asegúrate de que tu cuenta esté usando una contraseña larga y aleatoria para mantenerla segura"
+                    />
 
                     <Form
                         {...PasswordController.update.form()}

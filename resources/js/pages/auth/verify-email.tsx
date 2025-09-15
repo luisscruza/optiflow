@@ -10,7 +10,10 @@ import AuthLayout from '@/layouts/auth-layout';
 
 export default function VerifyEmail({ status }: { status?: string }) {
     return (
-        <AuthLayout title="Verificar correo electrónico" description="Por favor verifica tu dirección de correo electrónico haciendo clic en el enlace que te acabamos de enviar.">
+        <AuthLayout
+            title="Verificar correo electrónico"
+            description="Por favor verifica tu dirección de correo electrónico haciendo clic en el enlace que te acabamos de enviar."
+        >
             <Head title="Verificación de correo electrónico" />
 
             {status === 'verification-link-sent' && (
