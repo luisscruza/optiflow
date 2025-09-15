@@ -29,7 +29,6 @@ final class ProductController extends Controller
             ->with(['defaultTax', 'stockInCurrentWorkspace'])
             ->orderBy('created_at', 'desc');
 
-        // Apply search filter
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -38,7 +37,6 @@ final class ProductController extends Controller
             });
         }
 
-        // Apply filters
         if ($request->get('track_stock') !== null) {
             $query->where('track_stock', $request->boolean('track_stock'));
         }
@@ -47,6 +45,10 @@ final class ProductController extends Controller
             $query->whereHas('stockInCurrentWorkspace', function ($q) {
                 $q->whereColumn('quantity', '<=', 'minimum_quantity');
             });
+        }
+
+        if ($request->get('tax_id')) {
+            $query->where('default_tax_id', $request->get('tax_id'));
         }
 
         $products = $query->paginate(15)->withQueryString();

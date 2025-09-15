@@ -75,6 +75,28 @@ export interface Tax {
     is_default: boolean;
     created_at: string;
     updated_at: string;
+    products_count?: number;
+    document_items_count?: number;
+}
+
+export interface PaginatedTaxes {
+    data: Tax[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from?: number;
+    to?: number;
+    links: {
+        first?: string;
+        last?: string;
+        prev?: string;
+        next?: string;
+    };
+}
+
+export interface TaxFilters {
+    search?: string;
 }
 
 export interface ProductStock {
