@@ -48,6 +48,7 @@ final class ProductStock extends Model
     protected $fillable = [
         'product_id',
         'workspace_id',
+        'supplier_id',
         'quantity',
         'minimum_quantity',
     ];
@@ -60,6 +61,16 @@ final class ProductStock extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * Get the supplier for this stock record.
+     *
+     * @return BelongsTo<Contact, $this>
+     */
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class, 'supplier_id');
     }
 
     /**

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ContactType;
+use App\Enums\IdentificationType;
 use App\Models\Concerns\BelongsToWorkspace;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -59,12 +61,40 @@ final class Contact extends Model
     protected $fillable = [
         'workspace_id',
         'name',
+        'identification_type',
+        'identification_number',
         'email',
-        'phone',
-        'address',
+        'phone_primary',
+        'phone_secondary',
+        'mobile',
+        'fax',
         'contact_type',
+        'status',
+        'observations',
+        'credit_limit',
+        'statement_attached',
         'metadata',
     ];
+
+    /**
+     * Get the addresses for this contact.
+     *
+     * @return HasMany<Address, $this>
+     */
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(Address::class);
+    }
+
+    /**
+     * Get the primary address for this contact.
+     *
+     * @return Address|null
+     */
+    public function primaryAddress(): ?Address
+    {
+        return $this->addresses()->where('is_primary', true)->first();
+    }
 
     /**
      * Get the documents for this contact.
@@ -97,6 +127,16 @@ final class Contact extends Model
     }
 
     /**
+     * Get the product stocks supplied by this contact.
+     *
+     * @return HasMany<ProductStock, $this>
+     */
+    public function suppliedStocks(): HasMany
+    {
+        return $this->hasMany(ProductStock::class, 'supplier_id');
+    }
+
+    /**
      * Scope to filter by contact type.
      */
     public function scopeOfType($query, string $type)
@@ -109,7 +149,7 @@ final class Contact extends Model
      */
     public function scopeCustomers($query)
     {
-        return $query->whereIn('contact_type', ['customer', 'both']);
+        return $query->where('contact_type', ContactType::Customer->value);
     }
 
     /**
@@ -117,7 +157,7 @@ final class Contact extends Model
      */
     public function scopeSuppliers($query)
     {
-        return $query->whereIn('contact_type', ['supplier', 'both']);
+        return $query->where('contact_type', ContactType::Supplier->value);
     }
 
     /**
@@ -125,7 +165,7 @@ final class Contact extends Model
      */
     public function isCustomer(): bool
     {
-        return in_array($this->contact_type, ['customer', 'both']);
+        return $this->contact_type === ContactType::Customer->value;
     }
 
     /**
@@ -133,7 +173,48 @@ final class Contact extends Model
      */
     public function isSupplier(): bool
     {
-        return in_array($this->contact_type, ['supplier', 'both']);
+        return $this->contact_type === ContactType::Supplier->value;
+    }
+
+    /**
+     * Get the identification type enum.
+     */
+    public function getIdentificationTypeEnum(): ?IdentificationType
+    {
+        return $this->identification_type ? IdentificationType::from($this->identification_type) : null;
+    }
+
+    /**
+     * Get the contact type enum.
+     */
+    public function getContactTypeEnum(): ContactType
+    {
+        return ContactType::from($this->contact_type);
+    }
+
+    /**
+     * Get the identification object in Alegra format.
+     *
+     * @return array{type: string, number: string}|null
+     */
+    public function getIdentificationObjectAttribute(): ?array
+    {
+        if (!$this->identification_type || !$this->identification_number) {
+            return null;
+        }
+
+        return [
+            'type' => strtoupper($this->identification_type),
+            'number' => $this->identification_number,
+        ];
+    }
+
+    /**
+     * Check if this contact is active.
+     */
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
     }
 
     /**
@@ -141,13 +222,16 @@ final class Contact extends Model
      */
     public function getFullAddressAttribute(): ?string
     {
-        return $this->address;
+        $primaryAddress = $this->primaryAddress();
+        return $primaryAddress?->full_address;
     }
 
     protected function casts(): array
     {
         return [
             'metadata' => 'array',
+            'credit_limit' => 'decimal:2',
+            'statement_attached' => 'boolean',
         ];
     }
 }
