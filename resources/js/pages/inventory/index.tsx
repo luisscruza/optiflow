@@ -45,7 +45,7 @@ export default function InventoryOverview({ stats }: Props) {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Inventario</h1>
             <p className="text-muted-foreground">
-              Maneja el inventario y movimientos de {workspace?.current?.name || 'your workspace'}
+              Maneja el inventario y movimientos de {workspace?.current?.name || 'tu espacio de trabajo'}
             </p>
           </div>
         </div>
@@ -61,46 +61,46 @@ export default function InventoryOverview({ stats }: Props) {
               <CardContent>
                 <div className="text-2xl font-bold">{stats.totalProducts}</div>
                 <p className="text-xs text-muted-foreground">
-                  Stock tracked products
+                  Productos con inventario
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Low Stock</CardTitle>
+                <CardTitle className="text-sm font-medium">Inventario bajo</CardTitle>
                 <AlertTriangle className="h-4 w-4 text-orange-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-orange-600">{stats.lowStockProducts}</div>
                 <p className="text-xs text-muted-foreground">
-                  Below minimum threshold
+                  Debajo del umbral mínimo
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Out of Stock</CardTitle>
+                <CardTitle className="text-sm font-medium">Agotado</CardTitle>
                 <Package className="h-4 w-4 text-red-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-red-600">{stats.outOfStockProducts}</div>
                 <p className="text-xs text-muted-foreground">
-                  Zero quantity items
+                  Artículos sin cantidad
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Value</CardTitle>
+                <CardTitle className="text-sm font-medium">Valor total</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{formatCurrency(stats.totalStockValue)}</div>
                 <p className="text-xs text-muted-foreground">
-                  Current stock value
+                  Valor actual del inventario
                 </p>
               </CardContent>
             </Card>
@@ -110,9 +110,9 @@ export default function InventoryOverview({ stats }: Props) {
         {/* Quick Actions */}
         <Card>
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle>Acciones rápidas</CardTitle>
             <CardDescription>
-              Common Inventario tasks
+              Tareas comunes de inventario
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -147,7 +147,7 @@ export default function InventoryOverview({ stats }: Props) {
                     <TrendingUp className="h-8 w-8" />
                     <div className="text-center">
                       <div className="font-medium">Inventario inicial</div>
-                      <div className="text-sm text-muted-foreground">Inventario inicial</div>
+                      <div className="text-sm text-muted-foreground">Configurar inventario inicial</div>
                     </div>
                   </div>
                 </Link>
@@ -158,8 +158,8 @@ export default function InventoryOverview({ stats }: Props) {
                   <div className="flex flex-col items-center space-y-3">
                     <Package className="h-8 w-8" />
                     <div className="text-center">
-                      <div className="font-medium">Manage Productos</div>
-                      <div className="text-sm text-muted-foreground">View all products</div>
+                      <div className="font-medium">Gestionar productos</div>
+                      <div className="text-sm text-muted-foreground">Ver todos los productos</div>
                     </div>
                   </div>
                 </Link>
@@ -175,29 +175,29 @@ export default function InventoryOverview({ stats }: Props) {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Package className="h-5 w-5 mr-2" />
-                Stock Levels
+                Niveles de inventario
               </CardTitle>
               <CardDescription>
-                Monitor current inventory levels
+                Monitorear niveles de inventario actuales
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Button asChild variant="outline" className="w-full justify-start">
                 <Link href="/stock-adjustments">
                   <RotateCcw className="h-4 w-4 mr-2" />
-                  View Current Stock
+                  Ver inventario actual
                 </Link>
               </Button>
               <Button asChild variant="outline" className="w-full justify-start">
                 <Link href="/products?low_stock=true">
                   <AlertTriangle className="h-4 w-4 mr-2" />
-                  Low Stock Productos
+                  Productos con inventario bajo
                 </Link>
               </Button>
               <Button asChild variant="outline" className="w-full justify-start">
                 <Link href="/stock-adjustments/create">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Adjustment
+                  Crear ajuste
                 </Link>
               </Button>
             </CardContent>
@@ -208,29 +208,29 @@ export default function InventoryOverview({ stats }: Props) {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Calendar className="h-5 w-5 mr-2" />
-                Recent Activity
+                Actividad reciente
               </CardTitle>
               <CardDescription>
-                Track recent stock movements
+                Seguir movimientos recientes de inventario
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Button asChild variant="outline" className="w-full justify-start">
                 <Link href="/stock-transfers">
                   <ArrowLeftRight className="h-4 w-4 mr-2" />
-                  View All Transfers
+                  Ver todas las transferencias
                 </Link>
               </Button>
               <Button asChild variant="outline" className="w-full justify-start">
                 <Link href="/stock-transfers/create">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Transfer
+                  Crear transferencia
                 </Link>
               </Button>
               <Button asChild variant="outline" className="w-full justify-start">
                 <Link href="/initial-stock/create">
                   <TrendingUp className="h-4 w-4 mr-2" />
-                  Set Inventario inicial
+                  Establecer inventario inicial
                 </Link>
               </Button>
             </CardContent>
