@@ -11,6 +11,35 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $contact_id
+ * @property string $type
+ * @property string|null $province
+ * @property string|null $municipality
+ * @property string|null $country
+ * @property string|null $description
+ * @property bool $is_primary
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ * @property-read \App\Models\Contact $contact
+ * @property-read string|null $full_address
+ * @method static Builder<static>|Address newModelQuery()
+ * @method static Builder<static>|Address newQuery()
+ * @method static Builder<static>|Address primary()
+ * @method static Builder<static>|Address query()
+ * @method static Builder<static>|Address whereContactId($value)
+ * @method static Builder<static>|Address whereCountry($value)
+ * @method static Builder<static>|Address whereCreatedAt($value)
+ * @method static Builder<static>|Address whereDescription($value)
+ * @method static Builder<static>|Address whereId($value)
+ * @method static Builder<static>|Address whereIsPrimary($value)
+ * @method static Builder<static>|Address whereMunicipality($value)
+ * @method static Builder<static>|Address whereProvince($value)
+ * @method static Builder<static>|Address whereType($value)
+ * @method static Builder<static>|Address whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 final class Address extends Model
 {
     use HasFactory;

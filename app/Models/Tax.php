@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read string $rate_percentage
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Product> $products
  * @property-read int|null $products_count
- *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tax default()
  * @method static \Database\Factories\TaxFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tax newModelQuery()
@@ -35,7 +34,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tax whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tax whereRate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tax whereUpdatedAt($value)
- *
  * @mixin \Eloquent
  */
 final class Tax extends Model

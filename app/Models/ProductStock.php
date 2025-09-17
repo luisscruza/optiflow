@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read string $status
  * @property-read Product $product
  * @property-read Workspace $workspace
- *
  * @method static \Database\Factories\ProductStockFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock forWorkspace(\App\Models\Workspace|int $workspace)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock lowStock()
@@ -39,7 +38,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock whereWorkspaceId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock withoutWorkspaceScope()
- *
+ * @property int|null $supplier_id
+ * @property-read \App\Models\Contact|null $supplier
+ * @method static Builder<static>|ProductStock whereSupplierId($value)
  * @mixin \Eloquent
  */
 final class ProductStock extends Model

@@ -18,7 +18,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property \Carbon\CarbonImmutable|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Document> $documents
  * @property-read int|null $documents_count
- *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype byName(string $name)
  * @method static \Database\Factories\DocumentSubtypeFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype newModelQuery()
@@ -29,7 +28,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereSequence($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereUpdatedAt($value)
- *
  * @mixin \Eloquent
  */
 final class DocumentSubtype extends Model

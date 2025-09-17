@@ -28,7 +28,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read Product $product
  * @property-read Document|null $relatedDocument
  * @property-read Workspace $workspace
- *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement betweenDates($startDate, $endDate)
  * @method static \Database\Factories\StockMovementFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement forProduct(\App\Models\Product|int $product)
@@ -51,7 +50,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereWorkspaceId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement withoutWorkspaceScope()
- *
+ * @property int|null $user_id
+ * @property int|null $from_workspace_id
+ * @property int|null $to_workspace_id
+ * @property string|null $reference_number
+ * @property-read \App\Models\User|null $createdBy
+ * @property-read \App\Models\Workspace|null $fromWorkspace
+ * @property-read \App\Models\Workspace|null $toWorkspace
+ * @method static Builder<static>|StockMovement whereFromWorkspaceId($value)
+ * @method static Builder<static>|StockMovement whereReferenceNumber($value)
+ * @method static Builder<static>|StockMovement whereToWorkspaceId($value)
+ * @method static Builder<static>|StockMovement whereUserId($value)
  * @mixin \Eloquent
  */
 final class StockMovement extends Model

@@ -31,7 +31,6 @@ use Illuminate\Support\Str;
  * @property-read int|null $users_count
  * @property-read Collection<int, Contact> $contacts
  * @property-read int|null $contacts_count
- *
  * @method static WorkspaceFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Workspace newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Workspace newQuery()
@@ -45,7 +44,6 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Workspace whereSettings($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Workspace whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Workspace whereUpdatedAt($value)
- *
  * @mixin \Eloquent
  */
 final class Workspace extends Model
