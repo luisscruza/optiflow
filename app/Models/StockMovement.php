@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToWorkspace;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -123,52 +125,6 @@ final class StockMovement extends Model
     }
 
     /**
-     * Scope movements by type.
-     */
-    public function scopeOfType($query, string $type)
-    {
-        return $query->where('type', $type);
-    }
-
-    /**
-     * Scope to incoming movements.
-     */
-    public function scopeIncoming($query)
-    {
-        return $query->whereIn('type', ['in', 'adjustment'])
-            ->where('quantity', '>', 0);
-    }
-
-    /**
-     * Scope to outgoing movements.
-     */
-    public function scopeOutgoing($query)
-    {
-        return $query->whereIn('type', ['out', 'transfer'])
-            ->orWhere(function ($q) {
-                $q->where('type', 'adjustment')->where('quantity', '<', 0);
-            });
-    }
-
-    /**
-     * Scope to movements for a specific product.
-     */
-    public function scopeForProduct($query, int|Product $product)
-    {
-        $productId = $product instanceof Product ? $product->id : $product;
-
-        return $query->where('product_id', $productId);
-    }
-
-    /**
-     * Scope to movements within a date range.
-     */
-    public function scopeBetweenDates($query, $startDate, $endDate)
-    {
-        return $query->whereBetween('created_at', [$startDate, $endDate]);
-    }
-
-    /**
      * Check if this is an incoming movement.
      */
     public function isIncoming(): bool
@@ -230,6 +186,57 @@ final class StockMovement extends Model
                 $movement->total_cost = $movement->quantity * $movement->unit_cost;
             }
         });
+    }
+
+    /**
+     * Scope movements by type.
+     */
+    #[Scope]
+    protected function ofType(Builder $query, string $type): void
+    {
+        $query->where('type', $type);
+    }
+
+    /**
+     * Scope to incoming movements.
+     */
+    #[Scope]
+    protected function incoming(Builder $query): void
+    {
+        $query->whereIn('type', ['in', 'adjustment'])
+            ->where('quantity', '>', 0);
+    }
+
+    /**
+     * Scope to outgoing movements.
+     */
+    #[Scope]
+    protected function outgoing(Builder $query): void
+    {
+        $query->whereIn('type', ['out', 'transfer'])
+            ->orWhere(function ($q) {
+                $q->where('type', 'adjustment')->where('quantity', '<', 0);
+            });
+    }
+
+    /**
+     * Scope to movements for a specific product.
+     */
+    #[Scope]
+    protected function forProduct(Builder $query, int|Product $product): void
+    {
+        $productId = $product instanceof Product ? $product->id : $product;
+
+        $query->where('product_id', $productId);
+    }
+
+    /**
+     * Scope to movements within a date range.
+     */
+    #[Scope]
+    protected function betweenDates(Builder $query, $startDate, $endDate): void
+    {
+        $query->whereBetween('created_at', [$startDate, $endDate]);
     }
 
     protected function casts(): array

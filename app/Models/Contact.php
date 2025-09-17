@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\ContactType;
-use App\Enums\IdentificationType;
 use App\Models\Concerns\BelongsToWorkspace;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -76,6 +78,11 @@ final class Contact extends Model
         'metadata',
     ];
 
+    protected $appends = [
+        'identification_object',
+        'full_address',
+    ];
+
     /**
      * Get the addresses for this contact.
      *
@@ -135,30 +142,6 @@ final class Contact extends Model
     }
 
     /**
-     * Scope to filter by contact type.
-     */
-    public function scopeOfType($query, string $type)
-    {
-        return $query->where('contact_type', $type);
-    }
-
-    /**
-     * Scope to get customers.
-     */
-    public function scopeCustomers($query)
-    {
-        return $query->where('contact_type', ContactType::Customer->value);
-    }
-
-    /**
-     * Scope to get suppliers.
-     */
-    public function scopeSuppliers($query)
-    {
-        return $query->where('contact_type', ContactType::Supplier->value);
-    }
-
-    /**
      * Check if this contact is a customer.
      */
     public function isCustomer(): bool
@@ -175,39 +158,6 @@ final class Contact extends Model
     }
 
     /**
-     * Get the identification type enum.
-     */
-    public function getIdentificationTypeEnum(): ?IdentificationType
-    {
-        return $this->identification_type ? IdentificationType::from($this->identification_type) : null;
-    }
-
-    /**
-     * Get the contact type enum.
-     */
-    public function getContactTypeEnum(): ContactType
-    {
-        return ContactType::from($this->contact_type);
-    }
-
-    /**
-     * Get the identification object in Alegra format.
-     *
-     * @return array{type: string, number: string}|null
-     */
-    public function getIdentificationObjectAttribute(): ?array
-    {
-        if (! $this->identification_type || ! $this->identification_number) {
-            return null;
-        }
-
-        return [
-            'type' => mb_strtoupper($this->identification_type),
-            'number' => $this->identification_number,
-        ];
-    }
-
-    /**
      * Check if this contact is active.
      */
     public function isActive(): bool
@@ -216,13 +166,55 @@ final class Contact extends Model
     }
 
     /**
+     * Scope to filter by contact type.
+     */
+    #[Scope]
+    protected function ofType(Builder $query, string $type): void
+    {
+        $query->where('contact_type', $type);
+    }
+
+    /**
+     * Scope to get customers.
+     */
+    #[Scope]
+    protected function customers(Builder $query): void
+    {
+        $query->where('contact_type', ContactType::Customer->value);
+    }
+
+    /**
+     * Scope to get suppliers.
+     */
+    #[Scope]
+    protected function suppliers(Builder $query): void
+    {
+        $query->where('contact_type', ContactType::Supplier->value);
+    }
+
+    /**
+     * Get the identification object in Alegra format.
+     */
+    protected function identificationObject(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): ?array => $this->identification_type && $this->identification_number
+                ? [
+                    'type' => mb_strtoupper($this->identification_type),
+                    'number' => $this->identification_number,
+                ]
+                : null
+        );
+    }
+
+    /**
      * Get the full address as a single string.
      */
-    public function getFullAddressAttribute(): ?string
+    protected function fullAddress(): Attribute
     {
-        $primaryAddress = $this->primaryAddress;
-
-        return $primaryAddress?->full_address;
+        return Attribute::make(
+            get: fn (): ?string => $this->primaryAddress?->full_address
+        );
     }
 
     protected function casts(): array

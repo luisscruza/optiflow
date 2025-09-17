@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToWorkspace;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -114,22 +116,6 @@ final class ProductStock extends Model
     }
 
     /**
-     * Scope to low stock items.
-     */
-    public function scopeLowStock($query)
-    {
-        return $query->whereColumn('quantity', '<=', 'minimum_quantity');
-    }
-
-    /**
-     * Scope to items with sufficient stock.
-     */
-    public function scopeSufficientStock($query, float $requiredQuantity = 1)
-    {
-        return $query->where('quantity', '>=', $requiredQuantity);
-    }
-
-    /**
      * Get the stock level status.
      */
     public function getStatusAttribute(): string
@@ -155,6 +141,24 @@ final class ProductStock extends Model
         }
 
         return round(($this->quantity / $this->minimum_quantity) * 100, 2);
+    }
+
+    /**
+     * Scope to low stock items.
+     */
+    #[Scope]
+    protected function lowStock(Builder $query): void
+    {
+        $query->whereColumn('quantity', '<=', 'minimum_quantity');
+    }
+
+    /**
+     * Scope to items with sufficient stock.
+     */
+    #[Scope]
+    protected function sufficientStock(Builder $query, float $requiredQuantity = 1): void
+    {
+        $query->where('quantity', '>=', $requiredQuantity);
     }
 
     protected function casts(): array

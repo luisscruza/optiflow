@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,6 +25,10 @@ final class Address extends Model
         'is_primary',
     ];
 
+    protected $appends = [
+        'full_address',
+    ];
+
     /**
      * Get the contact that owns this address.
      */
@@ -33,24 +40,29 @@ final class Address extends Model
     /**
      * Scope to get primary addresses.
      */
-    public function scopePrimary($query)
+    #[Scope]
+    protected function primary(Builder $query): void
     {
-        return $query->where('is_primary', true);
+        $query->where('is_primary', true);
     }
 
     /**
      * Get the full address as a single string.
      */
-    public function getFullAddressAttribute(): ?string
+    protected function fullAddress(): Attribute
     {
-        $parts = array_filter([
-            $this->description,
-            $this->municipality,
-            $this->province,
-            $this->country,
-        ]);
+        return Attribute::make(
+            get: function (): ?string {
+                $parts = array_filter([
+                    $this->description,
+                    $this->municipality,
+                    $this->province,
+                    $this->country,
+                ]);
 
-        return empty($parts) ? null : implode(', ', $parts);
+                return empty($parts) ? null : implode(', ', $parts);
+            }
+        );
     }
 
     protected function casts(): array

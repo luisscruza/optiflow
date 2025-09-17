@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToWorkspace;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -118,47 +120,6 @@ final class Document extends Model
     public function stockMovements(): HasMany
     {
         return $this->hasMany(StockMovement::class, 'related_document_id');
-    }
-
-    /**
-     * Scope to filter by document type.
-     */
-    public function scopeOfType($query, string $type)
-    {
-        return $query->where('type', $type);
-    }
-
-    /**
-     * Scope to get invoices.
-     */
-    public function scopeInvoices($query)
-    {
-        return $query->where('type', 'invoice');
-    }
-
-    /**
-     * Scope to get quotations.
-     */
-    public function scopeQuotations($query)
-    {
-        return $query->where('type', 'quotation');
-    }
-
-    /**
-     * Scope to filter by status.
-     */
-    public function scopeWithStatus($query, string $status)
-    {
-        return $query->where('status', $status);
-    }
-
-    /**
-     * Scope to get overdue documents.
-     */
-    public function scopeOverdue($query)
-    {
-        return $query->where('due_date', '<', now()->toDateString())
-            ->whereNotIn('status', ['paid', 'cancelled']);
     }
 
     /**
@@ -324,6 +285,52 @@ final class Document extends Model
             // Recalculate total when document is saved
             $document->recalculateTotal();
         });
+    }
+
+    /**
+     * Scope to filter by document type.
+     */
+    #[Scope]
+    protected function ofType(Builder $query, string $type): void
+    {
+        $query->where('type', $type);
+    }
+
+    /**
+     * Scope to get invoices.
+     */
+    #[Scope]
+    protected function invoices(Builder $query): void
+    {
+        $query->where('type', 'invoice');
+    }
+
+    /**
+     * Scope to get quotations.
+     */
+    #[Scope]
+    protected function quotations(Builder $query): void
+    {
+        $query->where('type', 'quotation');
+    }
+
+    /**
+     * Scope to filter by status.
+     */
+    #[Scope]
+    protected function withStatus(Builder $query, string $status): void
+    {
+        $query->where('status', $status);
+    }
+
+    /**
+     * Scope to get overdue documents.
+     */
+    #[Scope]
+    protected function overdue(Builder $query): void
+    {
+        $query->where('due_date', '<', now()->toDateString())
+            ->whereNotIn('status', ['paid', 'cancelled']);
     }
 
     protected function casts(): array
