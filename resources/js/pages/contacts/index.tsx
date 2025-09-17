@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import { Address, Contact, type BreadcrumbItem, type ContactFilters, type PaginatedContacts } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -27,6 +28,7 @@ interface Props {
 export default function ContactsIndex({ contacts, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [contactType, setContactType] = useState(filters.type || 'all');
+    const [showQuickModal, setShowQuickModal] = useState(false);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -60,6 +62,10 @@ export default function ContactsIndex({ contacts, filters }: Props) {
         }
     };
 
+    const handleAdvancedForm = () => {
+        router.visit('/contacts/create');
+    };
+
     const getContactTypeIcon = (type: string) => {
         return type === 'customer' ? <Users className="h-4 w-4" /> : <Building2 className="h-4 w-4" />;
     };
@@ -91,50 +97,22 @@ export default function ContactsIndex({ contacts, filters }: Props) {
                 <div className="mb-8 flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Contactos</h1>
-                        <p className="text-gray-600 dark:text-gray-400">Gestiona clientes y proveedores</p>
+                        <p className="text-gray-600 dark:text-gray-400">Crea tus clientes, proveedores y demás contactos para asociarlos en tus documentos.</p>
                     </div>
 
-                    <Button asChild>
-                        <Link href="/contacts/create">
+                    <div className="flex space-x-3">
+                        <Button 
+                            variant="outline" 
+                            onClick={() => setShowQuickModal(true)}
+                            className="bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-gray-900/20 dark:border-gray-800 dark:text-gray-300"
+                        >
                             <Plus className="mr-2 h-4 w-4" />
-                            Nuevo Contacto
-                        </Link>
-                    </Button>
+                            Nuevo contacto
+                        </Button>
+                    </div>
                 </div>
 
-                {/* Statistics Cards */}
-                <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Contactos</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{contacts.total}</div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Clientes</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-blue-600">
-                                {contacts.data.filter((c) => c.contact_type === 'customer').length}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Proveedores</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-green-600">
-                                {contacts.data.filter((c) => c.contact_type === 'supplier').length}
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+            
 
                 {/* Search and Filters */}
                 <Card className="mb-8">
@@ -310,6 +288,13 @@ export default function ContactsIndex({ contacts, filters }: Props) {
                         )}
                     </CardContent>
                 </Card>
+
+                {/* Quick Contact Modal */}
+                <QuickContactModal
+                    open={showQuickModal}
+                    onOpenChange={setShowQuickModal}
+                    onAdvancedForm={handleAdvancedForm}
+                />
             </div>
         </AppLayout>
     );

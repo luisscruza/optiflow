@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Contact, type ContactType, type IdentificationType } from '@/types';
+import countriesData from '@/data/countries.json';
 
 interface Props {
     contact: Contact;
@@ -45,6 +46,14 @@ export default function EditContact({ contact, contact_types, identification_typ
     const [addressOpen, setAddressOpen] = useState(false);
     const [additionalOpen, setAdditionalOpen] = useState(false);
 
+    // Get available countries and their provinces/cities
+    const countries = Object.keys(countriesData);
+    
+    // Get provinces/cities for the selected country
+    const getProvincesForCountry = (country: string) => {
+        return countriesData[country as keyof typeof countriesData] || [];
+    };
+
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Contactos',
@@ -77,12 +86,20 @@ export default function EditContact({ contact, contact_types, identification_typ
         municipality: contact.primary_address?.municipality || '',
         province: contact.primary_address?.province || '',
         postal_code: '',
-        country: contact.primary_address?.country || 'Colombia',
+        country: contact.primary_address?.country || 'Dominican Republic',
     });
+    
+    const selectedCountryProvinces = getProvincesForCountry(data.country);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         put(`/contacts/${contact.id}`);
+    };
+
+    const handleCountryChange = (country: string) => {
+        setData('country', country);
+        // Clear municipality when country changes since provinces will be different
+        setData('municipality', '');
     };
 
     const getContactTypeIcon = (type: ContactType) => {
@@ -393,15 +410,25 @@ export default function EditContact({ contact, contact_types, identification_typ
 
                                             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="municipality">Municipio</Label>
-                                                    <Input
-                                                        id="municipality"
-                                                        type="text"
+                                                    <Label htmlFor="municipality">Provincia</Label>
+                                                    <Select
                                                         value={data.municipality}
-                                                        onChange={(e) => setData('municipality', e.target.value)}
-                                                        placeholder="Bogotá"
-                                                        className={errors.municipality ? 'border-red-500' : ''}
-                                                    />
+                                                        onValueChange={(value) => setData('municipality', value)}
+                                                    >
+                                                        <SelectTrigger className={errors.municipality ? 'border-red-500' : ''}>
+                                                            <SelectValue placeholder="Seleccionar provincia" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {selectedCountryProvinces.map((province) => (
+                                                                <SelectItem 
+                                                                    key={province} 
+                                                                    value={province.toLowerCase().replace(/\s+/g, '-')}
+                                                                >
+                                                                    {province}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
                                                     {errors.municipality && (
                                                         <p className="text-sm text-red-600 dark:text-red-400">{errors.municipality}</p>
                                                     )}
@@ -438,14 +465,21 @@ export default function EditContact({ contact, contact_types, identification_typ
 
                                             <div className="space-y-2">
                                                 <Label htmlFor="country">País</Label>
-                                                <Input
-                                                    id="country"
-                                                    type="text"
+                                                <Select
                                                     value={data.country}
-                                                    onChange={(e) => setData('country', e.target.value)}
-                                                    placeholder="Colombia"
-                                                    className={errors.country ? 'border-red-500' : ''}
-                                                />
+                                                    onValueChange={handleCountryChange}
+                                                >
+                                                    <SelectTrigger className={errors.country ? 'border-red-500' : ''}>
+                                                        <SelectValue placeholder="Seleccionar país" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {countries.map((country) => (
+                                                            <SelectItem key={country} value={country}>
+                                                                {country}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
                                                 {errors.country && <p className="text-sm text-red-600 dark:text-red-400">{errors.country}</p>}
                                             </div>
                                         </div>

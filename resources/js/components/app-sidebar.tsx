@@ -7,7 +7,7 @@ import { WorkspaceSwitcher } from '@/components/workspace-switcher';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Building2, Folder, LayoutGrid, Package, RotateCcw } from 'lucide-react';
+import { BookOpen, Building2, Folder, LayoutGrid, Package, RotateCcw, Users2 } from 'lucide-react';
 import AppLogo from './app-logo';
 import products from '@/routes/products';
 import workspaces from '@/routes/workspaces';
@@ -38,7 +38,7 @@ const mainNavItems: NavItem[] = [
        {
         title: 'Contactos',
         href: contacts.index(),
-        icon: Building2,
+        icon: Users2,
     },
 ];
 
