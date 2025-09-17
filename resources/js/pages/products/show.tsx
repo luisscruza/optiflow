@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, ArrowLeftRight, BarChart3, DollarSign, Edit, Package, RotateCcw, Trash2, TrendingUp } from 'lucide-react';
+import { ArrowLeftRight, BarChart3, DollarSign, Edit, Package, RotateCcw, Trash2, TrendingUp } from 'lucide-react';
 
 import { edit, index } from '@/actions/App/Http/Controllers/ProductController';
 import { Badge } from '@/components/ui/badge';
@@ -76,12 +76,6 @@ export default function ProductsShow({ product }: Props) {
                 {/* Header */}
                 <div className="mb-8 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <Button variant="outline" asChild>
-                            <Link href={index().url}>
-                                <ArrowLeft className="mr-2 h-4 w-4" />
-                                Back to Productos
-                            </Link>
-                        </Button>
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{product.name}</h1>
                             <p className="text-gray-600 dark:text-gray-400">

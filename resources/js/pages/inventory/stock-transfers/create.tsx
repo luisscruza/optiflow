@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowLeftRight, Building2, Package } from 'lucide-react';
+import { ArrowLeftRight, Building2, Package } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -78,12 +78,6 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
                 <div className="space-y-8">
                     {/* Header */}
                     <div className="flex items-center space-x-4">
-                        <Button variant="outline" size="sm" asChild>
-                            <Link href="/stock-transfers">
-                                <ArrowLeft className="mr-2 h-4 w-4" />
-                                Back
-                            </Link>
-                        </Button>
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight">New Stock Transfer</h1>
                             <p className="text-muted-foreground">Transfer stock from {workspace.name} to another workspace</p>

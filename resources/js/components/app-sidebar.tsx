@@ -1,18 +1,17 @@
-
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { WorkspaceSwitcher } from '@/components/workspace-switcher';
 import { dashboard } from '@/routes';
-import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
-import { BookOpen, Building2, Folder, LayoutGrid, Package, RotateCcw, Users2 } from 'lucide-react';
-import AppLogo from './app-logo';
-import products from '@/routes/products';
-import workspaces from '@/routes/workspaces';
 import contacts from '@/routes/contacts';
 import inventory from '@/routes/inventory';
+import products from '@/routes/products';
+import workspaces from '@/routes/workspaces';
+import { type NavItem } from '@/types';
+import { Link } from '@inertiajs/react';
+import { BookOpen, Building2, Folder, LayoutGrid, Package, RotateCcw, Settings, Users2 } from 'lucide-react';
+import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     {
@@ -35,10 +34,15 @@ const mainNavItems: NavItem[] = [
         href: workspaces.index(),
         icon: Building2,
     },
-       {
+    {
         title: 'Contactos',
         href: contacts.index(),
         icon: Users2,
+    },
+    {
+        title: 'Configuración',
+        href: '/configuration',
+        icon: Settings,
     },
 ];
 

@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 
 import { index, show, update } from '@/actions/App/Http/Controllers/ProductController';
 import { Button } from '@/components/ui/button';
@@ -55,14 +55,6 @@ export default function ProductsEdit({ product, taxes }: Props) {
                         <p className="mt-2 text-gray-600 dark:text-gray-400">
                             Update the details for <strong>{product.name}</strong>
                         </p>
-                    </div>
-                    <div className="flex gap-2">
-                        <Button variant="outline" asChild>
-                            <Link href={show(product.id).url}>
-                                <ArrowLeft className="mr-2 h-4 w-4" />
-                                Back to Product
-                            </Link>
-                        </Button>
                     </div>
                 </div>
 

@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\DocumentSubtypeController;
 use App\Http\Controllers\InitialStockController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SetDefaultDocumentSubtypeController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\TaxController;
@@ -32,11 +35,18 @@ Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(funct
             return Inertia::render('dashboard');
         })->name('dashboard');
 
+        // Configuration page
+        Route::get('configuration', [ConfigurationController::class, 'index'])->name('configuration.index');
+
         Route::resource('products', ProductController::class);
 
         Route::resource('taxes', TaxController::class);
 
         Route::resource('contacts', ContactController::class);
+
+        // Document Subtypes (Numeraciones) - NCF management
+        Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
+        Route::patch('document-subtypes/{documentSubtype}/set-default', SetDefaultDocumentSubtypeController::class)->name('document-subtypes.set-default');
 
         // Inventory overview page
         Route::get('inventory', function () {

@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 
 import { create, index, store } from '@/actions/App/Http/Controllers/ProductController';
 import { Button } from '@/components/ui/button';
@@ -60,12 +60,6 @@ export default function ProductsCreate({ taxes }: Props) {
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Create Product</h1>
                         <p className="mt-2 text-gray-600 dark:text-gray-400">Add a new product to your catalog.</p>
                     </div>
-                    <Button variant="outline" asChild>
-                        <Link href={index().url}>
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Back to Productos
-                        </Link>
-                    </Button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">

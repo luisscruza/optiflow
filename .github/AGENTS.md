@@ -22,6 +22,7 @@ app/Http/Requests
 •	Name with Create, Update, Delete.
 
 app/Actions
+• You may use the `make:action` command.
 •	Use Actions pattern and naming verbs.
 •	Example:
 
@@ -58,6 +59,8 @@ database/migrations
 4. Styling & UI
    •	Use Tailwind CSS.
    •	Keep UI minimal.
+   • Always use `<div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">` to have proper margin.
+
 
 5. Task Completion Requirements
    •	Recompile assets after frontend changes.

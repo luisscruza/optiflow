@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Building2, Edit, Eye, Filter, Plus, Search, Trash2, Users } from 'lucide-react';
 import { useState } from 'react';
 
+import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,6 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import { Address, Contact, type BreadcrumbItem, type ContactFilters, type PaginatedContacts } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -97,22 +97,22 @@ export default function ContactsIndex({ contacts, filters }: Props) {
                 <div className="mb-8 flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Contactos</h1>
-                        <p className="text-gray-600 dark:text-gray-400">Crea tus clientes, proveedores y demás contactos para asociarlos en tus documentos.</p>
+                        <p className="text-gray-600 dark:text-gray-400">
+                            Crea tus clientes, proveedores y demás contactos para asociarlos en tus documentos.
+                        </p>
                     </div>
 
                     <div className="flex space-x-3">
-                        <Button 
-                            variant="outline" 
+                        <Button
+                            variant="outline"
                             onClick={() => setShowQuickModal(true)}
-                            className="bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-gray-900/20 dark:border-gray-800 dark:text-gray-300"
+                            className="border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900/20 dark:text-gray-300"
                         >
                             <Plus className="mr-2 h-4 w-4" />
                             Nuevo contacto
                         </Button>
                     </div>
                 </div>
-
-            
 
                 {/* Search and Filters */}
                 <Card className="mb-8">
@@ -290,11 +290,7 @@ export default function ContactsIndex({ contacts, filters }: Props) {
                 </Card>
 
                 {/* Quick Contact Modal */}
-                <QuickContactModal
-                    open={showQuickModal}
-                    onOpenChange={setShowQuickModal}
-                    onAdvancedForm={handleAdvancedForm}
-                />
+                <QuickContactModal open={showQuickModal} onOpenChange={setShowQuickModal} onAdvancedForm={handleAdvancedForm} />
             </div>
         </AppLayout>
     );

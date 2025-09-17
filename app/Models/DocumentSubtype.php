@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Exception;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,13 +14,21 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property int $id
  * @property string $name
- * @property string $sequence
+ * @property bool $is_default
+ * @property \Carbon\CarbonImmutable|null $valid_until_date
+ * @property string $prefix
+ * @property int $start_number
+ * @property int|null $end_number
+ * @property int $next_number
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Document> $documents
  * @property-read int|null $documents_count
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype byName(string $name)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype byPrefix(string $prefix)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype active()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype default()
  * @method static \Database\Factories\DocumentSubtypeFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype newQuery()
@@ -27,7 +36,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereSequence($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereIsDefault($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereValidUntilDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype wherePrefix($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereStartNumber($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereEndNumber($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereNextNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereUpdatedAt($value)
  *
  * @mixin \Eloquent
@@ -37,33 +51,79 @@ final class DocumentSubtype extends Model
     /** @use HasFactory<\Database\Factories\DocumentSubtypeFactory> */
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'sequence',
-    ];
-
     /**
-     * Get invoices subtype.
+     * Get default document subtype.
      */
-    public static function invoice(): ?self
+    public static function getDefault(): ?self
     {
-        return self::byName('Invoice')->first();
+        return self::where('is_default', true)->first();
     }
 
     /**
-     * Get quotations subtype.
+     * Get document subtype by prefix.
      */
-    public static function quotation(): ?self
+    public static function findByPrefix(string $prefix): ?self
     {
-        return self::byName('Quotation')->first();
+        return self::where('prefix', $prefix)->first();
     }
 
     /**
-     * Get credit note subtype.
+     * Check if the sequence is valid (not expired and within range).
      */
-    public static function creditNote(): ?self
+    public function isValid(): bool
     {
-        return self::byName('Credit Note')->first();
+        // Check if not expired
+        if ($this->valid_until_date && $this->valid_until_date->isPast()) {
+            return false;
+        }
+
+        // Check if within range
+        if ($this->end_number && $this->next_number > $this->end_number) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Get the next NCF number and increment the sequence.
+     */
+    public function getNextNcfNumber(): string
+    {
+        if (! $this->isValid()) {
+            throw new Exception("NCF sequence for {$this->name} is invalid or expired");
+        }
+
+        $ncfNumber = $this->prefix.mb_str_pad((string) $this->next_number, 8, '0', STR_PAD_LEFT);
+
+        // Increment the next number
+        $this->increment('next_number');
+
+        return $ncfNumber;
+    }
+
+    /**
+     * Check if sequence is near expiration (within 30 days).
+     */
+    public function isNearExpiration(): bool
+    {
+        if (! $this->valid_until_date) {
+            return false;
+        }
+
+        return $this->valid_until_date->diffInDays(now()) <= 30;
+    }
+
+    /**
+     * Check if sequence is running low (less than 100 numbers remaining).
+     */
+    public function isRunningLow(): bool
+    {
+        if (! $this->end_number) {
+            return false;
+        }
+
+        return ($this->end_number - $this->next_number) < 100;
     }
 
     /**
@@ -77,23 +137,13 @@ final class DocumentSubtype extends Model
     }
 
     /**
-     * Generate the next document number for this subtype.
+     * Generate the next document number for this subtype (legacy method).
+     *
+     * @deprecated Use getNextNcfNumber() instead for NCF compliance.
      */
     public function getNextDocumentNumber(): string
     {
-        $lastDocument = $this->documents()
-            ->latest('id')
-            ->first();
-
-        if (! $lastDocument) {
-            return $this->name.'-'.mb_str_pad('1', 4, '0', STR_PAD_LEFT);
-        }
-
-        // Extract the number from the last document number
-        $lastNumber = (int) mb_substr($lastDocument->document_number, mb_strrpos($lastDocument->document_number, '-') + 1);
-        $nextNumber = $lastNumber + 1;
-
-        return $this->name.'-'.mb_str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);
+        return $this->getNextNcfNumber();
     }
 
     /**
@@ -105,10 +155,29 @@ final class DocumentSubtype extends Model
         $query->where('name', $name);
     }
 
+    /**
+     * Scope to get active (valid) subtypes.
+     */
+    #[Scope]
+    protected function active(Builder $query): void
+    {
+        $query->where(function ($q) {
+            $q->whereNull('valid_until_date')
+                ->orWhere('valid_until_date', '>', now());
+        })->where(function ($q) {
+            $q->whereNull('end_number')
+                ->orWhereColumn('next_number', '<=', 'end_number');
+        });
+    }
+
     protected function casts(): array
     {
         return [
-            'sequence' => 'string',
+            'is_default' => 'boolean',
+            'valid_until_date' => 'date',
+            'start_number' => 'integer',
+            'end_number' => 'integer',
+            'next_number' => 'integer',
         ];
     }
 }

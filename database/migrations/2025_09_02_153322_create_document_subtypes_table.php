@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('document_subtypes', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // e.g., "Invoice", "Quotation", "Credit Note"
+            $table->string('name'); // e.g Crédito fiscal (01)
             $table->string('sequence')->default('1'); // For numbering documents
             $table->timestamps();
 

@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowLeftRight, Building2, Calendar, Package, User } from 'lucide-react';
+import { ArrowLeftRight, Building2, Calendar, Package, User } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -45,12 +45,6 @@ export default function StockTransfersShow({ transfer, workspace }: Props) {
                 <div className="space-y-8">
                     {/* Header */}
                     <div className="flex items-center space-x-4">
-                        <Button variant="outline" size="sm" asChild>
-                            <Link href="/stock-transfers">
-                                <ArrowLeft className="mr-2 h-4 w-4" />
-                                Back to Transfers
-                            </Link>
-                        </Button>
                         <div className="flex-1">
                             <h1 className="text-3xl font-bold tracking-tight">Transfer Details</h1>
                             <p className="text-muted-foreground">Stock transfer for {transfer.product?.name}</p>

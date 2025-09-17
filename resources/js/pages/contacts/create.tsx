@@ -10,9 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import countriesData from '@/data/countries.json';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type ContactType, type IdentificationType } from '@/types';
-import countriesData from '@/data/countries.json';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -57,7 +57,7 @@ export default function CreateContact({ contact_types, identification_types }: P
     const [additionalOpen, setAdditionalOpen] = useState(false);
 
     const countries = Object.keys(countriesData);
-    
+
     const getProvincesForCountry = (country: string) => {
         return countriesData[country as keyof typeof countriesData] || [];
     };
@@ -80,7 +80,7 @@ export default function CreateContact({ contact_types, identification_types }: P
         postal_code: '',
         country: 'Dominican Republic',
     });
-    
+
     const selectedCountryProvinces = getProvincesForCountry(data.country);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -402,19 +402,13 @@ export default function CreateContact({ contact_types, identification_types }: P
                                             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                                                 <div className="space-y-2">
                                                     <Label htmlFor="municipality">Provincia</Label>
-                                                    <Select
-                                                        value={data.municipality}
-                                                        onValueChange={(value) => setData('municipality', value)}
-                                                    >
+                                                    <Select value={data.municipality} onValueChange={(value) => setData('municipality', value)}>
                                                         <SelectTrigger className={errors.municipality ? 'border-red-500' : ''}>
                                                             <SelectValue placeholder="Seleccionar provincia" />
                                                         </SelectTrigger>
                                                         <SelectContent>
                                                             {selectedCountryProvinces.map((province) => (
-                                                                <SelectItem 
-                                                                    key={province} 
-                                                                    value={province.toLowerCase().replace(/\s+/g, '-')}
-                                                                >
+                                                                <SelectItem key={province} value={province.toLowerCase().replace(/\s+/g, '-')}>
                                                                     {province}
                                                                 </SelectItem>
                                                             ))}
@@ -456,10 +450,7 @@ export default function CreateContact({ contact_types, identification_types }: P
 
                                             <div className="space-y-2">
                                                 <Label htmlFor="country">País</Label>
-                                                <Select
-                                                    value={data.country}
-                                                    onValueChange={handleCountryChange}
-                                                >
+                                                <Select value={data.country} onValueChange={handleCountryChange}>
                                                     <SelectTrigger className={errors.country ? 'border-red-500' : ''}>
                                                         <SelectValue placeholder="Seleccionar país" />
                                                     </SelectTrigger>
