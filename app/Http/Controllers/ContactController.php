@@ -86,10 +86,7 @@ final class ContactController extends Controller
     {
         $contact = $action->handle($user, $request->validated());
 
-        $contactTypeLabel = ContactType::from($contact->contact_type)->label();
-
-        return redirect()->route('contacts.show', $contact)
-            ->with('success', "El {$contactTypeLabel} ha sido creado exitosamente.");
+        return redirect()->back()->with('newly_created_contact', $contact);
     }
 
     /**

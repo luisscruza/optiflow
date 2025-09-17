@@ -43,7 +43,9 @@ final class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'companyDetails' => fn () => \App\Models\CompanyDetail::getAll(),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'newlyCreatedContact' => fn () => $request->session()->get('newly_created_contact') ? $request->session()->get('newly_created_contact') : null,
         ];
     }
 }

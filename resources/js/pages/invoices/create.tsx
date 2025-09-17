@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Contact, type Product } from '@/types';
 
@@ -45,6 +46,7 @@ interface FormData {
     contact_id: number | null;
     issue_date: string;
     due_date: string;
+    payment_term: string;
     notes: string;
     items: InvoiceItem[];
     subtotal: number;
@@ -57,16 +59,34 @@ interface Props {
     customers: Contact[];
     products: Product[];
     ncf?: string | null;
+    document_subtype_id?: number | null;
 }
 
-export default function CreateInvoice({ documentSubtypes, customers, products, ncf }: Props) {
+export default function CreateInvoice({ documentSubtypes, customers, products, ncf, document_subtype_id }: Props) {
     const [itemId, setItemId] = useState(1);
+    const [showContactModal, setShowContactModal] = useState(false);
+    const [contactsList, setContactsList] = useState<Contact[]>(customers);
+    const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+
+    // Helper function to calculate due date based on payment term
+    const calculateDueDate = (issueDate: string, paymentTerm: string): string => {
+        if (!issueDate || paymentTerm === 'manual') return '';
+        
+        const date = new Date(issueDate);
+        const daysToAdd = parseInt(paymentTerm.replace('days', ''));
+        
+        if (isNaN(daysToAdd)) return '';
+        
+        date.setDate(date.getDate() + daysToAdd);
+        return date.toISOString().split('T')[0];
+    };
 
     const { data, setData, post, processing, errors } = useForm<FormData>({
-        document_subtype_id: null,
+        document_subtype_id: document_subtype_id || null,
         contact_id: null,
         issue_date: new Date().toISOString().split('T')[0],
         due_date: '',
+        payment_term: 'manual',
         notes: '',
         items: [
             {
@@ -95,6 +115,33 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
             only: ['ncf'],
             data: { document_subtype_id: subtypeId },
         });
+    };
+
+    // Handle payment term change and auto-calculate due date
+    const handlePaymentTermChange = (value: string) => {
+        setData((prev) => ({
+            ...prev,
+            payment_term: value,
+            due_date: calculateDueDate(prev.issue_date, value),
+        }));
+    };
+
+    // Handle manual due date change and set payment term to manual
+    const handleDueDateChange = (value: string) => {
+        setData((prev) => ({
+            ...prev,
+            due_date: value,
+            payment_term: 'manual',
+        }));
+    };
+
+    // Handle issue date change and recalculate due date if not manual
+    const handleIssueDateChange = (value: string) => {
+        setData((prev) => ({
+            ...prev,
+            issue_date: value,
+            due_date: prev.payment_term === 'manual' ? prev.due_date : calculateDueDate(value, prev.payment_term),
+        }));
     };
 
     // Add new invoice item
@@ -176,7 +223,6 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
         }
     };
 
-    // Calculate totals
     const calculateTotals = (items: InvoiceItem[]) => {
         const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
         const taxAmount = items.reduce((sum, item) => sum + item.tax_amount, 0);
@@ -199,186 +245,255 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
         });
     };
 
+    const handleContactCreated = (newContact: Contact) => {
+        // Add the new contact to the list
+        setContactsList(prev => [...prev, newContact]);
+        // Auto-select the new contact
+        setData('contact_id', newContact.id);
+        setSelectedContact(newContact);
+    };
+
+    const handleContactSelect = (contactId: string) => {
+        const contact = contactsList.find(c => c.id === parseInt(contactId));
+        setData('contact_id', parseInt(contactId));
+        setSelectedContact(contact || null);
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Nueva factura" />
 
             <div className="min-h-screen bg-gray-50/30">
                 <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                    {/* Enhanced Header */}
-                    <div className="mb-8">
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-1">
-                                <h1 className="text-3xl font-bold tracking-tight text-gray-900">Nueva factura</h1>
-                                <p className="text-base text-gray-600">Crea una nueva factura para tu cliente de forma rápida y sencilla.</p>
-                            </div>
-                            <div className="hidden sm:block">
-                                <div className="flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-2 text-sm text-blue-700">
-                                    <Receipt className="h-4 w-4" />
-                                    Borrador
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="space-y-8">
-                        {/* Invoice Header - Enhanced */}
+                    {/* Enhanced Header - Invoice Style */}
+                    <div className="mb-6">
                         <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
-                            <CardHeader className="bg-gray-50/50 px-6 py-5">
-                                <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-                                        <FileText className="h-4 w-4" />
-                                    </div>
-                                    Información de la factura
-                                </CardTitle>
-                                <CardDescription className="mt-1 text-sm text-gray-600">
-                                    Configure los datos principales de la factura.
-                                </CardDescription>
-                            </CardHeader>
                             <CardContent className="px-6 py-6">
-                                <div className="space-y-8">
-                                    {/* NCF and Numeración Row - Enhanced */}
-                                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                                        <div className="space-y-3">
-                                            <Label htmlFor="document_subtype_id" className="text-sm font-medium text-gray-900">
-                                                <div className="flex items-center gap-2">
-                                                    <Hash className="h-4 w-4 text-gray-500" />
-                                                    Numeración
-                                                    <span className="text-red-500">*</span>
-                                                </div>
+                                <div className="flex items-start justify-between">
+                                    {/* Company Info */}
+                                    <div className="space-y-1">
+                                        <h1 className="text-2xl font-bold text-gray-900">Centro Óptico Visión Integral</h1>
+                                        <p className="text-sm text-gray-600">RNC o Cédula: 130382573</p>
+                                        <p className="text-sm text-gray-600">info@covi.com.do</p>
+                                    </div>
+                                    
+                                    {/* Invoice Details */}
+                                    <div className="text-right space-y-1">
+                                        <h2 className="text-xl font-bold text-gray-900">Factura No. 1</h2>
+                                        <div className="flex items-center gap-2 justify-end">
+                                            <span className="text-sm font-medium text-gray-600">NCF</span>
+                                            <span className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
+                                                {ncf || 'N/A'}
+                                            </span>
+                                            <button type="button" className="text-gray-400 hover:text-gray-600">
+                                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        {/* Document Subtype Selection */}
+                                        <div className="space-y-3 flex flex-col justify-end">
+                                            <Label className="text-sm font-medium text-gray-900 gap-1">
+                                                Tipo de documento
+                                                <span className="text-red-500">*</span>
                                             </Label>
                                             <Select
                                                 value={data.document_subtype_id?.toString() || ''}
                                                 onValueChange={handleDocumentSubtypeChange}
                                             >
-                                                <SelectTrigger className={`h-11 ${errors.document_subtype_id ? 'border-red-300 ring-red-500/20' : 'border-gray-200 focus:border-blue-500 focus:ring-blue-500/20'}`}>
-                                                    <SelectValue placeholder="Seleccionar tipo de numeración" />
+                                                <SelectTrigger className={`h-8 text-xs ${errors.document_subtype_id ? 'border-red-300' : 'border-gray-300'}`}>
+                                                    <SelectValue placeholder="Seleccionar tipo" />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {documentSubtypes.map((subtype) => (
                                                         <SelectItem key={subtype.id} value={subtype.id.toString()}>
-                                                            <div className="flex items-center justify-between w-full">
-                                                                <span>{subtype.name}</span>
-                                                                <span className="ml-2 text-xs text-gray-500">({subtype.prefix})</span>
-                                                            </div>
+                                                            {subtype.name} ({subtype.prefix})
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>
                                             {errors.document_subtype_id && (
-                                                <p className="text-sm text-red-600 flex items-center gap-1">
-                                                    <span className="text-red-500">•</span>
-                                                    {errors.document_subtype_id}
-                                                </p>
+                                                <p className="text-sm text-red-600">{errors.document_subtype_id}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-8">
+                        {/* Customer and Document Details - Cleaner Layout */}
+                        <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
+                            <CardContent className="px-6 py-6">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    {/* Left Column - Customer Details */}
+                                    <div className="space-y-6">
+                                        <div className="space-y-3">
+                                            <Label className="text-sm font-medium text-gray-900 flex items-center gap-1">
+                                                Contacto
+                                                <span className="text-red-500">*</span>
+                                            </Label>
+                                            <div className="flex gap-2">
+                                                <Select
+                                                    value={data.contact_id?.toString() || ''}
+                                                    onValueChange={handleContactSelect}
+                                                >
+                                                    <SelectTrigger className={`h-10 flex-1 ${errors.contact_id ? 'border-red-300 ring-red-500/20' : 'border-gray-300'}`}>
+                                                        <SelectValue placeholder="Eduardo Luis de la Cruz" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {contactsList.map((customer) => (
+                                                            <SelectItem key={customer.id} value={customer.id.toString()}>
+                                                                {customer.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <Button 
+                                                    type="button" 
+                                                    variant="outline" 
+                                                    size="sm"
+                                                    onClick={() => setShowContactModal(true)}
+                                                    className="h-10 px-3 border-gray-300 text-blue-600 hover:bg-blue-50"
+                                                >
+                                                    <Plus className="h-4 w-4 mr-1" />
+                                                    Nuevo contacto
+                                                </Button>
+                                            </div>
+                                            {errors.contact_id && (
+                                                <p className="text-sm text-red-600">{errors.contact_id}</p>
                                             )}
                                         </div>
 
                                         <div className="space-y-3">
                                             <Label className="text-sm font-medium text-gray-900">
-                                                <div className="flex items-center gap-2">
-                                                    <Receipt className="h-4 w-4 text-gray-500" />
-                                                    NCF
-                                                </div>
+                                                RNC o Cédula
                                             </Label>
                                             <div className="relative">
                                                 <Input
-                                                    value={ncf || 'Seleccionar numeración primero'}
+                                                    value={selectedContact?.identification_number || ''}
+                                                    placeholder="RNC o número de cédula"
+                                                    className="h-10 border-gray-300"
+                                                    readOnly
                                                     disabled
-                                                    className={`h-11 ${ncf 
-                                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 font-medium' 
-                                                        : 'bg-gray-50 text-gray-400 border-gray-200'
-                                                    }`}
                                                 />
-                                                {ncf && (
-                                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                                                        <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
-                                                    </div>
-                                                )}
+                                                <button
+                                                    type="button"
+                                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                >
+                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                </button>
                                             </div>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <Label className="text-sm font-medium text-gray-900">
+                                                Teléfono
+                                            </Label>
+                                            <Input
+                                                value={selectedContact?.phone_primary || ''}
+                                                placeholder="Número de teléfono"
+                                                className="h-10 border-gray-300"
+                                                readOnly
+                                                disabled
+                                            />
                                         </div>
                                     </div>
 
-                                    {/* Customer and Dates - Enhanced */}
-                                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                                    {/* Right Column - Invoice Details */}
+                                    <div className="space-y-6">
                                         <div className="space-y-3">
-                                            <Label htmlFor="contact_id" className="text-sm font-medium text-gray-900">
-                                                <div className="flex items-center gap-2">
-                                                    <User className="h-4 w-4 text-gray-500" />
-                                                    Cliente
-                                                    <span className="text-red-500">*</span>
-                                                </div>
-                                            </Label>
-                                            <Select
-                                                value={data.contact_id?.toString() || ''}
-                                                onValueChange={(value) => setData('contact_id', parseInt(value))}
-                                            >
-                                                <SelectTrigger className={`h-11 ${errors.contact_id ? 'border-red-300 ring-red-500/20' : 'border-gray-200 focus:border-blue-500 focus:ring-blue-500/20'}`}>
-                                                    <SelectValue placeholder="Seleccionar cliente" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {customers.map((customer) => (
-                                                        <SelectItem key={customer.id} value={customer.id.toString()}>
-                                                            {customer.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            {errors.contact_id && (
-                                                <p className="text-sm text-red-600 flex items-center gap-1">
-                                                    <span className="text-red-500">•</span>
-                                                    {errors.contact_id}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <Label htmlFor="issue_date" className="text-sm font-medium text-gray-900">
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar className="h-4 w-4 text-gray-500" />
-                                                    Fecha de emisión
-                                                    <span className="text-red-500">*</span>
-                                                </div>
+                                            <Label className="text-sm font-medium text-gray-900 flex items-center gap-1">
+                                                Fecha
+                                                <span className="text-red-500">*</span>
                                             </Label>
                                             <div className="relative">
                                                 <Input
-                                                    id="issue_date"
                                                     type="date"
                                                     value={data.issue_date}
-                                                    onChange={(e) => setData('issue_date', e.target.value)}
-                                                    className={`h-11 pl-4 ${errors.issue_date ? 'border-red-300 ring-red-500/20' : 'border-gray-200 focus:border-blue-500 focus:ring-blue-500/20'}`}
+                                                    onChange={(e) => handleIssueDateChange(e.target.value)}
+                                                    className={`h-10 border-gray-300 ${errors.issue_date ? 'border-red-300' : ''}`}
                                                 />
+                                                <button
+                                                    type="button"
+                                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                >
+                                                    ×
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                >
+                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                </button>
                                             </div>
                                             {errors.issue_date && (
-                                                <p className="text-sm text-red-600 flex items-center gap-1">
-                                                    <span className="text-red-500">•</span>
-                                                    {errors.issue_date}
-                                                </p>
+                                                <p className="text-sm text-red-600">{errors.issue_date}</p>
                                             )}
                                         </div>
 
                                         <div className="space-y-3">
-                                            <Label htmlFor="due_date" className="text-sm font-medium text-gray-900">
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar className="h-4 w-4 text-gray-500" />
-                                                    Fecha de vencimiento
-                                                </div>
+                                            <Label className="text-sm font-medium text-gray-900">
+                                                Plazo de pago
+                                            </Label>
+                                            <Select 
+                                                value={data.payment_term}
+                                                onValueChange={handlePaymentTermChange}
+                                            >
+                                                <SelectTrigger className="h-10 border-gray-300">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="manual">Vencimiento manual</SelectItem>
+                                                    <SelectItem value="7days">7 días</SelectItem>
+                                                    <SelectItem value="15days">15 días</SelectItem>
+                                                    <SelectItem value="30days">30 días</SelectItem>
+                                                    <SelectItem value="45days">45 días</SelectItem>
+                                                    <SelectItem value="60days">60 días</SelectItem>
+                                                    <SelectItem value="90days">90 días</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <Label className="text-sm font-medium text-gray-900 flex items-center gap-1">
+                                                Vencimiento
+                                                <span className="text-red-500">*</span>
                                             </Label>
                                             <div className="relative">
                                                 <Input
-                                                    id="due_date"
                                                     type="date"
                                                     value={data.due_date}
-                                                    onChange={(e) => setData('due_date', e.target.value)}
-                                                    className={`h-11 pl-4 ${errors.due_date ? 'border-red-300 ring-red-500/20' : 'border-gray-200 focus:border-blue-500 focus:ring-blue-500/20'}`}
+                                                    onChange={(e) => handleDueDateChange(e.target.value)}
+                                                    className={`h-10 border-gray-300 ${errors.due_date ? 'border-red-300' : ''}`}
                                                 />
+                                                <button
+                                                    type="button"
+                                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                >
+                                                    ×
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                >
+                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                </button>
                                             </div>
                                             {errors.due_date && (
-                                                <p className="text-sm text-red-600 flex items-center gap-1">
-                                                    <span className="text-red-500">•</span>
-                                                    {errors.due_date}
-                                                </p>
+                                                <p className="text-sm text-red-600">{errors.due_date}</p>
                                             )}
                                         </div>
+
+                                    
                                     </div>
                                 </div>
                             </CardContent>
@@ -722,6 +837,16 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                     </form>
                 </div>
             </div>
+
+            {/* Quick Contact Modal */}
+            <QuickContactModal
+                open={showContactModal}
+                onOpenChange={setShowContactModal}
+                onSuccess={handleContactCreated}
+                onAdvancedForm={() => {
+                    router.visit('/contacts/create');
+                }}
+            />
         </AppLayout>
     );
 }

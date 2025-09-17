@@ -17,10 +17,10 @@ final readonly class CreateInvoiceAction
         return DB::transaction(function () use ($data) {
             // Get the document subtype to generate NCF
             $documentSubtype = DocumentSubtype::findOrFail($data['document_subtype_id']);
-            
+
             // Generate NCF and increment sequence
             $ncf = $documentSubtype->getNextNcfNumber();
-            
+
             // Create the main document
             $document = Document::create([
                 'type' => 'invoice',
@@ -32,7 +32,7 @@ final readonly class CreateInvoiceAction
                 'total_amount' => $data['total'],
                 'notes' => $data['notes'] ?? null,
             ]);
-            
+
             // Create document items and update stock
             foreach ($data['items'] as $itemData) {
                 DocumentItem::create([
@@ -46,7 +46,7 @@ final readonly class CreateInvoiceAction
                     'tax_rate_snapshot' => $itemData['tax_rate'],
                     'total' => $itemData['total'],
                 ]);
-                
+
                 // Update product stock
                 if ($itemData['product_id']) {
                     $product = Product::findOrFail($itemData['product_id']);
@@ -55,7 +55,7 @@ final readonly class CreateInvoiceAction
                     }
                 }
             }
-            
+
             return $document->load(['contact', 'documentSubtype', 'items.product']);
         });
     }
@@ -66,6 +66,7 @@ final readonly class CreateInvoiceAction
     public function generateNCF(int $documentSubtypeId): string
     {
         $documentSubtype = DocumentSubtype::findOrFail($documentSubtypeId);
+
         return $documentSubtype->generateNCF();
     }
 }

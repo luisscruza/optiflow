@@ -28,6 +28,16 @@ export interface SharedData {
     auth: Auth;
     workspace?: WorkspaceData;
     sidebarOpen: boolean;
+    companyDetails: {
+        company_name: string;
+        address?: string | null;
+        phone?: string | null;
+        email?: string | null;
+        tax_id?: string | null;
+        currency?: string | null;
+        logo?: string | null;
+    };
+    newlyCreatedContact?: Contact | null;
     [key: string]: unknown;
 }
 

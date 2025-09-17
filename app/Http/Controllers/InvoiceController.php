@@ -67,19 +67,16 @@ final class InvoiceController extends Controller
 
         $products = Product::orderBy('name')->get();
 
-        $ncf = null;
-        if ($request->has('document_subtype_id')) {
-            $documentSubtype = DocumentSubtype::find($request->get('document_subtype_id'));
-            if ($documentSubtype) {
-                $ncf = $documentSubtype->generateNCF();
-            }
-        }
+        $documentSubtype = $request->filled('document_subtype_id')
+            ? DocumentSubtype::find($request->get('document_subtype_id'))
+            : DocumentSubtype::active()->where('is_default', true)->first();
 
         return Inertia::render('invoices/create', [
             'documentSubtypes' => $documentSubtypes,
             'customers' => $customers,
             'products' => $products,
-            'ncf' => Inertia::optional(fn () => $ncf),
+            'ncf' => $documentSubtype?->generateNCF(),
+            'document_subtype_id' => $documentSubtype?->id,
         ]);
     }
 

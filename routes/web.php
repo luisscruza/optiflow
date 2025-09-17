@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\CompanyDetailsController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DocumentSubtypeController;
@@ -38,6 +39,10 @@ Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(funct
 
         // Configuration page
         Route::get('configuration', [ConfigurationController::class, 'index'])->name('configuration.index');
+
+        // Company Details - Configuration
+        Route::get('company-details', [CompanyDetailsController::class, 'edit'])->name('company-details.edit');
+        Route::patch('company-details', [CompanyDetailsController::class, 'update'])->name('company-details.update');
 
         Route::resource('products', ProductController::class);
 

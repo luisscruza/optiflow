@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Calculator, FileText, Receipt, Settings } from 'lucide-react';
+import { Building2, Calculator, FileText, Receipt, Settings } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
@@ -13,6 +13,20 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const configurationSections = [
+    {
+        title: 'Empresa',
+        description: 'Configura la información básica de tu empresa.',
+        icon: Building2,
+        color: 'text-blue-600',
+        bgColor: 'bg-blue-50',
+        items: [
+            {
+                title: 'Datos de la Empresa',
+                description: 'Nombre, dirección, contacto',
+                href: '/company-details',
+            },
+        ],
+    },
     {
         title: 'Facturación',
         description: 'Configura la información que se mostrará en tus facturas.',

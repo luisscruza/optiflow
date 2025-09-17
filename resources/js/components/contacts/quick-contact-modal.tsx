@@ -13,14 +13,7 @@ interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onAdvancedForm?: () => void;
-    contact_types?: Array<{ value: ContactType; label: string }>;
-    identification_types?: Array<{ value: IdentificationType; label: string }>;
-}
-
-interface Props {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    onAdvancedForm?: () => void;
+    onSuccess?: (contact: any) => void;
     contact_types?: Array<{ value: ContactType; label: string }>;
     identification_types?: Array<{ value: IdentificationType; label: string }>;
 }
@@ -29,6 +22,7 @@ export default function QuickContactModal({
     open,
     onOpenChange,
     onAdvancedForm,
+    onSuccess,
     contact_types = [
         { value: 'customer', label: 'Cliente' },
         { value: 'supplier', label: 'Proveedor' },
@@ -57,7 +51,19 @@ export default function QuickContactModal({
                     <DialogTitle className="flex items-center justify-between">Nuevo contacto</DialogTitle>
                 </DialogHeader>
 
-                <Form action="/contacts" method="post" resetOnSuccess onSuccess={() => onOpenChange(false)} className="space-y-6">
+                <Form 
+                    action="/contacts" 
+                    method="post" 
+                    resetOnSuccess 
+                    onSuccess={(page: any) => {
+                        onOpenChange(false);
+                        if (onSuccess) {
+                            const contact = page.props.newlyCreatedContact;
+                            onSuccess(contact);
+                        }
+                    }} 
+                    className="space-y-6"
+                >
                     {({ errors, processing, wasSuccessful }) => (
                         <>
                             <input type="hidden" name="status" value="active" />
