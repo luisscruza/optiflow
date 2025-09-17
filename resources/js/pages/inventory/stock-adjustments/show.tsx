@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type PaginatedStockMovements, type Product, type ProductStock, type Workspace } from '@/types';
+import { StockMovement, type BreadcrumbItem, type PaginatedStockMovements, type Product, type ProductStock, type Workspace } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -85,7 +85,7 @@ export default function StockAdjustmentsShow({ product, currentStock, stockHisto
         return { label: 'En inventario', variant: 'default' as const };
     };
 
-    const renderWorkspaceTransfer = (movement: any) => {
+    const renderWorkspaceTransfer = (movement: StockMovement) => {
         const hasFromWorkspace = movement.from_workspace;
         const hasToWorkspace = movement.to_workspace;
 

@@ -71,8 +71,8 @@ final class WorkspaceController extends Controller
      */
     public function edit(#[CurrentUser] User $user, Workspace $workspace): Response
     {
-        // Check if user is owner or admin
         $userWorkspace = $workspace->users()->where('user_id', $user->id)->first();
+
         $userRole = $userWorkspace?->pivot?->role;
 
         if (! in_array($userRole, ['owner', 'admin'], true)) {

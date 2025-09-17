@@ -36,7 +36,6 @@ export default function StockTransfersShow({ transfer, workspace }: Props) {
     };
 
     const isIncoming = transfer.to_workspace_id === workspace.id;
-    const otherWorkspace = isIncoming ? transfer.from_workspace : transfer.to_workspace;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

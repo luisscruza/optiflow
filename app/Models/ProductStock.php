@@ -40,6 +40,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock whereWorkspaceId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductStock withoutWorkspaceScope()
  *
+ * @property int|null $supplier_id
+ * @property-read Contact|null $supplier
+ *
+ * @method static Builder<static>|ProductStock whereSupplierId($value)
+ *
  * @mixin \Eloquent
  */
 final class ProductStock extends Model

@@ -54,6 +54,32 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereWorkspaceId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact withoutWorkspaceScope()
  *
+ * @property string|null $phone_primary
+ * @property string|null $phone_secondary
+ * @property string|null $mobile
+ * @property string|null $fax
+ * @property string|null $identification_type
+ * @property string|null $identification_number
+ * @property string $status
+ * @property string|null $observations
+ * @property numeric $credit_limit
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Address> $addresses
+ * @property-read int|null $addresses_count
+ * @property-read array|null $identification_object
+ * @property-read Address|null $primaryAddress
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ProductStock> $suppliedStocks
+ * @property-read int|null $supplied_stocks_count
+ *
+ * @method static Builder<static>|Contact whereCreditLimit($value)
+ * @method static Builder<static>|Contact whereFax($value)
+ * @method static Builder<static>|Contact whereIdentificationNumber($value)
+ * @method static Builder<static>|Contact whereIdentificationType($value)
+ * @method static Builder<static>|Contact whereMobile($value)
+ * @method static Builder<static>|Contact whereObservations($value)
+ * @method static Builder<static>|Contact wherePhonePrimary($value)
+ * @method static Builder<static>|Contact wherePhoneSecondary($value)
+ * @method static Builder<static>|Contact whereStatus($value)
+ *
  * @mixin \Eloquent
  */
 final class Contact extends Model

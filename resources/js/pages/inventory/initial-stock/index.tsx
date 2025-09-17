@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type PaginatedProducts, type Workspace } from '@/types';
+import { Product, type BreadcrumbItem, type PaginatedProducts, type Workspace } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -41,7 +41,7 @@ export default function InitialStockIndex({ productsWithStock, workspace }: Prop
         });
     };
 
-    const getStockStatus = (product: any) => {
+    const getStockStatus = (product: Product) => {
         const stock = product.stocks?.[0];
         if (!stock) {
             return { label: 'No Stock Set', variant: 'secondary' as const };

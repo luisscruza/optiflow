@@ -10,6 +10,8 @@ use App\Actions\UpdateTaxAction;
 use App\Http\Requests\CreateTaxRequest;
 use App\Http\Requests\UpdateTaxRequest;
 use App\Models\Tax;
+use App\Models\User;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -52,9 +54,9 @@ final class TaxController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(CreateTaxRequest $request, CreateTaxAction $action): RedirectResponse
+    public function store(#[CurrentUser] User $user, CreateTaxRequest $request, CreateTaxAction $action): RedirectResponse
     {
-        $action->handle(Auth::user(), $request->validated());
+        $action->handle($user, $request->validated());
 
         return redirect()
             ->route('taxes.index')
@@ -86,9 +88,9 @@ final class TaxController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateTaxRequest $request, Tax $tax, UpdateTaxAction $action): RedirectResponse
+    public function update(#[CurrentUser] User $user, UpdateTaxRequest $request, Tax $tax, UpdateTaxAction $action): RedirectResponse
     {
-        $action->handle(Auth::user(), $tax, $request->validated());
+        $action->handle($user, $tax, $request->validated());
 
         return redirect()
             ->route('taxes.index')

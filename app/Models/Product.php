@@ -52,6 +52,9 @@ use Illuminate\Support\Facades\Auth;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereTrackStock($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereUpdatedAt($value)
  *
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ProductStock> $stocksInCurrentWorkspace
+ * @property-read int|null $stocks_in_current_workspace_count
+ *
  * @mixin \Eloquent
  */
 final class Product extends Model

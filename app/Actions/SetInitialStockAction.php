@@ -35,7 +35,6 @@ final class SetInitialStockAction
         }
 
         return DB::transaction(function () use ($user, $product, $data): ProductStock {
-            // Check if stock record already exists
             $existingStock = ProductStock::where([
                 'product_id' => $product->id,
                 'workspace_id' => $user->current_workspace_id,
@@ -47,7 +46,6 @@ final class SetInitialStockAction
                 );
             }
 
-            // Create stock record
             $stock = ProductStock::create([
                 'product_id' => $product->id,
                 'workspace_id' => $user->current_workspace_id,
@@ -55,7 +53,6 @@ final class SetInitialStockAction
                 'minimum_quantity' => $data['minimum_quantity'] ?? 0,
             ]);
 
-            // Only create movement if quantity > 0
             if ($data['quantity'] > 0) {
                 StockMovement::create([
                     'workspace_id' => $user->current_workspace_id,
