@@ -1,4 +1,4 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { Calendar, FileText, Plus, Save, ShoppingCart, User, Receipt, Hash, Trash2, AlertTriangle, Building2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Contact, type Product, type Workspace } from '@/types';
+import { useCurrency } from '@/utils/currency';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -71,6 +72,9 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
     const [showContactModal, setShowContactModal] = useState(false);
     const [contactsList, setContactsList] = useState<Contact[]>(customers);
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+    
+    // Get currency formatting utilities
+    const { format: formatCurrency, symbol: currencySymbol } = useCurrency();
 
     // Helper function to calculate due date based on payment term
     const calculateDueDate = (issueDate: string, paymentTerm: string): string => {
@@ -712,7 +716,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                                             <div className="flex items-center justify-between w-full pr-4">
                                                                                 <div className="flex flex-col">
                                                                                     <span className="font-medium">{product.name}</span>
-                                                                                    <span className="text-xs text-gray-500">${product.price}</span>
+                                                                                    <span className="text-xs text-gray-500">{formatCurrency(product.price)}</span>
                                                                                 </div>
                                                                                 {product.track_stock && (
                                                                                     <div className={`text-xs px-2 py-1 rounded-full border whitespace-nowrap ${getStockStatusColor(product.stock_status || 'not_tracked')}`}>
@@ -826,7 +830,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                             <div>
                                                                 <Label className="text-xs font-medium text-gray-700">Total</Label>
                                                                 <Input
-                                                                    value={`$${item.total.toFixed(2)}`}
+                                                                    value={formatCurrency(item.total)}
                                                                     disabled
                                                                     className="h-10 mt-1 bg-gray-100 font-semibold text-gray-900"
                                                                 />
@@ -851,7 +855,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                                     <SelectItem key={product.id} value={product.id.toString()}>
                                                                         <div className="flex flex-col">
                                                                             <span className="font-medium">{product.name}</span>
-                                                                            <span className="text-xs text-gray-500">${product.price}</span>
+                                                                            <span className="text-xs text-gray-500">{formatCurrency(product.price)}</span>
                                                                         </div>
                                                                     </SelectItem>
                                                                 ))}
@@ -933,7 +937,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                     {/* Total */}
                                                     <div className="col-span-2">
                                                         <Input
-                                                            value={`$${item.total.toFixed(2)}`}
+                                                            value={formatCurrency(item.total)}
                                                             disabled
                                                             className="h-9 text-right bg-gray-50 font-semibold text-gray-900 border-gray-200"
                                                         />
@@ -964,15 +968,15 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                             <div className="w-full max-w-sm space-y-3">
                                                 <div className="flex justify-between items-center text-sm">
                                                     <span className="text-gray-600">Subtotal:</span>
-                                                    <span className="font-medium text-gray-900">${data.subtotal.toFixed(2)}</span>
+                                                    <span className="font-medium text-gray-900">{formatCurrency(data.subtotal)}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center text-sm">
                                                     <span className="text-gray-600">Impuestos:</span>
-                                                    <span className="font-medium text-gray-900">${data.tax_amount.toFixed(2)}</span>
+                                                    <span className="font-medium text-gray-900">{formatCurrency(data.tax_amount)}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center text-lg font-bold border-t border-gray-200 pt-3">
                                                     <span className="text-gray-900">Total:</span>
-                                                    <span className="text-blue-600">${data.total.toFixed(2)}</span>
+                                                    <span className="text-blue-600">{formatCurrency(data.total)}</span>
                                                 </div>
                                             </div>
                                         </div>

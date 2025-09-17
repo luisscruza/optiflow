@@ -22,6 +22,17 @@ export interface NavItem {
     isActive?: boolean;
 }
 
+export interface Currency {
+    id: number;
+    name: string;
+    code: string;
+    symbol: string;
+    is_default: boolean;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface SharedData {
     name: string;
     quote: { message: string; author: string };
@@ -37,6 +48,7 @@ export interface SharedData {
         currency?: string | null;
         logo?: string | null;
     };
+    defaultCurrency?: Currency | null;
     newlyCreatedContact?: Contact | null;
     [key: string]: unknown;
 }

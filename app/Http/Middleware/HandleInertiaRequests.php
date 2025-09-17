@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Models\CompanyDetail;
+use App\Models\Currency;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -43,7 +45,8 @@ final class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
-            'companyDetails' => fn () => \App\Models\CompanyDetail::getAll(),
+            'companyDetails' => fn () => CompanyDetail::getAll(),
+            'defaultCurrency' => fn () => Currency::getDefault(),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'newlyCreatedContact' => fn () => $request->session()->get('newly_created_contact') ? $request->session()->get('newly_created_contact') : null,
         ];

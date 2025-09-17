@@ -10,6 +10,7 @@ import { Plus, TrendingDown, TrendingUp, Coins, ArrowUpDown } from 'lucide-react
 import { useState } from 'react';
 import CreateCurrencyModal from '@/components/currencies/CreateCurrencyModal';
 import CreateRateModal from '@/components/currencies/CreateRateModal';
+import { useCurrency } from '@/utils/currency';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -54,6 +55,9 @@ export default function CurrenciesIndex({ currencies, historicalRates, defaultCu
     const [defaultAmount, setDefaultAmount] = useState<string>('');
     const [convertedAmount, setConvertedAmount] = useState<string>('');
     const [conversionDirection, setConversionDirection] = useState<'to-foreign' | 'to-default'>('to-foreign');
+
+    // Get currency formatting utilities
+    const { format: formatCurrency } = useCurrency();
 
     // Get recent rates for the selected currency (last 7 days)
     const getRecentRates = () => {
@@ -119,13 +123,6 @@ export default function CurrenciesIndex({ currencies, historicalRates, defaultCu
         setDefaultAmount('');
         setConvertedAmount('');
         setConversionDirection('to-foreign');
-    };
-
-    const formatCurrency = (amount: number, currency: Currency) => {
-        return new Intl.NumberFormat('es-DO', {
-            style: 'currency',
-            currency: currency.code,
-        }).format(amount);
     };
 
     const formatDate = (dateString: string) => {
@@ -292,6 +289,14 @@ export default function CurrenciesIndex({ currencies, historicalRates, defaultCu
                                                 </>
                                             )}
                                         </p>
+                                        <div className="mt-2 text-center">
+                                            <span className="text-sm font-medium">
+                                                {conversionDirection === 'to-foreign' 
+                                                    ? `${defaultCurrency.symbol}${defaultAmount} = ${selectedCurrency.symbol}${convertedAmount}`
+                                                    : `${selectedCurrency.symbol}${defaultAmount} = ${defaultCurrency.symbol}${convertedAmount}`
+                                                }
+                                            </span>
+                                        </div>
                                     </div>
                                 )}
                             </>
@@ -354,7 +359,7 @@ export default function CurrenciesIndex({ currencies, historicalRates, defaultCu
                                                         {rate.rate.toFixed(4)}
                                                     </td>
                                                     <td className="text-right py-2 text-muted-foreground">
-                                                        1 {defaultCurrency.code} = {rate.rate.toFixed(4)} {selectedCurrency.code}
+                                                        {defaultCurrency.symbol}1.00 = {selectedCurrency.symbol}{rate.rate.toFixed(2)}
                                                     </td>
                                                 </tr>
                                             ))
