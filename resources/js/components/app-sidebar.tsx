@@ -1,4 +1,4 @@
-import { index } from '@/actions/App/Http/Controllers/WorkspaceController';
+
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -9,6 +9,10 @@ import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BookOpen, Building2, Folder, LayoutGrid, Package, RotateCcw } from 'lucide-react';
 import AppLogo from './app-logo';
+import products from '@/routes/products';
+import workspaces from '@/routes/workspaces';
+import contacts from '@/routes/contacts';
+import inventory from '@/routes/inventory';
 
 const mainNavItems: NavItem[] = [
     {
@@ -18,17 +22,22 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Productos',
-        href: '/products',
+        href: products.index(),
         icon: Package,
     },
     {
         title: 'Inventario',
-        href: '/inventory',
+        href: inventory.index(),
         icon: RotateCcw,
     },
     {
         title: 'Sucursales',
-        href: index(),
+        href: workspaces.index(),
+        icon: Building2,
+    },
+       {
+        title: 'Contactos',
+        href: contacts.index(),
         icon: Building2,
     },
 ];
