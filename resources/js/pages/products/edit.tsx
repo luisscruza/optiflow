@@ -44,27 +44,29 @@ export default function ProductsEdit({ product, taxes }: Props) {
         put(update(product.id).url);
     };
 
-    return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Edit ${product.name}`} />
-
-            <div className="max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-                <div className="mb-8 flex items-center justify-between">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Product</h1>
-                        <p className="mt-2 text-gray-600 dark:text-gray-400">
-                            Update the details for <strong>{product.name}</strong>
-                        </p>
-                    </div>
-                    <div className="flex gap-2">
-                        <Button variant="outline" asChild>
-                            <Link href={show(product.id).url}>
-                                <ArrowLeft className="mr-2 h-4 w-4" />
-                                Back to Product
-                            </Link>
-                        </Button>
-                    </div>
-                </div>
+  return (
+    <AppLayout breadcrumbs={breadcrumbs}>
+      <Head title={`Edit ${product.name}`} />
+      
+      <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Edit Product
+            </h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              Update the details for <strong>{product.name}</strong>
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" asChild>
+              <Link href={show(product.id).url}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Product
+              </Link>
+            </Button>
+          </div>
+        </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <Card>

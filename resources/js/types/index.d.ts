@@ -231,3 +231,75 @@ export interface ProductFilters {
     track_stock?: boolean;
     low_stock?: boolean;
 }
+
+export interface Address {
+    id: number;
+    contact_id: number;
+    type: string;
+    province?: string | null;
+    municipality?: string | null;
+    country?: string | null;
+    description?: string | null;
+    is_primary: boolean;
+    created_at: string;
+    updated_at: string;
+    full_address?: string | null;
+}
+
+export interface Contact {
+    id: number;
+    workspace_id: number;
+    name: string;
+    identification_type?: string | null;
+    identification_number?: string | null;
+    email?: string | null;
+    phone_primary?: string | null;
+    phone_secondary?: string | null;
+    mobile?: string | null;
+    fax?: string | null;
+    contact_type: 'customer' | 'supplier';
+    status: 'active' | 'inactive';
+    observations?: string | null;
+    credit_limit: number;
+    created_at: string;
+    updated_at: string;
+    addresses?: Address[];
+    primary_address?: Address | null;
+    identification_object?: {
+        type: string;
+        number: string;
+    } | null;
+    documents_count?: number;
+    supplied_stocks_count?: number;
+}
+
+export interface PaginatedContacts {
+    data: Contact[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from?: number;
+    to?: number;
+    links: {
+        first?: string;
+        last?: string;
+        prev?: string;
+        next?: string;
+    };
+}
+
+export interface ContactFilters {
+    search?: string;
+}
+
+export interface IdentificationTypeOption {
+    value: string;
+    label: string;
+}
+
+export type ContactType = 'customer' | 'supplier';
+export type IdentificationType = 'cedula' | 'pasaporte' | 'nit' | 'ruc' | 'otro';
+
+export type ContactType = 'customer' | 'supplier';
+export type IdentificationType = 'cedula' | 'nit' | 'passport' | 'rut' | 'other';

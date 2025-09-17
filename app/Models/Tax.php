@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -46,6 +49,10 @@ final class Tax extends Model
         'is_default',
     ];
 
+    protected $appends = [
+        'rate_percentage',
+    ];
+
     /**
      * Get the products that use this tax as default.
      *
@@ -67,27 +74,30 @@ final class Tax extends Model
     }
 
     /**
-     * Scope to get the default tax.
-     */
-    public function scopeDefault($query)
-    {
-        return $query->where('is_default', true);
-    }
-
-    /**
-     * Get the tax rate as a percentage string.
-     */
-    public function getRatePercentageAttribute(): string
-    {
-        return $this->rate.'%';
-    }
-
-    /**
      * Calculate tax amount for a given subtotal.
      */
     public function calculateTaxAmount(float $subtotal): float
     {
         return round(($subtotal * $this->rate) / 100, 2);
+    }
+
+    /**
+     * Scope to get the default tax.
+     */
+    #[Scope]
+    protected function default(Builder $query): void
+    {
+        $query->where('is_default', true);
+    }
+
+    /**
+     * Get the tax rate as a percentage string.
+     */
+    protected function ratePercentage(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => $this->rate.'%'
+        );
     }
 
     protected function casts(): array

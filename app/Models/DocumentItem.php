@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -154,24 +156,6 @@ final class DocumentItem extends Model
     }
 
     /**
-     * Scope to items for a specific product.
-     */
-    public function scopeForProduct($query, int|Product $product)
-    {
-        $productId = $product instanceof Product ? $product->id : $product;
-
-        return $query->where('product_id', $productId);
-    }
-
-    /**
-     * Scope to items with discount.
-     */
-    public function scopeWithDiscount($query)
-    {
-        return $query->where('discount', '>', 0);
-    }
-
-    /**
      * Check if this item has a discount.
      */
     public function hasDiscount(): bool
@@ -227,6 +211,26 @@ final class DocumentItem extends Model
                 $item->tax_rate_snapshot = $item->tax->rate;
             }
         });
+    }
+
+    /**
+     * Scope to items for a specific product.
+     */
+    #[Scope]
+    protected function forProduct(Builder $query, int|Product $product): void
+    {
+        $productId = $product instanceof Product ? $product->id : $product;
+
+        $query->where('product_id', $productId);
+    }
+
+    /**
+     * Scope to items with discount.
+     */
+    #[Scope]
+    protected function withDiscount(Builder $query): void
+    {
+        $query->where('discount', '>', 0);
     }
 
     protected function casts(): array

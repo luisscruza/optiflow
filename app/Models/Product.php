@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -167,27 +169,6 @@ final class Product extends Model
     }
 
     /**
-     * Scope to products that track stock.
-     */
-    public function scopeTracksStock($query)
-    {
-        return $query->where('track_stock', true);
-    }
-
-    /**
-     * Scope to products with low stock in a workspace.
-     */
-    public function scopeLowStock($query, int|Workspace $workspace)
-    {
-        $workspaceId = $workspace instanceof Workspace ? $workspace->id : $workspace;
-
-        return $query->whereHas('stocks', function ($stockQuery) use ($workspaceId) {
-            $stockQuery->where('workspace_id', $workspaceId)
-                ->whereColumn('quantity', '<=', 'minimum_quantity');
-        });
-    }
-
-    /**
      * Get the profit margin percentage.
      */
     public function getProfitMarginAttribute(): ?float
@@ -209,6 +190,29 @@ final class Product extends Model
         }
 
         return $this->price - $this->cost;
+    }
+
+    /**
+     * Scope to products that track stock.
+     */
+    #[Scope]
+    protected function tracksStock(Builder $query): void
+    {
+        $query->where('track_stock', true);
+    }
+
+    /**
+     * Scope to products with low stock in a workspace.
+     */
+    #[Scope]
+    protected function lowStock(Builder $query, int|Workspace $workspace): void
+    {
+        $workspaceId = $workspace instanceof Workspace ? $workspace->id : $workspace;
+
+        $query->whereHas('stocks', function ($stockQuery) use ($workspaceId) {
+            $stockQuery->where('workspace_id', $workspaceId)
+                ->whereColumn('quantity', '<=', 'minimum_quantity');
+        });
     }
 
     protected function casts(): array

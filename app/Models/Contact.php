@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ContactType;
 use App\Models\Concerns\BelongsToWorkspace;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -59,12 +64,42 @@ final class Contact extends Model
     protected $fillable = [
         'workspace_id',
         'name',
+        'identification_type',
+        'identification_number',
         'email',
-        'phone',
-        'address',
+        'phone_primary',
+        'phone_secondary',
+        'mobile',
+        'fax',
         'contact_type',
+        'status',
+        'observations',
+        'credit_limit',
         'metadata',
     ];
+
+    protected $appends = [
+        'identification_object',
+        'full_address',
+    ];
+
+    /**
+     * Get the addresses for this contact.
+     *
+     * @return HasMany<Address, $this>
+     */
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(Address::class);
+    }
+
+    /**
+     * Get the primary address for this contact.
+     */
+    public function primaryAddress(): HasOne
+    {
+        return $this->addresses()->one()->where('is_primary', true);
+    }
 
     /**
      * Get the documents for this contact.
@@ -97,27 +132,13 @@ final class Contact extends Model
     }
 
     /**
-     * Scope to filter by contact type.
+     * Get the product stocks supplied by this contact.
+     *
+     * @return HasMany<ProductStock, $this>
      */
-    public function scopeOfType($query, string $type)
+    public function suppliedStocks(): HasMany
     {
-        return $query->where('contact_type', $type);
-    }
-
-    /**
-     * Scope to get customers.
-     */
-    public function scopeCustomers($query)
-    {
-        return $query->whereIn('contact_type', ['customer', 'both']);
-    }
-
-    /**
-     * Scope to get suppliers.
-     */
-    public function scopeSuppliers($query)
-    {
-        return $query->whereIn('contact_type', ['supplier', 'both']);
+        return $this->hasMany(ProductStock::class, 'supplier_id');
     }
 
     /**
@@ -125,7 +146,7 @@ final class Contact extends Model
      */
     public function isCustomer(): bool
     {
-        return in_array($this->contact_type, ['customer', 'both']);
+        return $this->contact_type === ContactType::Customer->value;
     }
 
     /**
@@ -133,21 +154,74 @@ final class Contact extends Model
      */
     public function isSupplier(): bool
     {
-        return in_array($this->contact_type, ['supplier', 'both']);
+        return $this->contact_type === ContactType::Supplier->value;
+    }
+
+    /**
+     * Check if this contact is active.
+     */
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
+    }
+
+    /**
+     * Scope to filter by contact type.
+     */
+    #[Scope]
+    protected function ofType(Builder $query, string $type): void
+    {
+        $query->where('contact_type', $type);
+    }
+
+    /**
+     * Scope to get customers.
+     */
+    #[Scope]
+    protected function customers(Builder $query): void
+    {
+        $query->where('contact_type', ContactType::Customer->value);
+    }
+
+    /**
+     * Scope to get suppliers.
+     */
+    #[Scope]
+    protected function suppliers(Builder $query): void
+    {
+        $query->where('contact_type', ContactType::Supplier->value);
+    }
+
+    /**
+     * Get the identification object in Alegra format.
+     */
+    protected function identificationObject(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): ?array => $this->identification_type && $this->identification_number
+                ? [
+                    'type' => mb_strtoupper($this->identification_type),
+                    'number' => $this->identification_number,
+                ]
+                : null
+        );
     }
 
     /**
      * Get the full address as a single string.
      */
-    public function getFullAddressAttribute(): ?string
+    protected function fullAddress(): Attribute
     {
-        return $this->address;
+        return Attribute::make(
+            get: fn (): ?string => $this->primaryAddress?->full_address
+        );
     }
 
     protected function casts(): array
     {
         return [
             'metadata' => 'array',
+            'credit_limit' => 'decimal:2',
         ];
     }
 }

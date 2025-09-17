@@ -37,35 +37,35 @@ export default function TaxesShow({ tax }: Props) {
         });
     };
 
-    return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Impuesto: ${tax.name}`} />
+  return (
+    <AppLayout breadcrumbs={breadcrumbs}>
+      <Head title={`Impuesto: ${tax.name}`} />
+      
+      <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <div className="flex items-center space-x-3">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                {tax.name}
+              </h1>
+              {tax.is_default && (
+                <Star className="h-6 w-6 text-yellow-500 fill-yellow-500" />
+              )}
+            </div>
+            <p className="text-gray-600 dark:text-gray-400">
+              Detalles del impuesto y su configuración
+            </p>
+          </div>
 
-            <div className="max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-                <div className="mb-8 flex items-center justify-between">
-                    <div>
-                        <div className="flex items-center space-x-3">
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{tax.name}</h1>
-                            {tax.is_default && <Star className="h-6 w-6 fill-yellow-500 text-yellow-500" />}
-                        </div>
-                        <p className="text-gray-600 dark:text-gray-400">Detalles del impuesto y su configuración</p>
-                    </div>
-
-                    <div className="flex items-center space-x-4">
-                        <Button variant="outline" asChild>
-                            <Link href="/taxes">
-                                <ArrowLeft className="mr-2 h-4 w-4" />
-                                Volver
-                            </Link>
-                        </Button>
-                        <Button asChild>
-                            <Link href={`/taxes/${tax.id}/edit`}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Editar
-                            </Link>
-                        </Button>
-                    </div>
-                </div>
+          <div className="flex items-center space-x-4">
+            <Button asChild>
+              <Link href={`/taxes/${tax.id}/edit`}>
+                <Edit className="mr-2 h-4 w-4" />
+                Editar
+              </Link>
+            </Button>
+          </div>
+        </div>
 
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     {/* Main Information */}

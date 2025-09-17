@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -97,9 +99,10 @@ final class DocumentSubtype extends Model
     /**
      * Scope to get subtypes by name.
      */
-    public function scopeByName($query, string $name)
+    #[Scope]
+    protected function byName(Builder $query, string $name): void
     {
-        return $query->where('name', $name);
+        $query->where('name', $name);
     }
 
     protected function casts(): array

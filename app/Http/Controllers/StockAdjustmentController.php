@@ -16,10 +16,6 @@ use Inertia\Response;
 
 final class StockAdjustmentController extends Controller
 {
-    public function __construct(
-        private readonly StockAdjustmentAction $stockAdjustmentAction
-    ) {}
-
     public function index(): Response
     {
         $workspace = Context::get('workspace');
@@ -36,7 +32,6 @@ final class StockAdjustmentController extends Controller
 
     public function create(): Response
     {
-        $workspace = Context::get('workspace');
 
         $products = Product::query()
             ->where('track_stock', true)
@@ -61,9 +56,9 @@ final class StockAdjustmentController extends Controller
         ]);
     }
 
-    public function store(StockAdjustmentRequest $request): RedirectResponse
+    public function store(StockAdjustmentRequest $request, StockAdjustmentAction $stockAdjustmentAction): RedirectResponse
     {
-        $this->stockAdjustmentAction->handle(
+        $stockAdjustmentAction->handle(
             user: Auth::user(),
             data: [
                 'product_id' => $request->validated('product_id'),

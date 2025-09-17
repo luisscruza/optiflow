@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
+use Database\Factories\WorkspaceFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 /**
@@ -18,15 +22,17 @@ use Illuminate\Support\Str;
  * @property int $owner_id
  * @property array<array-key, mixed>|null $settings
  * @property bool $is_active
- * @property \Carbon\CarbonImmutable|null $created_at
- * @property \Carbon\CarbonImmutable|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $members
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read Collection<int, User> $members
  * @property-read int|null $members_count
  * @property-read User $owner
- * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $users
+ * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
+ * @property-read Collection<int, Contact> $contacts
+ * @property-read int|null $contacts_count
  *
- * @method static \Database\Factories\WorkspaceFactory factory($count = null, $state = [])
+ * @method static WorkspaceFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Workspace newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Workspace newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Workspace query()
@@ -44,7 +50,7 @@ use Illuminate\Support\Str;
  */
 final class Workspace extends Model
 {
-    /** @use HasFactory<\Database\Factories\WorkspaceFactory> */
+    /** @use HasFactory<WorkspaceFactory> */
     use HasFactory;
 
     protected $casts = [
@@ -85,6 +91,16 @@ final class Workspace extends Model
     }
 
     /**
+     * Get the contacts that belong to the workspace.
+     *
+     * @return HasMany<Contact, $this>
+     */
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(Contact::class);
+    }
+
+    /**
      * Add a user to the workspace.
      */
     public function addUser(User $user, string $role = 'member'): void
@@ -119,7 +135,7 @@ final class Workspace extends Model
         return 'slug';
     }
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 
