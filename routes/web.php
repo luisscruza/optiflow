@@ -49,7 +49,7 @@ Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(funct
         Route::resource('stock-transfers', StockTransferController::class)->only(['index', 'create', 'store', 'show'])->parameters([
             'stock-transfers' => 'stockMovement',
         ]);
-        Route::resource('initial-stock', InitialStockController::class)->only(['index', 'create', 'store', 'show']);
+        Route::resource('initial-stock', InitialStockController::class)->only(['index', 'create', 'store']);
 
     });
 });

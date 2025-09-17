@@ -33,6 +33,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read float $tax_amount
  * @property-read Product $product
  * @property-read Tax $tax
+ *
  * @method static \Database\Factories\DocumentItemFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentItem forProduct(\App\Models\Product|int $product)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentItem newModelQuery()
@@ -51,6 +52,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentItem whereUnitPrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentItem whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentItem withDiscount()
+ *
  * @mixin \Eloquent
  */
 final class DocumentItem extends Model

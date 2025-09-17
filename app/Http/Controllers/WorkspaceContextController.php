@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\LeaveWorkspaceAction;
 use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Container\Attributes\CurrentUser;
@@ -30,22 +31,14 @@ final class WorkspaceContextController extends Controller
      */
     public function destroy(
         #[CurrentUser] User $user,
-        Workspace $workspace
+        Workspace $workspace,
+        LeaveWorkspaceAction $action
     ): RedirectResponse {
         if ($workspace->owner_id === $user->id) {
             return back()->with('error', 'You cannot leave a workspace you own. Transfer ownership or delete the workspace instead.');
         }
 
-        if ($user->current_workspace_id === $workspace->id) {
-            $anotherWorkspace = $user->workspaces()
-                ->where('workspace_id', '!=', $workspace->id)
-                ->first();
-
-            $user->current_workspace_id = $anotherWorkspace?->id ?? null;
-            $user->save();
-        }
-
-        $workspace->removeUser($user);
+        $action->handle($user, $workspace);
 
         return back()->with('success', "Left {$workspace->name} workspace.");
     }

@@ -110,7 +110,7 @@ final class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product, UpdateProductAction $action): RedirectResponse
     {
-        $product = $action->execute($product, $request->validated());
+        $product = $action->handle($product, $request->validated());
 
         return redirect()->route('products.show', $product)
             ->with('success', 'Product updated successfully.');
@@ -122,7 +122,7 @@ final class ProductController extends Controller
     public function destroy(Product $product, DeleteProductAction $action): RedirectResponse
     {
         try {
-            $action->execute($product);
+            $action->handle($product);
 
             return redirect()->route('products.index')
                 ->with('success', 'Product deleted successfully.');

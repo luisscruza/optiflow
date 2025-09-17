@@ -22,8 +22,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property bool $is_primary
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at
- * @property-read \App\Models\Contact $contact
+ * @property-read Contact $contact
  * @property-read string|null $full_address
+ *
  * @method static Builder<static>|Address newModelQuery()
  * @method static Builder<static>|Address newQuery()
  * @method static Builder<static>|Address primary()
@@ -38,6 +39,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static Builder<static>|Address whereProvince($value)
  * @method static Builder<static>|Address whereType($value)
  * @method static Builder<static>|Address whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 final class Address extends Model

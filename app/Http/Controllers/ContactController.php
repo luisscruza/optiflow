@@ -13,6 +13,7 @@ use App\Http\Requests\CreateContactRequest;
 use App\Http\Requests\UpdateContactRequest;
 use App\Models\Contact;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 use Inertia\Inertia;
@@ -81,7 +82,7 @@ final class ContactController extends Controller
     /**
      * Store a newly created contact in storage.
      */
-    public function store(CreateContactRequest $request, CreateContactAction $action, User $user): \Illuminate\Http\RedirectResponse
+    public function store(CreateContactRequest $request, CreateContactAction $action, User $user): RedirectResponse
     {
         $contact = $action->handle($user, $request->validated());
 
@@ -132,7 +133,7 @@ final class ContactController extends Controller
     /**
      * Update the specified contact in storage.
      */
-    public function update(UpdateContactRequest $request, Contact $contact, UpdateContactAction $action, User $user): \Illuminate\Http\RedirectResponse
+    public function update(UpdateContactRequest $request, Contact $contact, UpdateContactAction $action, User $user): RedirectResponse
     {
         $action->handle($user, $contact, $request->validated());
 
@@ -145,7 +146,7 @@ final class ContactController extends Controller
     /**
      * Remove the specified contact from storage.
      */
-    public function destroy(Contact $contact, DeleteContactAction $action, User $user): \Illuminate\Http\RedirectResponse
+    public function destroy(Contact $contact, DeleteContactAction $action, User $user): RedirectResponse
     {
         $contactTypeLabel = ContactType::from($contact->contact_type)->label();
 

@@ -8,6 +8,8 @@ use App\Actions\StockTransferAction;
 use App\Http\Requests\StockTransferRequest;
 use App\Models\Product;
 use App\Models\StockMovement;
+use App\Models\User;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
@@ -16,10 +18,6 @@ use Inertia\Response;
 
 final class StockTransferController extends Controller
 {
-    public function __construct(
-        private readonly StockTransferAction $stockTransferAction
-    ) {}
-
     public function index(): Response
     {
         $workspace = Context::get('workspace');
@@ -67,18 +65,13 @@ final class StockTransferController extends Controller
         ]);
     }
 
-    public function store(StockTransferRequest $request): RedirectResponse
+    public function store(#[CurrentUser] User $user, StockTransferRequest $request, StockTransferAction $stockTransferAction): RedirectResponse
     {
-        $this->stockTransferAction->handle(
-            user: Auth::user(),
-            data: [
-                'product_id' => $request->validated('product_id'),
-                'from_workspace_id' => $request->validated('from_workspace_id'),
-                'to_workspace_id' => $request->validated('to_workspace_id'),
-                'quantity' => $request->validated('quantity'),
-                'reference' => $request->validated('reference'),
-                'notes' => $request->validated('notes'),
-            ]
+        $validated = $request->validated();
+
+        $stockTransferAction->handle(
+            user: $user,
+            data: $validated,
         );
 
         return redirect()

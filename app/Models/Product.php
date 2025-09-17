@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\Auth;
  * @property-read int|null $stock_movements_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, ProductStock> $stocks
  * @property-read int|null $stocks_count
+ *
  * @method static \Database\Factories\ProductFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product lowStock(\App\Models\Workspace|int $workspace)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product newModelQuery()
@@ -50,8 +51,10 @@ use Illuminate\Support\Facades\Auth;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereSku($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereTrackStock($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereUpdatedAt($value)
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductStock> $stocksInCurrentWorkspace
+ *
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ProductStock> $stocksInCurrentWorkspace
  * @property-read int|null $stocks_in_current_workspace_count
+ *
  * @mixin \Eloquent
  */
 final class Product extends Model

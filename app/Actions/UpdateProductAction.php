@@ -13,7 +13,7 @@ final class UpdateProductAction
     /**
      * Update an existing product.
      */
-    public function execute(Product $product, array $data): Product
+    public function handle(Product $product, array $data): Product
     {
         return DB::transaction(function () use ($product, $data) {
             $product->update([

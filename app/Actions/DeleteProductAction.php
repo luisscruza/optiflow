@@ -13,7 +13,7 @@ final class DeleteProductAction
     /**
      * Delete a product after checking for dependencies.
      */
-    public function execute(Product $product): bool
+    public function handle(Product $product): bool
     {
         return DB::transaction(function () use ($product): bool {
             if ($product->documentItems()->exists()) {

@@ -37,7 +37,6 @@ final class StockTransferRequest extends FormRequest
                 'required',
                 'integer',
                 'exists:workspaces,id',
-                // User must have access to the workspace
                 Rule::exists('user_workspace', 'workspace_id')
                     ->where('user_id', Auth::id()),
             ],
@@ -46,7 +45,6 @@ final class StockTransferRequest extends FormRequest
                 'integer',
                 'exists:workspaces,id',
                 'different:from_workspace_id',
-                // User must have access to the workspace
                 Rule::exists('user_workspace', 'workspace_id')
                     ->where('user_id', Auth::id()),
             ],

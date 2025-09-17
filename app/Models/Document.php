@@ -36,6 +36,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, StockMovement> $stockMovements
  * @property-read int|null $stock_movements_count
  * @property-read Workspace $workspace
+ *
  * @method static \Database\Factories\DocumentFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document forWorkspace(\App\Models\Workspace|int $workspace)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document invoices()
@@ -60,6 +61,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document whereWorkspaceId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document withStatus(string $status)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document withoutWorkspaceScope()
+ *
  * @mixin \Eloquent
  */
 final class Document extends Model

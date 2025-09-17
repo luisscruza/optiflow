@@ -29,6 +29,7 @@ use Illuminate\Notifications\Notifiable;
  * @property-read int|null $owned_workspaces_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Workspace> $workspaces
  * @property-read int|null $workspaces_count
+ *
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
@@ -42,6 +43,7 @@ use Illuminate\Notifications\Notifiable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePassword($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRememberToken($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 final class User extends Authenticatable
