@@ -297,3 +297,9 @@ export interface IdentificationTypeOption {
     value: string;
     label: string;
 }
+
+export type ContactType = 'customer' | 'supplier';
+export type IdentificationType = 'cedula' | 'pasaporte' | 'nit' | 'ruc' | 'otro';
+
+export type ContactType = 'customer' | 'supplier';
+export type IdentificationType = 'cedula' | 'nit' | 'passport' | 'rut' | 'other';

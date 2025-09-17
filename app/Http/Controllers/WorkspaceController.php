@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Context;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -42,7 +43,9 @@ final class WorkspaceController extends Controller
      */
     public function store(CreateWorkspaceRequest $request, CreateWorkspaceAction $action, #[CurrentUser] User $user): RedirectResponse
     {
-        $action->handle($user, $request->validated());
+        $workspace = $action->handle($user, $request->validated());
+
+        Context::add('workspace', $workspace);
 
         return redirect()->route('workspaces.index')
             ->with('success', 'Workspace created successfully!');

@@ -41,7 +41,7 @@ final class UpdateContactRequest extends FormRequest
             'credit_limit' => ['nullable', 'numeric', 'min:0'],
 
             // Address validation
-            'addresszz.province' => ['nullable', 'string', 'max:255'],
+            'address.province' => ['nullable', 'string', 'max:255'],
             'address.municipality' => ['nullable', 'string', 'max:255'],
             'address.country' => ['nullable', 'string', 'max:255'],
             'address.description' => ['nullable', 'string'],

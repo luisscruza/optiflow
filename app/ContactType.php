@@ -71,8 +71,8 @@ enum ContactType: string
     {
         return match ($this) {
             self::Customer => 'Cliente',
-            self::Supplier => 'Proveedor',
-            self::Both => 'Cliente y Proveedor',
+            self::Supplier => 'proveedor',
+            self::Both => 'Cliente y proveedor',
         };
     }
 

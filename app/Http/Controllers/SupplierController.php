@@ -70,7 +70,7 @@ final class SupplierController extends Controller
         $supplier = $createContact->handle($user, $data);
 
         return redirect()->route('suppliers.show', $supplier)
-            ->with('success', 'Proveedor creado exitosamente.');
+            ->with('success', 'proveedor creado exitosamente.');
     }
 
     /**
@@ -125,7 +125,7 @@ final class SupplierController extends Controller
         $updateContact->handle($user, $supplier, $data);
 
         return redirect()->route('suppliers.show', $supplier)
-            ->with('success', 'Proveedor actualizado exitosamente.');
+            ->with('success', 'proveedor actualizado exitosamente.');
     }
 
     /**
@@ -141,6 +141,6 @@ final class SupplierController extends Controller
         $deleteContact->handle($user, $supplier);
 
         return redirect()->route('suppliers.index')
-            ->with('success', 'Proveedor eliminado exitosamente.');
+            ->with('success', 'proveedor eliminado exitosamente.');
     }
 }
