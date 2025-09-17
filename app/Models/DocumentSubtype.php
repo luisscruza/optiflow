@@ -103,6 +103,18 @@ final class DocumentSubtype extends Model
     }
 
     /**
+     * Generate the next NCF number without incrementing (for preview).
+     */
+    public function generateNCF(): string
+    {
+        if (! $this->isValid()) {
+            throw new Exception("NCF sequence for {$this->name} is invalid or expired");
+        }
+
+        return $this->prefix.mb_str_pad((string) $this->next_number, 8, '0', STR_PAD_LEFT);
+    }
+
+    /**
      * Check if sequence is near expiration (within 30 days).
      */
     public function isNearExpiration(): bool

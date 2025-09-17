@@ -6,6 +6,7 @@ use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DocumentSubtypeController;
 use App\Http\Controllers\InitialStockController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SetDefaultDocumentSubtypeController;
 use App\Http\Controllers\StockAdjustmentController;
@@ -43,6 +44,9 @@ Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(funct
         Route::resource('taxes', TaxController::class);
 
         Route::resource('contacts', ContactController::class);
+
+        // Invoices - Document management
+        Route::resource('invoices', InvoiceController::class);
 
         // Document Subtypes (Numeraciones) - NCF management
         Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);

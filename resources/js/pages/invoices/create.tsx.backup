@@ -1,0 +1,510 @@
+import { Head, router, useForm } from '@inertiajs/react';
+import { Calendar, FileText, Plus, Save, Users } from 'lucide-react';
+import { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem, type Contact, type Product } from '@/types';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Facturas',
+        href: '/invoices',
+    },
+    {
+        title: 'Nueva factura',
+        href: '/invoices/create',
+    },
+];
+
+interface DocumentSubtype {
+    id: number;
+    name: string;
+    prefix: string;
+    current_number: number;
+    document_type: string;
+}
+
+interface InvoiceItem {
+    id: string;
+    product_id: number | null;
+    description: string;
+    quantity: number;
+    unit_price: number;
+    tax_rate: number;
+    tax_amount: number;
+    total: number;
+}
+
+interface FormData {
+    document_subtype_id: number | null;
+    contact_id: number | null;
+    issue_date: string;
+    due_date: string;
+    notes: string;
+    payment_terms: string;
+    items: InvoiceItem[];
+    subtotal: number;
+    tax_amount: number;
+    total: number;
+}
+
+interface Props {
+    documentSubtypes: DocumentSubtype[];
+    customers: Contact[];
+    products: Product[];
+    ncf?: string | null;
+    invoiceNumber: string;
+}
+
+export default function CreateInvoice({ documentSubtypes, customers, products, ncf, invoiceNumber }: Props) {
+    const [itemId, setItemId] = useState(1);
+
+    const { data, setData, post, processing, errors } = useForm<FormData>({
+        document_subtype_id: null,
+        contact_id: null,
+        issue_date: new Date().toISOString().split('T')[0],
+        due_date: '',
+        notes: '',
+        payment_terms: '',
+        items: [
+            {
+                id: '1',
+                product_id: null,
+                description: '',
+                quantity: 1,
+                unit_price: 0,
+                tax_rate: 0,
+                tax_amount: 0,
+                total: 0,
+            },
+        ],
+        subtotal: 0,
+        tax_amount: 0,
+        total: 0,
+    });
+
+    // Handle document subtype change and trigger partial reload
+    const handleDocumentSubtypeChange = (value: string) => {
+        const subtypeId = parseInt(value);
+        setData('document_subtype_id', subtypeId);
+
+        // Trigger partial reload to get NCF
+        router.reload({
+            only: ['ncf'],
+            data: { document_subtype_id: subtypeId },
+        });
+    };
+
+    // Add new invoice item
+    const addItem = () => {
+        const newItemId = itemId + 1;
+        setItemId(newItemId);
+
+        setData('items', [
+            ...data.items,
+            {
+                id: newItemId.toString(),
+                product_id: null,
+                description: '',
+                quantity: 1,
+                unit_price: 0,
+                tax_rate: 0,
+                tax_amount: 0,
+                total: 0,
+            },
+        ]);
+    };
+
+    // Remove invoice item
+    const removeItem = (itemId: string) => {
+        if (data.items.length > 1) {
+            setData('items', data.items.filter((item) => item.id !== itemId));
+            calculateTotals(data.items.filter((item) => item.id !== itemId));
+        }
+    };
+
+    // Update item data
+    const updateItem = (itemId: string, field: keyof InvoiceItem, value: any) => {
+        const updatedItems = data.items.map((item) => {
+            if (item.id === itemId) {
+                const updatedItem = { ...item, [field]: value };
+
+                // Recalculate item totals
+                if (field === 'quantity' || field === 'unit_price' || field === 'tax_rate') {
+                    const subtotal = updatedItem.quantity * updatedItem.unit_price;
+                    updatedItem.tax_amount = subtotal * (updatedItem.tax_rate / 100);
+                    updatedItem.total = subtotal + updatedItem.tax_amount;
+                }
+
+                return updatedItem;
+            }
+            return item;
+        });
+
+        setData('items', updatedItems);
+        calculateTotals(updatedItems);
+    };
+
+    // Handle product selection
+    const handleProductSelect = (itemId: string, productId: string) => {
+        const product = products.find((p) => p.id === parseInt(productId));
+        if (product) {
+            updateItem(itemId, 'product_id', product.id);
+            updateItem(itemId, 'description', product.name);
+            updateItem(itemId, 'unit_price', product.price);
+            
+            // Set default tax if available
+            if (product.default_tax) {
+                updateItem(itemId, 'tax_rate', product.default_tax.rate);
+            }
+        }
+    };
+
+    // Calculate totals
+    const calculateTotals = (items: InvoiceItem[]) => {
+        const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+        const taxAmount = items.reduce((sum, item) => sum + item.tax_amount, 0);
+        const total = subtotal + taxAmount;
+
+        setData((prev) => ({
+            ...prev,
+            subtotal,
+            tax_amount: taxAmount,
+            total,
+        }));
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        post('/invoices', {
+            onSuccess: () => {
+                router.visit('/invoices');
+            },
+        });
+    };
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="Nueva factura" />
+
+            <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                {/* Header */}
+                <div className="mb-6 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-semibold text-gray-900">Nueva factura</h1>
+                        <p className="text-sm text-gray-600">Crea una nueva factura para tu cliente.</p>
+                    </div>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Invoice Header */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <FileText className="h-5 w-5" />
+                                Información de la factura
+                            </CardTitle>
+                            <CardDescription>Datos principales de la factura.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            {/* Invoice Number and NCF Row */}
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <div className="space-y-2">
+                                    <Label>Número de factura</Label>
+                                    <Input
+                                        value={invoiceNumber}
+                                        disabled
+                                        className="bg-gray-50 text-gray-600"
+                                    />
+                                </div>
+                                
+                                <div className="space-y-2">
+                                    <Label htmlFor="document_subtype_id">Numeración *</Label>
+                                    <Select
+                                        value={data.document_subtype_id?.toString() || ''}
+                                        onValueChange={handleDocumentSubtypeChange}
+                                    >
+                                        <SelectTrigger className={errors.document_subtype_id ? 'border-red-500' : ''}>
+                                            <SelectValue placeholder="Seleccionar numeración" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {documentSubtypes.map((subtype) => (
+                                                <SelectItem key={subtype.id} value={subtype.id.toString()}>
+                                                    {subtype.name} ({subtype.prefix})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.document_subtype_id && (
+                                        <p className="text-sm text-red-600">{errors.document_subtype_id}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label>NCF</Label>
+                                    <Input
+                                        value={ncf || 'Seleccionar numeración'}
+                                        disabled
+                                        className={`${ncf ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-400'}`}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Customer and Dates */}
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <div className="space-y-2">
+                                    <Label htmlFor="contact_id">Cliente *</Label>
+                                    <Select
+                                        value={data.contact_id?.toString() || ''}
+                                        onValueChange={(value) => setData('contact_id', parseInt(value))}
+                                    >
+                                        <SelectTrigger className={errors.contact_id ? 'border-red-500' : ''}>
+                                            <SelectValue placeholder="Seleccionar cliente" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {customers.map((customer) => (
+                                                <SelectItem key={customer.id} value={customer.id.toString()}>
+                                                    {customer.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.contact_id && (
+                                        <p className="text-sm text-red-600">{errors.contact_id}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="issue_date">Fecha de emisión *</Label>
+                                    <div className="relative">
+                                        <Calendar className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                        <Input
+                                            id="issue_date"
+                                            type="date"
+                                            value={data.issue_date}
+                                            onChange={(e) => setData('issue_date', e.target.value)}
+                                            className={`pl-10 ${errors.issue_date ? 'border-red-500' : ''}`}
+                                        />
+                                    </div>
+                                    {errors.issue_date && (
+                                        <p className="text-sm text-red-600">{errors.issue_date}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="due_date">Fecha de vencimiento</Label>
+                                    <div className="relative">
+                                        <Calendar className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                        <Input
+                                            id="due_date"
+                                            type="date"
+                                            value={data.due_date}
+                                            onChange={(e) => setData('due_date', e.target.value)}
+                                            className={`pl-10 ${errors.due_date ? 'border-red-500' : ''}`}
+                                        />
+                                    </div>
+                                    {errors.due_date && (
+                                        <p className="text-sm text-red-600">{errors.due_date}</p>
+                                    )}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Invoice Items */}
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Users className="h-5 w-5" />
+                                        Líneas de productos
+                                    </CardTitle>
+                                    <CardDescription>Agrega los productos o servicios de esta factura.</CardDescription>
+                                </div>
+                                <Button type="button" variant="outline" size="sm" onClick={addItem}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Agregar línea
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                {/* Table Header */}
+                                <div className="grid grid-cols-12 gap-2 text-sm font-medium text-gray-700 border-b pb-2">
+                                    <div className="col-span-3">Producto/Descripción</div>
+                                    <div className="col-span-2">Cantidad</div>
+                                    <div className="col-span-2">Precio unit.</div>
+                                    <div className="col-span-2">Impuesto (%)</div>
+                                    <div className="col-span-2">Total</div>
+                                    <div className="col-span-1"></div>
+                                </div>
+
+                                {/* Items */}
+                                {data.items.map((item) => (
+                                    <div key={item.id} className="grid grid-cols-12 gap-2 items-start">
+                                        {/* Product/Description */}
+                                        <div className="col-span-3 space-y-2">
+                                            <Select
+                                                value={item.product_id?.toString() || ''}
+                                                onValueChange={(value) => handleProductSelect(item.id, value)}
+                                            >
+                                                <SelectTrigger className="h-9">
+                                                    <SelectValue placeholder="Seleccionar producto" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {products.map((product) => (
+                                                        <SelectItem key={product.id} value={product.id.toString()}>
+                                                            {product.name} - ${product.price.toFixed(2)}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <Input
+                                                placeholder="Descripción del producto"
+                                                value={item.description}
+                                                onChange={(e) => updateItem(item.id, 'description', e.target.value)}
+                                                className="h-9"
+                                            />
+                                        </div>
+
+                                        {/* Quantity */}
+                                        <div className="col-span-2">
+                                            <Input
+                                                type="number"
+                                                min="1"
+                                                step="1"
+                                                value={item.quantity}
+                                                onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                                                className="h-9"
+                                            />
+                                        </div>
+
+                                        {/* Unit Price */}
+                                        <div className="col-span-2">
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={item.unit_price}
+                                                onChange={(e) => updateItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)}
+                                                className="h-9"
+                                            />
+                                        </div>
+
+                                        {/* Tax Rate */}
+                                        <div className="col-span-2">
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                max="100"
+                                                step="0.01"
+                                                value={item.tax_rate}
+                                                onChange={(e) => updateItem(item.id, 'tax_rate', parseFloat(e.target.value) || 0)}
+                                                className="h-9"
+                                            />
+                                        </div>
+
+                                        {/* Total */}
+                                        <div className="col-span-2">
+                                            <Input
+                                                value={`$${item.total.toFixed(2)}`}
+                                                disabled
+                                                className="h-9 bg-gray-50 text-gray-600"
+                                            />
+                                        </div>
+
+                                        {/* Remove Button */}
+                                        <div className="col-span-1">
+                                            {data.items.length > 1 && (
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => removeItem(item.id)}
+                                                    className="h-9 w-9 p-0"
+                                                >
+                                                    ×
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Totals */}
+                            <div className="mt-6 border-t pt-4">
+                                <div className="flex justify-end">
+                                    <div className="w-64 space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <span>Subtotal:</span>
+                                            <span>${data.subtotal.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span>Impuestos:</span>
+                                            <span>${data.tax_amount.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-lg font-semibold border-t pt-2">
+                                            <span>Total:</span>
+                                            <span>${data.total.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Notes and Payment Terms */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Información adicional</CardTitle>
+                            <CardDescription>Notas y términos de pago opcionales.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div className="space-y-2">
+                                    <Label htmlFor="notes">Notas</Label>
+                                    <Textarea
+                                        id="notes"
+                                        placeholder="Notas adicionales para la factura..."
+                                        value={data.notes}
+                                        onChange={(e) => setData('notes', e.target.value)}
+                                        rows={3}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="payment_terms">Términos de pago</Label>
+                                    <Textarea
+                                        id="payment_terms"
+                                        placeholder="Términos y condiciones de pago..."
+                                        value={data.payment_terms}
+                                        onChange={(e) => setData('payment_terms', e.target.value)}
+                                        rows={3}
+                                    />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Actions */}
+                    <div className="flex justify-end gap-3">
+                        <Button type="button" variant="outline" asChild>
+                            <a href="/invoices">Cancelar</a>
+                        </Button>
+                        <Button type="submit" disabled={processing || !ncf}>
+                            <Save className="mr-2 h-4 w-4" />
+                            {processing ? 'Guardando...' : 'Guardar factura'}
+                        </Button>
+                    </div>
+                </form>
+            </div>
+        </AppLayout>
+    );
+}
