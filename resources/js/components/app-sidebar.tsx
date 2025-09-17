@@ -20,6 +20,11 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
+        title: 'Facturas',
+        href: '/invoices',
+        icon: Folder,
+    },
+    {
         title: 'Productos',
         href: products.index(),
         icon: Package,

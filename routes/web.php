@@ -8,6 +8,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\CurrencyRateController;
 use App\Http\Controllers\DocumentSubtypeController;
+use App\Http\Controllers\DownloadInvoicePdfController;
 use App\Http\Controllers\InitialStockController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductController;
@@ -59,6 +60,7 @@ Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(funct
 
         // Invoices - Document management
         Route::resource('invoices', InvoiceController::class);
+        Route::get('invoices/{invoice}/pdf', DownloadInvoicePdfController::class)->name('invoices.pdf');
 
         // Document Subtypes (Numeraciones) - NCF management
         Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);

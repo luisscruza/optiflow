@@ -329,3 +329,61 @@ export type IdentificationType = 'cedula' | 'pasaporte' | 'rnc' | 'nif' | 'nie';
 
 export type ContactType = 'customer' | 'supplier';
 export type IdentificationType = 'cedula' | 'nit' | 'passport' | 'rut' | 'other';
+
+export interface DocumentSubtype {
+    id: number;
+    name: string;
+    prefix: string;
+    next_number: number;
+    is_default: boolean;
+    valid_until_date?: string | null;
+    start_number: number;
+    end_number: number;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Document {
+    id: number;
+    workspace_id: number;
+    contact_id: number;
+    type: 'invoice' | 'quote' | 'receipt';
+    document_subtype_id: number;
+    status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+    document_number: string;
+    issue_date: string;
+    due_date: string;
+    total_amount: number;
+    subtotal_amount: number;
+    tax_amount: number;
+    discount_amount: number;
+    notes?: string | null;
+    created_by: number;
+    currency_id: number;
+    created_at: string;
+    updated_at: string;
+    contact: Contact;
+    document_subtype: DocumentSubtype;
+    created_by_user?: User;
+}
+
+export interface PaginatedDocuments {
+    data: Document[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from?: number;
+    to?: number;
+    links: {
+        first?: string;
+        last?: string;
+        prev?: string;
+        next?: string;
+    };
+}
+
+export interface DocumentFilters {
+    search?: string;
+    status?: string;
+}

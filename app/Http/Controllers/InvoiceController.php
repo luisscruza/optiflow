@@ -48,7 +48,7 @@ final class InvoiceController extends Controller
 
         $invoices = $query->paginate(15)->withQueryString();
 
-        return Inertia::render('Invoices/Index', [
+        return Inertia::render('invoices/index', [
             'invoices' => $invoices,
             'filters' => [
                 'search' => $request->get('search'),
