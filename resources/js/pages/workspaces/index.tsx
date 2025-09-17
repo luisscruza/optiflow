@@ -50,7 +50,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
     };
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Sucursales" />
 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

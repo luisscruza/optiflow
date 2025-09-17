@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,21 +34,17 @@ export default function TaxesCreate() {
         });
     };
 
-  return (
-    <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title="Nuevo Impuesto" />
-      
-      <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Nuevo Impuesto
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Crea un nuevo impuesto para aplicar a productos y documentos
-            </p>
-          </div>
-        </div>
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="Nuevo Impuesto" />
+
+            <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                <div className="mb-8 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Nuevo Impuesto</h1>
+                        <p className="text-gray-600 dark:text-gray-400">Crea un nuevo impuesto para aplicar a productos y documentos</p>
+                    </div>
+                </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
                     <Card>

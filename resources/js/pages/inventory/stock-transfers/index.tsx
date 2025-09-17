@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type PaginatedStockMovements, type Workspace } from '@/types';
+import { StockMovement, type BreadcrumbItem, type PaginatedStockMovements, type Workspace } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -41,7 +41,7 @@ export default function StockTransfersIndex({ transfers, workspace }: Props) {
         });
     };
 
-    const getTransferBadge = (type: string, workspaceId: number) => {
+    const getTransferBadge = (type: string) => {
         if (type === 'transfer_in') {
             return <Badge variant="default">Incoming</Badge>;
         }
@@ -51,7 +51,7 @@ export default function StockTransfersIndex({ transfers, workspace }: Props) {
         return <Badge variant="outline">Transfer</Badge>;
     };
 
-    const getTransferDirection = (movement: any, currentWorkspaceId: number) => {
+    const getTransferDirection = (movement: StockMovement, currentWorkspaceId: number) => {
         if (movement.from_workspace_id === currentWorkspaceId) {
             return {
                 direction: 'outgoing',
@@ -147,7 +147,7 @@ export default function StockTransfersIndex({ transfers, workspace }: Props) {
                                                                 <span>{transfer.product?.name}</span>
                                                             </div>
                                                         </TableCell>
-                                                        <TableCell>{getTransferBadge(transfer.type, workspace.id)}</TableCell>
+                                                        <TableCell>{getTransferBadge(transfer.type)}</TableCell>
                                                         <TableCell>
                                                             <div className="flex items-center space-x-2">
                                                                 <Building2 className="h-4 w-4 text-muted-foreground" />

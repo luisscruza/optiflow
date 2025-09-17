@@ -3,7 +3,7 @@ import { AlertTriangle, ArrowLeftRight, Calendar, DollarSign, Package, Plus, Rot
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { Workspace, type BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -24,7 +24,7 @@ interface Props {
 }
 
 export default function InventoryOverview({ stats }: Props) {
-    const { workspace } = usePage().props as { workspace?: { current: any } };
+    const { workspace } = usePage().props as { workspace?: { current: Workspace } };
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-US', {
