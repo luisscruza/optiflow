@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { Calendar, FileText, Plus, Save, ShoppingCart, User, Receipt, Hash, Trash2 } from 'lucide-react';
+import { Calendar, FileText, Plus, Save, ShoppingCart, User, Receipt, Hash, Trash2, AlertTriangle, Building2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -8,9 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Contact, type Product } from '@/types';
+import { type BreadcrumbItem, type Contact, type Product, type Workspace } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -44,6 +45,7 @@ interface InvoiceItem {
 interface FormData {
     document_subtype_id: number | null;
     contact_id: number | null;
+    workspace_id: number | null;
     issue_date: string;
     due_date: string;
     payment_term: string;
@@ -60,9 +62,11 @@ interface Props {
     products: Product[];
     ncf?: string | null;
     document_subtype_id?: number | null;
+    currentWorkspace?: Workspace | null;
+    availableWorkspaces?: Workspace[];
 }
 
-export default function CreateInvoice({ documentSubtypes, customers, products, ncf, document_subtype_id }: Props) {
+export default function CreateInvoice({ documentSubtypes, customers, products, ncf, document_subtype_id, currentWorkspace, availableWorkspaces }: Props) {
     const [itemId, setItemId] = useState(1);
     const [showContactModal, setShowContactModal] = useState(false);
     const [contactsList, setContactsList] = useState<Contact[]>(customers);
@@ -84,6 +88,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
     const { data, setData, post, processing, errors } = useForm<FormData>({
         document_subtype_id: document_subtype_id || null,
         contact_id: null,
+        workspace_id: currentWorkspace?.id || null,
         issue_date: new Date().toISOString().split('T')[0],
         due_date: '',
         payment_term: 'manual',
@@ -104,6 +109,18 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
         tax_amount: 0,
         total: 0,
     });
+
+    // Handle workspace switching
+    const handleWorkspaceSwitch = (workspaceId: string) => {
+        setData('workspace_id', parseInt(workspaceId));
+        
+        // Trigger full reload to get updated stock data
+        router.visit('/invoices/create', {
+            method: 'get',
+            data: { workspace_id: workspaceId },
+            preserveState: false,
+        });
+    };
 
     // Handle document subtype change and trigger partial reload
     const handleDocumentSubtypeChange = (value: string) => {
@@ -194,6 +211,77 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
         calculateTotals(updatedItems);
     };
 
+    // Get selected product for an item
+    const getSelectedProduct = (item: InvoiceItem): Product | null => {
+        if (!item.product_id) return null;
+        return products.find(p => p.id === item.product_id) || null;
+    };
+
+    // Get stock warning for a specific item
+    const getStockWarning = (item: InvoiceItem): { hasWarning: boolean; message: string; type: 'error' | 'warning' } | null => {
+        const product = getSelectedProduct(item);
+        if (!product || !product.track_stock) return null;
+
+        if (product.stock_status === 'out_of_stock') {
+            return {
+                hasWarning: true,
+                message: `${product.name} está agotado`,
+                type: 'error'
+            };
+        }
+
+        if (product.stock_quantity !== undefined && item.quantity > product.stock_quantity) {
+            return {
+                hasWarning: true,
+                message: `Stock insuficiente. Disponible: ${product.stock_quantity}`,
+                type: 'error'
+            };
+        }
+
+        if (product.stock_status === 'low_stock') {
+            return {
+                hasWarning: true,
+                message: `Stock bajo. Disponible: ${product.stock_quantity}`,
+                type: 'warning'
+            };
+        }
+
+        return null;
+    };
+
+    // Get stock status styling
+    const getStockStatusColor = (status: string) => {
+        switch (status) {
+            case 'out_of_stock':
+                return 'text-red-600 bg-red-50 border-red-200';
+            case 'low_stock':
+                return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+            case 'in_stock':
+                return 'text-green-600 bg-green-50 border-green-200';
+            case 'not_tracked':
+                return 'text-gray-600 bg-gray-50 border-gray-200';
+            default:
+                return 'text-gray-600 bg-gray-50 border-gray-200';
+        }
+    };
+
+    const getStockStatusText = (product: Product) => {
+        if (!product.track_stock) {
+            return 'No rastreado';
+        }
+        
+        switch (product.stock_status) {
+            case 'out_of_stock':
+                return 'Sin stock';
+            case 'low_stock':
+                return `Stock bajo (${product.stock_quantity})`;
+            case 'in_stock':
+                return `En stock (${product.stock_quantity})`;
+            default:
+                return 'Desconocido';
+        }
+    };
+
     // Handle product selection - Fixed to prevent clearing
     const handleProductSelect = (itemId: string, productId: string) => {
         const product = products.find((p) => p.id === parseInt(productId));
@@ -238,6 +326,21 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Validate stock availability for all items
+        const stockIssues = data.items
+            .map(item => {
+                const warning = getStockWarning(item);
+                return warning?.type === 'error' ? warning.message : null;
+            })
+            .filter(Boolean);
+        
+        if (stockIssues.length > 0) {
+            // You can show an alert or toast here
+            alert('Hay problemas de stock que deben resolverse antes de crear la factura:\n\n' + stockIssues.join('\n'));
+            return;
+        }
+        
         post('/invoices', {
             onSuccess: () => {
                 router.visit('/invoices');
@@ -366,6 +469,35 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                 <p className="text-sm text-red-600">{errors.contact_id}</p>
                                             )}
                                         </div>
+
+                                        {/* Workspace Selection */}
+                                        {availableWorkspaces && availableWorkspaces.length > 1 && (
+                                            <div className="space-y-3">
+                                                <Label className="text-sm font-medium text-gray-900 flex items-center gap-1">
+                                                    <Building2 className="h-4 w-4" />
+                                                    Espacio de Trabajo
+                                                    <span className="text-red-500">*</span>
+                                                </Label>
+                                                <Select
+                                                    value={data.workspace_id?.toString() || ''}
+                                                    onValueChange={handleWorkspaceSwitch}
+                                                >
+                                                    <SelectTrigger className={`h-10 ${errors.workspace_id ? 'border-red-300 ring-red-500/20' : 'border-gray-300'}`}>
+                                                        <SelectValue placeholder="Seleccionar espacio de trabajo" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {availableWorkspaces.map((workspace) => (
+                                                            <SelectItem key={workspace.id} value={workspace.id.toString()}>
+                                                                {workspace.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                {errors.workspace_id && (
+                                                    <p className="text-sm text-red-600">{errors.workspace_id}</p>
+                                                )}
+                                            </div>
+                                        )}
 
                                         <div className="space-y-3">
                                             <Label className="text-sm font-medium text-gray-900">
@@ -572,10 +704,21 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                                 </SelectTrigger>
                                                                 <SelectContent>
                                                                     {products.map((product) => (
-                                                                        <SelectItem key={product.id} value={product.id.toString()}>
-                                                                            <div className="flex flex-col">
-                                                                                <span className="font-medium">{product.name}</span>
-                                                                                <span className="text-xs text-gray-500">${product.price}</span>
+                                                                        <SelectItem 
+                                                                            key={product.id} 
+                                                                            value={product.id.toString()}
+                                                                            disabled={product.track_stock && product.stock_status === 'out_of_stock'}
+                                                                        >
+                                                                            <div className="flex items-center justify-between w-full pr-4">
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="font-medium">{product.name}</span>
+                                                                                    <span className="text-xs text-gray-500">${product.price}</span>
+                                                                                </div>
+                                                                                {product.track_stock && (
+                                                                                    <div className={`text-xs px-2 py-1 rounded-full border whitespace-nowrap ${getStockStatusColor(product.stock_status || 'not_tracked')}`}>
+                                                                                        {getStockStatusText(product)}
+                                                                                    </div>
+                                                                                )}
                                                                             </div>
                                                                         </SelectItem>
                                                                     ))}
@@ -584,7 +727,20 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                         </div>
                                                         
                                                         <div>
-                                                            <Label className="text-xs font-medium text-gray-700">Descripción</Label>
+                                                            <div className="flex items-center gap-2">
+                                                                <Label className="text-xs font-medium text-gray-700">Descripción</Label>
+                                                                {(() => {
+                                                                    const product = getSelectedProduct(item);
+                                                                    if (product && product.track_stock) {
+                                                                        return (
+                                                                            <div className={`text-xs px-2 py-0.5 rounded-full border ${getStockStatusColor(product.stock_status || 'not_tracked')}`}>
+                                                                                {getStockStatusText(product)}
+                                                                            </div>
+                                                                        );
+                                                                    }
+                                                                    return null;
+                                                                })()}
+                                                            </div>
                                                             <Input
                                                                 placeholder="Descripción del producto"
                                                                 value={item.description}
@@ -595,15 +751,51 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                         
                                                         <div className="grid grid-cols-2 gap-3">
                                                             <div>
-                                                                <Label className="text-xs font-medium text-gray-700">Cantidad</Label>
+                                                                <div className="flex items-center gap-2">
+                                                                    <Label className="text-xs font-medium text-gray-700">Cantidad</Label>
+                                                                    {(() => {
+                                                                        const warning = getStockWarning(item);
+                                                                        if (warning) {
+                                                                            return (
+                                                                                <div className="relative group">
+                                                                                    <AlertTriangle 
+                                                                                        className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-yellow-500'}`} 
+                                                                                    />
+                                                                                    <div className="absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                                                                                        {warning.message}
+                                                                                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            );
+                                                                        }
+                                                                        return null;
+                                                                    })()}
+                                                                </div>
                                                                 <Input
                                                                     type="number"
                                                                     min="1"
                                                                     step="1"
                                                                     value={item.quantity}
                                                                     onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
-                                                                    className="h-10 mt-1"
+                                                                    className={`h-10 mt-1 ${(() => {
+                                                                        const warning = getStockWarning(item);
+                                                                        if (warning?.type === 'error') return 'border-red-300 ring-red-500/20';
+                                                                        if (warning?.type === 'warning') return 'border-yellow-300 ring-yellow-500/20';
+                                                                        return '';
+                                                                    })()}`}
                                                                 />
+                                                                {(() => {
+                                                                    const warning = getStockWarning(item);
+                                                                    if (warning) {
+                                                                        return (
+                                                                            <div className={`mt-1 text-xs flex items-center gap-1 ${warning.type === 'error' ? 'text-red-600' : 'text-yellow-600'}`}>
+                                                                                <AlertTriangle className="h-3 w-3" />
+                                                                                {warning.message}
+                                                                            </div>
+                                                                        );
+                                                                    }
+                                                                    return null;
+                                                                })()}
                                                             </div>
                                                             <div>
                                                                 <Label className="text-xs font-medium text-gray-700">Precio unit.</Label>
@@ -678,15 +870,39 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                     </div>
 
                                                     {/* Quantity */}
-                                                    <div className="col-span-1">
-                                                        <Input
-                                                            type="number"
-                                                            min="1"
-                                                            step="1"
-                                                            value={item.quantity}
-                                                            onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
-                                                            className="h-9 text-center border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
-                                                        />
+                                                    <div className="col-span-1 relative">
+                                                        <div className="relative">
+                                                            <Input
+                                                                type="number"
+                                                                min="1"
+                                                                step="1"
+                                                                value={item.quantity}
+                                                                onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                                                                className={`h-9 text-center border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 ${(() => {
+                                                                    const warning = getStockWarning(item);
+                                                                    if (warning?.type === 'error') return 'border-red-300 ring-red-500/20';
+                                                                    if (warning?.type === 'warning') return 'border-yellow-300 ring-yellow-500/20';
+                                                                    return '';
+                                                                })()}`}
+                                                            />
+                                                            {(() => {
+                                                                const warning = getStockWarning(item);
+                                                                if (warning) {
+                                                                    return (
+                                                                        <div className="absolute -top-1 -right-1 group">
+                                                                            <AlertTriangle 
+                                                                                className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-yellow-500'}`} 
+                                                                            />
+                                                                            <div className="absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                                                                                {warning.message}
+                                                                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return null;
+                                                            })()}
+                                                        </div>
                                                     </div>
 
                                                     {/* Unit Price */}

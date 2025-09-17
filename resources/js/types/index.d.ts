@@ -218,6 +218,10 @@ export interface Product {
     stock_in_current_workspace?: ProductStock;
     stocks?: ProductStock[];
     stock_movements?: StockMovement[];
+    current_stock?: ProductStock;
+    stock_quantity?: number;
+    minimum_quantity?: number;
+    stock_status?: 'not_tracked' | 'out_of_stock' | 'low_stock' | 'in_stock';
 }
 
 export interface PaginatedProducts {

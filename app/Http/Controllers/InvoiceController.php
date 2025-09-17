@@ -8,10 +8,14 @@ use App\Models\Contact;
 use App\Models\Document;
 use App\Models\DocumentSubtype;
 use App\Models\Product;
+use App\Models\ProductStock;
 use App\Models\Tax;
 use App\Models\User;
+use App\Models\Workspace;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Context;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -43,7 +47,7 @@ final class InvoiceController extends Controller
 
         $invoices = $query->paginate(15)->withQueryString();
 
-        return Inertia::render('invoices/index', [
+        return Inertia::render('Invoices/Index', [
             'invoices' => $invoices,
             'filters' => [
                 'search' => $request->get('search'),
@@ -57,19 +61,60 @@ final class InvoiceController extends Controller
      */
     public function create(Request $request): Response
     {
+        // Handle workspace switching if requested
+        if ($request->filled('workspace_id')) {
+            $workspaceId = $request->get('workspace_id');
+            $workspace = Workspace::findOrFail($workspaceId);
+
+            // Verify user has access to this workspace
+            if (! Auth::user()->hasAccessToWorkspace($workspace)) {
+                abort(403, 'No tienes acceso a este espacio de trabajo.');
+            }
+
+            // Switch the user's current workspace
+            Auth::user()->switchToWorkspace($workspace);
+        }
+
+        $currentWorkspace = Context::get('workspace');
+
         $documentSubtypes = DocumentSubtype::active()
             ->orderBy('name')
             ->get();
 
         $customers = Contact::customers()
+            ->when($currentWorkspace, fn ($query) => $query->where('workspace_id', $currentWorkspace->id))
             ->orderBy('name')
             ->get();
 
-        $products = Product::orderBy('name')->get();
+        // Get products with stock information for the current workspace
+        $products = Product::with(['defaultTax'])
+            ->when($currentWorkspace, function ($query) use ($currentWorkspace) {
+                $query->with(['stocks' => function ($stockQuery) use ($currentWorkspace) {
+                    $stockQuery->where('workspace_id', $currentWorkspace->id);
+                }]);
+            })
+            ->orderBy('name')
+            ->get()
+            ->map(function ($product) use ($currentWorkspace) {
+                // Add stock information to each product
+                $stock = $currentWorkspace ? $product->stocks->first() : null;
+                $product->current_stock = $stock;
+                $product->stock_quantity = $stock ? $stock->quantity : 0;
+                $product->minimum_quantity = $stock ? $stock->minimum_quantity : 0;
+                $product->stock_status = $this->getStockStatus($product, $stock);
+
+                // Remove the stocks collection to keep response clean
+                unset($product->stocks);
+
+                return $product;
+            });
 
         $documentSubtype = $request->filled('document_subtype_id')
             ? DocumentSubtype::find($request->get('document_subtype_id'))
             : DocumentSubtype::active()->where('is_default', true)->first();
+
+        // Get available workspaces for the user
+        $availableWorkspaces = Auth::user()?->workspaces ?? collect();
 
         return Inertia::render('invoices/create', [
             'documentSubtypes' => $documentSubtypes,
@@ -77,6 +122,8 @@ final class InvoiceController extends Controller
             'products' => $products,
             'ncf' => $documentSubtype?->generateNCF(),
             'document_subtype_id' => $documentSubtype?->id,
+            'currentWorkspace' => $currentWorkspace,
+            'availableWorkspaces' => $availableWorkspaces,
         ]);
     }
 
@@ -145,5 +192,25 @@ final class InvoiceController extends Controller
 
         return redirect()->route('invoices.index')
             ->with('success', 'Factura eliminada exitosamente.');
+    }
+
+    /**
+     * Get stock status for a product.
+     */
+    private function getStockStatus(Product $product, ?ProductStock $stock): string
+    {
+        if (! $product->track_stock) {
+            return 'not_tracked';
+        }
+
+        if (! $stock || $stock->quantity <= 0) {
+            return 'out_of_stock';
+        }
+
+        if ($stock->quantity <= $stock->minimum_quantity) {
+            return 'low_stock';
+        }
+
+        return 'in_stock';
     }
 }
