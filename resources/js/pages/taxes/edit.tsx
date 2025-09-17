@@ -50,13 +50,6 @@ export default function TaxesEdit({ tax }: Props) {
               Modifica los detalles del impuesto
             </p>
           </div>
-
-          <Button variant="outline" asChild>
-            <Link href="/taxes">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Volver
-            </Link>
-          </Button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">

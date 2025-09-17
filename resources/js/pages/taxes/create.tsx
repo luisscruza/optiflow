@@ -48,13 +48,6 @@ export default function TaxesCreate() {
               Crea un nuevo impuesto para aplicar a productos y documentos
             </p>
           </div>
-
-          <Button variant="outline" asChild>
-            <Link href="/taxes">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Volver
-            </Link>
-          </Button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">

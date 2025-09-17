@@ -11,26 +11,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
-import { type BreadcrumbItem, type ContactType, type IdentificationType } from '@/types';
-
-const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: 'Contactos',
-    href: '/contacts',
-  },
-  {
-    title: 'Crear contacto',
-    href: '/contacts/create',
-  },
-];
+import { type BreadcrumbItem, type Contact, type ContactType, type IdentificationType } from '@/types';
 
 interface Props {
+  contact: Contact;
   contact_types: Array<{ value: ContactType; label: string }>;
   identification_types: Array<{ value: IdentificationType; label: string }>;
 }
 
 interface ContactFormData {
-  contact_type: ContactType | undefined;
+  contact_type: ContactType;
   name: string;
   status: 'active' | 'inactive';
   email: string;
@@ -48,49 +38,60 @@ interface ContactFormData {
   country: string;
 }
 
-export default function CreateContact({ contact_types, identification_types }: Props) {
+export default function EditContact({ contact, contact_types, identification_types }: Props) {
   const [basicInfoOpen, setBasicInfoOpen] = useState(true);
   const [contactInfoOpen, setContactInfoOpen] = useState(true);
   const [identificationOpen, setIdentificationOpen] = useState(false);
   const [addressOpen, setAddressOpen] = useState(false);
   const [additionalOpen, setAdditionalOpen] = useState(false);
 
-  const { data, setData, post, processing, errors } = useForm<ContactFormData>({
-    contact_type: undefined,
-    name: '',
-    status: 'active',
-    email: '',
-    phone_primary: '',
-    phone_secondary: '',
-    website: '',
-    notes: '',
-    identification_type: undefined,
-    identification_number: '',
-    address_line_1: '',
+  const breadcrumbs: BreadcrumbItem[] = [
+    {
+      title: 'Contactos',
+      href: '/contacts',
+    },
+    {
+      title: contact.name,
+      href: `/contacts/${contact.id}`,
+    },
+    {
+      title: 'Editar',
+      href: `/contacts/${contact.id}/edit`,
+    },
+  ];
+
+  // Pre-populate form with existing contact data
+  const { data, setData, put, processing, errors } = useForm<ContactFormData>({
+    contact_type: contact.contact_type,
+    name: contact.name,
+    status: contact.status,
+    email: contact.email || '',
+    phone_primary: contact.phone_primary || '',
+    phone_secondary: contact.phone_secondary || '',
+    website: '', // Contact model doesn't have website field, keeping for future
+    notes: contact.observations || '',
+    identification_type: contact.identification_type as IdentificationType || undefined,
+    identification_number: contact.identification_number || '',
+    address_line_1: contact.primary_address?.description || '',
     address_line_2: '',
-    municipality: '',
-    province: '',
+    municipality: contact.primary_address?.municipality || '',
+    province: contact.primary_address?.province || '',
     postal_code: '',
-    country: 'Colombia',
+    country: contact.primary_address?.country || 'Colombia',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!data.contact_type) {
-      return;
-    }
-
-    post('/contacts');
+    put(`/contacts/${contact.id}`);
   };
 
-  const getContactTypeIcon = (type: ContactType | undefined) => {
+  const getContactTypeIcon = (type: ContactType) => {
     if (type === 'customer') return <Users className="h-4 w-4" />;
     if (type === 'supplier') return <Building2 className="h-4 w-4" />;
     return null;
   };
 
-  const getContactTypeDescription = (type: ContactType | undefined) => {
+  const getContactTypeDescription = (type: ContactType) => {
     if (type === 'customer') return 'Clientes que compran productos o servicios';
     if (type === 'supplier') return 'Proveedores de productos o servicios';
     return 'Selecciona el tipo de contacto';
@@ -98,18 +99,24 @@ export default function CreateContact({ contact_types, identification_types }: P
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title="Crear contacto" />
+      <Head title={`Editar ${contact.name}`} />
+      
       <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="">
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Crear contacto
+                Editar contacto
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                Agrega un nuevo cliente o proveedor al sistema
+                Actualiza la información de {contact.name}
               </p>
             </div>
+
+            <Button variant="outline" onClick={() => router.visit(`/contacts/${contact.id}`)}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Volver
+            </Button>
           </div>
 
           {/* Required Fields Notice */}
@@ -560,10 +567,10 @@ export default function CreateContact({ contact_types, identification_types }: P
 
             {/* Submit Button */}
             <div className="flex items-center justify-end space-x-4 pt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.visit('/contacts')}
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => router.visit(`/contacts/${contact.id}`)}
                 disabled={processing}
               >
                 Cancelar
@@ -574,7 +581,7 @@ export default function CreateContact({ contact_types, identification_types }: P
                 ) : (
                   <>
                     <Save className="mr-2 h-4 w-4" />
-                    Guardar Contacto
+                    Guardar Cambios
                   </>
                 )}
               </Button>

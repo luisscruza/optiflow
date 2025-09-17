@@ -23,7 +23,7 @@ final class ContactController extends Controller
     /**
      * Display a listing of contacts.
      */
-    public function index(Request $request, User $user): Response
+    public function index(Request $request): Response
     {
         $workspace = Context::get('workspace');
 
@@ -31,12 +31,10 @@ final class ContactController extends Controller
             ->with(['primaryAddress'])
             ->orderBy('name');
 
-        // Filter by contact type if specified
         if ($request->has('type') && in_array($request->type, ['customer', 'supplier'])) {
             $query->where('contact_type', $request->type);
         }
 
-        // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {

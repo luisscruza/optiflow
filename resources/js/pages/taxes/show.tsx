@@ -58,12 +58,6 @@ export default function TaxesShow({ tax }: Props) {
           </div>
 
           <div className="flex items-center space-x-4">
-            <Button variant="outline" asChild>
-              <Link href="/taxes">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Volver
-              </Link>
-            </Button>
             <Button asChild>
               <Link href={`/taxes/${tax.id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />

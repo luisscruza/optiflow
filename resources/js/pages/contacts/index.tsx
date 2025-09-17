@@ -190,7 +190,7 @@ export default function ContactsIndex({ contacts, filters }: Props) {
         {/* Contacts Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Lista de Contactos</CardTitle>
+            <CardTitle>Lista de contactos</CardTitle>
             <CardDescription>
               {contacts.total === 0
                 ? 'No se encontraron contactos.'
