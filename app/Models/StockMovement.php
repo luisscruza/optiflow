@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\StockMovementType;
 use App\Models\Concerns\BelongsToWorkspace;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -71,21 +72,6 @@ final class StockMovement extends Model
 {
     /** @use HasFactory<\Database\Factories\StockMovementFactory> */
     use BelongsToWorkspace, HasFactory;
-
-    protected $fillable = [
-        'workspace_id',
-        'product_id',
-        'type',
-        'quantity',
-        'unit_cost',
-        'total_cost',
-        'related_document_id',
-        'user_id',
-        'note',
-        'from_workspace_id',
-        'to_workspace_id',
-        'reference_number',
-    ];
 
     /**
      * Get the product for this movement.
@@ -194,7 +180,6 @@ final class StockMovement extends Model
         parent::boot();
 
         self::creating(function (self $movement) {
-            // Auto-calculate total_cost if not provided
             if ($movement->unit_cost && ! $movement->total_cost) {
                 $movement->total_cost = $movement->quantity * $movement->unit_cost;
             }
@@ -258,6 +243,7 @@ final class StockMovement extends Model
             'quantity' => 'decimal:2',
             'unit_cost' => 'decimal:2',
             'total_cost' => 'decimal:2',
+            'type' => StockMovementType::class,
         ];
     }
 }

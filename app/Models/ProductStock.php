@@ -112,7 +112,7 @@ final class ProductStock extends Model
     public function decrementStock(float $quantity): bool
     {
         if ($this->quantity < $quantity) {
-            return false; // Insufficient stock
+            return false;
         }
 
         $this->quantity -= $quantity;

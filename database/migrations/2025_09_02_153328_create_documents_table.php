@@ -19,12 +19,14 @@ return new class extends Migration
             $table->foreignId('contact_id')->constrained()->cascadeOnDelete();
             $table->enum('type', ['invoice', 'quotation']);
             $table->foreignId('document_subtype_id')->constrained()->cascadeOnDelete();
-            $table->string('status')->default('draft'); // draft, pending, approved, sent, paid, cancelled
+            $table->string('status');
             $table->string('document_number')->unique();
             $table->date('issue_date');
             $table->date('due_date')->nullable();
             $table->decimal('total_amount', 12, 2)->default(0);
             $table->text('notes')->nullable();
+            $table->foreignId('created_by')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->foreignId('currency_id')->nullable()->constrained()->cascadeOnDelete();
             $table->timestamps();
 
             $table->index(['workspace_id', 'type']);

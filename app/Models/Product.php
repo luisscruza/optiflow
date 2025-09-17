@@ -156,7 +156,7 @@ final class Product extends Model
     {
         $stock = $this->getStockForWorkspace($workspace);
 
-        return $stock ? $stock->quantity : 0;
+        return $stock ? (float) $stock->quantity : 0;
     }
 
     /**

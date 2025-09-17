@@ -4,69 +4,74 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Enums\DocumentType;
 use App\Models\Document;
-use App\Models\DocumentItem;
 use App\Models\DocumentSubtype;
-use App\Models\Product;
+use App\Models\Workspace;
+use App\Support\NCFValidator;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 final readonly class CreateInvoiceAction
 {
-    public function handle(array $data): Document
+    public function __construct(private readonly CreateDocumentItemAction $createItems)
     {
-        return DB::transaction(function () use ($data) {
-            // Get the document subtype to generate NCF
+        //
+    }
+
+    public function handle(Workspace $workspace, array $data): Document
+    {
+        return DB::transaction(function () use ($workspace, $data) {
+
             $documentSubtype = DocumentSubtype::findOrFail($data['document_subtype_id']);
 
-            // Generate NCF and increment sequence
-            $ncf = $documentSubtype->getNextNcfNumber();
-
-            // Create the main document
-            $document = Document::create([
-                'type' => 'invoice',
-                'document_subtype_id' => $data['document_subtype_id'],
-                'contact_id' => $data['contact_id'],
-                'document_number' => $ncf, // NCF is stored in document_number
-                'issue_date' => $data['issue_date'],
-                'due_date' => $data['due_date'],
-                'total_amount' => $data['total'],
-                'notes' => $data['notes'] ?? null,
-            ]);
-
-            // Create document items and update stock
-            foreach ($data['items'] as $itemData) {
-                DocumentItem::create([
-                    'document_id' => $document->id,
-                    'product_id' => $itemData['product_id'],
-                    'description' => $itemData['description'],
-                    'quantity' => $itemData['quantity'],
-                    'unit_price' => $itemData['unit_price'],
-                    'discount' => 0, // No discount for now
-                    'tax_id' => $itemData['tax_id'] ?? null,
-                    'tax_rate_snapshot' => $itemData['tax_rate'],
-                    'total' => $itemData['total'],
-                ]);
-
-                // Update product stock
-                if ($itemData['product_id']) {
-                    $product = Product::findOrFail($itemData['product_id']);
-                    if ($product->track_stock) {
-                        $product->decrement('stock', $itemData['quantity']);
-                    }
-                }
+            if (! NCFValidator::validate($data['ncf'], $documentSubtype, $data)) {
+                throw new InvalidArgumentException('The provided NCF is not valid.');
             }
+
+            $document = $this->createDocument($workspace, $data);
+
+            $this->updateNumerator($documentSubtype, $data['ncf']);
+
+            $items = array_filter($data['items'], function ($item) {
+                return isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
+                    $item['quantity'] > 0;
+            });
+
+            $this->createItems->handle($document, $items);
 
             return $document->load(['contact', 'documentSubtype', 'items.product']);
         });
     }
 
-    /**
-     * Generate NCF for a given document subtype (for partial reloads)
-     */
-    public function generateNCF(int $documentSubtypeId): string
+    private function createDocument(Workspace $workspace, array $data): Document
     {
-        $documentSubtype = DocumentSubtype::findOrFail($documentSubtypeId);
+        return Document::create([
+            'workspace_id' => $workspace->id,
+            'contact_id' => $data['contact_id'],
+            'type' => DocumentType::Invoice,
+            'document_subtype_id' => $data['document_subtype_id'],
+            'status' => 'draft',
+            'document_number' => $data['ncf'],
+            'issue_date' => $data['issue_date'],
+            'due_date' => $data['due_date'],
+            'currency_id' => 1, // TODO: Allow to switch currency...
+            'total_amount' => $data['total'],
+            'subtotal_amount' => $data['subtotal'],
+            'discount_amount' => $data['discount_total'],
+            'tax_amount' => $data['tax_amount'],
+        ]);
+    }
 
-        return $documentSubtype->generateNCF();
+    /**
+     *  Updates the next number of the document type.
+     */
+    private function updateNumerator(DocumentSubtype $documentSubtype, string $ncf): void
+    {
+        $number = (int) ltrim(mb_substr($ncf, mb_strlen($documentSubtype->prefix)), '0');
+
+        if ($number >= $documentSubtype->next_number) {
+            $documentSubtype->update(['next_number' => $number + 1]);
+        }
     }
 }

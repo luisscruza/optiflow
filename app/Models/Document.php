@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\DocumentStatus;
+use App\Enums\DocumentType;
 use App\Models\Concerns\BelongsToWorkspace;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -193,101 +195,6 @@ final class Document extends Model
     }
 
     /**
-     * Convert quotation to invoice.
-     */
-    public function convertToInvoice(): ?self
-    {
-        if (! $this->isQuotation() || $this->status !== 'approved') {
-            return null;
-        }
-
-        $invoiceSubtype = DocumentSubtype::invoice();
-        if (! $invoiceSubtype) {
-            return null;
-        }
-
-        $invoice = $this->replicate();
-        $invoice->type = 'invoice';
-        $invoice->document_subtype_id = $invoiceSubtype->id;
-        $invoice->status = 'draft';
-        $invoice->document_number = $invoiceSubtype->getNextDocumentNumber();
-        $invoice->save();
-
-        // Copy items
-        foreach ($this->items as $item) {
-            $newItem = $item->replicate();
-            $newItem->document_id = $invoice->id;
-            $newItem->save();
-        }
-
-        $invoice->recalculateTotal();
-
-        return $invoice;
-    }
-
-    /**
-     * Get the subtotal (before tax).
-     */
-    public function getSubtotalAttribute(): float
-    {
-        return $this->items()->sum(function ($item) {
-            $lineTotal = $item->quantity * $item->unit_price;
-
-            return $lineTotal - ($lineTotal * $item->discount / 100);
-        });
-    }
-
-    /**
-     * Get the total tax amount.
-     */
-    public function getTotalTaxAttribute(): float
-    {
-        return $this->items()->sum(function ($item) {
-            $lineSubtotal = $item->quantity * $item->unit_price;
-            $lineSubtotalAfterDiscount = $lineSubtotal - ($lineSubtotal * $item->discount / 100);
-
-            return $lineSubtotalAfterDiscount * $item->tax_rate_snapshot / 100;
-        });
-    }
-
-    /**
-     * Get the total discount amount.
-     */
-    public function getTotalDiscountAttribute(): float
-    {
-        return $this->items()->sum(function ($item) {
-            $lineTotal = $item->quantity * $item->unit_price;
-
-            return $lineTotal * $item->discount / 100;
-        });
-    }
-
-    /**
-     * Boot the model.
-     */
-    protected static function boot(): void
-    {
-        parent::boot();
-
-        self::creating(function (self $document) {
-            // Auto-generate document number if not provided
-            if (! $document->document_number && $document->documentSubtype) {
-                $document->document_number = $document->documentSubtype->getNextDocumentNumber();
-            }
-
-            // Set default issue date
-            if (! $document->issue_date) {
-                $document->issue_date = now()->toDateString();
-            }
-        });
-
-        self::saved(function (self $document) {
-            // Recalculate total when document is saved
-            $document->recalculateTotal();
-        });
-    }
-
-    /**
      * Scope to filter by document type.
      */
     #[Scope]
@@ -339,6 +246,8 @@ final class Document extends Model
             'issue_date' => 'date',
             'due_date' => 'date',
             'total_amount' => 'decimal:2',
+            'type' => DocumentType::class,
+            'status' => DocumentStatus::class,
         ];
     }
 }

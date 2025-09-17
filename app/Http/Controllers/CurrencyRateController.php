@@ -5,12 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\CreateCurrencyRateAction;
-use App\Models\Currency;
-use App\Models\CurrencyRate;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 use InvalidArgumentException;
 
 final class CurrencyRateController extends Controller

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateInvoiceAction;
 use App\Models\Contact;
 use App\Models\Document;
 use App\Models\DocumentSubtype;
@@ -130,9 +131,11 @@ final class InvoiceController extends Controller
     /**
      * Store a newly created invoice.
      */
-    public function store(Request $request, User $user): RedirectResponse
+    public function store(Request $request, User $user, CreateInvoiceAction $action): RedirectResponse
     {
-        // This will be implemented with CreateInvoiceAction
+        $workspace = Context::get('workspace');
+        $action->handle($workspace, $request->all());
+
         return redirect()->route('invoices.index');
     }
 

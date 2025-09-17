@@ -38,6 +38,8 @@ interface InvoiceItem {
     description: string;
     quantity: number;
     unit_price: number;
+    discount_rate: number;
+    discount_amount: number;
     tax_rate: number;
     tax_amount: number;
     total: number;
@@ -45,6 +47,7 @@ interface InvoiceItem {
 
 interface FormData {
     document_subtype_id: number | null;
+    ncf: string;
     contact_id: number | null;
     workspace_id: number | null;
     issue_date: string;
@@ -53,6 +56,7 @@ interface FormData {
     notes: string;
     items: InvoiceItem[];
     subtotal: number;
+    discount_total: number;
     tax_amount: number;
     total: number;
 }
@@ -68,23 +72,21 @@ interface Props {
 }
 
 export default function CreateInvoice({ documentSubtypes, customers, products, ncf, document_subtype_id, currentWorkspace, availableWorkspaces }: Props) {
-    const [itemId, setItemId] = useState(1);
+    const [itemId, setItemId] = useState(3);
     const [showContactModal, setShowContactModal] = useState(false);
     const [contactsList, setContactsList] = useState<Contact[]>(customers);
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
-    
-    // Get currency formatting utilities
-    const { format: formatCurrency, symbol: currencySymbol } = useCurrency();
 
-    // Helper function to calculate due date based on payment term
+    const { format: formatCurrency } = useCurrency();
+
     const calculateDueDate = (issueDate: string, paymentTerm: string): string => {
         if (!issueDate || paymentTerm === 'manual') return '';
-        
+
         const date = new Date(issueDate);
         const daysToAdd = parseInt(paymentTerm.replace('days', ''));
-        
+
         if (isNaN(daysToAdd)) return '';
-        
+
         date.setDate(date.getDate() + daysToAdd);
         return date.toISOString().split('T')[0];
     };
@@ -97,6 +99,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
         due_date: '',
         payment_term: 'manual',
         notes: '',
+        ncf: ncf || '',
         items: [
             {
                 id: '1',
@@ -104,12 +107,39 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                 description: '',
                 quantity: 1,
                 unit_price: 0,
+                discount_rate: 0,
+                discount_amount: 0,
+                tax_rate: 0,
+                tax_amount: 0,
+                total: 0,
+            },
+            {
+                id: '2',
+                product_id: null,
+                description: '',
+                quantity: 1,
+                unit_price: 0,
+                discount_rate: 0,
+                discount_amount: 0,
+                tax_rate: 0,
+                tax_amount: 0,
+                total: 0,
+            },
+            {
+                id: '3',
+                product_id: null,
+                description: '',
+                quantity: 1,
+                unit_price: 0,
+                discount_rate: 0,
+                discount_amount: 0,
                 tax_rate: 0,
                 tax_amount: 0,
                 total: 0,
             },
         ],
         subtotal: 0,
+        discount_total: 0,
         tax_amount: 0,
         total: 0,
     });
@@ -117,7 +147,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
     // Handle workspace switching
     const handleWorkspaceSwitch = (workspaceId: string) => {
         setData('workspace_id', parseInt(workspaceId));
-        
+
         // Trigger full reload to get updated stock data
         router.visit('/invoices/create', {
             method: 'get',
@@ -178,6 +208,8 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                 description: '',
                 quantity: 1,
                 unit_price: 0,
+                discount_rate: 0,
+                discount_amount: 0,
                 tax_rate: 0,
                 tax_amount: 0,
                 total: 0,
@@ -200,10 +232,12 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                 const updatedItem = { ...item, [field]: value };
 
                 // Recalculate item totals
-                if (field === 'quantity' || field === 'unit_price' || field === 'tax_rate') {
-                    const subtotal = updatedItem.quantity * updatedItem.unit_price;
-                    updatedItem.tax_amount = subtotal * (updatedItem.tax_rate / 100);
-                    updatedItem.total = subtotal + updatedItem.tax_amount;
+                if (field === 'quantity' || field === 'unit_price' || field === 'discount_rate' || field === 'tax_rate') {
+                    const lineSubtotal = updatedItem.quantity * updatedItem.unit_price;
+                    updatedItem.discount_amount = lineSubtotal * (updatedItem.discount_rate / 100);
+                    const discountedSubtotal = lineSubtotal - updatedItem.discount_amount;
+                    updatedItem.tax_amount = discountedSubtotal * (updatedItem.tax_rate / 100);
+                    updatedItem.total = discountedSubtotal; // Line total without tax
                 }
 
                 return updatedItem;
@@ -273,7 +307,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
         if (!product.track_stock) {
             return 'No rastreado';
         }
-        
+
         switch (product.stock_status) {
             case 'out_of_stock':
                 return 'Sin stock';
@@ -292,8 +326,8 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
         if (product) {
             const updatedItems = data.items.map((item) => {
                 if (item.id === itemId) {
-                    const updatedItem = { 
-                        ...item, 
+                    const updatedItem = {
+                        ...item,
                         product_id: product.id,
                         description: product.name,
                         unit_price: product.price,
@@ -301,9 +335,11 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                     };
 
                     // Recalculate totals
-                    const subtotal = updatedItem.quantity * updatedItem.unit_price;
-                    updatedItem.tax_amount = subtotal * (updatedItem.tax_rate / 100);
-                    updatedItem.total = subtotal + updatedItem.tax_amount;
+                    const lineSubtotal = updatedItem.quantity * updatedItem.unit_price;
+                    updatedItem.discount_amount = lineSubtotal * (updatedItem.discount_rate / 100);
+                    const discountedSubtotal = lineSubtotal - updatedItem.discount_amount;
+                    updatedItem.tax_amount = discountedSubtotal * (updatedItem.tax_rate / 100);
+                    updatedItem.total = discountedSubtotal; // Line total without tax
 
                     return updatedItem;
                 }
@@ -316,13 +352,22 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
     };
 
     const calculateTotals = (items: InvoiceItem[]) => {
+        // Calculate raw subtotal (before discounts)
         const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+
+        // Calculate total discounts
+        const discountTotal = items.reduce((sum, item) => sum + item.discount_amount, 0);
+
+        // Calculate total taxes
         const taxAmount = items.reduce((sum, item) => sum + item.tax_amount, 0);
-        const total = subtotal + taxAmount;
+
+        // Calculate final total: subtotal - discounts + taxes
+        const total = subtotal - discountTotal + taxAmount;
 
         setData((prev) => ({
             ...prev,
             subtotal,
+            discount_total: discountTotal,
             tax_amount: taxAmount,
             total,
         }));
@@ -330,21 +375,8 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
-        // Validate stock availability for all items
-        const stockIssues = data.items
-            .map(item => {
-                const warning = getStockWarning(item);
-                return warning?.type === 'error' ? warning.message : null;
-            })
-            .filter(Boolean);
-        
-        if (stockIssues.length > 0) {
-            // You can show an alert or toast here
-            alert('Hay problemas de stock que deben resolverse antes de crear la factura:\n\n' + stockIssues.join('\n'));
-            return;
-        }
-        
+
+
         post('/invoices', {
             onSuccess: () => {
                 router.visit('/invoices');
@@ -383,7 +415,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                         <p className="text-sm text-gray-600">RNC o Cédula: 130382573</p>
                                         <p className="text-sm text-gray-600">info@covi.com.do</p>
                                     </div>
-                                    
+
                                     {/* Invoice Details */}
                                     <div className="text-right space-y-1">
                                         <h2 className="text-xl font-bold text-gray-900">Factura No. 1</h2>
@@ -458,9 +490,9 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
-                                                <Button 
-                                                    type="button" 
-                                                    variant="outline" 
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
                                                     size="sm"
                                                     onClick={() => setShowContactModal(true)}
                                                     className="h-10 px-3 border-gray-300 text-blue-600 hover:bg-blue-50"
@@ -578,7 +610,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                             <Label className="text-sm font-medium text-gray-900">
                                                 Plazo de pago
                                             </Label>
-                                            <Select 
+                                            <Select
                                                 value={data.payment_term}
                                                 onValueChange={handlePaymentTermChange}
                                             >
@@ -629,7 +661,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                             )}
                                         </div>
 
-                                    
+
                                     </div>
                                 </div>
                             </CardContent>
@@ -650,10 +682,10 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                             Agrega los productos o servicios incluidos en esta factura.
                                         </CardDescription>
                                     </div>
-                                    <Button 
-                                        type="button" 
-                                        variant="outline" 
-                                        size="sm" 
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
                                         onClick={addItem}
                                         className="flex items-center gap-2 border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:border-blue-300"
                                     >
@@ -669,7 +701,8 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                         <div className="col-span-2">Producto</div>
                                         <div className="col-span-2">Descripción</div>
                                         <div className="col-span-1 text-center">Cant.</div>
-                                        <div className="col-span-2 text-right">Precio unit.</div>
+                                        <div className="col-span-1 text-right">Precio unit.</div>
+                                        <div className="col-span-1 text-right">Desc. (%)</div>
                                         <div className="col-span-1 text-right">Tax (%)</div>
                                         <div className="col-span-2 text-right">Total</div>
                                         <div className="col-span-2"></div>
@@ -695,7 +728,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                             </Button>
                                                         )}
                                                     </div>
-                                                    
+
                                                     <div className="space-y-3">
                                                         <div>
                                                             <Label className="text-xs font-medium text-gray-700">Producto</Label>
@@ -708,8 +741,8 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                                 </SelectTrigger>
                                                                 <SelectContent>
                                                                     {products.map((product) => (
-                                                                        <SelectItem 
-                                                                            key={product.id} 
+                                                                        <SelectItem
+                                                                            key={product.id}
                                                                             value={product.id.toString()}
                                                                             disabled={product.track_stock && product.stock_status === 'out_of_stock'}
                                                                         >
@@ -729,7 +762,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                                 </SelectContent>
                                                             </Select>
                                                         </div>
-                                                        
+
                                                         <div>
                                                             <div className="flex items-center gap-2">
                                                                 <Label className="text-xs font-medium text-gray-700">Descripción</Label>
@@ -750,9 +783,10 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                                 value={item.description}
                                                                 onChange={(e) => updateItem(item.id, 'description', e.target.value)}
                                                                 className="h-10 mt-1"
+                                                                disabled={!item.product_id}
                                                             />
                                                         </div>
-                                                        
+
                                                         <div className="grid grid-cols-2 gap-3">
                                                             <div>
                                                                 <div className="flex items-center gap-2">
@@ -762,8 +796,8 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                                         if (warning) {
                                                                             return (
                                                                                 <div className="relative group">
-                                                                                    <AlertTriangle 
-                                                                                        className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-yellow-500'}`} 
+                                                                                    <AlertTriangle
+                                                                                        className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-yellow-500'}`}
                                                                                     />
                                                                                     <div className="absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
                                                                                         {warning.message}
@@ -787,6 +821,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                                         if (warning?.type === 'warning') return 'border-yellow-300 ring-yellow-500/20';
                                                                         return '';
                                                                     })()}`}
+                                                                    disabled={!item.product_id}
                                                                 />
                                                                 {(() => {
                                                                     const warning = getStockWarning(item);
@@ -810,11 +845,25 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                                     value={item.unit_price}
                                                                     onChange={(e) => updateItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)}
                                                                     className="h-10 mt-1"
+                                                                    disabled={!item.product_id}
                                                                 />
                                                             </div>
                                                         </div>
-                                                        
+
                                                         <div className="grid grid-cols-2 gap-3">
+                                                            <div>
+                                                                <Label className="text-xs font-medium text-gray-700">Descuento (%)</Label>
+                                                                <Input
+                                                                    type="number"
+                                                                    min="0"
+                                                                    max="100"
+                                                                    step="0.01"
+                                                                    value={item.discount_rate}
+                                                                    onChange={(e) => updateItem(item.id, 'discount_rate', parseFloat(e.target.value) || 0)}
+                                                                    className="h-10 mt-1"
+                                                                    disabled={!item.product_id}
+                                                                />
+                                                            </div>
                                                             <div>
                                                                 <Label className="text-xs font-medium text-gray-700">Impuesto (%)</Label>
                                                                 <Input
@@ -825,8 +874,12 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                                     value={item.tax_rate}
                                                                     onChange={(e) => updateItem(item.id, 'tax_rate', parseFloat(e.target.value) || 0)}
                                                                     className="h-10 mt-1"
+                                                                    disabled={!item.product_id}
                                                                 />
                                                             </div>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-1 gap-3">
                                                             <div>
                                                                 <Label className="text-xs font-medium text-gray-700">Total</Label>
                                                                 <Input
@@ -870,6 +923,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                             value={item.description}
                                                             onChange={(e) => updateItem(item.id, 'description', e.target.value)}
                                                             className="h-9 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
+                                                            disabled={!item.product_id}
                                                         />
                                                     </div>
 
@@ -888,14 +942,15 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                                     if (warning?.type === 'warning') return 'border-yellow-300 ring-yellow-500/20';
                                                                     return '';
                                                                 })()}`}
+                                                                disabled={!item.product_id}
                                                             />
                                                             {(() => {
                                                                 const warning = getStockWarning(item);
                                                                 if (warning) {
                                                                     return (
                                                                         <div className="absolute -top-1 -right-1 group">
-                                                                            <AlertTriangle 
-                                                                                className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-yellow-500'}`} 
+                                                                            <AlertTriangle
+                                                                                className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-yellow-500'}`}
                                                                             />
                                                                             <div className="absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
                                                                                 {warning.message}
@@ -910,7 +965,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                     </div>
 
                                                     {/* Unit Price */}
-                                                    <div className="col-span-2">
+                                                    <div className="col-span-1">
                                                         <Input
                                                             type="number"
                                                             min="0"
@@ -918,6 +973,21 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                             value={item.unit_price}
                                                             onChange={(e) => updateItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)}
                                                             className="h-9 text-right border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
+                                                            disabled={!item.product_id}
+                                                        />
+                                                    </div>
+
+                                                    {/* Discount Rate */}
+                                                    <div className="col-span-1">
+                                                        <Input
+                                                            type="number"
+                                                            min="0"
+                                                            max="100"
+                                                            step="0.01"
+                                                            value={item.discount_rate}
+                                                            onChange={(e) => updateItem(item.id, 'discount_rate', parseFloat(e.target.value) || 0)}
+                                                            className="h-9 text-right border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
+                                                            disabled={!item.product_id}
                                                         />
                                                     </div>
 
@@ -931,6 +1001,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                             value={item.tax_rate}
                                                             onChange={(e) => updateItem(item.id, 'tax_rate', parseFloat(e.target.value) || 0)}
                                                             className="h-9 text-right border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
+                                                            disabled={!item.product_id}
                                                         />
                                                     </div>
 
@@ -970,9 +1041,15 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                     <span className="text-gray-600">Subtotal:</span>
                                                     <span className="font-medium text-gray-900">{formatCurrency(data.subtotal)}</span>
                                                 </div>
+                                                {data.discount_total > 0 && (
+                                                    <div className="flex justify-between items-center text-sm">
+                                                        <span className="text-gray-600">Descuentos:</span>
+                                                        <span className="font-medium text-red-600">-{formatCurrency(data.discount_total)}</span>
+                                                    </div>
+                                                )}
                                                 <div className="flex justify-between items-center text-sm">
                                                     <span className="text-gray-600">Impuestos:</span>
-                                                    <span className="font-medium text-gray-900">{formatCurrency(data.tax_amount)}</span>
+                                                    <span className="font-medium text-gray-900">+{formatCurrency(data.tax_amount)}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center text-lg font-bold border-t border-gray-200 pt-3">
                                                     <span className="text-gray-900">Total:</span>
@@ -1020,9 +1097,9 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
 
                         {/* Enhanced Actions */}
                         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                            <Button 
-                                type="button" 
-                                variant="outline" 
+                            <Button
+                                type="button"
+                                variant="outline"
                                 size="lg"
                                 asChild
                                 className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400"
@@ -1031,13 +1108,13 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                     Cancelar
                                 </a>
                             </Button>
-                            <Button 
-                                type="submit" 
+                            <Button
+                                type="submit"
                                 size="lg"
                                 disabled={processing || !ncf}
                                 className={`flex items-center justify-center gap-2 min-w-[160px] ${
-                                    processing || !ncf 
-                                        ? 'bg-gray-400 hover:bg-gray-400' 
+                                    processing || !ncf
+                                        ? 'bg-gray-400 hover:bg-gray-400'
                                         : 'bg-blue-600 hover:bg-blue-700'
                                 }`}
                             >

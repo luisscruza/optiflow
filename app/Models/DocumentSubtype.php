@@ -104,6 +104,8 @@ final class DocumentSubtype extends Model
 
     /**
      * Generate the next NCF number without incrementing (for preview).
+     *
+     * @throws Exception
      */
     public function generateNCF(): string
     {
