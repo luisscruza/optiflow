@@ -25,6 +25,11 @@ const configurationSections = [
                 description: 'Nombre, dirección, contacto',
                 href: '/company-details',
             },
+            {
+                title: 'Monedas',
+                description: 'Gestiona las monedas y tasas de cambio',
+                href: '/currencies',
+            },
         ],
     },
     {

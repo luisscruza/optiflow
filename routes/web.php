@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Http\Controllers\CompanyDetailsController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\CurrencyController;
+use App\Http\Controllers\CurrencyRateController;
 use App\Http\Controllers\DocumentSubtypeController;
 use App\Http\Controllers\InitialStockController;
 use App\Http\Controllers\InvoiceController;
@@ -43,6 +45,11 @@ Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(funct
         // Company Details - Configuration
         Route::get('company-details', [CompanyDetailsController::class, 'edit'])->name('company-details.edit');
         Route::patch('company-details', [CompanyDetailsController::class, 'update'])->name('company-details.update');
+
+        // Currencies - Configuration
+        Route::resource('currencies', CurrencyController::class);
+        Route::resource('currency-rates', CurrencyRateController::class);
+        Route::post('currencies/{currency}/rates', [CurrencyRateController::class, 'store'])->name('currencies.rates.store');
 
         Route::resource('products', ProductController::class);
 
