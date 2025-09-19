@@ -28,7 +28,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(function () {
-    Route::resource('workspaces', WorkspaceController::class);
+    Route::resource('workspaces', WorkspaceController::class)->only(['index', 'store', 'update']);
 
     Route::prefix('workspace-context')->name('workspace-context.')->group(function () {
         Route::patch('{workspace}', [WorkspaceContextController::class, 'update'])->name('update');

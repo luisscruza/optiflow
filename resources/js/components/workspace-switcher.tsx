@@ -1,5 +1,5 @@
 import { update } from '@/actions/App/Http/Controllers/WorkspaceContextController';
-import { create, index } from '@/actions/App/Http/Controllers/WorkspaceController';
+import { index } from '@/actions/App/Http/Controllers/WorkspaceController';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -35,10 +35,6 @@ export function WorkspaceSwitcher() {
                 preserveState: true,
             },
         );
-    };
-
-    const createWorkspace = () => {
-        router.visit(create());
     };
 
     const manageWorkspaces = () => {
@@ -83,12 +79,6 @@ export function WorkspaceSwitcher() {
                             </DropdownMenuItem>
                         ))}
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={createWorkspace} className="gap-2 p-2">
-                            <div className="flex size-6 items-center justify-center rounded-md border border-dashed">
-                                <Plus className="size-4" />
-                            </div>
-                            Crear sucursal
-                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={manageWorkspaces} className="gap-2 p-2">
                             <div className="flex size-6 items-center justify-center rounded-md border">
                                 <Settings className="size-4" />

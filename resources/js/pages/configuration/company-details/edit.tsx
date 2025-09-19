@@ -16,7 +16,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/configuration',
     },
     {
-        title: 'Datos de la Empresa',
+        title: 'Datos de la empresa',
         href: '/company-details',
     },
 ];

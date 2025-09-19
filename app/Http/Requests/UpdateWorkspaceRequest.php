@@ -25,6 +25,7 @@ final class UpdateWorkspaceRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:1000'],
         ];
     }

@@ -1,12 +1,17 @@
-import { Building2, Crown, MoreHorizontal, Plus, Settings, Users } from 'lucide-react';
+import { Building2, Crown, Edit, MoreHorizontal, Plus, Settings, Users } from 'lucide-react';
 import { useState } from 'react';
 
 import { update as switchWorkspace } from '@/actions/App/Http/Controllers/WorkspaceContextController';
-import { create, destroy, edit, index, show } from '@/actions/App/Http/Controllers/WorkspaceController';
+import { index, store, update } from '@/actions/App/Http/Controllers/WorkspaceController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
@@ -22,10 +27,18 @@ interface Workspace {
     id: number;
     slug: string;
     name: string;
+    code?: string;
     description: string | null;
     is_owner: boolean;
     members_count: number;
     created_at: string;
+}
+
+interface WorkspaceFormData {
+    [key: string]: string;
+    name: string;
+    code: string;
+    description: string;
 }
 
 interface Props {
@@ -35,17 +48,83 @@ interface Props {
 
 export default function WorkspacesIndex({ workspaces, current_workspace }: Props) {
     const [deletingWorkspace, setDeletingWorkspace] = useState<string | null>(null);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingWorkspace, setEditingWorkspace] = useState<Workspace | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formData, setFormData] = useState<WorkspaceFormData>({
+        name: '',
+        code: '',
+        description: '',
+    });
+    const [errors, setErrors] = useState<Partial<WorkspaceFormData>>({});
 
     const handleSwitchWorkspace = (slug: string) => {
         router.patch(switchWorkspace(slug.toString()).url);
     };
 
-    const handleDeleteWorkspace = (slug: string) => {
-        if (confirm('¿Estás seguro de que deseas eliminar este espacio de trabajo? Esta acción no se puede deshacer.')) {
-            setDeletingWorkspace(slug);
-            router.delete(destroy(slug.toString()).url, {
-                onFinish: () => setDeletingWorkspace(null),
-            });
+    const resetForm = () => {
+        setFormData({
+            name: '',
+            code: '',
+            description: '',
+        });
+        setErrors({});
+    };
+
+    const handleCreateWorkspace = () => {
+        resetForm();
+        setIsCreateModalOpen(true);
+    };
+
+    const handleEditWorkspace = (workspace: Workspace) => {
+        setFormData({
+            name: workspace.name,
+            code: workspace.code || '',
+            description: workspace.description || '',
+        });
+        setEditingWorkspace(workspace);
+        setErrors({});
+        setIsEditModalOpen(true);
+    };
+
+    const handleSubmit = (isEdit: boolean = false) => {
+        setIsSubmitting(true);
+        setErrors({});
+
+        const url = isEdit && editingWorkspace 
+            ? update(editingWorkspace.slug).url 
+            : store().url;
+        
+        const method = isEdit ? 'patch' : 'post';
+
+        router[method](url, formData, {
+            onSuccess: () => {
+                setIsCreateModalOpen(false);
+                setIsEditModalOpen(false);
+                setEditingWorkspace(null);
+                resetForm();
+            },
+            onError: (errors: any) => {
+                setErrors(errors);
+            },
+            onFinish: () => {
+                setIsSubmitting(false);
+            },
+        });
+    };
+
+    const handleInputChange = (field: keyof WorkspaceFormData, value: string) => {
+        setFormData(prev => ({
+            ...prev,
+            [field]: value,
+        }));
+        // Clear error for this field when user starts typing
+        if (errors[field]) {
+            setErrors(prev => ({
+                ...prev,
+                [field]: undefined,
+            }));
         }
     };
 
@@ -59,11 +138,9 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Sucursales</h1>
                         <p className="mt-2 text-gray-600 dark:text-gray-400">Gestiona tus espacios de trabajo y cambia entre diferentes contextos.</p>
                     </div>
-                    <Button asChild>
-                        <Link href={create().url}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Crear espacio de trabajo
-                        </Link>
+                    <Button onClick={handleCreateWorkspace}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Crear nueva sucursal
                     </Button>
                 </div>
 
@@ -109,91 +186,218 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                             <p className="mb-6 max-w-md text-center text-gray-600 dark:text-gray-400">
                                 Comienza creando tu primera sucursal.
                             </p>
-                            <Button asChild>
-                                <Link href={create().url}>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Crear tu primer espacio de trabajo
-                                </Link>
+                            <Button onClick={handleCreateWorkspace}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Crear tu primer espacio de trabajo
                             </Button>
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {workspaces.map((workspace) => (
-                            <Card
-                                key={workspace.id}
-                                className={`transition-shadow hover:shadow-lg ${
-                                    current_workspace?.id === workspace.id ? 'shadow-lg ring-2 ring-blue-500' : ''
-                                }`}
-                            >
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                            <CardTitle className="flex items-center gap-2">
-                                                <Building2 className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                                                {workspace.name}
+                    <div className="rounded-md border">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Nombre</TableHead>
+                                    <TableHead>Código</TableHead>
+                                    <TableHead>Descripción</TableHead>
+                                    <TableHead>Miembros</TableHead>
+                                    <TableHead>Creado</TableHead>
+                                    <TableHead className="w-[100px]">Acciones</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {workspaces.map((workspace) => (
+                                    <TableRow
+                                        key={workspace.id}
+                                        className={current_workspace?.id === workspace.id ? 'bg-blue-50 dark:bg-blue-950' : ''}
+                                    >
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <Building2 className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                                                <span className="font-medium">{workspace.name}</span>
                                                 {current_workspace?.id === workspace.id && (
-                                                    <Badge variant="outline" className="ml-auto">
-                                                        Actual
-                                                    </Badge>
+                                                    <div className="flex items-center gap-1">
+                                                        <Crown className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                                        <Badge variant="outline" className="text-xs">
+                                                            Actual
+                                                        </Badge>
+                                                    </div>
                                                 )}
-                                            </CardTitle>
-                                            {workspace.description && <CardDescription className="mt-2">{workspace.description}</CardDescription>}
-                                        </div>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="sm">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem asChild>
-                                                    <Link href={show(workspace.slug.toString()).url}>Ver</Link>
-                                                </DropdownMenuItem>
-                                                {current_workspace?.id !== workspace.id && (
-                                                    <DropdownMenuItem onClick={() => handleSwitchWorkspace(workspace.slug)}>
-                                                        Cambiar a este espacio de trabajo
-                                                    </DropdownMenuItem>
-                                                )}
-                                                {workspace.is_owner && (
-                                                    <>
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={edit(workspace.id.toString()).url}>
-                                                                <Settings className="mr-2 h-4 w-4" />
-                                                                Configuración
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            onClick={() => handleDeleteWorkspace(workspace.slug)}
-                                                            className="text-red-600 dark:text-red-400"
-                                                            disabled={deletingWorkspace === workspace.slug}
-                                                        >
-                                                            {deletingWorkspace === workspace.slug ? 'Eliminando...' : 'Eliminar espacio de trabajo'}
-                                                        </DropdownMenuItem>
-                                                    </>
-                                                )}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
-                                        <div className="flex items-center gap-4">
-                                            <div className="flex items-center">
-                                                <Users className="mr-1 h-4 w-4" />
-                                                {workspace.members_count} miembro{workspace.members_count !== 1 ? 's' : ''}
                                             </div>
-                                            {workspace.is_owner && <Badge variant="secondary">Propietario</Badge>}
-                                        </div>
-                                        <div className="text-xs">Creado {new Date(workspace.created_at).toLocaleDateString()}</div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                {workspace.code || '-'}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                {workspace.description || '-'}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-1 text-sm">
+                                                <Users className="h-4 w-4" />
+                                                {workspace.members_count}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                {new Date(workspace.created_at).toLocaleDateString()}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => handleEditWorkspace(workspace)}
+                                                    className="h-8 w-8 p-0"
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        {current_workspace?.id !== workspace.id && (
+                                                            <DropdownMenuItem onClick={() => handleSwitchWorkspace(workspace.slug)}>
+                                                                Cambiar a este espacio de trabajo
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                       
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
                     </div>
                 )}
             </div>
+
+            {/* Create Workspace Modal */}
+            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Nueva sucursal</DialogTitle>
+                        <DialogDescription>
+                            Crea una nueva sucursal para distribuir tus ingresos y gastos.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="create-name">Nombre *</Label>
+                            <Input
+                                id="create-name"
+                                value={formData.name}
+                                onChange={(e) => handleInputChange('name', e.target.value)}
+                                placeholder="Ej: Sucursal Centro"
+                            />
+                            {errors.name && (
+                                <p className="text-sm text-red-600 dark:text-red-400">{errors.name}</p>
+                            )}
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="create-code">Código</Label>
+                            <Input
+                                id="create-code"
+                                value={formData.code}
+                                onChange={(e) => handleInputChange('code', e.target.value)}
+                                placeholder="Ej: SUC001"
+                            />
+                            {errors.code && (
+                                <p className="text-sm text-red-600 dark:text-red-400">{errors.code}</p>
+                            )}
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="create-description">Descripción</Label>
+                            <Textarea
+                                id="create-description"
+                                value={formData.description}
+                                onChange={(e) => handleInputChange('description', e.target.value)}
+                                placeholder="Descripción opcional de la sucursal"
+                                rows={3}
+                            />
+                            {errors.description && (
+                                <p className="text-sm text-red-600 dark:text-red-400">{errors.description}</p>
+                            )}
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsCreateModalOpen(false)} disabled={isSubmitting}>
+                            Cancelar
+                        </Button>
+                        <Button onClick={() => handleSubmit(false)} disabled={isSubmitting}>
+                            {isSubmitting ? 'Creando...' : 'Crear sucursal'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Workspace Modal */}
+            <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Editar sucursal</DialogTitle>
+                        <DialogDescription>
+                            Modifica la información de la sucursal.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-name">Nombre *</Label>
+                            <Input
+                                id="edit-name"
+                                value={formData.name}
+                                onChange={(e) => handleInputChange('name', e.target.value)}
+                                placeholder="Ej: Sucursal Centro"
+                            />
+                            {errors.name && (
+                                <p className="text-sm text-red-600 dark:text-red-400">{errors.name}</p>
+                            )}
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-code">Código</Label>
+                            <Input
+                                id="edit-code"
+                                value={formData.code}
+                                onChange={(e) => handleInputChange('code', e.target.value)}
+                                placeholder="Ej: SUC001"
+                            />
+                            {errors.code && (
+                                <p className="text-sm text-red-600 dark:text-red-400">{errors.code}</p>
+                            )}
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-description">Descripción</Label>
+                            <Textarea
+                                id="edit-description"
+                                value={formData.description}
+                                onChange={(e) => handleInputChange('description', e.target.value)}
+                                placeholder="Descripción opcional de la sucursal"
+                                rows={3}
+                            />
+                            {errors.description && (
+                                <p className="text-sm text-red-600 dark:text-red-400">{errors.description}</p>
+                            )}
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsEditModalOpen(false)} disabled={isSubmitting}>
+                            Cancelar
+                        </Button>
+                        <Button onClick={() => handleSubmit(true)} disabled={isSubmitting}>
+                            {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

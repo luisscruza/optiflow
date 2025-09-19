@@ -17,13 +17,18 @@ const configurationSections = [
         title: 'Empresa',
         description: 'Configura la información básica de tu empresa.',
         icon: Building2,
-        color: 'text-blue-600',
-        bgColor: 'bg-blue-50',
+        color: 'text-gray-800',
+        bgColor: 'bg-gray-50',
         items: [
             {
-                title: 'Datos de la Empresa',
+                title: 'Datos de la empresa',
                 description: 'Nombre, dirección, contacto',
                 href: '/company-details',
+            },
+                {
+                title: 'Sucursales',
+                description: 'Gestiona las sucursales de tu empresa',
+                href: '/workspaces',
             },
             {
                 title: 'Monedas',
@@ -36,8 +41,8 @@ const configurationSections = [
         title: 'Facturación',
         description: 'Configura la información que se mostrará en tus facturas.',
         icon: FileText,
-        color: 'text-blue-600',
-        bgColor: 'bg-blue-50',
+        color: 'text-gray-800',
+        bgColor: 'bg-gray-50',
         items: [
             {
                 title: 'Numeraciones',
@@ -50,8 +55,8 @@ const configurationSections = [
         title: 'Impuestos',
         description: 'Define aquí los tipos de impuestos y retenciones que aplican a tus facturas.',
         icon: Calculator,
-        color: 'text-green-600',
-        bgColor: 'bg-green-50',
+        color: 'text-gray-800',
+        bgColor: 'bg-gray-50',
         items: [
             {
                 title: 'Impuestos',
@@ -122,23 +127,6 @@ export default function ConfigurationIndex() {
                         );
                     })}
                 </div>
-
-                {/* Additional Info */}
-                <Card className="border-blue-200 bg-blue-50">
-                    <CardContent className="pt-6">
-                        <div className="flex items-start gap-3">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-                                <Settings className="h-4 w-4 text-blue-600" />
-                            </div>
-                            <div>
-                                <h3 className="font-medium text-blue-900">Centro Óptico Visión Integral</h3>
-                                <p className="mt-1 text-sm text-blue-700">
-                                    Identificación: 130382573 | Versión de Alegra: República Dominicana | Plan Actual: PLUS
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
             </div>
         </AppLayout>
     );

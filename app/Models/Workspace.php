@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Carbon\CarbonImmutable;
 use Database\Factories\WorkspaceFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -53,10 +54,7 @@ final class Workspace extends Model
     /** @use HasFactory<WorkspaceFactory> */
     use HasFactory;
 
-    protected $casts = [
-        'settings' => 'array',
-        'is_active' => 'boolean',
-    ];
+    protected $appends = ['members_count'];
 
     /**
      * Get the owner of the workspace.
@@ -144,5 +142,23 @@ final class Workspace extends Model
                 $workspace->slug = Str::slug($workspace->name);
             }
         });
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'settings' => 'array',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    /**
+     * The number of members in the workspace.
+     */
+    protected function membersCount(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->members()->count(),
+        );
     }
 }
