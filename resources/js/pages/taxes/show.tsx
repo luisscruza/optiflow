@@ -103,10 +103,10 @@ export default function TaxesShow({ tax }: Props) {
                                 {tax.is_default && (
                                     <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
                                         <div className="flex items-start space-x-3">
-                                            <Star className="mt-0.5 h-5 w-5 text-blue-600" />
+                                            <Star className="mt-0.5 h-5 w-5 text-primary" />
                                             <div>
-                                                <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100">Impuesto Predeterminado</h4>
-                                                <p className="text-sm text-blue-700 dark:text-blue-200">
+                                                <h4 className="text-sm font-medium text-primary dark:text-primary">Impuesto Predeterminado</h4>
+                                                <p className="text-sm text-primary dark:text-primary">
                                                     Este impuesto se aplicará automáticamente a todos los nuevos productos que se creen.
                                                 </p>
                                             </div>
@@ -127,13 +127,13 @@ export default function TaxesShow({ tax }: Props) {
                             <CardContent className="space-y-4">
                                 <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
                                     <div className="flex items-center space-x-3">
-                                        <Package className="h-5 w-5 text-blue-600" />
+                                        <Package className="h-5 w-5 text-primary" />
                                         <div>
                                             <p className="text-sm font-medium">Productos</p>
                                             <p className="text-xs text-gray-500">Usando este impuesto</p>
                                         </div>
                                     </div>
-                                    <span className="text-lg font-bold text-blue-600">{tax.products_count || 0}</span>
+                                    <span className="text-lg font-bold text-primary">{tax.products_count || 0}</span>
                                 </div>
 
                                 <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-gray-800">

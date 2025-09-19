@@ -146,11 +146,11 @@ export default function ProductsEdit({ product, taxes }: Props) {
                                 <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
                                     <div className="grid grid-cols-2 gap-4 text-sm">
                                         <div>
-                                            <span className="font-medium text-blue-800 dark:text-blue-200">Profit:</span>
+                                            <span className="font-medium text-primary dark:text-primary">Profit:</span>
                                             <span className="ml-2 font-semibold">${(parseFloat(data.price) - parseFloat(data.cost)).toFixed(2)}</span>
                                         </div>
                                         <div>
-                                            <span className="font-medium text-blue-800 dark:text-blue-200">Margin:</span>
+                                            <span className="font-medium text-primary dark:text-primary">Margin:</span>
                                             <span className="ml-2 font-semibold">
                                                 {(((parseFloat(data.price) - parseFloat(data.cost)) / parseFloat(data.cost)) * 100).toFixed(2)}%
                                             </span>

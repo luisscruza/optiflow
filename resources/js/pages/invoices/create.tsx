@@ -502,7 +502,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={() => setShowContactModal(true)}
-                                                            className="text-blue-600 hover:bg-blue-50"
+                                                            className="text-primary hover:bg-blue-50"
                                                         >
                                                             <Plus className="h-4 w-4 mr-1" />
                                                             Crear nuevo contacto
@@ -516,7 +516,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => setShowContactModal(true)}
-                                                    className="h-10 px-3 border-gray-300 text-blue-600 hover:bg-blue-50"
+                                                    className="h-10 px-3 border-gray-300 text-primary hover:bg-blue-50"
                                                 >
                                                     <Plus className="h-4 w-4 mr-1" />
                                                     Nuevo contacto
@@ -708,7 +708,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                         variant="outline"
                                         size="sm"
                                         onClick={addItem}
-                                        className="flex items-center gap-2 border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:border-blue-300"
+                                        className="flex items-center gap-2 border-blue-200 bg-blue-50 text-primary hover:bg-blue-100 hover:border-blue-300"
                                     >
                                         <Plus className="h-4 w-4" />
                                         Agregar línea
@@ -1045,7 +1045,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                 </div>
                                                 <div className="flex justify-between items-center text-lg font-bold border-t border-gray-200 pt-3">
                                                     <span className="text-gray-900">Total:</span>
-                                                    <span className="text-blue-600">{formatCurrency(data.total)}</span>
+                                                    <span className="text-primary">{formatCurrency(data.total)}</span>
                                                 </div>
                                             </div>
                                         </div>

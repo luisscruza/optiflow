@@ -134,7 +134,7 @@ export default function EditContact({ contact, contact_types, identification_typ
 
                     {/* Required Fields Notice */}
                     <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
-                        <p className="text-sm text-blue-800 dark:text-blue-200">Los campos marcados con asterisco (*) son obligatorios.</p>
+                        <p className="text-sm text-primary dark:text-primary">Los campos marcados con asterisco (*) son obligatorios.</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">

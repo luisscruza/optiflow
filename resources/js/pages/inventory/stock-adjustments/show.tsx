@@ -50,7 +50,7 @@ export default function StockAdjustmentsShow({ product, currentStock, stockHisto
                 return <TrendingDown className="h-4 w-4 text-red-600" />;
             case 'set_quantity':
             case 'adjustment':
-                return <RotateCcw className="h-4 w-4 text-blue-600" />;
+                return <RotateCcw className="h-4 w-4 text-primary" />;
             default:
                 return <Package className="h-4 w-4 text-muted-foreground" />;
         }

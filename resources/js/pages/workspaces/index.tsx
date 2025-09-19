@@ -149,25 +149,25 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                         <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
                             <CardHeader>
                                 <div className="flex items-center gap-2">
-                                    <Crown className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                    <CardTitle className="text-blue-900 dark:text-blue-100">Espacio de trabajo actual</CardTitle>
+                                    <Crown className="h-5 w-5 text-primary dark:text-primary" />
+                                    <CardTitle className="text-primary dark:text-primary">Espacio de trabajo actual</CardTitle>
                                 </div>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <h3 className="font-semibold text-blue-900 dark:text-blue-100">{current_workspace.name}</h3>
+                                        <h3 className="font-semibold text-primary dark:text-primary">{current_workspace.name}</h3>
                                         {current_workspace.description && (
-                                            <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">{current_workspace.description}</p>
+                                            <p className="mt-1 text-sm text-primary dark:text-primary">{current_workspace.description}</p>
                                         )}
                                     </div>
                                     <div className="flex items-center gap-2">
                                         {current_workspace.is_owner && (
-                                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                            <Badge variant="secondary" className="bg-blue-100 text-primary dark:bg-blue-900 dark:text-primary">
                                                 Propietario
                                             </Badge>
                                         )}
-                                        <div className="flex items-center text-sm text-blue-700 dark:text-blue-300">
+                                        <div className="flex items-center text-sm text-primary dark:text-primary">
                                             <Users className="mr-1 h-4 w-4" />
                                             {current_workspace.members_count} miembro{current_workspace.members_count !== 1 ? 's' : ''}
                                         </div>
@@ -217,7 +217,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                                                 <span className="font-medium">{workspace.name}</span>
                                                 {current_workspace?.id === workspace.id && (
                                                     <div className="flex items-center gap-1">
-                                                        <Crown className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                                        <Crown className="h-4 w-4 text-primary dark:text-primary" />
                                                         <Badge variant="outline" className="text-xs">
                                                             Actual
                                                         </Badge>

@@ -134,7 +134,7 @@ export default function ContactShow({ contact }: Props) {
                                                     <div className="text-sm text-gray-600 dark:text-gray-400">Email</div>
                                                     <a
                                                         href={`mailto:${contact.email}`}
-                                                        className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                                                        className="text-primary hover:text-primary dark:text-primary dark:hover:text-primary"
                                                     >
                                                         {contact.email}
                                                     </a>
@@ -149,7 +149,7 @@ export default function ContactShow({ contact }: Props) {
                                                     <div className="text-sm text-gray-600 dark:text-gray-400">Teléfono Principal</div>
                                                     <a
                                                         href={`tel:${contact.phone_primary}`}
-                                                        className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                                                        className="text-primary hover:text-primary dark:text-primary dark:hover:text-primary"
                                                     >
                                                         {contact.phone_primary}
                                                     </a>
@@ -164,7 +164,7 @@ export default function ContactShow({ contact }: Props) {
                                                     <div className="text-sm text-gray-600 dark:text-gray-400">Teléfono Secundario</div>
                                                     <a
                                                         href={`tel:${contact.phone_secondary}`}
-                                                        className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                                                        className="text-primary hover:text-primary dark:text-primary dark:hover:text-primary"
                                                     >
                                                         {contact.phone_secondary}
                                                     </a>
@@ -179,7 +179,7 @@ export default function ContactShow({ contact }: Props) {
                                                     <div className="text-sm text-gray-600 dark:text-gray-400">Móvil</div>
                                                     <a
                                                         href={`tel:${contact.mobile}`}
-                                                        className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                                                        className="text-primary hover:text-primary dark:text-primary dark:hover:text-primary"
                                                     >
                                                         {contact.mobile}
                                                     </a>

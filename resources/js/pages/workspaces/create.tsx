@@ -32,7 +32,7 @@ export default function CreateWorkspace() {
                 <div className="space-y-6">
                     <div className="text-center">
                         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-                            <Building2 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                            <Building2 className="h-6 w-6 text-primary dark:text-primary" />
                         </div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Nueva sucursal</h1>
                         <p className="mt-2 text-gray-600 dark:text-gray-400">
@@ -135,15 +135,15 @@ export default function CreateWorkspace() {
                             <div className="flex items-start gap-3">
                                 <div className="flex-shrink-0">
                                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-                                        <Building2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                        <Building2 className="h-4 w-4 text-primary dark:text-primary" />
                                     </div>
                                 </div>
                                 <div>
-                                    <h3 className="mb-2 font-semibold text-blue-900 dark:text-blue-100">¿Qué es una Sucursal?</h3>
-                                    <p className="mb-3 text-sm text-blue-700 dark:text-blue-300">
+                                    <h3 className="mb-2 font-semibold text-primary dark:text-primary">¿Qué es una Sucursal?</h3>
+                                    <p className="mb-3 text-sm text-primary dark:text-primary">
                                         Las sucursales te permiten gestionar y organizar las operaciones en diferentes ubicaciones de tu negocio.
                                     </p>
-                                    <ul className="space-y-1 text-sm text-blue-700 dark:text-blue-300">
+                                    <ul className="space-y-1 text-sm text-primary dark:text-primary">
                                         <li>• Gestiona inventarios y ventas por ubicación</li>
                                         <li>• Asigna personal específico a cada sucursal</li>
                                         <li>• Genera reportes independientes por sucursal</li>

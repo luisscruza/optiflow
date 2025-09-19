@@ -186,7 +186,7 @@ export default function DocumentSubtypesIndex({ subtypes, filters }: Props) {
                                             <TableCell colSpan={7} className="py-8 text-center text-gray-500">
                                                 No se encontraron numeraciones.
                                                 <br />
-                                                <Link href="/document-subtypes/create" className="text-blue-600 hover:underline">
+                                                <Link href="/document-subtypes/create" className="text-primary hover:underline">
                                                     Crear la primera numeración
                                                 </Link>
                                             </TableCell>

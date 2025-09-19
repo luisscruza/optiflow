@@ -117,7 +117,7 @@ export default function WorkspaceMembers({ workspace, members, pending_invitatio
                                 <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
                                     <div className="flex items-center gap-4">
                                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                            <span className="text-blue-600 font-medium">
+                                            <span className="text-primary font-medium">
                                                 {member.name.charAt(0).toUpperCase()}
                                             </span>
                                         </div>

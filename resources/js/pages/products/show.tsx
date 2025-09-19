@@ -172,13 +172,13 @@ export default function ProductsShow({ product }: Props) {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <h4 className="font-medium text-gray-900 dark:text-white">Profit</h4>
-                                                <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                                                <p className="text-lg font-semibold text-primary dark:text-primary">
                                                     {formatCurrency(product.price - product.cost)}
                                                 </p>
                                             </div>
                                             <div>
                                                 <h4 className="font-medium text-gray-900 dark:text-white">Profit Margin</h4>
-                                                <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                                                <p className="text-lg font-semibold text-primary dark:text-primary">
                                                     {(((product.price - product.cost) / product.cost) * 100).toFixed(2)}%
                                                 </p>
                                             </div>

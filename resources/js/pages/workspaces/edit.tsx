@@ -67,7 +67,7 @@ export default function EditWorkspace({ workspace }: Props) {
                 <div className="space-y-6">
                     <div className="text-center">
                         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-                            <Building2 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                            <Building2 className="h-6 w-6 text-primary dark:text-primary" />
                         </div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Configuración de la Sucursal</h1>
                         <p className="mt-2 text-gray-600 dark:text-gray-400">Actualiza la información y configuración de tu sucursal.</p>
@@ -195,7 +195,7 @@ export default function EditWorkspace({ workspace }: Props) {
 
                             <div className="border-t border-gray-200 pt-2 dark:border-gray-700">
                                 <div className="flex items-center gap-2">
-                                    <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                    <Badge variant="secondary" className="bg-blue-100 text-primary dark:bg-blue-900 dark:text-primary">
                                         <Crown className="mr-1 h-3 w-3" />
                                         Administrador
                                     </Badge>
@@ -248,12 +248,12 @@ export default function EditWorkspace({ workspace }: Props) {
                             <div className="flex items-start gap-3">
                                 <div className="flex-shrink-0">
                                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-                                        <Building2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                        <Building2 className="h-4 w-4 text-primary dark:text-primary" />
                                     </div>
                                 </div>
                                 <div>
-                                    <h3 className="mb-2 font-semibold text-blue-900 dark:text-blue-100">Consejos para tu Espacio de Trabajo</h3>
-                                    <ul className="space-y-1 text-sm text-blue-700 dark:text-blue-300">
+                                    <h3 className="mb-2 font-semibold text-primary dark:text-primary">Consejos para tu Espacio de Trabajo</h3>
+                                    <ul className="space-y-1 text-sm text-primary dark:text-primary">
                                         <li>• Usa un nombre descriptivo que identifique claramente el propósito</li>
                                         <li>• Una buena descripción ayuda a los miembros a entender el contexto</li>
                                         <li>• Revisa periódicamente la configuración para mantenerla actualizada</li>
