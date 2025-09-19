@@ -1,6 +1,6 @@
-import { Form } from '@inertiajs/react';
-import { ArrowRight } from 'lucide-react';
-import { useState } from 'react';
+import { Form, router } from '@inertiajs/react';
+import { ArrowRight, Search } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -34,13 +34,92 @@ export default function QuickContactModal({
     ],
 }: Props) {
     const [selectedContactType, setSelectedContactType] = useState<ContactType | ''>('customer');
+    const [selectedIdentificationType, setSelectedIdentificationType] = useState<IdentificationType | ''>('');
+    const [identificationNumber, setIdentificationNumber] = useState('');
+    const [contactName, setContactName] = useState('');
+    const [isSearchingRNC, setIsSearchingRNC] = useState(false);
+    const [rncSearchError, setRncSearchError] = useState<string | null>(null);
+    
+    const identificationTypeRef = useRef<HTMLSelectElement>(null);
+    const identificationNumberRef = useRef<HTMLInputElement>(null);
+    const contactNameRef = useRef<HTMLInputElement>(null);
 
     const dominicanProvinces = countriesData['Dominican Republic'] || [];
+
+    // Reset form state when modal opens
+    useEffect(() => {
+        if (open) {
+            setSelectedContactType('customer');
+            setSelectedIdentificationType('');
+            setIdentificationNumber('');
+            setContactName('');
+            setIsSearchingRNC(false);
+            setRncSearchError(null);
+            
+            // Reset form inputs
+            if (identificationTypeRef.current) {
+                identificationTypeRef.current.value = '';
+            }
+            if (identificationNumberRef.current) {
+                identificationNumberRef.current.value = '';
+            }
+            if (contactNameRef.current) {
+                contactNameRef.current.value = '';
+            }
+        }
+    }, [open]);
 
     const handleAdvancedForm = () => {
         onOpenChange(false);
         if (onAdvancedForm) {
             onAdvancedForm();
+        }
+    };
+
+    const handleIdentificationTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value as IdentificationType;
+        setSelectedIdentificationType(value);
+        setRncSearchError(null);
+        // Clear identification number when changing type
+        if (value !== 'rnc') {
+            setIdentificationNumber('');
+            if (identificationNumberRef.current) {
+                identificationNumberRef.current.value = '';
+            }
+        }
+    };
+
+    const searchRNC = async () => {
+        if (!identificationNumber || selectedIdentificationType !== 'rnc') return;
+        
+        setIsSearchingRNC(true);
+        setRncSearchError(null);
+
+        try {
+            const response = await fetch('/api/rnc', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({ rnc: identificationNumber }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.name) {
+                    setContactName(data.name);
+                    if (contactNameRef.current) {
+                        contactNameRef.current.value = data.name;
+                    }
+                }
+            } else {
+                setRncSearchError('RNC no encontrado o error en la búsqueda');
+            }
+        } catch (error) {
+            setRncSearchError('Error al buscar el RNC. Intente nuevamente.');
+        } finally {
+            setIsSearchingRNC(false);
         }
     };
 
@@ -99,7 +178,9 @@ export default function QuickContactModal({
                                 <div className="space-y-2">
                                     <Label htmlFor="identification_type">Tipo de identificación</Label>
                                     <select
+                                        ref={identificationTypeRef}
                                         name="identification_type"
+                                        onChange={handleIdentificationTypeChange}
                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         <option value="">Seleccionar</option>
@@ -116,9 +197,35 @@ export default function QuickContactModal({
 
                                 <div className="space-y-2">
                                     <Label htmlFor="identification_number">Número</Label>
-                                    <Input name="identification_number" type="text" placeholder="Número de identificación" />
+                                    <div className="flex gap-2">
+                                        <Input 
+                                            ref={identificationNumberRef}
+                                            name="identification_number" 
+                                            type="text" 
+                                            placeholder="Número de identificación"
+                                            onChange={(e) => {
+                                                setIdentificationNumber(e.target.value);
+                                                setRncSearchError(null);
+                                            }}
+                                        />
+                                        {selectedIdentificationType === 'rnc' && (
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="icon"
+                                                onClick={searchRNC}
+                                                disabled={!identificationNumber || isSearchingRNC}
+                                                className="shrink-0"
+                                            >
+                                                <Search className={`h-4 w-4 ${isSearchingRNC ? 'animate-spin' : ''}`} />
+                                            </Button>
+                                        )}
+                                    </div>
                                     {errors.identification_number && (
                                         <p className="text-sm text-red-600 dark:text-red-400">{errors.identification_number}</p>
+                                    )}
+                                    {rncSearchError && (
+                                        <p className="text-sm text-red-600 dark:text-red-400">{rncSearchError}</p>
                                     )}
                                 </div>
                             </div>
@@ -126,7 +233,14 @@ export default function QuickContactModal({
                             {/* Name */}
                             <div className="space-y-2">
                                 <Label htmlFor="name">Nombre o Razón social *</Label>
-                                <Input name="name" type="text" placeholder="Nombre completo o razón social" required />
+                                <Input 
+                                    ref={contactNameRef}
+                                    name="name" 
+                                    type="text" 
+                                    placeholder="Nombre completo o razón social" 
+                                    required 
+                                    onChange={(e) => setContactName(e.target.value)}
+                                />
                                 {errors.name && <p className="text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
                             </div>
 

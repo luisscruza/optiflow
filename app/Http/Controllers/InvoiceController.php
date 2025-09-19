@@ -131,6 +131,7 @@ final class InvoiceController extends Controller
 
     /**
      * Store a newly created invoice.
+     *
      * @throws Throwable
      */
     public function store(Request $request, User $user, CreateInvoiceAction $action): RedirectResponse

@@ -11,11 +11,9 @@ interface AppLayoutProps {
 }
 
 export default ({ children, breadcrumbs, ...props }: AppLayoutProps) => {
-    console.log('Rendering AppLayout');
     const page = usePage<SharedData>();
 
     useEffect(() => {
-        console.log('Flash messages:', page.props.flash);
         if (page.props.flash?.success) {
             toast.success(page.props.flash.success);
         }
