@@ -4,29 +4,34 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\DTOs\InvoiceResult;
 use App\Enums\DocumentType;
+use App\Exceptions\InsufficientStockException;
 use App\Models\Document;
 use App\Models\DocumentSubtype;
 use App\Models\Workspace;
 use App\Support\NCFValidator;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
+use Throwable;
 
 final readonly class CreateInvoiceAction
 {
-    public function __construct(private readonly CreateDocumentItemAction $createItems)
+    public function __construct(private CreateDocumentItemAction $createItems)
     {
         //
     }
 
-    public function handle(Workspace $workspace, array $data): Document
+    /**
+     * @throws Throwable
+     */
+    public function handle(Workspace $workspace, array $data): InvoiceResult
     {
         return DB::transaction(function () use ($workspace, $data) {
 
             $documentSubtype = DocumentSubtype::findOrFail($data['document_subtype_id']);
 
             if (! NCFValidator::validate($data['ncf'], $documentSubtype, $data)) {
-                throw new InvalidArgumentException('The provided NCF is not valid.');
+                return new InvoiceResult(error: 'El NCF proporcionado no es válido.');
             }
 
             $document = $this->createDocument($workspace, $data);
@@ -38,9 +43,18 @@ final readonly class CreateInvoiceAction
                     $item['quantity'] > 0;
             });
 
-            $this->createItems->handle($document, $items);
+            try {
+                $this->createItems->handle($document, $items);
+            } catch (InsufficientStockException $e) {
+                DB::rollBack();
 
-            return $document->load(['contact', 'documentSubtype', 'items.product']);
+                return new InvoiceResult(
+                    error: $e->getMessage(),
+                );
+            }
+
+            return new InvoiceResult(
+                invoice: $document->load(['contact', 'documentSubtype', 'items.product']));
         });
     }
 

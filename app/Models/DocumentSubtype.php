@@ -72,12 +72,10 @@ final class DocumentSubtype extends Model
      */
     public function isValid(): bool
     {
-        // Check if not expired
         if ($this->valid_until_date && $this->valid_until_date->isPast()) {
             return false;
         }
 
-        // Check if within range
         if ($this->end_number && $this->next_number > $this->end_number) {
             return false;
         }

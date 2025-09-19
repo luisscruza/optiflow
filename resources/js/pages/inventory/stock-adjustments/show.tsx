@@ -60,10 +60,10 @@ export default function StockAdjustmentsShow({ product, currentStock, stockHisto
         switch (type) {
             case 'initial':
                 return <Badge variant="secondary">Inventario inicial</Badge>;
-            case 'add_quantity':
-                return <Badge variant="default">Agregar cantidad</Badge>;
-            case 'remove_quantity':
-                return <Badge variant="destructive">Quitar cantidad</Badge>;
+            case 'adjustment':
+                return <Badge variant="default">Ajuste</Badge>;
+            case 'out':
+                return <Badge variant="outline">Venta</Badge>;
             case 'set_quantity':
                 return <Badge variant="outline">Establecer cantidad</Badge>;
             case 'transfer_in':

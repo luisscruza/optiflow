@@ -40,6 +40,10 @@ Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(funct
             return Inertia::render('dashboard');
         })->name('dashboard');
 
+        Route::get('/test', function () {
+            return redirect()->route('dashboard')->with('success', 'This is a success message!');
+        })->name('test');
+
         // Configuration page
         Route::get('configuration', [ConfigurationController::class, 'index'])->name('configuration.index');
 

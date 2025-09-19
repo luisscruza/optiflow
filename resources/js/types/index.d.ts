@@ -50,6 +50,12 @@ export interface SharedData {
     };
     defaultCurrency?: Currency | null;
     newlyCreatedContact?: Contact | null;
+    flash?: {
+        success?: string;
+        error?: string;
+        info?: string;
+        warning?: string;
+    };
     [key: string]: unknown;
 }
 

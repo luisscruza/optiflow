@@ -8,7 +8,6 @@ use App\Enums\StockMovementType;
 use App\Exceptions\InsufficientStockException;
 use App\Models\Document;
 use App\Models\Product;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -48,10 +47,10 @@ final readonly class CreateDocumentItemAction
     /**
      * @throws InsufficientStockException
      */
-    private function validateStock(Document $document, mixed $item, Collection|Product|null $product): void
+    private function validateStock(Document $document, mixed $item, Product $product): void
     {
         if (! $product->hasSufficientStock($document->workspace_id, $item['quantity'])) {
-            throw new InsufficientStockException("Insufficient stock for product {$product->name}");
+            throw new InsufficientStockException('Insufficient stock for product: '.$product->name);
         }
     }
 
@@ -66,8 +65,10 @@ final readonly class CreateDocumentItemAction
      *     discount_amount?: float,
      *     tax_rate?: float,
      *     tax_amount?: float,
-     *     total?: float,
+     *     total: float,
      * } $item
+     *
+     * @throws InsufficientStockException
      */
     private function decreaseStock(Document $document, array $item, Product $product): void
     {
@@ -83,7 +84,13 @@ final readonly class CreateDocumentItemAction
             'reference_number' => $document->document_number,
         ]);
 
-        $product->getStockForWorkspace($document->workspace)->decrementStock($item['quantity']);
+        $stockForWorkspace = $product->getStockForWorkspace($document->workspace);
+
+        if (! $stockForWorkspace) {
+            throw new InsufficientStockException('No stock record found for product: '.$product->name);
+        }
+
+        $stockForWorkspace->decrementStock($item['quantity']);
     }
 
     /**
@@ -98,7 +105,7 @@ final readonly class CreateDocumentItemAction
      *     discount_amount?: float,
      *     tax_rate?: float,
      *     tax_amount?: float,
-     *     total?: float,
+     *     total: float,
      * } $item
      */
     private function createLine(Document $document, array $item, Product $product): void

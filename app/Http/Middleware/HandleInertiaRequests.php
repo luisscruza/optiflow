@@ -51,7 +51,7 @@ final class HandleInertiaRequests extends Middleware
             'newlyCreatedContact' => fn () => $request->session()->get('newly_created_contact') ? $request->session()->get('newly_created_contact') : null,
             'flash' => [
                 'success' => $request->session()->get('success'),
-                'errors' => $request->session()->get('error'),
+                'error' => $request->session()->get('error'),
             ],
         ];
     }

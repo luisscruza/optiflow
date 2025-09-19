@@ -17,8 +17,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
 
 final class InvoiceController extends Controller
 {
@@ -111,10 +113,9 @@ final class InvoiceController extends Controller
             });
 
         $documentSubtype = $request->filled('document_subtype_id')
-            ? DocumentSubtype::find($request->get('document_subtype_id'))
+            ? DocumentSubtype::findOrFail($request->get('document_subtype_id'))
             : DocumentSubtype::active()->where('is_default', true)->first();
 
-        // Get available workspaces for the user
         $availableWorkspaces = Auth::user()?->workspaces ?? collect();
 
         return Inertia::render('invoices/create', [
@@ -122,7 +123,7 @@ final class InvoiceController extends Controller
             'customers' => $customers,
             'products' => $products,
             'ncf' => $documentSubtype?->generateNCF(),
-            'document_subtype_id' => $documentSubtype?->id,
+            'document_subtype_id' => $documentSubtype->id,
             'currentWorkspace' => $currentWorkspace,
             'availableWorkspaces' => $availableWorkspaces,
         ]);
@@ -130,13 +131,23 @@ final class InvoiceController extends Controller
 
     /**
      * Store a newly created invoice.
+     * @throws Throwable
      */
     public function store(Request $request, User $user, CreateInvoiceAction $action): RedirectResponse
     {
         $workspace = Context::get('workspace');
-        $action->handle($workspace, $request->all());
 
-        return redirect()->route('invoices.index');
+        $result = $action->handle($workspace, $request->all());
+
+        if ($result->isError()) {
+            Session::flash('error', $result->error);
+
+            return redirect()->route('invoices.create')
+                ->withErrors(['error' => $result->error]);
+        }
+
+        return redirect()->route('invoices.index')->with('success', 'Factura creada exitosamente.');
+
     }
 
     /**

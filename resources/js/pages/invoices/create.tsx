@@ -480,7 +480,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                     onValueChange={handleContactSelect}
                                                 >
                                                     <SelectTrigger className={`h-10 flex-1 ${errors.contact_id ? 'border-red-300 ring-red-500/20' : 'border-gray-300'}`}>
-                                                        <SelectValue placeholder="Eduardo Luis de la Cruz" />
+                                                        <SelectValue placeholder="Buscar..." />
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         {contactsList.map((customer) => (
@@ -1111,7 +1111,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                             <Button
                                 type="submit"
                                 size="lg"
-                                disabled={processing || !ncf}
+                                disabled={processing || !ncf || !data.contact_id || data.items.length === 0}
                                 className={`flex items-center justify-center gap-2 min-w-[160px] ${
                                     processing || !ncf
                                         ? 'bg-gray-400 hover:bg-gray-400'
