@@ -175,7 +175,7 @@ final class InvoiceController extends Controller
         $products = Product::with('defaultTax')->orderBy('name')->get();
         $taxes = Tax::orderBy('name')->get();
 
-        return Inertia::render('invoices/edit', [
+        return Inertia::render('invoices/Edit', [
             'invoice' => $invoice,
             'documentSubtypes' => $documentSubtypes,
             'customers' => $customers,

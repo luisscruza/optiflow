@@ -115,10 +115,11 @@ final readonly class CreateDocumentItemAction
             'description' => $item['description'] ?? null,
             'quantity' => $item['quantity'],
             'unit_price' => $item['unit_price'],
-            'discount' => $item['discount_amount'] ?? 0,
-            'tax_rate_snapshot' => $item['tax_rate'] ?? 0,
-            'tax_id' => 1, // @TODO: Pass the tax ID from the request
+            'discount_amount' => $item['discount_amount'] ?? 0,
+            'discount_rate' => $item['discount_rate'] ?? 0,
+            'tax_rate' => $item['tax_rate'] ?? 0,
             'tax_amount' => $item['tax_amount'] ?? 0,
+            'tax_id' => 1, // @TODO: Pass the tax ID from the request
             'total' => $item['total'],
         ]);
     }
