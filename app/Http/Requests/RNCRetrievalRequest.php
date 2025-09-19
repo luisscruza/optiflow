@@ -24,7 +24,7 @@ final class RNCRetrievalRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'rnc' => ['required', 'string', 'size:9'],
+            'rnc' => ['required', 'string']
         ];
     }
 }
