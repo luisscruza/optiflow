@@ -77,6 +77,7 @@ export default function QuickContactModal({
                                             name="contact_type"
                                             value={type.value}
                                             className="sr-only"
+                                            checked={selectedContactType === type.value}
                                             onChange={() => setSelectedContactType(type.value)}
                                         />
                                         <div

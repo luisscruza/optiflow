@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/searchable-select';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
@@ -398,6 +399,19 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
         setSelectedContact(contact || null);
     };
 
+    // Helper function to convert contacts to SearchableSelectOption format
+    const contactOptions: SearchableSelectOption[] = contactsList.map((contact) => ({
+        value: contact.id.toString(),
+        label: contact.name,
+    }));
+
+    // Helper function to convert products to SearchableSelectOption format
+    const getProductOptions = (): SearchableSelectOption[] => products.map((product) => ({
+        value: product.id.toString(),
+        label: `${product.name} - ${formatCurrency(product.price)}`,
+        disabled: product.track_stock && product.stock_status === 'out_of_stock',
+    }));
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Nueva factura" />
@@ -475,21 +489,28 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                 <span className="text-red-500">*</span>
                                             </Label>
                                             <div className="flex gap-2">
-                                                <Select
+                                                <SearchableSelect
+                                                    options={contactOptions}
                                                     value={data.contact_id?.toString() || ''}
                                                     onValueChange={handleContactSelect}
-                                                >
-                                                    <SelectTrigger className={`h-10 flex-1 ${errors.contact_id ? 'border-red-300 ring-red-500/20' : 'border-gray-300'}`}>
-                                                        <SelectValue placeholder="Buscar..." />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {contactsList.map((customer) => (
-                                                            <SelectItem key={customer.id} value={customer.id.toString()}>
-                                                                {customer.name}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
+                                                    placeholder="Buscar contacto..."
+                                                    searchPlaceholder="Escribir para buscar..."
+                                                    emptyText="No se encontró ningún contacto."
+                                                    noEmptyAction={
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => setShowContactModal(true)}
+                                                            className="text-blue-600 hover:bg-blue-50"
+                                                        >
+                                                            <Plus className="h-4 w-4 mr-1" />
+                                                            Crear nuevo contacto
+                                                        </Button>
+                                                    }
+                                                    className="flex-1"
+                                                    triggerClassName={`h-10 ${errors.contact_id ? 'border-red-300 ring-red-500/20' : 'border-gray-300'}`}
+                                                />
                                                 <Button
                                                     type="button"
                                                     variant="outline"
@@ -732,35 +753,15 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                     <div className="space-y-3">
                                                         <div>
                                                             <Label className="text-xs font-medium text-gray-700">Producto</Label>
-                                                            <Select
+                                                            <SearchableSelect
+                                                                options={getProductOptions()}
                                                                 value={item.product_id?.toString() || ''}
                                                                 onValueChange={(value) => handleProductSelect(item.id, value)}
-                                                            >
-                                                                <SelectTrigger className="h-10 mt-1">
-                                                                    <SelectValue placeholder="Seleccionar producto" />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    {products.map((product) => (
-                                                                        <SelectItem
-                                                                            key={product.id}
-                                                                            value={product.id.toString()}
-                                                                            disabled={product.track_stock && product.stock_status === 'out_of_stock'}
-                                                                        >
-                                                                            <div className="flex items-center justify-between w-full pr-4">
-                                                                                <div className="flex flex-col">
-                                                                                    <span className="font-medium">{product.name}</span>
-                                                                                    <span className="text-xs text-gray-500">{formatCurrency(product.price)}</span>
-                                                                                </div>
-                                                                                {product.track_stock && (
-                                                                                    <div className={`text-xs px-2 py-1 rounded-full border whitespace-nowrap ${getStockStatusColor(product.stock_status || 'not_tracked')}`}>
-                                                                                        {getStockStatusText(product)}
-                                                                                    </div>
-                                                                                )}
-                                                                            </div>
-                                                                        </SelectItem>
-                                                                    ))}
-                                                                </SelectContent>
-                                                            </Select>
+                                                                placeholder="Seleccionar producto"
+                                                                searchPlaceholder="Buscar producto..."
+                                                                emptyText="No se encontró ningún producto."
+                                                                triggerClassName="h-10 mt-1"
+                                                            />
                                                         </div>
 
                                                         <div>
@@ -896,24 +897,15 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                 <div className="hidden lg:grid lg:grid-cols-12 gap-3 items-center py-3 border-b border-gray-100 last:border-b-0">
                                                     {/* Product Selection */}
                                                     <div className="col-span-2">
-                                                        <Select
+                                                        <SearchableSelect
+                                                            options={getProductOptions()}
                                                             value={item.product_id?.toString() || ''}
                                                             onValueChange={(value) => handleProductSelect(item.id, value)}
-                                                        >
-                                                            <SelectTrigger className="h-9 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20">
-                                                                <SelectValue placeholder="Seleccionar..." />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                {products.map((product) => (
-                                                                    <SelectItem key={product.id} value={product.id.toString()}>
-                                                                        <div className="flex flex-col">
-                                                                            <span className="font-medium">{product.name}</span>
-                                                                            <span className="text-xs text-gray-500">{formatCurrency(product.price)}</span>
-                                                                        </div>
-                                                                    </SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
+                                                            placeholder="Seleccionar..."
+                                                            searchPlaceholder="Buscar producto..."
+                                                            emptyText="No se encontró ningún producto."
+                                                            triggerClassName="h-9 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
+                                                        />
                                                     </div>
 
                                                     {/* Description */}
@@ -1135,7 +1127,6 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                 </div>
             </div>
 
-            {/* Quick Contact Modal */}
             <QuickContactModal
                 open={showContactModal}
                 onOpenChange={setShowContactModal}
