@@ -1077,7 +1077,6 @@ export default function EditInvoice({
                                 </div>
                             </CardContent>
                         </Card>
-
                         {/* Enhanced Actions */}
                         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                             <Button
@@ -1091,12 +1090,13 @@ export default function EditInvoice({
                                     Cancelar
                                 </a>
                             </Button>
+                          
                             <Button
                                 type="submit"
                                 size="lg"
-                                disabled={processing || !data.ncf || !data.contact_id || data.items.length === 0}
+                                disabled={processing || !data.contact_id || data.items.length === 0}
                                 className={`flex items-center justify-center gap-2 min-w-[160px] ${
-                                    processing || !data.ncf
+                                    processing
                                         ? 'bg-gray-400 hover:bg-gray-400'
                                         : 'bg-blue-600 hover:bg-blue-700'
                                 }`}

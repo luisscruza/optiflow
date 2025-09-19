@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\CreateInvoiceAction;
+use App\Actions\UpdateInvoiceAction;
+use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\Contact;
 use App\Models\Document;
 use App\Models\DocumentSubtype;
@@ -12,7 +14,6 @@ use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\Tax;
 use App\Models\User;
-use App\Models\Workspace;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -64,20 +65,6 @@ final class InvoiceController extends Controller
      */
     public function create(Request $request): Response
     {
-        // Handle workspace switching if requested
-        if ($request->filled('workspace_id')) {
-            $workspaceId = $request->get('workspace_id');
-            $workspace = Workspace::findOrFail($workspaceId);
-
-            // Verify user has access to this workspace
-            if (! Auth::user()->hasAccessToWorkspace($workspace)) {
-                abort(403, 'No tienes acceso a este espacio de trabajo.');
-            }
-
-            // Switch the user's current workspace
-            Auth::user()->switchToWorkspace($workspace);
-        }
-
         $currentWorkspace = Context::get('workspace');
 
         $documentSubtypes = DocumentSubtype::active()
@@ -89,7 +76,6 @@ final class InvoiceController extends Controller
             ->orderBy('name')
             ->get();
 
-        // Get products with stock information for the current workspace
         $products = Product::with(['defaultTax'])
             ->when($currentWorkspace, function ($query) use ($currentWorkspace) {
                 $query->with(['stocks' => function ($stockQuery) use ($currentWorkspace) {
@@ -99,14 +85,12 @@ final class InvoiceController extends Controller
             ->orderBy('name')
             ->get()
             ->map(function ($product) use ($currentWorkspace) {
-                // Add stock information to each product
                 $stock = $currentWorkspace ? $product->stocks->first() : null;
                 $product->current_stock = $stock;
                 $product->stock_quantity = $stock ? $stock->quantity : 0;
                 $product->minimum_quantity = $stock ? $stock->minimum_quantity : 0;
                 $product->stock_status = $this->getStockStatus($product, $stock);
 
-                // Remove the stocks collection to keep response clean
                 unset($product->stocks);
 
                 return $product;
@@ -168,11 +152,37 @@ final class InvoiceController extends Controller
      */
     public function edit(Document $invoice): Response
     {
+        $currentWorkspace = Context::get('workspace');
+
         $invoice->load(['contact', 'documentSubtype', 'items.product', 'items.tax']);
 
         $documentSubtypes = DocumentSubtype::orderBy('name')->get();
         $customers = Contact::customers()->orderBy('name')->get();
-        $products = Product::with('defaultTax')->orderBy('name')->get();
+
+        $products = Product::with(['defaultTax'])
+            ->when($currentWorkspace, function ($query) use ($currentWorkspace) {
+                $query->with(['stocks' => function ($stockQuery) use ($currentWorkspace) {
+                    $stockQuery->where('workspace_id', $currentWorkspace->id);
+                }]);
+            })
+            ->orderBy('name')
+            ->get()
+            ->map(function ($product) use ($currentWorkspace, $invoice) {
+                // If the invoice has this product... we need to sum the quantities to the current stock...
+                $isInInvoice = $invoice->items->firstWhere('product_id', $product->id)->exists();
+
+                $stock = $currentWorkspace ? $product->stocks->first() : null;
+
+                $product->current_stock = $stock;
+                $product->stock_quantity = $stock ? $stock->quantity : 0;
+                $product->minimum_quantity = $stock ? $stock->minimum_quantity : 0;
+                $product->stock_status = $this->getStockStatus($product, $stock);
+
+                unset($product->stocks);
+
+                return $product;
+            });
+
         $taxes = Tax::orderBy('name')->get();
 
         return Inertia::render('invoices/Edit', [
@@ -187,10 +197,21 @@ final class InvoiceController extends Controller
     /**
      * Update the specified invoice.
      */
-    public function update(Request $request, Document $invoice, User $user): RedirectResponse
+    public function update(UpdateInvoiceRequest $request, Document $invoice, UpdateInvoiceAction $action): RedirectResponse
     {
-        // This will be implemented with UpdateInvoiceAction
-        return redirect()->route('invoices.show', $invoice);
+        $workspace = Context::get('workspace');
+
+        $result = $action->handle($workspace, $invoice, $request->validated());
+
+        if ($result->isError()) {
+            Session::flash('error', $result->error);
+
+            return redirect()->route('invoices.edit', $invoice)
+                ->withErrors(['error' => $result->error]);
+        }
+
+        return redirect()->route('invoices.show', $invoice)
+            ->with('success', 'Factura actualizada exitosamente.');
     }
 
     /**

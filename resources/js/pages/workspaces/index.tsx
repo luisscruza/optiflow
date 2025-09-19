@@ -13,7 +13,7 @@ import { Head, Link, router } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Espacios de Trabajo',
+        title: 'Sucursales',
         href: index().url,
     },
 ];
@@ -105,10 +105,9 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                     <Card>
                         <CardContent className="flex flex-col items-center justify-center py-12">
                             <Building2 className="mb-4 h-12 w-12 text-gray-400" />
-                            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">No hay espacios de trabajo aún</h3>
+                            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">No hay sucursales aún</h3>
                             <p className="mb-6 max-w-md text-center text-gray-600 dark:text-gray-400">
-                                Comienza creando tu primer espacio de trabajo. Los espacios de trabajo te ayudan a organizar tu trabajo y colaborar
-                                con otros.
+                                Comienza creando tu primera sucursal.
                             </p>
                             <Button asChild>
                                 <Link href={create().url}>

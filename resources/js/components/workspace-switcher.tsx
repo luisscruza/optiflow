@@ -87,13 +87,13 @@ export function WorkspaceSwitcher() {
                             <div className="flex size-6 items-center justify-center rounded-md border border-dashed">
                                 <Plus className="size-4" />
                             </div>
-                            Create workspace
+                            Crear sucursal
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={manageWorkspaces} className="gap-2 p-2">
                             <div className="flex size-6 items-center justify-center rounded-md border">
                                 <Settings className="size-4" />
                             </div>
-                            Manage workspaces
+                            Gestionar sucursales
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

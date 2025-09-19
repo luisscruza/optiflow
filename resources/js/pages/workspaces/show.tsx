@@ -21,7 +21,7 @@ export default function ShowWorkspace({ workspace }: Props) {
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
-            title: 'Espacios de Trabajo',
+            title: 'Sucursales',
             href: index().url,
         },
         {
@@ -153,7 +153,7 @@ export default function ShowWorkspace({ workspace }: Props) {
                                 <Button variant="outline" asChild className="justify-start">
                                     <Link href={index().url}>
                                         <Building2 className="mr-2 h-4 w-4" />
-                                        Ver todos los espacios de trabajo
+                                        Ver todas las sucursales
                                     </Link>
                                 </Button>
                             </div>
