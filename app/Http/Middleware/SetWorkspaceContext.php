@@ -19,13 +19,24 @@ final class SetWorkspaceContext
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user() && $request->user()->currentWorkspace) {
-            Context::add('workspace', $request->user()->currentWorkspace);
+        $user = $request->user();
+
+        if ($user) {
+            if (! $user->currentWorkspace && $user->workspaces->isNotEmpty()) {
+                $user->update([
+                    'current_workspace_id' => $user->workspaces->first()->id,
+                ]);
+                $user->refresh();
+            }
+
+            $workspace = $user->currentWorkspace;
+
+            Context::add('workspace', $workspace);
 
             Inertia::share([
                 'workspace' => [
-                    'current' => $request->user()->currentWorkspace,
-                    'available' => $request->user()->workspaces,
+                    'current' => $workspace,
+                    'available' => $user->workspaces,
                 ],
             ]);
         }

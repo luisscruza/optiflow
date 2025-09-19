@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -17,6 +18,7 @@ use Illuminate\Notifications\Notifiable;
  * @property string $name
  * @property string $email
  * @property \Carbon\CarbonImmutable|null $email_verified_at
+ * @property string $business_role
  * @property string $password
  * @property string|null $remember_token
  * @property \Carbon\CarbonImmutable|null $created_at
@@ -94,6 +96,26 @@ final class User extends Authenticatable
     }
 
     /**
+     * Get the invitations sent by this user.
+     *
+     * @return HasMany<UserInvitation, $this>
+     */
+    public function sentInvitations(): HasMany
+    {
+        return $this->hasMany(UserInvitation::class, 'invited_by');
+    }
+
+    /**
+     * Get the invitations received by this user.
+     *
+     * @return HasMany<UserInvitation, $this>
+     */
+    public function receivedInvitations(): HasMany
+    {
+        return $this->hasMany(UserInvitation::class, 'user_id');
+    }
+
+    /**
      * Check if user has access to a workspace.
      */
     public function hasAccessToWorkspace(Workspace $workspace): bool
@@ -117,6 +139,30 @@ final class User extends Authenticatable
     }
 
     /**
+     * Check if user has a specific business role.
+     */
+    public function hasBusinessRole(UserRole $role): bool
+    {
+        return $this->business_role === $role;
+    }
+
+    /**
+     * Check if user is an admin or owner.
+     */
+    public function isAdminOrOwner(): bool
+    {
+        return in_array($this->business_role, [UserRole::Admin, UserRole::Owner]);
+    }
+
+    /**
+     * Check if user can manage other users.
+     */
+    public function canManageUsers(): bool
+    {
+        return $this->hasBusinessRole(UserRole::Owner) || $this->hasBusinessRole(UserRole::Admin);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -126,6 +172,7 @@ final class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'business_role' => UserRole::class,
         ];
     }
 }

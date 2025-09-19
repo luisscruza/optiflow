@@ -18,6 +18,9 @@ use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\WorkspaceContextController;
 use App\Http\Controllers\WorkspaceController;
+use App\Http\Controllers\WorkspaceInvitationController;
+use App\Http\Controllers\WorkspaceMemberController;
+use App\Http\Controllers\WorkspaceMemberRoleController;
 use App\Http\Middleware\HasWorkspace;
 use App\Http\Middleware\SetWorkspaceContext;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +29,12 @@ use Inertia\Inertia;
 Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
+
+Route::prefix('invitations')->name('invitations.')->group(function () {
+    Route::get('{token}', [WorkspaceInvitationController::class, 'show'])->name('show');
+    Route::post('{token}/accept', [WorkspaceInvitationController::class, 'update'])->name('accept');
+    Route::post('{token}/decline', [WorkspaceInvitationController::class, 'destroy'])->name('decline');
+});
 
 Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(function () {
     Route::resource('workspaces', WorkspaceController::class)->only(['index', 'store', 'update']);
@@ -44,14 +53,11 @@ Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(funct
             return redirect()->route('dashboard')->with('success', 'This is a success message!');
         })->name('test');
 
-        // Configuration page
         Route::get('configuration', [ConfigurationController::class, 'index'])->name('configuration.index');
 
-        // Company Details - Configuration
         Route::get('company-details', [CompanyDetailsController::class, 'edit'])->name('company-details.edit');
         Route::patch('company-details', [CompanyDetailsController::class, 'update'])->name('company-details.update');
 
-        // Currencies - Configuration
         Route::resource('currencies', CurrencyController::class);
         Route::resource('currency-rates', CurrencyRateController::class);
         Route::post('currencies/{currency}/rates', [CurrencyRateController::class, 'store'])->name('currencies.rates.store');
@@ -62,15 +68,12 @@ Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(funct
 
         Route::resource('contacts', ContactController::class);
 
-        // Invoices - Document management
         Route::resource('invoices', InvoiceController::class);
         Route::get('invoices/{invoice}/pdf', DownloadInvoicePdfController::class)->name('invoices.pdf');
 
-        // Document Subtypes (Numeraciones) - NCF management
         Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
         Route::patch('document-subtypes/{documentSubtype}/set-default', SetDefaultDocumentSubtypeController::class)->name('document-subtypes.set-default');
 
-        // Inventory overview page
         Route::get('inventory', function () {
             return Inertia::render('inventory/index');
         })->name('inventory.index');
@@ -82,6 +85,12 @@ Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(funct
             'stock-transfers' => 'stockMovement',
         ]);
         Route::resource('initial-stock', InitialStockController::class)->only(['index', 'create', 'store']);
+
+        Route::get('workspace/members', [WorkspaceMemberController::class, 'index'])->name('workspace.members.index');
+        Route::patch('workspace/members/{member}/role', [WorkspaceMemberRoleController::class, 'update'])->name('workspace.members.update-role');
+        Route::delete('workspace/members/{member}', [WorkspaceMemberController::class, 'destroy'])->name('workspace.members.destroy');
+
+        Route::post('workspace/invitations', [WorkspaceInvitationController::class, 'store'])->name('workspace.invitations.store');
 
     });
 });

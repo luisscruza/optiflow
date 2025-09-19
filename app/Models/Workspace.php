@@ -99,6 +99,16 @@ final class Workspace extends Model
     }
 
     /**
+     * Get the invitations for this workspace.
+     *
+     * @return HasMany<UserInvitation, $this>
+     */
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(UserInvitation::class);
+    }
+
+    /**
      * Add a user to the workspace.
      */
     public function addUser(User $user, string $role = 'member'): void

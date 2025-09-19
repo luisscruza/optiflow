@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Building2, Calculator, FileText, Receipt, Settings } from 'lucide-react';
+import { Building2, Calculator, FileText, Receipt, Settings, Users } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
@@ -34,6 +34,20 @@ const configurationSections = [
                 title: 'Monedas',
                 description: 'Gestiona las monedas y tasas de cambio',
                 href: '/currencies',
+            },
+        ],
+    },
+    {
+        title: 'Usuarios',
+        description: 'Gestiona los usuarios y sus permisos en el workspace.',
+        icon: Users,
+        color: 'text-blue-600',
+        bgColor: 'bg-blue-50',
+        items: [
+            {
+                title: 'Miembros de la sucursal',
+                description: 'Invita usuarios y gestiona sus roles',
+                href: '/workspace/members',
             },
         ],
     },
