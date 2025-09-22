@@ -1098,7 +1098,7 @@ export default function EditInvoice({
                                 className={`flex items-center justify-center gap-2 min-w-[160px] ${
                                     processing
                                         ? 'bg-gray-400 hover:bg-gray-400'
-                                        : 'bg-blue-600 hover:bg-blue-700'
+                                        : 'bg-primary hover:bg-primary/90'
                                 }`}
                             >
                                 {processing ? (
