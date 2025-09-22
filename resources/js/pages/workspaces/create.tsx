@@ -130,7 +130,7 @@ export default function CreateWorkspace() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
+                    <Card className="border-blue-200 bg-foreground dark:border-blue-800 dark:bg-blue-950">
                         <CardContent className="pt-6">
                             <div className="flex items-start gap-3">
                                 <div className="flex-shrink-0">

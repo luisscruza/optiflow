@@ -177,7 +177,7 @@ export default function InitialStockCreate({ products, workspace }: Props) {
 
                                     {/* Total Value Display */}
                                     {data.quantity && data.unit_cost && (
-                                        <div className="rounded-lg border bg-blue-50 p-4 dark:bg-blue-950/20">
+                                        <div className="rounded-lg border bg-foreground p-4 dark:bg-blue-950/20">
                                             <div className="flex items-center justify-between">
                                                 <span className="font-medium">Total Stock Value:</span>
                                                 <span className="text-lg font-bold">${calculateTotalValue().toFixed(2)}</span>

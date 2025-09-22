@@ -133,7 +133,7 @@ export default function EditContact({ contact, contact_types, identification_typ
                     </div>
 
                     {/* Required Fields Notice */}
-                    <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+                    <div className="mb-6 rounded-lg border border-blue-200 bg-foreground p-4 dark:border-blue-800 dark:bg-blue-900/20">
                         <p className="text-sm text-primary dark:text-primary">Los campos marcados con asterisco (*) son obligatorios.</p>
                     </div>
 
@@ -154,7 +154,7 @@ export default function EditContact({ contact, contact_types, identification_typ
                                             key={type.value}
                                             className={`cursor-pointer rounded-lg border p-4 transition-colors ${
                                                 data.contact_type === type.value
-                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                                    ? 'border-blue-500 bg-foreground dark:bg-blue-900/20'
                                                     : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
                                             }`}
                                             onClick={() => setData('contact_type', type.value)}

@@ -501,7 +501,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={() => setShowContactModal(true)}
-                                                            className="text-primary hover:bg-blue-50"
+                                                            className="text-primary hover:bg-foreground"
                                                         >
                                                             <Plus className="h-4 w-4 mr-1" />
                                                             Crear nuevo contacto
@@ -515,7 +515,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => setShowContactModal(true)}
-                                                    className="h-10 px-3 border-gray-300 text-primary hover:bg-blue-50"
+                                                    className="h-10 px-3 border-gray-300 text-primary hover:bg-foreground"
                                                 >
                                                     <Plus className="h-4 w-4 mr-1" />
                                                     Nuevo contacto
@@ -707,7 +707,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                         variant="outline"
                                         size="sm"
                                         onClick={addItem}
-                                        className="flex items-center gap-2 border-blue-200 bg-blue-50 text-primary hover:bg-blue-100 hover:border-blue-300"
+                                        className="flex items-center gap-2 border-blue-200 bg-foreground text-primary hover:bg-blue-100 hover:border-blue-300"
                                     >
                                         <Plus className="h-4 w-4" />
                                         Agregar línea

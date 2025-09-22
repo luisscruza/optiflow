@@ -146,7 +146,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
 
                 {current_workspace && (
                     <div className="mb-8">
-                        <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
+                        <Card className="border-blue-200 bg-foreground dark:border-blue-800 dark:bg-blue-950">
                             <CardHeader>
                                 <div className="flex items-center gap-2">
                                     <Crown className="h-5 w-5 text-primary dark:text-primary" />
@@ -209,7 +209,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                                 {workspaces.map((workspace) => (
                                     <TableRow
                                         key={workspace.id}
-                                        className={current_workspace?.id === workspace.id ? 'bg-blue-50 dark:bg-blue-950' : ''}
+                                        className={current_workspace?.id === workspace.id ? 'bg-foreground dark:bg-blue-950' : ''}
                                     >
                                         <TableCell>
                                             <div className="flex items-center gap-2">

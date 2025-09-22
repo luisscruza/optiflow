@@ -202,7 +202,7 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
 
                                     {/* Transfer Summary */}
                                     {selectedProduct && data.quantity && data.to_workspace_id && (
-                                        <div className="rounded-lg border bg-blue-50 p-4 dark:bg-blue-950/20">
+                                        <div className="rounded-lg border bg-foreground p-4 dark:bg-blue-950/20">
                                             <h4 className="mb-2 flex items-center font-medium">
                                                 <ArrowLeftRight className="mr-2 h-4 w-4" />
                                                 Transfer Summary
