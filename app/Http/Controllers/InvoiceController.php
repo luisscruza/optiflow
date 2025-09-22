@@ -68,6 +68,7 @@ final class InvoiceController extends Controller
         $currentWorkspace = Context::get('workspace');
 
         $documentSubtypes = DocumentSubtype::active()
+            ->forInvoice()
             ->orderBy('name')
             ->get();
 
@@ -156,7 +157,11 @@ final class InvoiceController extends Controller
 
         $invoice->load(['contact', 'documentSubtype', 'items.product', 'items.tax']);
 
-        $documentSubtypes = DocumentSubtype::orderBy('name')->get();
+        $documentSubtypes = DocumentSubtype::active()
+            ->forInvoice()
+            ->orderBy('name')
+            ->get();
+
         $customers = Contact::customers()->orderBy('name')->get();
 
         $products = Product::with(['defaultTax'])

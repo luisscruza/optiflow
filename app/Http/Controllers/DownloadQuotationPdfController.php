@@ -8,14 +8,15 @@ use App\Models\Document;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
 
-final class DownloadInvoicePdfController extends Controller
+final class DownloadQuotationPdfController extends Controller
 {
     /**
      * Handle the incoming request.
      */
-    public function __invoke(Document $invoice): Response
+    public function __invoke(Document $quotation): Response
     {
-        $invoice->load([
+        // Load necessary relationships
+        $quotation->load([
             'contact',
             'documentSubtype',
             'items.product',
@@ -23,12 +24,12 @@ final class DownloadInvoicePdfController extends Controller
         ]);
 
         // Generate PDF
-        $pdf = Pdf::loadView('invoices.pdf', [
-            'invoice' => $invoice,
+        $pdf = Pdf::loadView('quotations.pdf', [
+            'quotation' => $quotation,
         ])->setPaper('a4', 'portrait');
 
         // Generate filename
-        $filename = "factura-{$invoice->document_number}.pdf";
+        $filename = "cotizacion-{$quotation->document_number}.pdf";
 
         return $pdf->stream($filename);
     }

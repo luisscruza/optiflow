@@ -28,6 +28,11 @@ const mainNavItems: NavItem[] = [
                 href: '/invoices',
                 icon: Folder,
             },
+                {
+                title: 'Cotizaciones',
+                href: '/quotations',
+                icon: BookOpen,
+            },
             {
                 title: 'Productos',
                 href: products.index(),

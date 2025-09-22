@@ -11,6 +11,10 @@ enum DocumentStatus: string
     case Paid = 'paid';
     case Overdue = 'overdue';
     case Cancelled = 'cancelled';
+    case NonConverted = 'non_converted';
+    case Converted = 'converted';
+
+    case PendingPayment = 'pending_payment';
 
     /**
      * Get all contact types as an array for form options.
@@ -25,6 +29,9 @@ enum DocumentStatus: string
             self::Paid->value => self::Paid->label(),
             self::Overdue->value => self::Overdue->label(),
             self::Cancelled->value => self::Cancelled->label(),
+            self::NonConverted->value => self::NonConverted->label(),
+            self::Converted->value => self::Converted->label(),
+            self::PendingPayment->value => self::PendingPayment->label(),
         ];
     }
 
@@ -34,11 +41,14 @@ enum DocumentStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Draft => 'Draft',
-            self::Sent => 'Sent',
-            self::Paid => 'Paid',
-            self::Overdue => 'Overdue',
-            self::Cancelled => 'Cancelled',
+            self::Draft => 'Borrador',
+            self::Sent => 'Enviada',
+            self::Paid => 'Pagada',
+            self::Overdue => 'Vencida',
+            self::Cancelled => 'Cancelada',
+            self::NonConverted => 'Non Converted',
+            self::Converted => 'Converted',
+            self::PendingPayment => 'Pending Payment',
         };
     }
 }

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\DocumentType;
 use App\Http\Controllers\CompanyDetailsController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\ContactController;
@@ -9,9 +10,11 @@ use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\CurrencyRateController;
 use App\Http\Controllers\DocumentSubtypeController;
 use App\Http\Controllers\DownloadInvoicePdfController;
+use App\Http\Controllers\DownloadQuotationPdfController;
 use App\Http\Controllers\InitialStockController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\SetDefaultDocumentSubtypeController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockTransferController;
@@ -70,6 +73,11 @@ Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(funct
 
         Route::resource('invoices', InvoiceController::class);
         Route::get('invoices/{invoice}/pdf', DownloadInvoicePdfController::class)->name('invoices.pdf');
+
+        Route::resource('quotations', QuotationController::class);
+        Route::get('quotations/{quotation}/pdf', DownloadQuotationPdfController::class)->name('quotations.pdf');
+
+        Route::resource('quotations', QuotationController::class);
 
         Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
         Route::patch('document-subtypes/{documentSubtype}/set-default', SetDefaultDocumentSubtypeController::class)->name('document-subtypes.set-default');

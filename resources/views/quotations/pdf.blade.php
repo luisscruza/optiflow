@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Factura {{ $invoice->document_number }}</title>
+    <title>Cotización {{ $quotation->document_number }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -33,19 +33,19 @@
             margin-bottom: 10px;
         }
 
-        .invoice-info {
+        .quotation-info {
             text-align: right;
             flex: 1;
         }
 
-        .invoice-title {
+        .quotation-title {
             font-size: 20px;
             font-weight: bold;
             color: #007bff;
             margin-bottom: 10px;
         }
 
-        .invoice-number {
+        .quotation-number {
             font-size: 16px;
             font-weight: bold;
             margin-bottom: 5px;
@@ -161,9 +161,18 @@
 
         .status-draft { background-color: #6c757d; color: white; }
         .status-sent { background-color: #007bff; color: white; }
-        .status-paid { background-color: #28a745; color: white; }
-        .status-overdue { background-color: #dc3545; color: white; }
+        .status-accepted { background-color: #28a745; color: white; }
+        .status-expired { background-color: #dc3545; color: white; }
         .status-cancelled { background-color: #6c757d; color: white; }
+
+        .validity-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -176,34 +185,38 @@
             <div>Dirección:testtt.</div>
         </div>
 
-        <div class="invoice-info">
-            <div class="invoice-title">FACTURA</div>
-            <div class="invoice-number">{{ $invoice->document_number }}</div>
-            <div><strong>Fecha de emisión:</strong> {{ \Carbon\Carbon::parse($invoice->issue_date)->format('d/m/Y') }}</div>
-            <div><strong>Fecha de vencimiento:</strong> {{ \Carbon\Carbon::parse($invoice->due_date)->format('d/m/Y') }}</div>
+        <div class="quotation-info">
+            <div class="quotation-title">COTIZACIÓN</div>
+            <div class="quotation-number">{{ $quotation->document_number }}</div>
+            <div><strong>Fecha de emisión:</strong> {{ \Carbon\Carbon::parse($quotation->issue_date)->format('d/m/Y') }}</div>
+            <div><strong>Válida hasta:</strong> {{ \Carbon\Carbon::parse($quotation->due_date)->format('d/m/Y') }}</div>
             <div style="margin-top: 10px;">
-                <span class="status-badge status-{{ $invoice->status->value }}">
-                   {{ $invoice->status->label() }}
+                <span class="status-badge status-{{ $quotation->status }}">
+                    {{ $quotation->status->label() }}
                 </span>
             </div>
         </div>
     </div>
 
+    <div class="validity-info">
+        Esta cotización es válida hasta el {{ \Carbon\Carbon::parse($quotation->due_date)->format('d/m/Y') }}
+    </div>
+
     <div class="customer-section">
         <div class="section-title">INFORMACIÓN DEL CLIENTE</div>
         <div class="customer-info">
-            <div><strong>{{ $invoice->contact->name }}</strong></div>
-            @if($invoice->contact->identification_number)
-                <div>{{ $invoice->contact->identification_type ?? 'RNC' }}: {{ $invoice->contact->identification_number }}</div>
+            <div><strong>{{ $quotation->contact->name }}</strong></div>
+            @if($quotation->contact->identification_number)
+                <div>{{ $quotation->contact->identification_type ?? 'RNC' }}: {{ $quotation->contact->identification_number }}</div>
             @endif
-            @if($invoice->contact->email)
-                <div>Email: {{ $invoice->contact->email }}</div>
+            @if($quotation->contact->email)
+                <div>Email: {{ $quotation->contact->email }}</div>
             @endif
-            @if($invoice->contact->phone_primary)
-                <div>Teléfono: {{ $invoice->contact->phone_primary }}</div>
+            @if($quotation->contact->phone_primary)
+                <div>Teléfono: {{ $quotation->contact->phone_primary }}</div>
             @endif
-            @if($invoice->contact->full_address)
-                <div>Dirección: {{ $invoice->contact->full_address }}</div>
+            @if($quotation->contact->full_address)
+                <div>Dirección: {{ $quotation->contact->full_address }}</div>
             @endif
         </div>
     </div>
@@ -220,13 +233,13 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($invoice->items as $index => $item)
+            @foreach($quotation->items as $index => $item)
                 <tr>
                     <td class="text-center">{{ $index + 1 }}</td>
                     <td>{{ $item->description }}</td>
                     <td class="text-center">{{ number_format($item->quantity, 2) }}</td>
                     <td class="text-right">RD$ {{ number_format($item->unit_price, 2) }}</td>
-                    <td class="text-center">{{ number_format($item->tax_rate_snapshot ?? 0, 0) }}%</td>
+                    <td class="text-center">{{ number_format($item->tax_rate ?? 0, 0) }}%</td>
                     <td class="text-right">RD$ {{ number_format($item->total + $item->tax_amount, 2) }}</td>
                 </tr>
             @endforeach
@@ -237,35 +250,36 @@
         <table class="totals-table">
             <tr>
                 <td class="label">Subtotal:</td>
-                <td class="amount">RD$ {{ number_format($invoice->subtotal_amount, 2) }}</td>
+                <td class="amount">RD$ {{ number_format($quotation->subtotal_amount, 2) }}</td>
             </tr>
-            @if($invoice->discount_amount > 0)
+            @if($quotation->discount_amount > 0)
                 <tr>
                     <td class="label">Descuento:</td>
-                    <td class="amount">-RD$ {{ number_format($invoice->discount_amount, 2) }}</td>
+                    <td class="amount">-RD$ {{ number_format($quotation->discount_amount, 2) }}</td>
                 </tr>
             @endif
             <tr>
                 <td class="label">ITBIS:</td>
-                <td class="amount">RD$ {{ number_format($invoice->tax_amount, 2) }}</td>
+                <td class="amount">RD$ {{ number_format($quotation->tax_amount, 2) }}</td>
             </tr>
             <tr class="total-row">
                 <td class="label">TOTAL:</td>
-                <td class="amount">RD$ {{ number_format($invoice->total_amount, 2) }}</td>
+                <td class="amount">RD$ {{ number_format($quotation->total_amount, 2) }}</td>
             </tr>
         </table>
     </div>
 
-    @if($invoice->notes)
+    @if($quotation->notes)
         <div class="notes-section">
             <div class="section-title">NOTAS</div>
-            <div>{{ $invoice->notes }}</div>
+            <div>{{ $quotation->notes }}</div>
         </div>
     @endif
 
     <div class="footer">
-        <div>Gracias por su preferencia</div>
-        <div>Factura generada el {{ now()->format('d/m/Y H:i:s') }}</div>
+        <div>Esta cotización no representa una factura o compromiso de compra</div>
+        <div>Gracias por considerar nuestros servicios</div>
+        <div>Cotización generada el {{ now()->format('d/m/Y H:i:s') }}</div>
     </div>
 </body>
 </html>

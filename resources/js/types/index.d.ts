@@ -356,7 +356,7 @@ export interface Document {
     contact_id: number;
     type: 'invoice' | 'quote' | 'receipt';
     document_subtype_id: number;
-    status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+    status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled' | 'accepted' | 'rejected';
     document_number: string;
     issue_date: string;
     due_date: string;

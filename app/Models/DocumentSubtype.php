@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\DocumentType;
 use Exception;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -182,6 +183,18 @@ final class DocumentSubtype extends Model
         });
     }
 
+    #[Scope]
+    protected function forQuotation(Builder $query): void
+    {
+        $query->where('type', DocumentType::Quotation);
+    }
+
+    #[Scope]
+    protected function forInvoice(Builder $query): void
+    {
+        $query->where('type', DocumentType::Invoice);
+    }
+
     protected function casts(): array
     {
         return [
@@ -190,6 +203,7 @@ final class DocumentSubtype extends Model
             'start_number' => 'integer',
             'end_number' => 'integer',
             'next_number' => 'integer',
+            'type' => DocumentType::class,
         ];
     }
 }
