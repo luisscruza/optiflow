@@ -501,7 +501,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={() => setShowContactModal(true)}
-                                                            className="text-primary hover:bg-foreground"
+                                                            className="text-primary hover:bg-primary/10"
                                                         >
                                                             <Plus className="h-4 w-4 mr-1" />
                                                             Crear nuevo contacto
@@ -515,7 +515,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => setShowContactModal(true)}
-                                                    className="h-10 px-3 border-gray-300 text-primary hover:bg-foreground"
+                                                    className="h-10 px-3 border-gray-300 text-primary hover:bg-primary/10"
                                                 >
                                                     <Plus className="h-4 w-4 mr-1" />
                                                     Nuevo contacto
@@ -707,7 +707,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                         variant="outline"
                                         size="sm"
                                         onClick={addItem}
-                                        className="flex items-center gap-2 border-blue-200 bg-foreground text-primary hover:bg-blue-100 hover:border-blue-300"
+                                        className="flex items-center gap-2 border-primary bg-background text-primary hover:bg-primary/10 hover:border-primary"
                                     >
                                         <Plus className="h-4 w-4" />
                                         Agregar línea
@@ -1106,7 +1106,7 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                 className={`flex items-center justify-center gap-2 min-w-[160px] ${
                                     processing || !ncf
                                         ? 'bg-gray-400 hover:bg-gray-400'
-                                        : 'bg-blue-600 hover:bg-blue-700'
+                                        : 'bg-primary hover:bg-primary/90'
                                 }`}
                             >
                                 {processing ? (

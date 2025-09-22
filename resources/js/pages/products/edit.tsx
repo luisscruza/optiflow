@@ -143,7 +143,7 @@ export default function ProductsEdit({ product, taxes }: Props) {
                             </div>
 
                             {data.cost && data.price && parseFloat(data.cost) > 0 && parseFloat(data.price) > 0 && (
-                                <div className="rounded-lg border border-blue-200 bg-foreground p-4 dark:border-blue-800 dark:bg-blue-900/20">
+                                <div className="rounded-lg border border-blue-200 bg-background p-4 dark:border-blue-800 dark:bg-blue-900/20">
                                     <div className="grid grid-cols-2 gap-4 text-sm">
                                         <div>
                                             <span className="font-medium text-primary dark:text-primary">Profit:</span>

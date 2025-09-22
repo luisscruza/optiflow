@@ -101,7 +101,7 @@ export default function TaxesShow({ tax }: Props) {
                                 </div>
 
                                 {tax.is_default && (
-                                    <div className="rounded-lg border border-blue-200 bg-foreground p-4 dark:border-blue-800 dark:bg-blue-900/20">
+                                    <div className="rounded-lg border border-blue-200 bg-background p-4 dark:border-blue-800 dark:bg-blue-900/20">
                                         <div className="flex items-start space-x-3">
                                             <Star className="mt-0.5 h-5 w-5 text-primary" />
                                             <div>

@@ -42,7 +42,7 @@ const configurationSections = [
         description: 'Gestiona los usuarios y sus permisos en el workspace.',
         icon: Users,
         color: 'text-primary',
-        bgColor: 'bg-foreground',
+        bgColor: 'bg-background',
         items: [
             {
                 title: 'Miembros de la sucursal',

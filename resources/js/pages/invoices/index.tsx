@@ -119,7 +119,7 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                     </div>
 
                     <div className="flex space-x-3">
-                        <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                        <Button asChild className="bg-primary hover:bg-primary/90">
                             <Link href="/invoices/create">
                                 <Plus className="mr-2 h-4 w-4" />
                                 Nueva factura
