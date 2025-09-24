@@ -18,9 +18,10 @@ return new class extends Migration
             $table->string('name');
             $table->string('sku')->unique();
             $table->text('description')->nullable();
-            $table->decimal('price', 10, 2); // Selling price
-            $table->decimal('cost', 10, 2)->nullable(); // Cost price
+            $table->decimal('price', 10, 2);
+            $table->decimal('cost', 10, 2)->nullable();
             $table->boolean('track_stock')->default(true);
+            $table->boolean('allow_negative_stock')->default(false);
             $table->foreignId('default_tax_id')->nullable()->constrained('taxes')->nullOnDelete();
             $table->timestamps();
 
