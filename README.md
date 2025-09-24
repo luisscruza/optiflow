@@ -1,5 +1,8 @@
 <img width="500" height="150" alt="logo" src="https://github.com/user-attachments/assets/4b789ec2-8cc5-4919-9b76-56821393b0e1" />
 
+> [!WARNING]
+> This project is currently in progress and may not be feature complete.
+> 
 # Optiflow
 
 A modern web application especializing in operations management for Optical Stores and similar businesses. Built with Laravel and React.
