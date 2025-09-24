@@ -62,9 +62,9 @@ php artisan migrate
 php artisan sync:dgii
 ```
 
-### Access the Application
+### Access the application
 
-- **Tenant aware **: https://tenant.optiflow.test (You first may create a Tenant within the central application)
+- **Tenant aware**: https://tenant.optiflow.test (You first may create a Tenant within the central application)
 - **Admin Panel**: https://optiflow.test/admin (Central application)
 
 ## Development
@@ -78,7 +78,7 @@ composer run refactor  # Rector refactoring
 # Testing
 composer run @test:unit
 
-#To run the entire test suite...
+# You may run the entire test suite...
 composer run test
 ```
 
@@ -87,13 +87,6 @@ composer run test
 The application uses Laravel Tenancy for complete tenant isolation:
 
 For more information regarding Laravel Tenancy, visit the docs https://tenancyforlaravel.com/ 
-
-## Architecture
-
-### Design Patterns
-
-- **Action Pattern** - Business logic encapsulated in dedicated actions.
-- **Workspace Scoping** - All data automatically scoped to current workspace.
 
 ## Contributing
 
