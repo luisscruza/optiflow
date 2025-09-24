@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\DTOs\QuotationResult;
-use App\Enums\DocumentStatus;
-use App\Enums\DocumentType;
-use App\Models\Document;
+use App\Enums\QuotationStatus;
 use App\Models\DocumentSubtype;
 use App\Models\Product;
+use App\Models\Quotation;
 use App\Models\Workspace;
 use App\Support\NCFValidator;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +29,7 @@ final readonly class CreateQuotationAction
                 return new QuotationResult(error: 'El NCF proporcionado no es válido.');
             }
 
-            $document = $this->createDocument($workspace, $data);
+            $quotation = $this->createDocument($workspace, $data);
 
             $this->updateNumerator($documentSubtype, $data['ncf']);
 
@@ -39,21 +38,20 @@ final readonly class CreateQuotationAction
                     $item['quantity'] > 0;
             });
 
-            $this->createQuotationItems($document, $items);
+            $this->createQuotationItems($quotation, $items);
 
             return new QuotationResult(
-                quotation: $document->load(['contact', 'documentSubtype', 'items.product']));
+                quotation: $quotation->load(['contact', 'documentSubtype', 'items.product']));
         });
     }
 
-    private function createDocument(Workspace $workspace, array $data): Document
+    private function createDocument(Workspace $workspace, array $data): Quotation
     {
-        return Document::create([
+        return Quotation::create([
             'workspace_id' => $workspace->id,
             'contact_id' => $data['contact_id'],
-            'type' => DocumentType::Quotation,
             'document_subtype_id' => $data['document_subtype_id'],
-            'status' => DocumentStatus::NonConverted,
+            'status' => QuotationStatus::NonConverted,
             'document_number' => $data['ncf'],
             'issue_date' => $data['issue_date'],
             'due_date' => $data['due_date'],
@@ -62,7 +60,6 @@ final readonly class CreateQuotationAction
             'subtotal_amount' => $data['subtotal'],
             'discount_amount' => $data['discount_total'],
             'tax_amount' => $data['tax_amount'],
-            'payment_term' => $data['payment_term'] ?? null,
         ]);
     }
 
@@ -81,12 +78,12 @@ final readonly class CreateQuotationAction
      *     total?: float,
      * }> $items
      */
-    private function createQuotationItems(Document $document, array $items): void
+    private function createQuotationItems(Quotation $quotation, array $items): void
     {
         foreach ($items as $item) {
             $product = Product::findOrFail($item['product_id']);
 
-            $document->items()->create([
+            $quotation->items()->create([
                 'product_id' => $product->id,
                 'description' => $item['description'] ?? null,
                 'quantity' => $item['quantity'],

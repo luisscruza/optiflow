@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Models\BankAccount;
 use App\Models\Currency;
-use App\Models\Document;
+use App\Models\Invoice;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -20,7 +20,7 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(BankAccount::class);
             $table->foreignIdFor(Currency::class);
-            $table->foreignIdFor(Document::class)->nullable();
+            $table->foreignIdFor(Invoice::class)->nullable();
             $table->date('payment_date');
             $table->string('payment_method');
             $table->float('amount');

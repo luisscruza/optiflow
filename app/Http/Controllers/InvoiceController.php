@@ -8,8 +8,8 @@ use App\Actions\CreateInvoiceAction;
 use App\Actions\UpdateInvoiceAction;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\Contact;
-use App\Models\Document;
 use App\Models\DocumentSubtype;
+use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\Tax;
@@ -30,8 +30,7 @@ final class InvoiceController extends Controller
      */
     public function index(Request $request): Response
     {
-        $query = Document::query()
-            ->where('type', 'invoice')
+        $query = Invoice::query()
             ->with(['contact', 'documentSubtype'])
             ->orderBy('created_at', 'desc');
 
@@ -139,7 +138,7 @@ final class InvoiceController extends Controller
     /**
      * Display the specified invoice.
      */
-    public function show(Document $invoice): Response
+    public function show(Invoice $invoice): Response
     {
         $invoice->load(['contact', 'documentSubtype', 'items.product', 'items.tax']);
 
@@ -151,7 +150,7 @@ final class InvoiceController extends Controller
     /**
      * Show the form for editing the specified invoice.
      */
-    public function edit(Document $invoice): Response
+    public function edit(Invoice $invoice): Response
     {
         $currentWorkspace = Context::get('workspace');
 
@@ -202,7 +201,7 @@ final class InvoiceController extends Controller
     /**
      * Update the specified invoice.
      */
-    public function update(UpdateInvoiceRequest $request, Document $invoice, UpdateInvoiceAction $action): RedirectResponse
+    public function update(UpdateInvoiceRequest $request, Invoice $invoice, UpdateInvoiceAction $action): RedirectResponse
     {
         $workspace = Context::get('workspace');
 
@@ -222,7 +221,7 @@ final class InvoiceController extends Controller
     /**
      * Remove the specified invoice.
      */
-    public function destroy(Document $invoice): RedirectResponse
+    public function destroy(Invoice $invoice): RedirectResponse
     {
         // For now, we'll only allow deleting draft invoices
         if ($invoice->status !== 'draft') {

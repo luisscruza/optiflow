@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $next_number
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Document> $documents
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Invoice> $documents
  * @property-read int|null $documents_count
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype byName(string $name)
@@ -148,11 +148,11 @@ final class DocumentSubtype extends Model
     /**
      * Get the documents of this subtype.
      *
-     * @return HasMany<Document, $this>
+     * @return HasMany<Invoice, $this>
      */
     public function documents(): HasMany
     {
-        return $this->hasMany(Document::class);
+        return $this->hasMany(Invoice::class);
     }
 
     /**

@@ -5,12 +5,18 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\DTOs\InvoiceResult;
-use App\Enums\DocumentStatus;
-use App\Models\Document;
+use App\Enums\QuotationStatus;
+use App\Models\Quotation;
 use App\Models\Workspace;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
+/**
+ *  TODO: This is partially wrong.
+ *  We cannot just "convert" the quotation,
+ *  because the invoice might need a different document subtype,
+ *  and the NCF might need to be generated differently.
+ */
 final readonly class ConvertQuotationToInvoiceAction
 {
     /**
@@ -18,17 +24,16 @@ final readonly class ConvertQuotationToInvoiceAction
      *
      * @throws Throwable
      */
-    public function handle(Workspace $workspace, Document $quotation, CreateInvoiceAction $createInvoiceAction): InvoiceResult
+    public function handle(Workspace $workspace, Quotation $quotation, CreateInvoiceAction $createInvoiceAction): InvoiceResult
     {
         return DB::transaction(function () use ($workspace, $quotation, $createInvoiceAction) {
-            // Prepare invoice data from quotation
             $invoiceData = [
                 'contact_id' => $quotation->contact_id,
                 'document_subtype_id' => $quotation->document_subtype_id,
                 'ncf' => $quotation->documentSubtype->generateNCF(),
                 'issue_date' => now()->format('Y-m-d'),
                 'due_date' => $quotation->due_date,
-                'payment_term' => $quotation->payment_term,
+                'payment_term' => 'manual',
                 'notes' => $quotation->notes ? "Convertida desde cotización #{$quotation->document_number}. ".$quotation->notes : "Convertida desde cotización #{$quotation->document_number}.",
                 'subtotal' => $quotation->subtotal_amount,
                 'discount_total' => $quotation->discount_amount,
@@ -37,7 +42,6 @@ final readonly class ConvertQuotationToInvoiceAction
                 'items' => [],
             ];
 
-            // Convert quotation items to invoice items format
             foreach ($quotation->items as $index => $item) {
                 $invoiceData['items'][] = [
                     'id' => 'new_'.$index, // Frontend needs IDs for new items
@@ -53,15 +57,13 @@ final readonly class ConvertQuotationToInvoiceAction
                 ];
             }
 
-            // Create the invoice using the CreateInvoiceAction
             $invoiceResult = $createInvoiceAction->handle($workspace, $invoiceData);
 
             if ($invoiceResult->isError()) {
                 return $invoiceResult;
             }
 
-            // Mark the quotation as converted
-            $quotation->update(['status' => DocumentStatus::Converted]);
+            $quotation->update(['status' => QuotationStatus::Converted]);
 
             return $invoiceResult;
         });

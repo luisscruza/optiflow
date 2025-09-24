@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\DTOs\QuotationResult;
-use App\Models\Document;
-use App\Models\DocumentItem;
 use App\Models\DocumentSubtype;
 use App\Models\Product;
+use App\Models\Quotation;
+use App\Models\QuotationItem;
 use App\Models\Workspace;
 use App\Support\NCFValidator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 
 final class UpdateQuotationAction
@@ -22,7 +21,7 @@ final class UpdateQuotationAction
      *
      * @param  array<string, mixed>  $data
      */
-    public function handle(Workspace $workspace, Document $quotation, array $data): QuotationResult
+    public function handle(Workspace $workspace, Quotation $quotation, array $data): QuotationResult
     {
         try {
             return DB::transaction(function () use ($workspace, $quotation, $data) {
@@ -59,20 +58,9 @@ final class UpdateQuotationAction
                 // Recalculate document totals (let the model handle this)
                 $quotation->recalculateTotal();
 
-                Log::info('Quotation updated successfully', [
-                    'quotation_id' => $quotation->id,
-                    'workspace_id' => $workspace->id,
-                ]);
-
                 return new QuotationResult($quotation->load(['contact', 'documentSubtype', 'items.product']));
             });
         } catch (Throwable $e) {
-            Log::error('Failed to update quotation', [
-                'quotation_id' => $quotation->id,
-                'workspace_id' => $workspace->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
 
             return new QuotationResult(error: 'Error actualizando la cotización: '.$e->getMessage());
         }
@@ -83,7 +71,7 @@ final class UpdateQuotationAction
      *
      * @param  array<string, mixed>  $data
      */
-    private function updateDocumentFields(Document $quotation, array $data): void
+    private function updateDocumentFields(Quotation $quotation, array $data): void
     {
         $updateData = [];
 
@@ -145,12 +133,12 @@ final class UpdateQuotationAction
     /**
      * Process all item changes (add, update, remove) without stock movements.
      *
-     * @param  \Illuminate\Database\Eloquent\Collection<int, DocumentItem>  $originalItems
+     * @param  \Illuminate\Database\Eloquent\Collection<int, QuotationItem>  $originalItems
      * @param  array<int, array<string, mixed>>  $newItems
      */
     private function processItemChanges(
         Workspace $workspace,
-        Document $quotation,
+        Quotation $quotation,
         $originalItems,
         array $newItems
     ): void {
@@ -186,7 +174,7 @@ final class UpdateQuotationAction
      *
      * @param  array<string, mixed>  $data
      */
-    private function createQuotationItem(Document $quotation, array $data): void
+    private function createQuotationItem(Quotation $quotation, array $data): void
     {
         $product = Product::findOrFail($data['product_id']);
 
@@ -209,7 +197,7 @@ final class UpdateQuotationAction
      *
      * @param  array<string, mixed>  $data
      */
-    private function updateQuotationItem(Document $quotation, DocumentItem $existingItem, array $data): void
+    private function updateQuotationItem(Quotation $quotation, QuotationItem $existingItem, array $data): void
     {
         $product = Product::findOrFail($data['product_id']);
 
@@ -230,7 +218,7 @@ final class UpdateQuotationAction
     /**
      * Remove a quotation item (without stock movements).
      */
-    private function removeQuotationItem(Document $quotation, DocumentItem $item): void
+    private function removeQuotationItem(Quotation $quotation, QuotationItem $item): void
     {
         $item->delete();
     }

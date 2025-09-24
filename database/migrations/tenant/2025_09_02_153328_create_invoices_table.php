@@ -13,11 +13,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('documents', function (Blueprint $table) {
+        Schema::create('invoices', function (Blueprint $table) {
             $table->id();
             $table->foreignId('workspace_id')->constrained()->cascadeOnDelete();
             $table->foreignId('contact_id')->constrained()->cascadeOnDelete();
-            $table->enum('type', ['invoice', 'quotation']);
             $table->foreignId('document_subtype_id')->constrained()->cascadeOnDelete();
             $table->string('status');
             $table->string('document_number')->unique();
@@ -29,7 +28,6 @@ return new class extends Migration
             $table->foreignId('currency_id')->nullable()->constrained()->cascadeOnDelete();
             $table->timestamps();
 
-            $table->index(['workspace_id', 'type']);
             $table->index(['workspace_id', 'status']);
             $table->index(['document_number']);
             $table->index(['issue_date']);
@@ -42,6 +40,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('documents');
+        Schema::dropIfExists('invoices');
     }
 };

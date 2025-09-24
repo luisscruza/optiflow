@@ -6,12 +6,12 @@ namespace App\Actions;
 
 use App\Enums\StockMovementType;
 use App\Exceptions\InsufficientStockException;
-use App\Models\Document;
+use App\Models\Invoice;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
-final readonly class CreateDocumentItemAction
+final readonly class CreateInvoiceItemAction
 {
     /**
      * Execute the action.
@@ -30,16 +30,16 @@ final readonly class CreateDocumentItemAction
      *
      * @throws Throwable
      */
-    public function handle(Document $document, array $items): void
+    public function handle(Invoice $invoice, array $items): void
     {
-        DB::transaction(function () use ($items, $document) {
+        DB::transaction(function () use ($items, $invoice) {
 
             foreach ($items as $item) {
                 $product = Product::findOrFail($item['product_id']);
 
-                $this->validateStock($document, $item, $product);
-                $this->decreaseStock($document, $item, $product);
-                $this->createLine($document, $item, $product);
+                $this->validateStock($invoice, $item, $product);
+                $this->decreaseStock($invoice, $item, $product);
+                $this->createLine($invoice, $item, $product);
             }
         });
     }
@@ -47,9 +47,9 @@ final readonly class CreateDocumentItemAction
     /**
      * @throws InsufficientStockException
      */
-    private function validateStock(Document $document, mixed $item, Product $product): void
+    private function validateStock(Invoice $invoice, mixed $item, Product $product): void
     {
-        if (! $product->hasSufficientStock($document->workspace_id, $item['quantity'])) {
+        if (! $product->hasSufficientStock($invoice->workspace_id, $item['quantity'])) {
             throw new InsufficientStockException('Insufficient stock for product: '.$product->name);
         }
     }
@@ -70,21 +70,21 @@ final readonly class CreateDocumentItemAction
      *
      * @throws InsufficientStockException
      */
-    private function decreaseStock(Document $document, array $item, Product $product): void
+    private function decreaseStock(Invoice $invoice, array $item, Product $product): void
     {
         if (! $product->track_stock) {
             return;
         }
 
-        $document->stockMovements()->create([
+        $invoice->stockMovements()->create([
             'product_id' => $product->id,
-            'workspace_id' => $document->workspace_id,
+            'workspace_id' => $invoice->workspace_id,
             'type' => StockMovementType::SALE,
             'quantity' => -$item['quantity'],
-            'reference_number' => $document->document_number,
+            'reference_number' => $invoice->document_number,
         ]);
 
-        $stockForWorkspace = $product->getStockForWorkspace($document->workspace);
+        $stockForWorkspace = $product->getStockForWorkspace($invoice->workspace);
 
         if (! $stockForWorkspace) {
             throw new InsufficientStockException('No stock record found for product: '.$product->name);
@@ -108,9 +108,9 @@ final readonly class CreateDocumentItemAction
      *     total: float,
      * } $item
      */
-    private function createLine(Document $document, array $item, Product $product): void
+    private function createLine(Invoice $invoice, array $item, Product $product): void
     {
-        $document->items()->create([
+        $invoice->items()->create([
             'product_id' => $product->id,
             'description' => $item['description'] ?? null,
             'quantity' => $item['quantity'],

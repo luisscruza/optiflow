@@ -13,12 +13,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('invoice_items', function (Blueprint $table) {
-            $table->float('tax_amount');
-        });
-
         Schema::table('quotation_items', function (Blueprint $table) {
-            $table->float('tax_amount');
+            $table->decimal('discount_rate', 5, 2)->nullable();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('quotation_items', function (Blueprint $table) {
+            //
         });
     }
 };

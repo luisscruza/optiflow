@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\DTOs\InvoiceResult;
-use App\Enums\DocumentStatus;
-use App\Enums\DocumentType;
+use App\Enums\InvoiceStatus;
 use App\Exceptions\InsufficientStockException;
-use App\Models\Document;
 use App\Models\DocumentSubtype;
+use App\Models\Invoice;
 use App\Models\Workspace;
 use App\Support\NCFValidator;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +16,7 @@ use Throwable;
 
 final readonly class CreateInvoiceAction
 {
-    public function __construct(private CreateDocumentItemAction $createItems)
+    public function __construct(private CreateInvoiceItemAction $createItems)
     {
         //
     }
@@ -35,7 +34,7 @@ final readonly class CreateInvoiceAction
                 return new InvoiceResult(error: 'El NCF proporcionado no es válido.');
             }
 
-            $document = $this->createDocument($workspace, $data);
+            $invoice = $this->createDocument($workspace, $data);
 
             $this->updateNumerator($documentSubtype, $data['ncf']);
 
@@ -45,7 +44,7 @@ final readonly class CreateInvoiceAction
             });
 
             try {
-                $this->createItems->handle($document, $items);
+                $this->createItems->handle($invoice, $items);
             } catch (InsufficientStockException $e) {
                 DB::rollBack();
 
@@ -55,18 +54,17 @@ final readonly class CreateInvoiceAction
             }
 
             return new InvoiceResult(
-                invoice: $document->load(['contact', 'documentSubtype', 'items.product']));
+                invoice: $invoice->load(['contact', 'documentSubtype', 'items.product']));
         });
     }
 
-    private function createDocument(Workspace $workspace, array $data): Document
+    private function createDocument(Workspace $workspace, array $data): Invoice
     {
-        return Document::create([
+        return Invoice::create([
             'workspace_id' => $workspace->id,
             'contact_id' => $data['contact_id'],
-            'type' => DocumentType::Invoice,
             'document_subtype_id' => $data['document_subtype_id'],
-            'status' => DocumentStatus::PendingPayment,
+            'status' => InvoiceStatus::PendingPayment,
             'document_number' => $data['ncf'],
             'issue_date' => $data['issue_date'],
             'due_date' => $data['due_date'],

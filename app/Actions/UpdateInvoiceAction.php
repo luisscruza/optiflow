@@ -6,9 +6,9 @@ namespace App\Actions;
 
 use App\DTOs\InvoiceResult;
 use App\Exceptions\InsufficientStockException;
-use App\Models\Document;
-use App\Models\DocumentItem;
 use App\Models\DocumentSubtype;
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Workspace;
 use App\Support\NCFValidator;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +18,7 @@ use Throwable;
 final class UpdateInvoiceAction
 {
     public function __construct(
-        private readonly UpdateDocumentItemAction $updateDocumentItemAction
+        private readonly UpdateInvoiceItemAction $updateInvoiceItemAction
     ) {}
 
     /**
@@ -26,14 +26,12 @@ final class UpdateInvoiceAction
      *
      * @param  array<string, mixed>  $data
      */
-    public function handle(Workspace $workspace, Document $invoice, array $data): InvoiceResult
+    public function handle(Workspace $workspace, Invoice $invoice, array $data): InvoiceResult
     {
         try {
             return DB::transaction(function () use ($workspace, $invoice, $data) {
-                // Store original state for comparison
                 $originalItems = $invoice->items()->with('product')->get()->keyBy('id');
 
-                // Validate NCF if document number changed
                 if (isset($data['ncf']) && $data['ncf'] !== $invoice->document_number) {
                     $documentSubtype = DocumentSubtype::findOrFail($data['document_subtype_id']);
 
@@ -42,22 +40,18 @@ final class UpdateInvoiceAction
                     }
                 }
 
-                // Update document-level fields
                 $this->updateDocumentFields($invoice, $data);
 
-                // Update numerator if NCF changed
                 if (isset($data['ncf']) && $data['ncf'] !== $invoice->document_number) {
                     $documentSubtype = DocumentSubtype::findOrFail($data['document_subtype_id']);
                     $this->updateNumerator($documentSubtype, $data['ncf']);
                 }
 
-                // Filter valid items (same as CreateInvoiceAction)
                 $items = array_filter($data['items'] ?? [], function ($item) {
                     return isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
                         $item['quantity'] > 0;
                 });
 
-                // Process item changes
                 try {
                     $this->processItemChanges($workspace, $invoice, $originalItems, $items);
                 } catch (InsufficientStockException $e) {
@@ -93,11 +87,10 @@ final class UpdateInvoiceAction
      *
      * @param  array<string, mixed>  $data
      */
-    private function updateDocumentFields(Document $invoice, array $data): void
+    private function updateDocumentFields(Invoice $invoice, array $data): void
     {
         $updateData = [];
 
-        // Only update fields that have changed
         if (isset($data['contact_id']) && $data['contact_id'] !== $invoice->contact_id) {
             $updateData['contact_id'] = $data['contact_id'];
         }
@@ -126,7 +119,6 @@ final class UpdateInvoiceAction
             $updateData['status'] = $data['status'];
         }
 
-        // Update calculated totals (match CreateInvoiceAction pattern)
         if (isset($data['total'])) {
             $updateData['total_amount'] = $data['total'];
         }
@@ -155,35 +147,34 @@ final class UpdateInvoiceAction
     /**
      * Process all item changes (add, update, remove).
      *
-     * @param  \Illuminate\Database\Eloquent\Collection<int, DocumentItem>  $originalItems
+     * @param  \Illuminate\Database\Eloquent\Collection<int, InvoiceItem>  $originalItems
      * @param  array<int, array<string, mixed>>  $newItems
      *
      * @throws InsufficientStockException
      */
     private function processItemChanges(
         Workspace $workspace,
-        Document $invoice,
+        Invoice $invoice,
         $originalItems,
         array $newItems
     ): void {
         $processedIds = [];
 
-        // Process new and updated items
         foreach ($newItems as $itemData) {
             $itemId = $itemData['id'] ?? null;
 
             if ($itemId && isset($originalItems[$itemId])) {
                 // Update existing item
                 $originalItem = $originalItems[$itemId];
-                $this->updateDocumentItemAction->handle(
+                $this->updateInvoiceItemAction->handle(
                     $invoice,
                     $originalItem,
                     $itemData
                 );
                 $processedIds[] = $itemId;
             } else {
-                // Add new item (create through UpdateDocumentItemAction with null item)
-                $this->updateDocumentItemAction->handle(
+                // Add new item (create through updateInvoiceItemAction with null item)
+                $this->updateInvoiceItemAction->handle(
                     $invoice,
                     null, // null means create new
                     $itemData
@@ -197,17 +188,16 @@ final class UpdateInvoiceAction
         });
 
         foreach ($itemsToRemove as $item) {
-            $this->removeDocumentItem($invoice, $item);
+            $this->removeInvoiceItem($invoice, $item);
         }
     }
 
     /**
-     * Remove a document item and reverse its stock movements.
+     * Remove a invoice item and reverse its stock movements.
      */
-    private function removeDocumentItem(Document $invoice, DocumentItem $item): void
+    private function removeInvoiceItem(Invoice $invoice, InvoiceItem $item): void
     {
-        // Use the UpdateDocumentItemAction to handle removal with proper stock reconciliation
-        $this->updateDocumentItemAction->handle(
+        $this->updateInvoiceItemAction->handle(
             $invoice,
             $item,
             ['remove' => true]
@@ -215,7 +205,7 @@ final class UpdateInvoiceAction
     }
 
     /**
-     * Updates the next number of the document type (same as CreateInvoiceAction).
+     * Updates the next number of the document type
      */
     private function updateNumerator(DocumentSubtype $documentSubtype, string $ncf): void
     {

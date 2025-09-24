@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool $is_default
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, DocumentItem> $documentItems
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, InvoiceItem> $invoiceItems
  * @property-read int|null $document_items_count
  * @property-read string $rate_percentage
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Product> $products
@@ -35,6 +35,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tax whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tax whereRate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tax whereUpdatedAt($value)
+ *
+ * @property-read int|null $invoice_items_count
  *
  * @mixin \Eloquent
  */
@@ -64,13 +66,13 @@ final class Tax extends Model
     }
 
     /**
-     * Get the document items that use this tax.
+     * Get the invoices items that use this tax.
      *
-     * @return HasMany<DocumentItem, $this>
+     * @return HasMany<InvoiceItem, $this>
      */
-    public function documentItems(): HasMany
+    public function invoiceItems(): HasMany
     {
-        return $this->hasMany(DocumentItem::class);
+        return $this->hasMany(InvoiceItem::class);
     }
 
     /**

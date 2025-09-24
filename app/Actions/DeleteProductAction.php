@@ -16,7 +16,7 @@ final class DeleteProductAction
     public function handle(Product $product): bool
     {
         return DB::transaction(function () use ($product): bool {
-            if ($product->documentItems()->exists()) {
+            if ($product->invoiceItems()->exists()) {
                 throw new InvalidArgumentException(
                     'Cannot delete product that has been used in invoices or quotations.'
                 );

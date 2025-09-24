@@ -21,7 +21,7 @@ return new class extends Migration
             $table->decimal('quantity', 10, 2);
             $table->decimal('unit_cost', 10, 2)->nullable();
             $table->decimal('total_cost', 12, 2)->nullable(); // quantity * unit_cost
-            $table->foreignId('related_document_id')->nullable()->constrained('documents')->nullOnDelete();
+            $table->foreignId('related_invoice_id')->nullable()->constrained('invoices')->nullOnDelete();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->text('note')->nullable();
             $table->foreignId('from_workspace_id')->nullable()->constrained('workspaces')->nullOnDelete();
@@ -34,7 +34,7 @@ return new class extends Migration
             $table->index(['workspace_id', 'product_id']);
             $table->index(['workspace_id', 'type']);
             $table->index(['created_at']);
-            $table->index(['related_document_id']);
+            $table->index(['related_invoice_id']);
         });
     }
 

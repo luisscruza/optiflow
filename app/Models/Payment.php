@@ -8,6 +8,17 @@ use App\Enums\PaymentMethod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property PaymentMethod $payment_method
+ * @property-read BankAccount|null $bankAccount
+ * @property-read Currency|null $currency
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment query()
+ *
+ * @mixin \Eloquent
+ */
 final class Payment extends Model
 {
     /**

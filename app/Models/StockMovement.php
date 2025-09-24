@@ -20,14 +20,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property numeric $quantity
  * @property numeric|null $unit_cost
  * @property numeric|null $total_cost
- * @property int|null $related_document_id
+ * @property int|null $related_invoice_id
  * @property string|null $note
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at
  * @property-read string $description
  * @property-read float $effective_quantity
  * @property-read Product $product
- * @property-read Document|null $relatedDocument
+ * @property-read Invoice|null $relatedDocument
  * @property-read Workspace $workspace
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement betweenDates($startDate, $endDate)
@@ -96,11 +96,11 @@ final class StockMovement extends Model
     /**
      * Get the related document if any.
      *
-     * @return BelongsTo<Document, $this>
+     * @return BelongsTo<Invoice, $this>
      */
     public function relatedDocument(): BelongsTo
     {
-        return $this->belongsTo(Document::class, 'related_document_id');
+        return $this->belongsTo(Invoice::class, 'related_invoice_id');
     }
 
     /**

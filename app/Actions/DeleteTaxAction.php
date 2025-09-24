@@ -17,7 +17,7 @@ final class DeleteTaxAction
      */
     public function handle(User $user, Tax $tax): void
     {
-        if ($tax->products()->exists() || $tax->documentItems()->exists()) {
+        if ($tax->products()->exists() || $tax->invoiceItems()->exists()) {
             throw new InvalidArgumentException('Cannot delete tax that is being used by products or documents.');
         }
 

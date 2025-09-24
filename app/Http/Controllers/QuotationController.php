@@ -8,9 +8,9 @@ use App\Actions\CreateQuotationAction;
 use App\Actions\UpdateQuotationAction;
 use App\Http\Requests\UpdateQuotationRequest;
 use App\Models\Contact;
-use App\Models\Document;
 use App\Models\DocumentSubtype;
 use App\Models\Product;
+use App\Models\Quotation;
 use App\Models\Tax;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -29,8 +29,7 @@ final class QuotationController extends Controller
      */
     public function index(Request $request): Response
     {
-        $query = Document::query()
-            ->where('type', 'quotation')
+        $query = Quotation::query()
             ->with(['contact', 'documentSubtype'])
             ->orderBy('created_at', 'desc');
 
@@ -122,7 +121,7 @@ final class QuotationController extends Controller
     /**
      * Display the specified quotation.
      */
-    public function show(Document $quotation): Response
+    public function show(Quotation $quotation): Response
     {
         $quotation->load(['contact', 'documentSubtype', 'items.product', 'items.tax']);
 
@@ -134,7 +133,7 @@ final class QuotationController extends Controller
     /**
      * Show the form for editing the specified quotation.
      */
-    public function edit(Document $quotation): Response
+    public function edit(Quotation $quotation): Response
     {
         $currentWorkspace = Context::get('workspace');
 
@@ -166,7 +165,7 @@ final class QuotationController extends Controller
     /**
      * Update the specified quotation.
      */
-    public function update(UpdateQuotationRequest $request, Document $quotation, UpdateQuotationAction $action): RedirectResponse
+    public function update(UpdateQuotationRequest $request, Quotation $quotation, UpdateQuotationAction $action): RedirectResponse
     {
         $workspace = Context::get('workspace');
 
@@ -186,7 +185,7 @@ final class QuotationController extends Controller
     /**
      * Remove the specified quotation.
      */
-    public function destroy(Document $quotation): RedirectResponse
+    public function destroy(Quotation $quotation): RedirectResponse
     {
         // For now, we'll only allow deleting draft quotations
         if ($quotation->status !== 'draft') {

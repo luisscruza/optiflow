@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('documents', function (Blueprint $table) {
+        Schema::table('invoices', function (Blueprint $table) {
             $table->string('payment_term')->nullable();
         });
     }

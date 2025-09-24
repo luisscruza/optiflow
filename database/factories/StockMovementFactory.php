@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\Document;
+use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\Workspace;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -32,7 +32,7 @@ final class StockMovementFactory extends Factory
             'quantity' => $quantity,
             'unit_cost' => $unitCost,
             'total_cost' => $quantity * $unitCost,
-            'related_document_id' => null,
+            'related_invoice_id' => null,
             'note' => fake()->optional()->sentence(),
         ];
     }
@@ -101,16 +101,16 @@ final class StockMovementFactory extends Factory
     }
 
     /**
-     * Create movement related to a document.
+     * Create movement related to a invoice.
      */
-    public function forDocument(Document|int $document): static
+    public function forInvoice(Invoice|int $invoice): static
     {
-        $documentId = $document instanceof Document ? $document->id : $document;
+        $invoiceId = $invoice instanceof Invoice ? $invoice->id : $invoice;
 
         return $this->state(fn (array $attributes) => [
-            'related_document_id' => $documentId,
-            'type' => 'out', // Usually documents reduce stock
-            'note' => 'Stock movement from document',
+            'related_invoice_id' => $invoiceId,
+            'type' => 'out', // Usually invoices reduce stock
+            'note' => 'Stock movement from invoice #'.$invoiceId,
         ]);
     }
 

@@ -25,12 +25,12 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property array<array-key, mixed>|null $metadata
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Document> $documents
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Invoice> $documents
  * @property-read int|null $documents_count
  * @property-read string|null $full_address
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Document> $invoices
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Invoice> $invoices
  * @property-read int|null $invoices_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Document> $quotations
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Invoice> $quotations
  * @property-read int|null $quotations_count
  * @property-read Workspace $workspace
  *
@@ -130,17 +130,17 @@ final class Contact extends Model
     /**
      * Get the documents for this contact.
      *
-     * @return HasMany<Document, $this>
+     * @return HasMany<Invoice, $this>
      */
     public function documents(): HasMany
     {
-        return $this->hasMany(Document::class);
+        return $this->hasMany(Invoice::class);
     }
 
     /**
      * Get the invoices for this contact.
      *
-     * @return HasMany<Document, $this>
+     * @return HasMany<Invoice, $this>
      */
     public function invoices(): HasMany
     {
@@ -150,7 +150,7 @@ final class Contact extends Model
     /**
      * Get the quotations for this contact.
      *
-     * @return HasMany<Document, $this>
+     * @return HasMany<Invoice, $this>
      */
     public function quotations(): HasMany
     {

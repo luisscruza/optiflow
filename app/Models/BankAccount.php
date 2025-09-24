@@ -8,6 +8,16 @@ use App\Enums\BankAccountType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property BankAccountType $type
+ * @property-read Currency|null $currency
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BankAccount newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BankAccount newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BankAccount query()
+ *
+ * @mixin \Eloquent
+ */
 final class BankAccount extends Model
 {
     /**

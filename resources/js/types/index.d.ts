@@ -352,7 +352,7 @@ export interface DocumentSubtype {
 
 export interface DocumentItem {
     id: number;
-    document_id: number;
+    invoice_id: number;
     product_id?: number | null;
     description: string;
     quantity: string | number;

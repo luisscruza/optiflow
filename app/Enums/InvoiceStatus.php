@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-enum DocumentStatus: string
+enum InvoiceStatus: string
 {
     case Draft = 'draft';
     case Sent = 'sent';
     case Paid = 'paid';
     case Overdue = 'overdue';
     case Cancelled = 'cancelled';
-    case NonConverted = 'non_converted';
-    case Converted = 'converted';
 
     case PendingPayment = 'pending_payment';
 
@@ -29,8 +27,6 @@ enum DocumentStatus: string
             self::Paid->value => self::Paid->label(),
             self::Overdue->value => self::Overdue->label(),
             self::Cancelled->value => self::Cancelled->label(),
-            self::NonConverted->value => self::NonConverted->label(),
-            self::Converted->value => self::Converted->label(),
             self::PendingPayment->value => self::PendingPayment->label(),
         ];
     }
@@ -46,8 +42,6 @@ enum DocumentStatus: string
             self::Paid => 'Pagada',
             self::Overdue => 'Vencida',
             self::Cancelled => 'Cancelada',
-            self::NonConverted => 'Non Converted',
-            self::Converted => 'Converted',
             self::PendingPayment => 'Pending Payment',
         };
     }

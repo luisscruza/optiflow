@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\Document;
 use App\Models\DocumentSubtype;
+use App\Models\Invoice;
 
 final class NCFValidator
 {
@@ -19,7 +19,7 @@ final class NCFValidator
 
     public static function validate(string $ncf, DocumentSubtype $documentSubtype, array $data): bool
     {
-        if (Document::where('document_number', $ncf)->exists()) {
+        if (Invoice::where('document_number', $ncf)->exists()) {
             return false;
         }
 

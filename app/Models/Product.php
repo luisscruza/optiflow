@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Auth;
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at
  * @property-read Tax|null $defaultTax
- * @property-read \Illuminate\Database\Eloquent\Collection<int, DocumentItem> $documentItems
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, InvoiceItem> $invoiceItems
  * @property-read int|null $document_items_count
  * @property-read float|null $profit
  * @property-read float|null $profit_margin
@@ -54,6 +54,7 @@ use Illuminate\Support\Facades\Auth;
  *
  * @property-read \Illuminate\Database\Eloquent\Collection<int, ProductStock> $stocksInCurrentWorkspace
  * @property-read int|null $stocks_in_current_workspace_count
+ * @property-read int|null $invoice_items_count
  *
  * @mixin \Eloquent
  */
@@ -61,16 +62,6 @@ final class Product extends Model
 {
     /** @use HasFactory<\Database\Factories\ProductFactory> */
     use HasFactory;
-
-    protected $fillable = [
-        'name',
-        'sku',
-        'description',
-        'price',
-        'cost',
-        'track_stock',
-        'default_tax_id',
-    ];
 
     /**
      * Get the default tax for this product.
@@ -103,13 +94,13 @@ final class Product extends Model
     }
 
     /**
-     * Get the document items for this product.
+     * Get the invoice items for this product.
      *
-     * @return HasMany<DocumentItem, $this>
+     * @return HasMany<InvoiceItem, $this>
      */
-    public function documentItems(): HasMany
+    public function invoiceItems(): HasMany
     {
-        return $this->hasMany(DocumentItem::class);
+        return $this->hasMany(InvoiceItem::class);
     }
 
     /**

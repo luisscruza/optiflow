@@ -68,7 +68,7 @@ final class TaxController extends Controller
      */
     public function show(Tax $tax): Response
     {
-        $tax->loadCount(['products', 'documentItems']);
+        $tax->loadCount(['products', 'invoiceItems']);
 
         return Inertia::render('taxes/show', [
             'tax' => $tax,

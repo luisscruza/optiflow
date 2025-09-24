@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\DTOs;
 
-use App\Models\Document;
+use App\Models\Invoice;
 
 final readonly class InvoiceResult
 {
@@ -12,7 +12,7 @@ final readonly class InvoiceResult
      * Create a new class instance.
      */
     public function __construct(
-        public ?Document $invoice = null,
+        public ?Invoice $invoice = null,
         public ?string $error = null,
     ) {}
 

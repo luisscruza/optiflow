@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\Document;
+use App\Models\Invoice;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
 
@@ -13,7 +13,7 @@ final class DownloadInvoicePdfController extends Controller
     /**
      * Handle the incoming request.
      */
-    public function __invoke(Document $invoice): Response
+    public function __invoke(Invoice $invoice): Response
     {
         $invoice->load([
             'contact',
