@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Enums\DocumentType;
 use App\Http\Controllers\CompanyDetailsController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\ConvertQuotationToInvoiceController;
 use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\CurrencyRateController;
 use App\Http\Controllers\DocumentSubtypeController;
@@ -76,8 +76,7 @@ Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(funct
 
         Route::resource('quotations', QuotationController::class);
         Route::get('quotations/{quotation}/pdf', DownloadQuotationPdfController::class)->name('quotations.pdf');
-
-        Route::resource('quotations', QuotationController::class);
+        Route::post('quotations/{quotation}/convert-to-invoice', ConvertQuotationToInvoiceController::class)->name('quotations.convert-to-invoice');
 
         Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
         Route::patch('document-subtypes/{documentSubtype}/set-default', SetDefaultDocumentSubtypeController::class)->name('document-subtypes.set-default');

@@ -11,6 +11,43 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
+/**
+ * @property int $id
+ * @property string $email
+ * @property string $token
+ * @property int $workspace_id
+ * @property int $invited_by
+ * @property UserRole $role
+ * @property string $status
+ * @property \Carbon\CarbonImmutable $expires_at
+ * @property \Carbon\CarbonImmutable|null $accepted_at
+ * @property int|null $user_id
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ * @property-read User $invitedBy
+ * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property-read int|null $notifications_count
+ * @property-read User|null $user
+ * @property-read Workspace $workspace
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserInvitation newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserInvitation newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserInvitation query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserInvitation whereAcceptedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserInvitation whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserInvitation whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserInvitation whereExpiresAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserInvitation whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserInvitation whereInvitedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserInvitation whereRole($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserInvitation whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserInvitation whereToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserInvitation whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserInvitation whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserInvitation whereWorkspaceId($value)
+ *
+ * @mixin \Eloquent
+ */
 final class UserInvitation extends Model
 {
     use Notifiable;

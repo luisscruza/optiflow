@@ -46,6 +46,13 @@ use Illuminate\Notifications\Notifiable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRememberToken($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
  *
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, UserInvitation> $receivedInvitations
+ * @property-read int|null $received_invitations_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, UserInvitation> $sentInvitations
+ * @property-read int|null $sent_invitations_count
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereBusinessRole($value)
+ *
  * @mixin \Eloquent
  */
 final class User extends Authenticatable

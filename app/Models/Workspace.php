@@ -47,6 +47,12 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Workspace whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Workspace whereUpdatedAt($value)
  *
+ * @property string|null $code
+ * @property-read Collection<int, UserInvitation> $invitations
+ * @property-read int|null $invitations_count
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Workspace whereCode($value)
+ *
  * @mixin \Eloquent
  */
 final class Workspace extends Model

@@ -350,13 +350,29 @@ export interface DocumentSubtype {
     updated_at: string;
 }
 
+export interface DocumentItem {
+    id: number;
+    document_id: number;
+    product_id?: number | null;
+    description: string;
+    quantity: string | number;
+    unit_price: string | number;
+    discount_rate: string | number;
+    discount_amount: string | number;
+    tax_rate: string | number;
+    tax_amount: string | number;
+    total: string | number;
+    product?: Product;
+    tax?: Tax;
+}
+
 export interface Document {
     id: number;
     workspace_id: number;
     contact_id: number;
-    type: 'invoice' | 'quote' | 'receipt';
+    type: 'invoice' | 'quotation' | 'receipt';
     document_subtype_id: number;
-    status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled' | 'accepted' | 'rejected';
+    status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled' | 'accepted' | 'rejected' | 'expired' | 'converted';
     document_number: string;
     issue_date: string;
     due_date: string;
@@ -372,6 +388,7 @@ export interface Document {
     contact: Contact;
     document_subtype: DocumentSubtype;
     created_by_user?: User;
+    items?: DocumentItem[];
 }
 
 export interface PaginatedDocuments {

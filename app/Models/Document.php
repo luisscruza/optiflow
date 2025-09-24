@@ -64,6 +64,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document withStatus(string $status)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document withoutWorkspaceScope()
  *
+ * @property int|null $created_by
+ * @property int|null $currency_id
+ * @property float $tax_amount
+ * @property float $discount_amount
+ * @property float $subtotal_amount
+ * @property string|null $payment_term
+ *
+ * @method static Builder<static>|Document whereCreatedBy($value)
+ * @method static Builder<static>|Document whereCurrencyId($value)
+ * @method static Builder<static>|Document whereDiscountAmount($value)
+ * @method static Builder<static>|Document wherePaymentTerm($value)
+ * @method static Builder<static>|Document whereSubtotalAmount($value)
+ * @method static Builder<static>|Document whereTaxAmount($value)
+ *
  * @mixin \Eloquent
  */
 final class Document extends Model

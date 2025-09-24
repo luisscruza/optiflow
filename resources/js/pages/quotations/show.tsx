@@ -1,5 +1,5 @@
-import { Head, Link } from '@inertiajs/react';
-import { Calendar, DollarSign, Edit, FileText, Printer, User } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { Calendar, DollarSign, Edit, FileText, Printer, RefreshCw, User } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,14 @@ interface Props {
 
 export default function QuotationShow({ quotation }: Props) {
     const { format: formatCurrency } = useCurrency();
+
+    const handleConvertToInvoice = () => {
+        if (confirm('¿Estás seguro de que deseas convertir esta cotización en una factura? Esta acción no se puede deshacer.')) {
+            router.post(`/quotations/${quotation.id}/convert-to-invoice`, {}, {
+                preserveScroll: true,
+            });
+        }
+    };
 
     const getStatusBadge = (status: string) => {
         const statusConfig = {
@@ -73,6 +81,12 @@ export default function QuotationShow({ quotation }: Props) {
                     </div>
 
                     <div className="flex space-x-3">
+                        {quotation.status !== 'converted' && quotation.status !== 'cancelled' && (
+                            <Button onClick={handleConvertToInvoice} className="bg-green-600 hover:bg-green-700">
+                                <RefreshCw className="mr-2 h-4 w-4" />
+                                Convertir a factura
+                            </Button>
+                        )}
                         <Button variant="outline" asChild>
                             <Link href={`/quotations/${quotation.id}/edit`}>
                                 <Edit className="mr-2 h-4 w-4" />
@@ -166,7 +180,10 @@ export default function QuotationShow({ quotation }: Props) {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="text-center">
-                                                        {parseFloat(item.quantity).toLocaleString()}
+                                                        {typeof item.quantity === 'string' ? 
+                                                            parseFloat(item.quantity).toLocaleString() : 
+                                                            item.quantity.toLocaleString()
+                                                        }
                                                     </TableCell>
                                                     <TableCell className="text-right">
                                                         {formatCurrency(item.unit_price)}

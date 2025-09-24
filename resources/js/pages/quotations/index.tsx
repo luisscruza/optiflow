@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, DollarSign, Edit, Eye, Filter, Plus, Printer, Search, Trash2, User } from 'lucide-react';
+import { Calendar, DollarSign, Edit, Eye, FileText, Filter, Plus, Printer, Search, Trash2, User } from 'lucide-react';
 import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -56,9 +56,15 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
         );
     };
 
-    const handleDelete = (invoiceId: number) => {
-        if (confirm('¿Estás seguro de que deseas eliminar esta factura?')) {
-            router.delete(`/invoices/${invoiceId}`);
+    const handleDelete = (quotationId: number) => {
+        if (confirm('¿Estás seguro de que deseas eliminar esta cotización?')) {
+            router.delete(`/quotations/${quotationId}`);
+        }
+    };
+
+    const handleConvertToInvoice = (quotationId: number) => {
+        if (confirm('¿Estás seguro de que deseas convertir esta cotización a factura? Esta acción no se puede deshacer.')) {
+            router.post(`/quotations/${quotationId}/convert-to-invoice`);
         }
     };
 
@@ -66,16 +72,17 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
         const statusConfig = {
             draft: { label: 'Borrador', variant: 'secondary' as const, className: '' },
             sent: { label: 'Enviado', variant: 'default' as const, className: '' },
-            paid: { label: 'Cobrada', variant: 'default' as const, className: 'bg-green-100 text-green-800 border-green-200' },
-            overdue: { label: 'Vencida', variant: 'destructive' as const, className: '' },
+            accepted: { label: 'Aceptada', variant: 'default' as const, className: 'bg-green-100 text-green-800 border-green-200' },
+            converted: { label: 'Convertida', variant: 'default' as const, className: 'bg-blue-100 text-blue-800 border-blue-200' },
+            expired: { label: 'Vencida', variant: 'destructive' as const, className: '' },
             cancelled: { label: 'Cancelada', variant: 'outline' as const, className: '' },
         };
 
         const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
-        
+
         return (
-            <Badge 
-                variant={config.variant} 
+            <Badge
+                variant={config.variant}
                 className={config.className || undefined}
             >
                 {config.label}
@@ -232,8 +239,8 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className={`text-sm ${
-                                                        isExpired(quotation.due_date, quotation.status) 
-                                                            ? 'text-red-600 font-medium' 
+                                                        isExpired(quotation.due_date, quotation.status)
+                                                            ? 'text-red-600 font-medium'
                                                             : 'text-gray-600'
                                                     }`}>
                                                         {formatDate(quotation.due_date)}
@@ -244,8 +251,8 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
                                                 </TableCell>
                                                 <TableCell className="text-right font-medium">
                                                     <span className={
-                                                        getBalanceAmount(quotation) > 0 
-                                                            ? 'text-red-600' 
+                                                        getBalanceAmount(quotation) > 0
+                                                            ? 'text-red-600'
                                                             : 'text-green-600'
                                                     }>
                                                         {formatCurrency(getBalanceAmount(quotation))}
@@ -275,9 +282,9 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
                                                                 </Link>
                                                             </DropdownMenuItem>
                                                             <DropdownMenuItem>
-                                                                <a 
-                                                                    href={`/quotations/${quotation.id}/pdf`} 
-                                                                    target="_blank" 
+                                                                <a
+                                                                    href={`/quotations/${quotation.id}/pdf`}
+                                                                    target="_blank"
                                                                     rel="noopener noreferrer"
                                                                     className="flex items-center w-full"
                                                                 >
@@ -285,7 +292,13 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
                                                                     Ver PDF
                                                                 </a>
                                                             </DropdownMenuItem>
-                                                            {quotation.status === 'draft' && (
+                                                                <DropdownMenuItem
+                                                                    onClick={() => handleConvertToInvoice(quotation.id)}
+                                                                    className="text-blue-600 dark:text-blue-400"
+                                                                >
+                                                                    <FileText className="mr-2 h-4 w-4" />
+                                                                    Convertir a factura
+                                                                </DropdownMenuItem>
                                                                 <DropdownMenuItem
                                                                     onClick={() => handleDelete(quotation.id)}
                                                                     className="text-red-600 dark:text-red-400"
@@ -293,7 +306,6 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
                                                                     <Trash2 className="mr-2 h-4 w-4" />
                                                                     Eliminar
                                                                 </DropdownMenuItem>
-                                                            )}
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 </TableCell>

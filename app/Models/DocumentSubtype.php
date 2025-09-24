@@ -45,6 +45,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereNextNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereUpdatedAt($value)
  *
+ * @property DocumentType $type
+ *
+ * @method static Builder<static>|DocumentSubtype forInvoice()
+ * @method static Builder<static>|DocumentSubtype forQuotation()
+ * @method static Builder<static>|DocumentSubtype whereType($value)
+ *
  * @mixin \Eloquent
  */
 final class DocumentSubtype extends Model

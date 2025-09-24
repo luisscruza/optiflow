@@ -8,6 +8,27 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $currency_id
+ * @property float $rate
+ * @property \Carbon\CarbonImmutable $effective_date
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ * @property-read Currency $currency
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate whereCurrencyId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate whereEffectiveDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate whereRate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate whereUpdatedAt($value)
+ *
+ * @mixin \Eloquent
+ */
 final class CurrencyRate extends Model
 {
     protected $fillable = [

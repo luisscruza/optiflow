@@ -53,6 +53,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentItem whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentItem withDiscount()
  *
+ * @property float $tax_rate
+ * @property float|null $discount_rate
+ *
+ * @method static Builder<static>|DocumentItem whereDiscountAmount($value)
+ * @method static Builder<static>|DocumentItem whereDiscountRate($value)
+ * @method static Builder<static>|DocumentItem whereTaxAmount($value)
+ * @method static Builder<static>|DocumentItem whereTaxRate($value)
+ *
  * @mixin \Eloquent
  */
 final class DocumentItem extends Model

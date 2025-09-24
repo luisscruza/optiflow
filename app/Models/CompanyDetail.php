@@ -6,6 +6,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property string $key
+ * @property string $value
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDetail newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDetail newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDetail query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDetail whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDetail whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDetail whereKey($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDetail whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CompanyDetail whereValue($value)
+ *
+ * @mixin \Eloquent
+ */
 final class CompanyDetail extends Model
 {
     protected $fillable = [
