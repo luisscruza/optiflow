@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Stancl\Tenancy\Database\Models\Domain;
 
 return [
-    'tenant_model' => App\Models\Tenant::class,
+    'tenant_model' => App\Models\Central\Tenant::class,
     'id_generator' => Stancl\Tenancy\UUIDGenerator::class,
 
     'domain_model' => Domain::class,

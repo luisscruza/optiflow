@@ -27,9 +27,9 @@ use App\Http\Controllers\WorkspaceMemberRoleController;
 use App\Http\Middleware\HasWorkspace;
 use App\Http\Middleware\SetWorkspaceContext;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 use Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
-use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------

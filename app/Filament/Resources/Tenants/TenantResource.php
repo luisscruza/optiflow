@@ -9,7 +9,7 @@ use App\Filament\Resources\Tenants\Pages\EditTenant;
 use App\Filament\Resources\Tenants\Pages\ListTenants;
 use App\Filament\Resources\Tenants\Schemas\TenantForm;
 use App\Filament\Resources\Tenants\Tables\TenantsTable;
-use App\Models\Tenant;
+use App\Models\Central\Tenant;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
