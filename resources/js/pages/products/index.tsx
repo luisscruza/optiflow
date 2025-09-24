@@ -144,51 +144,6 @@ export default function ProductsIndex({ products, filters }: Props) {
                     </CardContent>
                 </Card>
 
-                {/* Quick Inventario Actions */}
-                <Card className="mb-6">
-                    <CardHeader>
-                        <CardTitle className="text-lg">Inventario</CardTitle>
-                        <CardDescription>Acceso rápido a funciones de gestión de inventario</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                            <Button variant="outline" asChild className="h-auto p-4">
-                                <Link href="/stock-adjustments">
-                                    <div className="flex flex-col items-center space-y-2">
-                                        <RotateCcw className="h-6 w-6" />
-                                        <div className="text-center">
-                                            <div className="font-medium">Ajuste de inventario</div>
-                                            <div className="text-sm text-muted-foreground">Gestionar niveles de inventario</div>
-                                        </div>
-                                    </div>
-                                </Link>
-                            </Button>
-                            <Button variant="outline" asChild className="h-auto p-4">
-                                <Link href="/stock-transfers">
-                                    <div className="flex flex-col items-center space-y-2">
-                                        <ArrowLeftRight className="h-6 w-6" />
-                                        <div className="text-center">
-                                            <div className="font-medium">Transferencia de inventario</div>
-                                            <div className="text-sm text-muted-foreground">Mover entre sucursales</div>
-                                        </div>
-                                    </div>
-                                </Link>
-                            </Button>
-                            <Button variant="outline" asChild className="h-auto p-4">
-                                <Link href="/initial-stock">
-                                    <div className="flex flex-col items-center space-y-2">
-                                        <TrendingUp className="h-6 w-6" />
-                                        <div className="text-center">
-                                            <div className="font-medium">Inventario inicial</div>
-                                            <div className="text-sm text-muted-foreground">Configurar inventario del producto</div>
-                                        </div>
-                                    </div>
-                                </Link>
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-
                 {/* Productos Table */}
                 {products.data.length === 0 ? (
                     <Card>

@@ -90,12 +90,12 @@ export default function ConfigurationIndex() {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
-                            <Settings className="h-6 w-6 text-gray-600" />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
+                            <Settings className="h-6 w-6 text-gray-600 dark:text-gray-300" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-semibold text-gray-900">Configuración</h1>
-                            <p className="text-sm text-gray-600">Configura la información de tu empresa y adapta Alegra a tu negocio.</p>
+                            <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Configuración</h1>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Configura la información de tu empresa y adapta Alegra a tu negocio.</p>
                         </div>
                     </div>
                 </div>
@@ -109,12 +109,12 @@ export default function ConfigurationIndex() {
                             <Card key={section.title} className="transition-shadow hover:shadow-md">
                                 <CardHeader className="pb-4">
                                     <div className="flex items-start gap-4">
-                                        <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${section.bgColor}`}>
-                                            <IconComponent className={`h-6 w-6 ${section.color}`} />
+                                        <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${section.bgColor} dark:bg-gray-700`}>
+                                            <IconComponent className={`h-6 w-6 ${section.color} dark:text-gray-200`} />
                                         </div>
                                         <div className="flex-1">
-                                            <CardTitle className="text-lg font-semibold text-gray-900">{section.title}</CardTitle>
-                                            <CardDescription className="mt-1 text-sm text-gray-600">{section.description}</CardDescription>
+                                            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">{section.title}</CardTitle>
+                                            <CardDescription className="mt-1 text-sm text-gray-600 dark:text-gray-400">{section.description}</CardDescription>
                                         </div>
                                     </div>
                                 </CardHeader>
@@ -124,14 +124,14 @@ export default function ConfigurationIndex() {
                                             <Link
                                                 key={item.title}
                                                 href={item.href}
-                                                className="block rounded-md border border-gray-200 p-3 transition-colors hover:bg-gray-50"
+                                                className="block rounded-md border border-gray-200 bg-white dark:bg-transparent dark:border-gray-700 p-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
                                             >
                                                 <div className="flex items-center justify-between">
                                                     <div>
-                                                        <h4 className="font-medium text-gray-900">{item.title}</h4>
-                                                        <p className="text-sm text-gray-500">{item.description}</p>
+                                                        <h4 className="font-medium text-gray-900 dark:text-gray-100">{item.title}</h4>
+                                                        <p className="text-sm text-gray-500 dark:text-gray-400">{item.description}</p>
                                                     </div>
-                                                    <Receipt className="h-4 w-4 text-gray-400" />
+                                                    <Receipt className="h-4 w-4 text-gray-400 dark:text-gray-400" />
                                                 </div>
                                             </Link>
                                         ))}
