@@ -7,6 +7,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type StockMovement, type Workspace } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Inventario',
@@ -17,7 +18,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/stock-transfers',
     },
     {
-        title: 'Transfer Details',
+        title: 'Transferencias de inventario',
         href: '#',
     },
 ];
@@ -39,14 +40,14 @@ export default function StockTransfersShow({ transfer, workspace }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Transfer Details - ${transfer.product?.name}`} />
+            <Head title={`Detalle de transferencia - ${transfer.product?.name}`} />
 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="space-y-8">
                     {/* Header */}
                     <div className="flex items-center space-x-4">
                         <div className="flex-1">
-                            <h1 className="text-3xl font-bold tracking-tight">Transfer Details</h1>
+                            <h1 className="text-3xl font-bold tracking-tight">Detalle de transferencia</h1>
                             <p className="text-muted-foreground">Stock transfer for {transfer.product?.name}</p>
                         </div>
                     </div>
@@ -58,17 +59,17 @@ export default function StockTransfersShow({ transfer, workspace }: Props) {
                             <CardHeader>
                                 <CardTitle className="flex items-center">
                                     <ArrowLeftRight className="mr-2 h-5 w-5" />
-                                    Transfer Information
+                                    Información de la transferencia
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Transfer Type</span>
-                                    <Badge variant={isIncoming ? 'default' : 'destructive'}>{isIncoming ? 'Incoming' : 'Outgoing'}</Badge>
+                                    <span className="text-sm font-medium text-muted-foreground">Tipo de transferencia</span>
+                                    <Badge variant={isIncoming ? 'default' : 'destructive'}>{isIncoming ? 'Entrante' : 'Saliente'}</Badge>
                                 </div>
 
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Product</span>
+                                    <span className="text-sm font-medium text-muted-foreground">Producto</span>
                                     <div className="text-right">
                                         <div className="font-medium">{transfer.product?.name}</div>
                                         <div className="text-sm text-muted-foreground">{transfer.product?.sku}</div>
@@ -76,7 +77,7 @@ export default function StockTransfersShow({ transfer, workspace }: Props) {
                                 </div>
 
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Quantity</span>
+                                    <span className="text-sm font-medium text-muted-foreground">Cantidad</span>
                                     <div className="text-right">
                                         <span className={`text-2xl font-bold ${isIncoming ? 'text-green-600' : 'text-red-600'}`}>
                                             {isIncoming ? '+' : '-'}
@@ -86,12 +87,12 @@ export default function StockTransfersShow({ transfer, workspace }: Props) {
                                 </div>
 
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Reference</span>
+                                    <span className="text-sm font-medium text-muted-foreground">Referencia</span>
                                     <span className="font-mono text-sm">{transfer.reference_number || '-'}</span>
                                 </div>
 
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Date</span>
+                                    <span className="text-sm font-medium text-muted-foreground">Fecha</span>
                                     <div className="flex items-center space-x-1">
                                         <Calendar className="h-4 w-4 text-muted-foreground" />
                                         <span className="text-sm">{new Date(transfer.created_at).toLocaleString()}</span>
@@ -99,7 +100,7 @@ export default function StockTransfersShow({ transfer, workspace }: Props) {
                                 </div>
 
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Created By</span>
+                                    <span className="text-sm font-medium text-muted-foreground">Creado por</span>
                                     <div className="flex items-center space-x-1">
                                         <User className="h-4 w-4 text-muted-foreground" />
                                         <span className="text-sm">{transfer.created_by?.name || 'Unknown'}</span>
@@ -113,18 +114,18 @@ export default function StockTransfersShow({ transfer, workspace }: Props) {
                             <CardHeader>
                                 <CardTitle className="flex items-center">
                                     <Building2 className="mr-2 h-5 w-5" />
-                                    Workspace Details
+                                    Detalles del espacio de trabajo
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div>
-                                    <div className="mb-2 text-sm font-medium text-muted-foreground">From Workspace</div>
+                                    <div className="mb-2 text-sm font-medium text-muted-foreground">Desde espacio</div>
                                     <div className="flex items-center space-x-2 rounded-md bg-muted p-3">
                                         <Building2 className="h-4 w-4 text-muted-foreground" />
                                         <span className="font-medium">{transfer.from_workspace?.name}</span>
                                         {transfer.from_workspace_id === workspace.id && (
                                             <Badge variant="outline" className="text-xs">
-                                                Current
+                                                Actual
                                             </Badge>
                                         )}
                                     </div>
@@ -135,13 +136,13 @@ export default function StockTransfersShow({ transfer, workspace }: Props) {
                                 </div>
 
                                 <div>
-                                    <div className="mb-2 text-sm font-medium text-muted-foreground">To Workspace</div>
+                                    <div className="mb-2 text-sm font-medium text-muted-foreground">Hacia espacio</div>
                                     <div className="flex items-center space-x-2 rounded-md bg-muted p-3">
                                         <Building2 className="h-4 w-4 text-muted-foreground" />
                                         <span className="font-medium">{transfer.to_workspace?.name}</span>
                                         {transfer.to_workspace_id === workspace.id && (
                                             <Badge variant="outline" className="text-xs">
-                                                Current
+                                                Actual
                                             </Badge>
                                         )}
                                     </div>
@@ -173,13 +174,13 @@ export default function StockTransfersShow({ transfer, workspace }: Props) {
                                 <Button asChild variant="outline">
                                     <Link href={`/stock-adjustments/${transfer.product?.id}`}>
                                         <Package className="mr-2 h-4 w-4" />
-                                        View Stock History
+                                        Ver historial de inventario
                                     </Link>
                                 </Button>
                                 <Button asChild variant="outline">
                                     <Link href="/stock-transfers/create">
                                         <ArrowLeftRight className="mr-2 h-4 w-4" />
-                                        New Transfer
+                                        Nueva transferencia
                                     </Link>
                                 </Button>
                                 <Button asChild variant="outline">
