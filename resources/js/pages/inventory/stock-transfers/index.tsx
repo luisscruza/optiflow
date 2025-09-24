@@ -43,12 +43,12 @@ export default function StockTransfersIndex({ transfers, workspace }: Props) {
 
     const getTransferBadge = (type: string) => {
         if (type === 'transfer_in') {
-            return <Badge variant="default">Incoming</Badge>;
+            return <Badge variant="default">Entrante</Badge>;
         }
         if (type === 'transfer_out') {
-            return <Badge variant="destructive">Outgoing</Badge>;
+            return <Badge variant="destructive">Saliente</Badge>;
         }
-        return <Badge variant="outline">Transfer</Badge>;
+        return <Badge variant="outline">Transferencia</Badge>;
     };
 
     const getTransferDirection = (movement: StockMovement, currentWorkspaceId: number) => {
@@ -56,13 +56,13 @@ export default function StockTransfersIndex({ transfers, workspace }: Props) {
             return {
                 direction: 'outgoing',
                 otherWorkspace: movement.to_workspace,
-                label: 'To',
+                label: 'Hacia',
             };
         } else {
             return {
                 direction: 'incoming',
                 otherWorkspace: movement.from_workspace,
-                label: 'From',
+                label: 'Desde',
             };
         }
     };
@@ -77,13 +77,13 @@ export default function StockTransfersIndex({ transfers, workspace }: Props) {
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight">Transferencia de inventario</h1>
-                            <p className="text-muted-foreground">Manage Transferencia de inventario between workspaces</p>
+                            <p className="text-muted-foreground">Gestiona transferencias de inventario entre espacios de trabajo</p>
                         </div>
 
                         <Button asChild>
                             <Link href="/stock-transfers/create">
                                 <Plus className="mr-2 h-4 w-4" />
-                                New Transfer
+                                Nueva transferencia
                             </Link>
                         </Button>
                     </div>
@@ -91,15 +91,15 @@ export default function StockTransfersIndex({ transfers, workspace }: Props) {
                     {/* Transfers */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Transfer History</CardTitle>
-                            <CardDescription>Transferencia de inventario involving {workspace.name}</CardDescription>
+                            <CardTitle>Historial de transferencias</CardTitle>
+                            <CardDescription>Transferencias de inventario que involucran {workspace.name}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="mb-6 flex items-center space-x-4">
                                 <div className="relative flex-1">
                                     <Search className="absolute top-2.5 left-2 h-4 w-4 text-muted-foreground" />
                                     <Input
-                                        placeholder="Search transfers..."
+                                        placeholder="Buscar transferencias..."
                                         value={search}
                                         onChange={(e) => handleSearch(e.target.value)}
                                         className="pl-8"
@@ -112,14 +112,14 @@ export default function StockTransfersIndex({ transfers, workspace }: Props) {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Product</TableHead>
-                                            <TableHead>Direction</TableHead>
-                                            <TableHead>Workspace</TableHead>
-                                            <TableHead className="text-right">Quantity</TableHead>
-                                            <TableHead>Reference</TableHead>
-                                            <TableHead>Created By</TableHead>
-                                            <TableHead>Date</TableHead>
-                                            <TableHead className="text-right">Actions</TableHead>
+                                            <TableHead>Producto</TableHead>
+                                            <TableHead>Dirección</TableHead>
+                                            <TableHead>Espacio de trabajo</TableHead>
+                                            <TableHead className="text-right">Cantidad</TableHead>
+                                            <TableHead>Referencia</TableHead>
+                                            <TableHead>Creado por</TableHead>
+                                            <TableHead>Fecha</TableHead>
+                                            <TableHead className="text-right">Acciones</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -128,7 +128,7 @@ export default function StockTransfersIndex({ transfers, workspace }: Props) {
                                                 <TableCell colSpan={8} className="py-8 text-center">
                                                     <div className="flex flex-col items-center space-y-2">
                                                         <ArrowLeftRight className="h-8 w-8 text-muted-foreground" />
-                                                        <p className="text-muted-foreground">No Transferencia de inventario found</p>
+                                                        <p className="text-muted-foreground">No se encontraron transferencias de inventario</p>
                                                         <Button asChild size="sm" variant="outline">
                                                             <Link href="/stock-transfers/create">Create your first transfer</Link>
                                                         </Button>
@@ -171,7 +171,7 @@ export default function StockTransfersIndex({ transfers, workspace }: Props) {
                                                         <TableCell>
                                                             <div className="flex items-center space-x-1">
                                                                 <User className="h-3 w-3" />
-                                                                <span className="text-sm">{transfer.created_by?.name || 'Unknown'}</span>
+                                                                <span className="text-sm">{transfer.created_by?.name || 'Desconocido'}</span>
                                                             </div>
                                                         </TableCell>
                                                         <TableCell className="text-muted-foreground">
@@ -184,7 +184,7 @@ export default function StockTransfersIndex({ transfers, workspace }: Props) {
                                                             <Button asChild size="sm" variant="outline">
                                                                 <Link href={`/stock-transfers/${transfer.id}`}>
                                                                     <Eye className="mr-1 h-3 w-3" />
-                                                                    View
+                                                                    Ver
                                                                 </Link>
                                                             </Button>
                                                         </TableCell>
@@ -200,17 +200,17 @@ export default function StockTransfersIndex({ transfers, workspace }: Props) {
                             {transfers.last_page > 1 && (
                                 <div className="flex items-center justify-between space-x-2 py-4">
                                     <div className="text-sm text-muted-foreground">
-                                        Showing {transfers.from} to {transfers.to} of {transfers.total} results
+                                        Mostrando {transfers.from} a {transfers.to} de {transfers.total} resultados
                                     </div>
                                     <div className="flex space-x-2">
                                         {transfers.links.prev && (
                                             <Button variant="outline" size="sm" onClick={() => router.get(transfers.links.prev!)}>
-                                                Previous
+                                                Anterior
                                             </Button>
                                         )}
                                         {transfers.links.next && (
                                             <Button variant="outline" size="sm" onClick={() => router.get(transfers.links.next!)}>
-                                                Next
+                                                Siguiente
                                             </Button>
                                         )}
                                     </div>

@@ -18,7 +18,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: index().url,
     },
     {
-        title: 'Create Product',
+        title: 'Crear producto',
         href: create().url,
     },
 ];
@@ -52,31 +52,31 @@ export default function ProductsCreate({ taxes }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Create Product" />
+            <Head title="Crear producto" />
 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="mb-8 flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Create Product</h1>
-                        <p className="mt-2 text-gray-600 dark:text-gray-400">Add a new product to your catalog.</p>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Crear producto</h1>
+                        <p className="mt-2 text-gray-600 dark:text-gray-400">Agrega un nuevo producto a tu catálogo.</p>
                     </div>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Basic Information</CardTitle>
-                            <CardDescription>The fundamental details about your product.</CardDescription>
+                            <CardTitle>Información básica</CardTitle>
+                            <CardDescription>Los detalles fundamentales sobre tu producto.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">Product Name *</Label>
+                                    <Label htmlFor="name">Nombre del producto *</Label>
                                     <Input
                                         id="name"
                                         value={data.name}
                                         onChange={(e) => setData('name', e.target.value)}
-                                        placeholder="Enter product name"
+                                        placeholder="Ingresa el nombre del producto"
                                         required
                                     />
                                     {errors.name && <p className="text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
@@ -88,7 +88,7 @@ export default function ProductsCreate({ taxes }: Props) {
                                         id="sku"
                                         value={data.sku}
                                         onChange={(e) => setData('sku', e.target.value)}
-                                        placeholder="e.g., PROD-001"
+                                        placeholder="p.ej., PROD-001"
                                         required
                                     />
                                     {errors.sku && <p className="text-sm text-red-600 dark:text-red-400">{errors.sku}</p>}
@@ -96,7 +96,7 @@ export default function ProductsCreate({ taxes }: Props) {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="description">Description</Label>
+                                <Label htmlFor="description">Descripción</Label>
                                 <Textarea
                                     id="description"
                                     value={data.description}
@@ -111,13 +111,13 @@ export default function ProductsCreate({ taxes }: Props) {
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Pricing</CardTitle>
-                            <CardDescription>Set the pricing information for this product.</CardDescription>
+                                    <CardTitle>Precios</CardTitle>
+                                    <CardDescription>Establece la información de precios para este producto.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="price">Sale Price *</Label>
+                                    <Label htmlFor="price">Precio de venta *</Label>
                                     <Input
                                         id="price"
                                         type="number"
@@ -132,7 +132,7 @@ export default function ProductsCreate({ taxes }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="cost">Cost Price</Label>
+                                    <Label htmlFor="cost">Precio de costo</Label>
                                     <Input
                                         id="cost"
                                         type="number"
@@ -161,7 +161,7 @@ export default function ProductsCreate({ taxes }: Props) {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="default_tax_id">Default Tax</Label>
+                                <Label htmlFor="default_tax_id">Impuesto predeterminado</Label>
                                 <Select
                                     value={data.default_tax_id}
                                     onValueChange={(value) => setData('default_tax_id', value === 'none' ? '' : value)}
@@ -170,7 +170,7 @@ export default function ProductsCreate({ taxes }: Props) {
                                         <SelectValue placeholder="Select a tax rate" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="none">No Tax</SelectItem>
+                                        <SelectItem value="none">Sin impuesto</SelectItem>
                                         {taxes.map((tax) => (
                                             <SelectItem key={tax.id} value={tax.id.toString()}>
                                                 {tax.name} ({tax.rate}%)
@@ -185,8 +185,8 @@ export default function ProductsCreate({ taxes }: Props) {
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Inventario Settings</CardTitle>
-                            <CardDescription>Configure how inventory is tracked for this product.</CardDescription>
+                            <CardTitle>Configuración de inventario</CardTitle>
+                            <CardDescription>Configura cómo se rastrea el inventario para este producto.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="flex items-center space-x-2">
@@ -208,9 +208,9 @@ export default function ProductsCreate({ taxes }: Props) {
                                 />
                                 <div className="grid gap-1.5 leading-none">
                                     <Label htmlFor="track_stock" className="text-sm font-medium">
-                                        Track inventory for this product
+                                        Rastrear inventario para este producto
                                     </Label>
-                                    <p className="text-xs text-muted-foreground">Enable this to track stock levels and receive low stock alerts.</p>
+                                    <p className="text-xs text-muted-foreground">Activa esto para rastrear niveles de stock y recibir alertas de bajo inventario.</p>
                                 </div>
                             </div>
                             {errors.track_stock && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.track_stock}</p>}
@@ -218,7 +218,7 @@ export default function ProductsCreate({ taxes }: Props) {
                             {data.track_stock && (
                                 <div className="grid grid-cols-1 gap-6 border-t pt-6 md:grid-cols-3">
                                     <div className="space-y-2">
-                                        <Label htmlFor="initial_quantity">Initial Quantity</Label>
+                                        <Label htmlFor="initial_quantity">Cantidad inicial</Label>
                                         <Input
                                             id="initial_quantity"
                                             type="number"
@@ -234,7 +234,7 @@ export default function ProductsCreate({ taxes }: Props) {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="minimum_quantity">Minimum Quantity</Label>
+                                        <Label htmlFor="minimum_quantity">Cantidad mínima</Label>
                                         <Input
                                             id="minimum_quantity"
                                             type="number"
@@ -250,7 +250,7 @@ export default function ProductsCreate({ taxes }: Props) {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="unit_cost">Unit Cost</Label>
+                                        <Label htmlFor="unit_cost">Costo unitario</Label>
                                         <Input
                                             id="unit_cost"
                                             type="number"
@@ -260,7 +260,7 @@ export default function ProductsCreate({ taxes }: Props) {
                                             onChange={(e) => setData('unit_cost', e.target.value)}
                                             placeholder="0.00"
                                         />
-                                        <p className="text-xs text-muted-foreground">Defaults to cost price when available</p>
+                                        <p className="text-xs text-muted-foreground">Por defecto usa el precio de costo cuando esté disponible</p>
                                         {errors.unit_cost && <p className="text-sm text-red-600 dark:text-red-400">{errors.unit_cost}</p>}
                                     </div>
                                 </div>
@@ -270,11 +270,11 @@ export default function ProductsCreate({ taxes }: Props) {
 
                     <div className="flex items-center justify-end space-x-4">
                         <Button type="button" variant="outline" asChild>
-                            <Link href={index().url}>Cancel</Link>
+                            <Link href={index().url}>Cancelar</Link>
                         </Button>
                         <Button type="submit" disabled={processing}>
                             <Save className="mr-2 h-4 w-4" />
-                            {processing ? 'Creating...' : 'Create Product'}
+                            {processing ? 'Creando...' : 'Crear producto'}
                         </Button>
                     </div>
                 </form>

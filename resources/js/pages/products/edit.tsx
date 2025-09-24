@@ -18,7 +18,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: index().url,
     },
     {
-        title: 'Edit Product',
+        title: 'Editar producto',
         href: '#',
     },
 ];
@@ -46,14 +46,14 @@ export default function ProductsEdit({ product, taxes }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Edit ${product.name}`} />
+            <Head title={`Editar ${product.name}`} />
 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="mb-8 flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Product</h1>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Editar producto</h1>
                         <p className="mt-2 text-gray-600 dark:text-gray-400">
-                            Update the details for <strong>{product.name}</strong>
+                            Actualiza los detalles de <strong>{product.name}</strong>
                         </p>
                     </div>
                 </div>
@@ -61,18 +61,18 @@ export default function ProductsEdit({ product, taxes }: Props) {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Basic Information</CardTitle>
-                            <CardDescription>Update the fundamental details about your product.</CardDescription>
+                            <CardTitle>Información básica</CardTitle>
+                            <CardDescription>Actualiza los detalles fundamentales sobre tu producto.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">Product Name *</Label>
+                                    <Label htmlFor="name">Nombre del producto *</Label>
                                     <Input
                                         id="name"
                                         value={data.name}
                                         onChange={(e) => setData('name', e.target.value)}
-                                        placeholder="Enter product name"
+                                        placeholder="Ingresa el nombre del producto"
                                         required
                                     />
                                     {errors.name && <p className="text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
@@ -84,7 +84,7 @@ export default function ProductsEdit({ product, taxes }: Props) {
                                         id="sku"
                                         value={data.sku}
                                         onChange={(e) => setData('sku', e.target.value)}
-                                        placeholder="e.g., PROD-001"
+                                        placeholder="p.ej., PROD-001"
                                         required
                                     />
                                     {errors.sku && <p className="text-sm text-red-600 dark:text-red-400">{errors.sku}</p>}
@@ -92,7 +92,7 @@ export default function ProductsEdit({ product, taxes }: Props) {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="description">Description</Label>
+                                <Label htmlFor="description">Descripción</Label>
                                 <Textarea
                                     id="description"
                                     value={data.description}
@@ -107,13 +107,13 @@ export default function ProductsEdit({ product, taxes }: Props) {
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Pricing</CardTitle>
-                            <CardDescription>Update the pricing information for this product.</CardDescription>
+                            <CardTitle>Precios</CardTitle>
+                            <CardDescription>Actualiza la información de precios para este producto.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="price">Sale Price *</Label>
+                                    <Label htmlFor="price">Precio de venta *</Label>
                                     <Input
                                         id="price"
                                         type="number"
@@ -128,7 +128,7 @@ export default function ProductsEdit({ product, taxes }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="cost">Cost Price</Label>
+                                    <Label htmlFor="cost">Precio de costo</Label>
                                     <Input
                                         id="cost"
                                         type="number"
@@ -160,7 +160,7 @@ export default function ProductsEdit({ product, taxes }: Props) {
                             )}
 
                             <div className="space-y-2">
-                                <Label htmlFor="default_tax_id">Default Tax</Label>
+                                <Label htmlFor="default_tax_id">Impuesto predeterminado</Label>
                                 <Select
                                     value={data.default_tax_id}
                                     onValueChange={(value) => setData('default_tax_id', value === 'none' ? '' : value)}
@@ -169,7 +169,7 @@ export default function ProductsEdit({ product, taxes }: Props) {
                                         <SelectValue placeholder="Select a tax rate" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="none">No Tax</SelectItem>
+                                        <SelectItem value="none">Sin impuesto</SelectItem>
                                         {taxes.map((tax) => (
                                             <SelectItem key={tax.id} value={tax.id.toString()}>
                                                 {tax.name} ({tax.rate}%)
@@ -184,8 +184,8 @@ export default function ProductsEdit({ product, taxes }: Props) {
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Inventario Settings</CardTitle>
-                            <CardDescription>Configure how inventory is tracked for this product.</CardDescription>
+                            <CardTitle>Configuración de inventario</CardTitle>
+                            <CardDescription>Configura cómo se rastrea el inventario para este producto.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="flex items-center space-x-2">
@@ -196,9 +196,9 @@ export default function ProductsEdit({ product, taxes }: Props) {
                                 />
                                 <div className="grid gap-1.5 leading-none">
                                     <Label htmlFor="track_stock" className="text-sm font-medium">
-                                        Track inventory for this product
+                                        Rastrear inventario para este producto
                                     </Label>
-                                    <p className="text-xs text-muted-foreground">Enable this to track stock levels and receive low stock alerts.</p>
+                                    <p className="text-xs text-muted-foreground">Activa esto para rastrear niveles de stock y recibir alertas de bajo inventario.</p>
                                 </div>
                             </div>
                             {errors.track_stock && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.track_stock}</p>}
@@ -206,10 +206,10 @@ export default function ProductsEdit({ product, taxes }: Props) {
                             {!data.track_stock && product.track_stock && (
                                 <div className="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-900/20">
                                     <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
-                                        <span className="text-sm font-medium">Warning</span>
+                                        <span className="text-sm font-medium">Advertencia</span>
                                     </div>
                                     <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-300">
-                                        Disabling stock tracking will not delete existing stock records, but they won't be updated automatically.
+                                        Desactivar el rastreo de inventario no eliminará los registros existentes, pero no se actualizarán automáticamente.
                                     </p>
                                 </div>
                             )}

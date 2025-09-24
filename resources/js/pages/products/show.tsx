@@ -16,7 +16,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: index().url,
     },
     {
-        title: 'Product Details',
+        title: 'Detalles del producto',
         href: '#',
     },
 ];
@@ -29,14 +29,14 @@ interface Props {
 
 export default function ProductsShow({ product }: Props) {
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('es-DO', {
             style: 'currency',
             currency: 'USD',
         }).format(amount);
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
+        return new Date(dateString).toLocaleDateString('es-DO', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -79,8 +79,8 @@ export default function ProductsShow({ product }: Props) {
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{product.name}</h1>
                             <p className="text-gray-600 dark:text-gray-400">
-                                SKU: <code className="rounded bg-gray-100 px-2 py-1 text-sm dark:bg-gray-800">{product.sku}</code>
-                            </p>
+                                    SKU: <code className="rounded bg-gray-100 px-2 py-1 text-sm dark:bg-gray-800">{product.sku}</code>
+                                </p>
                         </div>
                     </div>
                     <div className="flex gap-2">
@@ -89,27 +89,27 @@ export default function ProductsShow({ product }: Props) {
                                 <Button variant="outline" asChild>
                                     <Link href={`/stock-adjustments/${product.id}`}>
                                         <RotateCcw className="mr-2 h-4 w-4" />
-                                        Stock History
+                                        Historial de stock
                                     </Link>
                                 </Button>
                                 <Button variant="outline" asChild>
                                     <Link href="/stock-adjustments/create">
                                         <TrendingUp className="mr-2 h-4 w-4" />
-                                        Adjust Stock
+                                        Ajustar stock
                                     </Link>
                                 </Button>
                                 {!product.stock_in_current_workspace && (
                                     <Button variant="outline" asChild>
                                         <Link href="/initial-stock/create">
                                             <Package className="mr-2 h-4 w-4" />
-                                            Set Inventario inicial
+                                                Establecer inventario inicial
                                         </Link>
                                     </Button>
                                 )}
                                 <Button variant="outline" asChild>
                                     <Link href="/stock-transfers/create">
                                         <ArrowLeftRight className="mr-2 h-4 w-4" />
-                                        Transfer Stock
+                                        Transferir stock
                                     </Link>
                                 </Button>
                             </>
@@ -117,7 +117,7 @@ export default function ProductsShow({ product }: Props) {
                         <Button asChild>
                             <Link href={edit(product.id).url}>
                                 <Edit className="mr-2 h-4 w-4" />
-                                Edit Product
+                                Editar producto
                             </Link>
                         </Button>
                         <Button
@@ -129,7 +129,7 @@ export default function ProductsShow({ product }: Props) {
                             }}
                         >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
+                            Eliminar
                         </Button>
                     </div>
                 </div>
@@ -147,20 +147,20 @@ export default function ProductsShow({ product }: Props) {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div>
-                                    <h3 className="mb-2 font-medium text-gray-900 dark:text-white">Description</h3>
-                                    <p className="text-gray-600 dark:text-gray-400">{product.description || 'No description provided.'}</p>
+                                    <h3 className="mb-2 font-medium text-gray-900 dark:text-white">Descripción</h3>
+                                    <p className="text-gray-600 dark:text-gray-400">{product.description || 'No hay descripción disponible.'}</p>
                                 </div>
 
                                 <Separator />
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <h4 className="font-medium text-gray-900 dark:text-white">Sale Price</h4>
+                                        <h4 className="font-medium text-gray-900 dark:text-white">Precio de venta</h4>
                                         <p className="text-lg font-semibold text-green-600 dark:text-green-400">{formatCurrency(product.price)}</p>
                                     </div>
                                     {product.cost && (
                                         <div>
-                                            <h4 className="font-medium text-gray-900 dark:text-white">Cost Price</h4>
+                                            <h4 className="font-medium text-gray-900 dark:text-white">Precio de costo</h4>
                                             <p className="text-lg font-semibold text-gray-600 dark:text-gray-400">{formatCurrency(product.cost)}</p>
                                         </div>
                                     )}
@@ -171,13 +171,13 @@ export default function ProductsShow({ product }: Props) {
                                         <Separator />
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <h4 className="font-medium text-gray-900 dark:text-white">Profit</h4>
+                                                <h4 className="font-medium text-gray-900 dark:text-white">Ganancia</h4>
                                                 <p className="text-lg font-semibold text-primary dark:text-primary">
                                                     {formatCurrency(product.price - product.cost)}
                                                 </p>
                                             </div>
                                             <div>
-                                                <h4 className="font-medium text-gray-900 dark:text-white">Profit Margin</h4>
+                                                <h4 className="font-medium text-gray-900 dark:text-white">Margen de ganancia</h4>
                                                 <p className="text-lg font-semibold text-primary dark:text-primary">
                                                     {(((product.price - product.cost) / product.cost) * 100).toFixed(2)}%
                                                 </p>
@@ -189,13 +189,13 @@ export default function ProductsShow({ product }: Props) {
                                 <Separator />
 
                                 <div>
-                                    <h4 className="mb-2 font-medium text-gray-900 dark:text-white">Default Tax</h4>
+                                    <h4 className="mb-2 font-medium text-gray-900 dark:text-white">Impuesto predeterminado</h4>
                                     {product.default_tax ? (
                                         <Badge variant="outline">
                                             {product.default_tax.name} ({product.default_tax.rate}%)
                                         </Badge>
                                     ) : (
-                                        <span className="text-gray-500">No tax configured</span>
+                                        <span className="text-gray-500">No hay impuesto configurado</span>
                                     )}
                                 </div>
                             </CardContent>
@@ -207,19 +207,19 @@ export default function ProductsShow({ product }: Props) {
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <BarChart3 className="h-5 w-5" />
-                                        Recent Stock Movements
+                                        Movimientos recientes de inventario
                                     </CardTitle>
-                                    <CardDescription>Latest inventory transactions for this product</CardDescription>
+                                    <CardDescription>Últimas transacciones de inventario para este producto</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>Date</TableHead>
-                                                <TableHead>Type</TableHead>
-                                                <TableHead>Quantity</TableHead>
-                                                <TableHead>Reference</TableHead>
-                                                <TableHead>Notes</TableHead>
+                                                <TableHead>Fecha</TableHead>
+                                                <TableHead>Tipo</TableHead>
+                                                <TableHead>Cantidad</TableHead>
+                                                <TableHead>Referencia</TableHead>
+                                                <TableHead>Notas</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -257,9 +257,9 @@ export default function ProductsShow({ product }: Props) {
                         {/* Stock Information */}
                         <Card>
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
+                                    <CardTitle className="flex items-center gap-2">
                                     <TrendingUp className="h-5 w-5" />
-                                    Stock Status
+                                    Estado de inventario
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -275,13 +275,13 @@ export default function ProductsShow({ product }: Props) {
                                             <div className="text-3xl font-bold text-gray-900 dark:text-white">
                                                 {product.stock_in_current_workspace.quantity}
                                             </div>
-                                            <div className="text-sm text-gray-500">Units in stock</div>
+                                            <div className="text-sm text-gray-500">Unidades en stock</div>
                                         </div>
 
                                         <Separator />
 
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-600 dark:text-gray-400">Minimum Level:</span>
+                                            <span className="text-sm text-gray-600 dark:text-gray-400">Nivel mínimo:</span>
                                             <span className="font-medium">{product.stock_in_current_workspace.minimum_quantity}</span>
                                         </div>
 
@@ -289,17 +289,17 @@ export default function ProductsShow({ product }: Props) {
                                             <div className="rounded-lg border border-orange-200 bg-orange-50 p-3 dark:border-orange-800 dark:bg-orange-900/20">
                                                 <div className="flex items-center gap-2 text-orange-800 dark:text-orange-200">
                                                     <TrendingUp className="h-4 w-4" />
-                                                    <span className="text-sm font-medium">Stock is running low</span>
+                                                    <span className="text-sm font-medium">El stock está bajo</span>
                                                 </div>
                                                 <p className="mt-1 text-xs text-orange-600 dark:text-orange-300">
-                                                    Consider reordering soon to avoid stockouts.
+                                                    Considera reordenar pronto para evitar agotar el stock.
                                                 </p>
                                             </div>
                                         )}
                                     </div>
                                 ) : (
                                     <div className="text-center text-gray-500">
-                                        {product.track_stock ? 'No stock data available' : 'Stock tracking is disabled'}
+                                        {product.track_stock ? 'No hay datos de stock disponibles' : 'El rastreo de stock está deshabilitado'}
                                     </div>
                                 )}
                             </CardContent>
@@ -308,23 +308,23 @@ export default function ProductsShow({ product }: Props) {
                         {/* Quick Stats */}
                         <Card>
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
+                                    <CardTitle className="flex items-center gap-2">
                                     <DollarSign className="h-5 w-5" />
-                                    Quick Stats
+                                    Estadísticas rápidas
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">Created:</span>
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">Creado:</span>
                                     <span className="text-sm font-medium">{formatDate(product.created_at)}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">Last Updated:</span>
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">Última actualización:</span>
                                     <span className="text-sm font-medium">{formatDate(product.updated_at)}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">Track Stock:</span>
-                                    <Badge variant={product.track_stock ? 'default' : 'secondary'}>{product.track_stock ? 'Yes' : 'No'}</Badge>
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">Rastreo de stock:</span>
+                                    <Badge variant={product.track_stock ? 'default' : 'secondary'}>{product.track_stock ? 'Sí' : 'No'}</Badge>
                                 </div>
                             </CardContent>
                         </Card>

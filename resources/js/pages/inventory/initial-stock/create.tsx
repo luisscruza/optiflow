@@ -21,7 +21,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/initial-stock',
     },
     {
-        title: 'Set Inventario inicial',
+        title: 'Establecer inventario inicial',
         href: '/initial-stock/create',
     },
 ];
@@ -69,15 +69,15 @@ export default function InitialStockCreate({ products, workspace }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Set Inventario inicial" />
+            <Head title="Establecer inventario inicial" />
 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="space-y-8">
                     {/* Header */}
                     <div className="flex items-center space-x-4">
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight">Set Inventario inicial</h1>
-                            <p className="text-muted-foreground">Set up Inventario inicial levels for products in {workspace.name}</p>
+                            <h1 className="text-3xl font-bold tracking-tight">Establecer inventario inicial</h1>
+                            <p className="text-muted-foreground">Configura los niveles de inventario inicial para productos en {workspace.name}</p>
                         </div>
                     </div>
 
@@ -85,24 +85,24 @@ export default function InitialStockCreate({ products, workspace }: Props) {
                     <div className="max-w-2xl">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Inventario inicial Details</CardTitle>
-                                <CardDescription>Select a product and set its Inventario inicial quantity</CardDescription>
+                                <CardTitle>Detalles del inventario inicial</CardTitle>
+                                    <CardDescription>Selecciona un producto y establece su cantidad de inventario inicial</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     {/* Product Selection */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="product_id">Product *</Label>
+                                        <Label htmlFor="product_id">Producto *</Label>
                                         <Select value={data.product_id} onValueChange={handleProductChange}>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Select a product without stock" />
+                                                <SelectValue placeholder="Selecciona un producto sin stock" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {products.length === 0 ? (
-                                                    <div className="p-4 text-center text-muted-foreground">
+                                                        <div className="p-4 text-center text-muted-foreground">
                                                         <Package className="mx-auto mb-2 h-8 w-8" />
-                                                        <p>No products available</p>
-                                                        <p className="text-sm">All stock-tracked products already have stock set</p>
+                                                        <p>No hay productos disponibles</p>
+                                                        <p className="text-sm">Todos los productos con seguimiento de stock ya tienen inventario establecido</p>
                                                     </div>
                                                 ) : (
                                                     products.map((product) => (
@@ -132,11 +132,11 @@ export default function InitialStockCreate({ products, workspace }: Props) {
                                                     )}
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-sm text-muted-foreground">Price</p>
+                                                    <p className="text-sm text-muted-foreground">Precio</p>
                                                     <p className="text-lg font-bold">${Number(selectedProduct.price).toFixed(2)}</p>
                                                     {selectedProduct.cost && (
                                                         <p className="text-sm text-muted-foreground">
-                                                            Cost: ${Number(selectedProduct.cost).toFixed(2)}
+                                                            Costo: ${Number(selectedProduct.cost).toFixed(2)}
                                                         </p>
                                                     )}
                                                 </div>
@@ -146,7 +146,7 @@ export default function InitialStockCreate({ products, workspace }: Props) {
 
                                     {/* Quantity */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="quantity">Initial Quantity *</Label>
+                                        <Label htmlFor="quantity">Cantidad inicial *</Label>
                                         <Input
                                             id="quantity"
                                             type="number"
@@ -154,14 +154,14 @@ export default function InitialStockCreate({ products, workspace }: Props) {
                                             min="0"
                                             value={data.quantity}
                                             onChange={(e) => setData('quantity', e.target.value)}
-                                            placeholder="Enter Inventario inicial quantity"
+                                            placeholder="Ingresa la cantidad inicial"
                                         />
                                         {errors.quantity && <p className="text-sm text-destructive">{errors.quantity}</p>}
                                     </div>
 
                                     {/* Unit Cost */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="unit_cost">Unit Cost</Label>
+                                        <Label htmlFor="unit_cost">Costo unitario</Label>
                                         <Input
                                             id="unit_cost"
                                             type="number"
@@ -169,9 +169,9 @@ export default function InitialStockCreate({ products, workspace }: Props) {
                                             min="0"
                                             value={data.unit_cost}
                                             onChange={(e) => setData('unit_cost', e.target.value)}
-                                            placeholder="Cost per unit (optional)"
+                                            placeholder="Costo por unidad (opcional)"
                                         />
-                                        <p className="text-sm text-muted-foreground">Optional: The cost you paid for each unit</p>
+                                        <p className="text-sm text-muted-foreground">Opcional: El costo que pagaste por cada unidad</p>
                                         {errors.unit_cost && <p className="text-sm text-destructive">{errors.unit_cost}</p>}
                                     </div>
 
@@ -179,23 +179,23 @@ export default function InitialStockCreate({ products, workspace }: Props) {
                                     {data.quantity && data.unit_cost && (
                                         <div className="rounded-lg border bg-background p-4 dark:bg-blue-950/20">
                                             <div className="flex items-center justify-between">
-                                                <span className="font-medium">Total Stock Value:</span>
-                                                <span className="text-lg font-bold">${calculateTotalValue().toFixed(2)}</span>
+                                                        <span className="font-medium">Valor total del stock:</span>
+                                                        <span className="text-lg font-bold">${calculateTotalValue().toFixed(2)}</span>
                                             </div>
-                                            <p className="mt-1 text-sm text-muted-foreground">
-                                                {data.quantity} units × ${data.unit_cost} per unit
-                                            </p>
+                                                    <p className="mt-1 text-sm text-muted-foreground">
+                                                        {data.quantity} unidades × ${data.unit_cost} por unidad
+                                                    </p>
                                         </div>
                                     )}
 
                                     {/* Note */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="note">Note</Label>
+                                        <Label htmlFor="note">Nota</Label>
                                         <Textarea
                                             id="note"
                                             value={data.note}
                                             onChange={(e) => setData('note', e.target.value)}
-                                            placeholder="Optional note about this Inventario inicial setup"
+                                            placeholder="Nota opcional sobre esta configuración de inventario inicial"
                                             rows={3}
                                         />
                                         {errors.note && <p className="text-sm text-destructive">{errors.note}</p>}
@@ -206,25 +206,25 @@ export default function InitialStockCreate({ products, workspace }: Props) {
                                         <div className="rounded-lg border bg-green-50 p-4 dark:bg-green-950/20">
                                             <h4 className="mb-2 flex items-center font-medium">
                                                 <TrendingUp className="mr-2 h-4 w-4" />
-                                                Inventario inicial Summary
+                                                Resumen del inventario inicial
                                             </h4>
                                             <div className="space-y-1 text-sm">
                                                 <p>
-                                                    <span className="text-muted-foreground">Product:</span> {selectedProduct.name}
+                                                    <span className="text-muted-foreground">Producto:</span> {selectedProduct.name}
                                                 </p>
                                                 <p>
                                                     <span className="text-muted-foreground">SKU:</span> {selectedProduct.sku}
                                                 </p>
                                                 <p>
-                                                    <span className="text-muted-foreground">Quantity:</span> {data.quantity}
+                                                    <span className="text-muted-foreground">Cantidad:</span> {data.quantity}
                                                 </p>
                                                 {data.unit_cost && (
                                                     <p>
-                                                        <span className="text-muted-foreground">Unit Cost:</span> ${data.unit_cost}
+                                                        <span className="text-muted-foreground">Costo unitario:</span> ${data.unit_cost}
                                                     </p>
                                                 )}
                                                 <p>
-                                                    <span className="text-muted-foreground">Workspace:</span> {workspace.name}
+                                                    <span className="text-muted-foreground">Espacio de trabajo:</span> {workspace.name}
                                                 </p>
                                             </div>
                                         </div>
@@ -233,10 +233,10 @@ export default function InitialStockCreate({ products, workspace }: Props) {
                                     {/* Actions */}
                                     <div className="flex items-center justify-end space-x-2">
                                         <Button variant="outline" asChild>
-                                            <Link href="/initial-stock">Cancel</Link>
+                                            <Link href="/initial-stock">Cancelar</Link>
                                         </Button>
                                         <Button type="submit" disabled={processing || products.length === 0}>
-                                            {processing ? 'Setting up...' : 'Set Inventario inicial'}
+                                            {processing ? 'Configurando...' : 'Establecer inventario inicial'}
                                         </Button>
                                     </div>
                                 </form>
@@ -246,20 +246,19 @@ export default function InitialStockCreate({ products, workspace }: Props) {
                         {/* Help Card */}
                         <Card className="mt-6">
                             <CardHeader>
-                                <CardTitle className="text-lg">What is Inventario inicial?</CardTitle>
+                                <CardTitle className="text-lg">¿Qué es inventario inicial?</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-2 text-sm text-muted-foreground">
-                                    <p>Inventario inicial is the starting quantity for a product in this workspace. This is typically used when:</p>
+                                        <p>Inventario inicial es la cantidad inicial para un producto en este espacio de trabajo. Normalmente se utiliza cuando:</p>
                                     <ul className="ml-4 list-inside list-disc space-y-1">
-                                        <li>Adding a new product to your inventory</li>
-                                        <li>Starting inventory tracking for an existing product</li>
-                                        <li>Importing existing stock into a new workspace</li>
+                                            <li>Agregas un nuevo producto a tu inventario</li>
+                                            <li>Comienzas el rastreo de inventario para un producto existente</li>
+                                            <li>Importas stock existente a un nuevo espacio de trabajo</li>
                                     </ul>
-                                    <p className="mt-3">
-                                        After setting Inventario inicial, you can use Ajuste de inventario and transfers to manage ongoing inventory
-                                        changes.
-                                    </p>
+                                        <p className="mt-3">
+                                            Después de establecer el inventario inicial, puedes usar ajustes de inventario y transferencias para gestionar los cambios continuos de inventario.
+                                        </p>
                                 </div>
                             </CardContent>
                         </Card>

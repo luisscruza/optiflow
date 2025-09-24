@@ -21,7 +21,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/stock-transfers',
     },
     {
-        title: 'New Transfer',
+        title: 'Nueva transferencia',
         href: '/stock-transfers/create',
     },
 ];
@@ -72,15 +72,15 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="New Stock Transfer" />
+            <Head title="Nueva transferencia de inventario" />
 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="space-y-8">
                     {/* Header */}
                     <div className="flex items-center space-x-4">
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight">New Stock Transfer</h1>
-                            <p className="text-muted-foreground">Transfer stock from {workspace.name} to another workspace</p>
+                            <h1 className="text-3xl font-bold tracking-tight">Nueva transferencia de inventario</h1>
+                            <p className="text-muted-foreground">Transfiere stock desde {workspace.name} a otro espacio de trabajo</p>
                         </div>
                     </div>
 
@@ -88,14 +88,14 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
                     <div className="max-w-2xl">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Transfer Details</CardTitle>
-                                <CardDescription>Select a product and destination workspace for the transfer</CardDescription>
+                                <CardTitle>Detalles de la transferencia</CardTitle>
+                                    <CardDescription>Selecciona un producto y el espacio de trabajo de destino para la transferencia</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     {/* Product Selection */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="product_id">Product *</Label>
+                                        <Label htmlFor="product_id">Producto *</Label>
                                         <Select value={data.product_id} onValueChange={handleProductChange}>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select a product with available stock" />
@@ -132,7 +132,7 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
                                                     <p className="text-sm text-muted-foreground">SKU: {selectedProduct.sku}</p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-sm text-muted-foreground">Available Stock</p>
+                                                    <p className="text-sm text-muted-foreground">Stock disponible</p>
                                                     <p className="text-2xl font-bold">{getAvailableStock()}</p>
                                                 </div>
                                             </div>
@@ -141,20 +141,20 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
 
                                     {/* From Workspace (read-only) */}
                                     <div className="space-y-2">
-                                        <Label>From Workspace</Label>
+                                        <Label>Desde espacio de trabajo</Label>
                                         <div className="flex items-center space-x-2 rounded-md bg-muted p-3">
                                             <Building2 className="h-4 w-4 text-muted-foreground" />
                                             <span className="font-medium">{workspace.name}</span>
-                                            <span className="text-sm text-muted-foreground">(Current)</span>
+                                            <span className="text-sm text-muted-foreground">(Actual)</span>
                                         </div>
                                     </div>
 
                                     {/* To Workspace */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="to_workspace_id">To Workspace *</Label>
+                                        <Label htmlFor="to_workspace_id">Al espacio de trabajo *</Label>
                                         <Select value={data.to_workspace_id} onValueChange={(value) => setData('to_workspace_id', value)}>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Select destination workspace" />
+                                                <SelectValue placeholder="Selecciona el espacio de trabajo de destino" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {availableWorkspaces.map((ws) => (
@@ -172,7 +172,7 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
 
                                     {/* Quantity */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="quantity">Quantity *</Label>
+                                        <Label htmlFor="quantity">Cantidad *</Label>
                                         <Input
                                             id="quantity"
                                             type="number"
@@ -181,20 +181,20 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
                                             max={getAvailableStock()}
                                             value={data.quantity}
                                             onChange={(e) => setData('quantity', e.target.value)}
-                                            placeholder="Enter quantity to transfer"
+                                            placeholder="Ingresa la cantidad a transferir"
                                         />
-                                        {selectedProduct && <p className="text-sm text-muted-foreground">Maximum available: {getAvailableStock()}</p>}
+                                        {selectedProduct && <p className="text-sm text-muted-foreground">Máximo disponible: {getAvailableStock()}</p>}
                                         {errors.quantity && <p className="text-sm text-destructive">{errors.quantity}</p>}
                                     </div>
 
                                     {/* Note */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="note">Note</Label>
+                                        <Label htmlFor="note">Nota</Label>
                                         <Textarea
                                             id="note"
                                             value={data.note}
                                             onChange={(e) => setData('note', e.target.value)}
-                                            placeholder="Optional note about this transfer"
+                                            placeholder="Nota opcional sobre esta transferencia"
                                             rows={3}
                                         />
                                         {errors.note && <p className="text-sm text-destructive">{errors.note}</p>}
@@ -205,20 +205,20 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
                                         <div className="rounded-lg border bg-background p-4 dark:bg-blue-950/20">
                                             <h4 className="mb-2 flex items-center font-medium">
                                                 <ArrowLeftRight className="mr-2 h-4 w-4" />
-                                                Transfer Summary
+                                                Resumen de la transferencia
                                             </h4>
                                             <div className="space-y-1 text-sm">
                                                 <p>
-                                                    <span className="text-muted-foreground">Product:</span> {selectedProduct.name}
+                                                    <span className="text-muted-foreground">Producto:</span> {selectedProduct.name}
                                                 </p>
                                                 <p>
-                                                    <span className="text-muted-foreground">Quantity:</span> {data.quantity}
+                                                    <span className="text-muted-foreground">Cantidad:</span> {data.quantity}
                                                 </p>
                                                 <p>
-                                                    <span className="text-muted-foreground">From:</span> {workspace.name}
+                                                    <span className="text-muted-foreground">Desde:</span> {workspace.name}
                                                 </p>
                                                 <p>
-                                                    <span className="text-muted-foreground">To:</span>{' '}
+                                                    <span className="text-muted-foreground">Hacia:</span>{' '}
                                                     {availableWorkspaces.find((w) => w.id.toString() === data.to_workspace_id)?.name}
                                                 </p>
                                             </div>
@@ -228,10 +228,10 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
                                     {/* Actions */}
                                     <div className="flex items-center justify-end space-x-2">
                                         <Button variant="outline" asChild>
-                                            <Link href="/stock-transfers">Cancel</Link>
+                                            <Link href="/stock-transfers">Cancelar</Link>
                                         </Button>
                                         <Button type="submit" disabled={processing}>
-                                            {processing ? 'Processing...' : 'Create Transfer'}
+                                            {processing ? 'Procesando...' : 'Crear transferencia'}
                                         </Button>
                                     </div>
                                 </form>
