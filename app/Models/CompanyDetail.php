@@ -42,7 +42,7 @@ final class CompanyDetail extends Model
     /**
      * Set a company detail by key.
      */
-    public static function setByKey(string $key, string $value): void
+    public static function setByKey(string $key, string|int $value): void
     {
         self::updateOrCreate(['key' => $key], ['value' => $value]);
     }

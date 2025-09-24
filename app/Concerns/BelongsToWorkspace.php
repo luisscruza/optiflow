@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Models\Concerns;
+namespace App\Concerns;
 
 use App\Models\Workspace;
 use Illuminate\Database\Eloquent\Builder;

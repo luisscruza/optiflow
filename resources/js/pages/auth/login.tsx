@@ -71,6 +71,13 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 Iniciar sesión
                             </Button>
                         </div>
+
+                        <div className="text-center text-sm text-muted-foreground">
+                            ¿No tienes una cuenta?{' '}
+                            <TextLink href={register()} tabIndex={5}>
+                                Regístrate
+                            </TextLink>
+                        </div>
                     </>
                 )}
             </Form>
