@@ -24,6 +24,7 @@ final class CreateWorkspaceAction
             'description' => $validated['description'] ?? null,
             'owner_id' => $user->id,
             'is_active' => true,
+            'is_default' => $validated['is_personal'] ?? false,
         ]);
 
         $workspace->addUser($user, 'owner');

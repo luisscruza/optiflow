@@ -63,6 +63,7 @@ final class ConfigureTenant implements ShouldQueue
             'name' => 'Principal',
             'code' => mb_strtoupper(Slug::generateUniqueSlug($user->name, Workspace::class)),
             'description' => 'Main workspace for '.$user->name,
+            'is_default' => true,
         ]);
     }
 
