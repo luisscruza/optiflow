@@ -39,6 +39,15 @@ final class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        if (in_array($request->getHost(), config('tenancy.central_domains'))) {
+            return [
+                ...parent::share($request),
+                'auth' => [
+                    'user' => $request->user(),
+                ],
+            ];
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),

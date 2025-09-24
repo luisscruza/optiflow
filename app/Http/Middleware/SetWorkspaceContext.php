@@ -19,6 +19,11 @@ final class SetWorkspaceContext
      */
     public function handle(Request $request, Closure $next): Response
     {
+
+        if (in_array($request->getHost(), config('tenancy.central_domains'))) {
+            return $next($request);
+        }
+
         $user = $request->user();
 
         if ($user) {
