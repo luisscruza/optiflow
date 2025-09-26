@@ -7,21 +7,24 @@ import { type SharedData } from '@/types';
 export function formatCurrency(amount: number | string): string {
     const { props } = usePage<SharedData>();
     const defaultCurrency = props.defaultCurrency;
-    
-    // Convert to number if it's a string
+
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-    
-    // Handle invalid numbers
+
     if (isNaN(numAmount)) {
         return defaultCurrency?.symbol ? `${defaultCurrency.symbol}0.00` : '$0.00';
     }
-    
+
     if (!defaultCurrency) {
-        // Fallback to basic formatting if no default currency is available
-        return `$${numAmount.toFixed(2)}`;
+        return `$${new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        }).format(numAmount)}`;
     }
-    
-    return `${defaultCurrency.symbol}${numAmount.toFixed(2)}`;
+
+    return `${defaultCurrency.symbol}${new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(numAmount)}`;
 }
 
 /**
@@ -30,7 +33,7 @@ export function formatCurrency(amount: number | string): string {
 export function getCurrencySymbol(): string {
     const { props } = usePage<SharedData>();
     const defaultCurrency = props.defaultCurrency;
-    
+
     return defaultCurrency?.symbol ?? '$';
 }
 
@@ -40,24 +43,29 @@ export function getCurrencySymbol(): string {
 export function useCurrency() {
     const { props } = usePage<SharedData>();
     const defaultCurrency = props.defaultCurrency;
-    
+
     const format = (amount: number | string): string => {
-        // Convert to number if it's a string
         const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-        
-        // Handle invalid numbers
+
         if (isNaN(numAmount)) {
             return defaultCurrency?.symbol ? `${defaultCurrency.symbol}0.00` : '$0.00';
         }
-        
+
         if (!defaultCurrency) {
-            return `$${numAmount.toFixed(2)}`;
+            return `$${new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            }).format(numAmount)}`;
         }
-        return `${defaultCurrency.symbol}${numAmount.toFixed(2)}`;
+
+        return `${defaultCurrency.symbol}${new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        }).format(numAmount)}`;
     };
-    
+
     const symbol = defaultCurrency?.symbol ?? '$';
-    
+
     return {
         format,
         symbol,

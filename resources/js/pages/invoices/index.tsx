@@ -10,8 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Contact, type Document, type DocumentFilters, type PaginatedDocuments } from '@/types';
+import { type BreadcrumbItem, type Contact, type Invoice, type InvoiceFilters, type PaginatedInvoices } from '@/types';
 import { useCurrency } from '@/utils/currency';
+import { Paginator } from '@/components/ui/paginator';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -21,8 +22,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 interface Props {
-    invoices: PaginatedDocuments;
-    filters: DocumentFilters;
+    invoices: PaginatedInvoices;
+    filters: InvoiceFilters;
 }
 
 export default function InvoicesIndex({ invoices, filters }: Props) {
@@ -62,27 +63,6 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
         }
     };
 
-    const getStatusBadge = (status: string) => {
-        const statusConfig = {
-            draft: { label: 'Borrador', variant: 'secondary' as const, className: '' },
-            sent: { label: 'Enviado', variant: 'default' as const, className: '' },
-            paid: { label: 'Cobrada', variant: 'default' as const, className: 'bg-green-100 text-green-800 border-green-200' },
-            overdue: { label: 'Vencida', variant: 'destructive' as const, className: '' },
-            cancelled: { label: 'Cancelada', variant: 'outline' as const, className: '' },
-        };
-
-        const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
-        
-        return (
-            <Badge 
-                variant={config.variant} 
-                className={config.className || undefined}
-            >
-                {config.label}
-            </Badge>
-        );
-    };
-
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('es-DO', {
@@ -92,18 +72,6 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
         });
     };
 
-    const isOverdue = (dueDate: string, status: string) => {
-        const today = new Date();
-        const due = new Date(dueDate);
-        return due < today && status !== 'paid' && status !== 'cancelled';
-    };
-
-    const getBalanceAmount = (invoice: Document) => {
-        if (invoice.status === 'paid') {
-            return 0;
-        }
-        return invoice.total_amount;
-    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -231,30 +199,30 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className={`text-sm ${
-                                                        isOverdue(invoice.due_date, invoice.status) 
-                                                            ? 'text-red-600 font-medium' 
-                                                            : 'text-gray-600'
-                                                    }`}>
+                                                    <div className={`text-sm`}>
                                                         {formatDate(invoice.due_date)}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-right font-medium">
                                                     {formatCurrency(invoice.total_amount)}
                                                 </TableCell>
-                                                <TableCell className="text-right font-medium">
-                                                    <span className={
-                                                        getBalanceAmount(invoice) > 0 
-                                                            ? 'text-red-600' 
-                                                            : 'text-green-600'
-                                                    }>
-                                                        {formatCurrency(getBalanceAmount(invoice))}
-                                                    </span>
+                                                <TableCell className={`text-right font-medium ${invoice.amount_due > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                                                    {formatCurrency(invoice.amount_due)}
                                                 </TableCell>
                                                 <TableCell>
-                                                    {getStatusBadge(invoice.status)}
+                                                    <Badge
+                                                        variant={invoice.status_config.variant}
+                                                        className={invoice.status_config.className || undefined}
+                                                    >
+                                                        {invoice.status_config.label}
+                                                    </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right">
+                                                    { invoice.status !== 'paid' && (
+                                                        <Button variant="ghost" size="sm">
+                                                            <DollarSign className="mr-2 h-4 w-4" />
+                                                        </Button>
+                                                    )}
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
                                                             <Button variant="ghost" size="sm">
@@ -304,26 +272,8 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                             </div>
                         )}
 
-                        {/* Pagination */}
-                        {invoices.last_page > 1 && (
-                            <div className="mt-6 flex items-center justify-between">
-                                <div className="text-sm text-gray-600 dark:text-gray-400">
-                                    Página {invoices.current_page} de {invoices.last_page}
-                                </div>
-                                <div className="flex space-x-2">
-                                    {invoices.links.prev && (
-                                        <Button variant="outline" size="sm" asChild>
-                                            <Link href={invoices.links.prev}>Anterior</Link>
-                                        </Button>
-                                    )}
-                                    {invoices.links.next && (
-                                        <Button variant="outline" size="sm" asChild>
-                                            <Link href={invoices.links.next}>Siguiente</Link>
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                        )}
+                        <Paginator data={invoices} className="mt-6" />
+                    
                     </CardContent>
                 </Card>
             </div>

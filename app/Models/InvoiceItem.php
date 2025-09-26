@@ -97,6 +97,23 @@ final class InvoiceItem extends Model
         return $this->belongsTo(Tax::class);
     }
 
+    public function getDiscountAmountAttribute(): float
+    {
+        $discountRate = $this->discount_rate ?? 0;
+        $discountMultiplier = (100 - $discountRate) / 100;
+
+        return ($this->quantity * $this->unit_price) * (1 - $discountMultiplier);
+    }
+
+    public function getSubtotalAttribute(): float
+    {
+        $discountRate = $this->discount_rate ?? 0;
+        $discountMultiplier = (100 - $discountRate) / 100;
+        $taxAmount = $this->tax_amount ?? 0;
+
+        return ($this->quantity * $this->unit_price) * $discountMultiplier + $taxAmount;
+    }
+
     /**
      * Scope to items for a specific product.
      */

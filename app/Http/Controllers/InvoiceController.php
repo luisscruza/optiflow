@@ -32,6 +32,7 @@ final class InvoiceController extends Controller
     {
         $query = Invoice::query()
             ->with(['contact', 'documentSubtype'])
+            ->orderBy('issue_date', 'desc')
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('search')) {
@@ -48,7 +49,7 @@ final class InvoiceController extends Controller
             $query->where('status', $request->get('status'));
         }
 
-        $invoices = $query->paginate(15)->withQueryString();
+        $invoices = $query->paginate(30)->withQueryString();
 
         return Inertia::render('invoices/index', [
             'invoices' => $invoices,
@@ -171,10 +172,7 @@ final class InvoiceController extends Controller
             })
             ->orderBy('name')
             ->get()
-            ->map(function ($product) use ($currentWorkspace, $invoice) {
-                // If the invoice has this product... we need to sum the quantities to the current stock...
-                $isInInvoice = $invoice->items->firstWhere('product_id', $product->id)->exists();
-
+            ->map(function ($product) use ($currentWorkspace) {
                 $stock = $currentWorkspace ? $product->stocks->first() : null;
 
                 $product->current_stock = $stock;
@@ -252,5 +250,32 @@ final class InvoiceController extends Controller
         }
 
         return 'in_stock';
+    }
+
+    /**
+     * Clean UTF-8 characters from a string.
+     */
+    private function cleanUtf8String(string $str): string
+    {
+        // Remove null bytes and other control characters
+        $str = str_replace(["\0", "\x0B"], '', $str);
+
+        // Convert to UTF-8 if it's not already
+        if (! mb_check_encoding($str, 'UTF-8')) {
+            // Try to detect encoding and convert
+            $encoding = mb_detect_encoding($str, ['UTF-8', 'ISO-8859-1', 'Windows-1252'], true);
+            if ($encoding && $encoding !== 'UTF-8') {
+                $str = mb_convert_encoding($str, 'UTF-8', $encoding);
+            } else {
+                // If we can't detect encoding, remove invalid UTF-8 sequences
+                $str = mb_convert_encoding($str, 'UTF-8', 'UTF-8');
+            }
+        }
+
+        // Remove any remaining invalid UTF-8 characters
+        $str = filter_var($str, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH);
+
+        // Trim whitespace
+        return trim($str ?? '');
     }
 }

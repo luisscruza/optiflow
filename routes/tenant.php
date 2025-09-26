@@ -27,6 +27,7 @@ use App\Http\Controllers\WorkspaceMemberController;
 use App\Http\Controllers\WorkspaceMemberRoleController;
 use App\Http\Middleware\HasWorkspace;
 use App\Http\Middleware\SetWorkspaceContext;
+use App\Models\Invoice;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain;
@@ -50,6 +51,10 @@ Route::middleware([
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
 
+    Route::get('/test', function () {
+        dd(Invoice::first()->statusConfig);
+    });
+
     Route::get('/', function () {
         return redirect()->route('dashboard');
     })->name('home');
@@ -72,10 +77,6 @@ Route::middleware([
             Route::get('dashboard', function () {
                 return Inertia::render('dashboard');
             })->name('dashboard');
-
-            Route::get('/test', function () {
-                return redirect()->route('dashboard')->with('success', 'This is a success message!');
-            })->name('test');
 
             Route::get('configuration', [ConfigurationController::class, 'index'])->name('configuration.index');
 

@@ -19,7 +19,7 @@ final class SetInitialStockAction
      *
      * @param  array{product_id: int, quantity: float, minimum_quantity?: float, unit_cost?: float, notes?: string}  $data
      */
-    public function handle(?User $user = null, array $data, ?Workspace $workspace = null): ProductStock
+    public function handle(?User $user, array $data, ?Workspace $workspace = null): ProductStock
     {
         $product = Product::findOrFail($data['product_id']);
 
@@ -33,7 +33,7 @@ final class SetInitialStockAction
         //     throw new InvalidArgumentException('Initial stock quantity cannot be negative.');
         // }
 
-        return DB::transaction(function () use ($user, $product, $data, $workspaceId): ProductStock {
+        return DB::transaction(function () use ($product, $data, $workspaceId): ProductStock {
             $existingStock = ProductStock::where([
                 'product_id' => $product->id,
                 'workspace_id' => $workspaceId,

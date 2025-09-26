@@ -375,13 +375,14 @@ export interface DocumentItem {
     tax?: Tax;
 }
 
-export interface Document {
+export interface Invoice {
     id: number;
     workspace_id: number;
     contact_id: number;
     type: 'invoice' | 'quotation' | 'receipt';
     document_subtype_id: number;
     status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled' | 'accepted' | 'rejected' | 'expired' | 'converted';
+    amount_due: number;
     document_number: string;
     issue_date: string;
     due_date: string;
@@ -398,25 +399,19 @@ export interface Document {
     document_subtype: DocumentSubtype;
     created_by_user?: User;
     items?: DocumentItem[];
+    status_config: InvoiceStatusConfig;
 }
 
-export interface PaginatedDocuments {
-    data: Document[];
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
-    from?: number;
-    to?: number;
-    links: {
-        first?: string;
-        last?: string;
-        prev?: string;
-        next?: string;
-    };
+export interface InvoiceStatusConfig {
+    value: 'paid' | 'partially_paid' | 'pending_payment' | 'cancelled';
+    label: string;
+    variant: 'default' | 'secondary' | 'destructive' | 'outline' | null | undefined;
+    className: string;
 }
 
-export interface DocumentFilters {
+export interface PaginatedInvoices extends PaginatedResponse<Invoice> {}
+
+export interface InvoiceFilters {
     search?: string;
     status?: string;
 }

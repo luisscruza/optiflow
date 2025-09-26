@@ -138,7 +138,6 @@ final readonly class ProcessProductImportAction
             return;
         }
 
-
         // Check if we have workspace stock data from the enhanced mapping
         if (isset($rowData['workspace_stock_data'])) {
             foreach ($rowData['workspace_stock_data'] as $workspaceId => $stockData) {
