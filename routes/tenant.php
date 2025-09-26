@@ -14,6 +14,7 @@ use App\Http\Controllers\DownloadQuotationPdfController;
 use App\Http\Controllers\InitialStockController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductImportController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\SetDefaultDocumentSubtypeController;
 use App\Http\Controllers\StockAdjustmentController;
@@ -86,6 +87,11 @@ Route::middleware([
             Route::post('currencies/{currency}/rates', [CurrencyRateController::class, 'store'])->name('currencies.rates.store');
 
             Route::resource('products', ProductController::class);
+
+            // Product Import routes
+            Route::resource('product-imports', ProductImportController::class)->except(['edit']);
+            Route::post('product-imports/{product_import}/process', [ProductImportController::class, 'process'])->name('product-imports.process');
+            Route::get('product-imports/template/download', [ProductImportController::class, 'template'])->name('product-imports.template');
 
             Route::resource('taxes', TaxController::class);
 

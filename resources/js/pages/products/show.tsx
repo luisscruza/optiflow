@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Product, type StockMovement } from '@/types';
+import { useCurrency } from '@/utils/currency';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -28,12 +29,8 @@ interface Props {
 }
 
 export default function ProductsShow({ product }: Props) {
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-DO', {
-            style: 'currency',
-            currency: 'USD',
-        }).format(amount);
-    };
+    const { format: formatCurrency } = useCurrency();
+
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('es-DO', {

@@ -243,21 +243,30 @@ export interface Product {
     stock_status?: 'not_tracked' | 'out_of_stock' | 'low_stock' | 'in_stock';
 }
 
-export interface PaginatedProducts {
-    data: Product[];
+export interface PaginationLink {
+    url: string | null;
+    label: string;
+    page?: number | null;
+    active: boolean;
+}
+
+export interface PaginatedResponse<T = any> {
+    data: T[];
     current_page: number;
     last_page: number;
     per_page: number;
     total: number;
-    from?: number;
-    to?: number;
-    links: {
-        first?: string;
-        last?: string;
-        prev?: string;
-        next?: string;
-    };
+    from: number;
+    to: number;
+    first_page_url: string;
+    last_page_url: string;
+    next_page_url: string | null;
+    prev_page_url: string | null;
+    path: string;
+    links: PaginationLink[];
 }
+
+export interface PaginatedProducts extends PaginatedResponse<Product> {}
 
 export interface ProductFilters {
     search?: string;
@@ -410,4 +419,43 @@ export interface PaginatedDocuments {
 export interface DocumentFilters {
     search?: string;
     status?: string;
+}
+
+export interface PaginatedData<T> {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from?: number;
+    to?: number;
+    links: {
+        first?: string;
+        last?: string;
+        prev?: string;
+        next?: string;
+    };
+}
+
+export interface ProductImport {
+    id: number;
+    filename: string;
+    original_filename: string;
+    file_path: string;
+    status: 'pending' | 'mapping' | 'processing' | 'completed' | 'failed';
+    headers?: string[] | null;
+    column_mapping?: Record<string, string> | null;
+    import_data?: any[] | null;
+    validation_errors?: any[] | null;
+    import_summary?: {
+        products_created?: number;
+        products_updated?: number;
+        errors?: string[];
+    } | null;
+    total_rows?: number | null;
+    processed_rows?: number | null;
+    error_count: number;
+    completed_at?: string | null;
+    created_at: string;
+    updated_at: string;
 }
