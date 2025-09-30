@@ -19,7 +19,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $contact_id
  * @property string $type
  * @property int $document_subtype_id
- * @property string $status
  * @property string $document_number
  * @property \Carbon\CarbonImmutable $issue_date
  * @property \Carbon\CarbonImmutable|null $due_date
@@ -84,6 +83,11 @@ final class Invoice extends Model
     /** @use HasFactory<\Database\Factories\InvoiceFactory> */
     use BelongsToWorkspace, HasFactory;
 
+    protected $appends = [
+        'amount_due',
+        'status_config',
+    ];
+
     /**
      * Get the contact for this invoice.
      *
@@ -137,6 +141,16 @@ final class Invoice extends Model
     }
 
     /**
+     * The payments associated with the invoice.
+     *
+     * @return HasMany<Payment, $this>
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
      * Scope to filter by status.
      */
     #[Scope]
@@ -146,13 +160,40 @@ final class Invoice extends Model
     }
 
     /**
-     * Scope to get overdue documents.
+     * Get the status attribute.
      */
-    #[Scope]
-    protected function overdue(Builder $query): void
+    protected function getStatusAttribute(): InvoiceStatus
     {
-        $query->where('due_date', '<', now()->toDateString())
-            ->whereNotIn('status', ['paid', 'cancelled']);
+        if ($this->payments()->sum('amount') >= $this->total_amount) {
+            return InvoiceStatus::Paid;
+        }
+
+        if ($this->payments()->sum('amount') > 0) {
+            return InvoiceStatus::PartiallyPaid;
+        }
+
+        return InvoiceStatus::PendingPayment;
+    }
+
+    /**
+     * Get the status attribute.
+     */
+    protected function getStatusConfigAttribute(): array
+    {
+        return [
+            'value' => $this->status->value,
+            'label' => $this->status->label(),
+            'variant' => $this->status->badgeVariant(),
+            'className' => $this->status->badgeClassName(),
+        ];
+    }
+
+    /**
+     * Get the status attribute.
+     */
+    protected function getAmountDueAttribute(): float
+    {
+        return max(0, $this->total_amount - $this->payments()->sum('amount'));
     }
 
     protected function casts(): array
@@ -161,7 +202,6 @@ final class Invoice extends Model
             'issue_date' => 'date',
             'due_date' => 'date',
             'total_amount' => 'decimal:2',
-            'status' => InvoiceStatus::class,
         ];
     }
 }

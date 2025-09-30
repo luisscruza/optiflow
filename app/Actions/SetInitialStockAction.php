@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\StockMovement;
 use App\Models\User;
+use App\Models\Workspace;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -18,7 +19,7 @@ final class SetInitialStockAction
      *
      * @param  array{product_id: int, quantity: float, minimum_quantity?: float, unit_cost?: float, notes?: string}  $data
      */
-    public function handle(User $user, array $data): ProductStock
+    public function handle(?User $user, array $data, ?Workspace $workspace = null): ProductStock
     {
         $product = Product::findOrFail($data['product_id']);
 
@@ -26,18 +27,16 @@ final class SetInitialStockAction
             throw new InvalidArgumentException('Cannot set initial stock for products that do not track inventory.');
         }
 
-        if (! $user->current_workspace_id) {
-            throw new InvalidArgumentException('User must have an active workspace.');
-        }
+        $workspaceId = $workspace?->id ?? $user?->current_workspace_id;
 
-        if ($data['quantity'] < 0) {
-            throw new InvalidArgumentException('Initial stock quantity cannot be negative.');
-        }
+        // if ($data['quantity'] < 0) {
+        //     throw new InvalidArgumentException('Initial stock quantity cannot be negative.');
+        // }
 
-        return DB::transaction(function () use ($user, $product, $data): ProductStock {
+        return DB::transaction(function () use ($product, $data, $workspaceId): ProductStock {
             $existingStock = ProductStock::where([
                 'product_id' => $product->id,
-                'workspace_id' => $user->current_workspace_id,
+                'workspace_id' => $workspaceId,
             ])->first();
 
             if ($existingStock) {
@@ -48,14 +47,14 @@ final class SetInitialStockAction
 
             $stock = ProductStock::create([
                 'product_id' => $product->id,
-                'workspace_id' => $user->current_workspace_id,
+                'workspace_id' => $workspaceId,
                 'quantity' => $data['quantity'],
                 'minimum_quantity' => $data['minimum_quantity'] ?? 0,
             ]);
 
-            if ($data['quantity'] > 0) {
+            if ($data['quantity']) {
                 StockMovement::create([
-                    'workspace_id' => $user->current_workspace_id,
+                    'workspace_id' => $workspaceId,
                     'product_id' => $product->id,
                     'type' => 'initial',
                     'quantity' => $data['quantity'],

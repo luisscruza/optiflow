@@ -15,7 +15,6 @@ use App\Models\Contact;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Context;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,9 +25,8 @@ final class ContactController extends Controller
      */
     public function index(Request $request): Response
     {
-        $workspace = Context::get('workspace');
 
-        $query = $workspace->contacts()
+        $query = Contact::query()
             ->with(['primaryAddress'])
             ->orderBy('name');
 

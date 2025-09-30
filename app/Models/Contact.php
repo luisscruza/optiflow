@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Concerns\BelongsToWorkspace;
 use App\Enums\ContactType;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -85,10 +84,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 final class Contact extends Model
 {
     /** @use HasFactory<\Database\Factories\ContactFactory> */
-    use BelongsToWorkspace, HasFactory;
+    use HasFactory;
 
     protected $fillable = [
-        'workspace_id',
         'name',
         'identification_type',
         'identification_number',

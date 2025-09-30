@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Contact, type Document, type DocumentFilters, type PaginatedDocuments } from '@/types';
+import { type BreadcrumbItem, type Contact, type Document, type InvoiceFilters, type PaginatedInvoices } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -21,8 +21,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 interface Props {
-    quotations: PaginatedDocuments;
-    filters: DocumentFilters;
+    quotations: PaginatedInvoices;
+    filters: InvoiceFilters;
 }
 
 export default function QuotationsIndex({ quotations, filters }: Props) {

@@ -8,10 +8,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Paginator } from '@/components/ui/paginator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type PaginatedProducts, type ProductFilters } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
+import { useCurrency } from '@/utils/currency';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -30,6 +32,7 @@ export default function ProductsIndex({ products, filters }: Props) {
     const [trackStock, setTrackStock] = useState(filters.track_stock);
     const [lowStock, setLowStock] = useState(filters.low_stock || false);
     const [deletingProduct, setDeletingProduct] = useState<number | null>(null);
+    const { format: formatCurrency } = useCurrency();
 
     const handleSearch = (value: string) => {
         setSearch(value);
@@ -55,13 +58,6 @@ export default function ProductsIndex({ products, filters }: Props) {
                 onFinish: () => setDeletingProduct(null),
             });
         }
-    };
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-        }).format(amount);
     };
 
     return (
@@ -303,25 +299,7 @@ export default function ProductsIndex({ products, filters }: Props) {
                             </Table>
 
                             {/* Pagination */}
-                            {products.last_page > 1 && (
-                                <div className="mt-6 flex items-center justify-between">
-                                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                                        Página {products.current_page} de {products.last_page}
-                                    </div>
-                                    <div className="flex gap-2">
-                                        {products.links.prev && (
-                                            <Button variant="outline" size="sm" asChild>
-                                                <Link href={products.links.prev}>Anterior</Link>
-                                            </Button>
-                                        )}
-                                        {products.links.next && (
-                                            <Button variant="outline" size="sm" asChild>
-                                                <Link href={products.links.next}>Siguiente</Link>
-                                            </Button>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
+                            <Paginator data={products} className="mt-6" />
                         </CardContent>
                     </Card>
                 )}

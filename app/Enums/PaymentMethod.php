@@ -11,6 +11,7 @@ enum PaymentMethod: string
     case CreditCard = 'credit_card';
     case BankTransfer = 'bank_transfer';
     case MobilePayment = 'mobile_payment';
+    case Transfer = 'transfer';
     case Other = 'other';
 
     /**

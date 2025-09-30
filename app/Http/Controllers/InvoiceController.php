@@ -6,7 +6,9 @@ namespace App\Http\Controllers;
 
 use App\Actions\CreateInvoiceAction;
 use App\Actions\UpdateInvoiceAction;
+use App\Enums\PaymentMethod;
 use App\Http\Requests\UpdateInvoiceRequest;
+use App\Models\BankAccount;
 use App\Models\Contact;
 use App\Models\DocumentSubtype;
 use App\Models\Invoice;
@@ -32,6 +34,7 @@ final class InvoiceController extends Controller
     {
         $query = Invoice::query()
             ->with(['contact', 'documentSubtype'])
+            ->orderBy('issue_date', 'desc')
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('search')) {
@@ -48,7 +51,7 @@ final class InvoiceController extends Controller
             $query->where('status', $request->get('status'));
         }
 
-        $invoices = $query->paginate(15)->withQueryString();
+        $invoices = $query->paginate(30)->withQueryString();
 
         return Inertia::render('invoices/index', [
             'invoices' => $invoices,
@@ -56,6 +59,8 @@ final class InvoiceController extends Controller
                 'search' => $request->get('search'),
                 'status' => $request->get('status'),
             ],
+            'bankAccounts' => Inertia::optional(fn () => BankAccount::onlyActive()->with('currency')->orderBy('name')->get()),
+            'paymentMethods' => Inertia::optional(fn () => PaymentMethod::options()),
         ]);
     }
 
@@ -140,10 +145,30 @@ final class InvoiceController extends Controller
      */
     public function show(Invoice $invoice): Response
     {
-        $invoice->load(['contact', 'documentSubtype', 'items.product', 'items.tax']);
+        $invoice->load([
+            'contact',
+            'documentSubtype',
+            'items.product',
+            'items.tax',
+            'payments.bankAccount',
+            'payments.currency',
+        ]);
+
+        // Get bank accounts and payment methods for payment registration
+        $bankAccounts = BankAccount::onlyActive()->with('currency')->get();
+        $paymentMethods = [
+            'cash' => 'Efectivo',
+            'transfer' => 'Transferencia',
+            'check' => 'Cheque',
+            'credit_card' => 'Tarjeta de Crédito',
+            'debit_card' => 'Tarjeta de Débito',
+            'other' => 'Otro',
+        ];
 
         return Inertia::render('invoices/show', [
             'invoice' => $invoice,
+            'bankAccounts' => $bankAccounts,
+            'paymentMethods' => $paymentMethods,
         ]);
     }
 
@@ -171,10 +196,7 @@ final class InvoiceController extends Controller
             })
             ->orderBy('name')
             ->get()
-            ->map(function ($product) use ($currentWorkspace, $invoice) {
-                // If the invoice has this product... we need to sum the quantities to the current stock...
-                $isInInvoice = $invoice->items->firstWhere('product_id', $product->id)->exists();
-
+            ->map(function ($product) use ($currentWorkspace) {
                 $stock = $currentWorkspace ? $product->stocks->first() : null;
 
                 $product->current_stock = $stock;
@@ -189,7 +211,7 @@ final class InvoiceController extends Controller
 
         $taxes = Tax::orderBy('name')->get();
 
-        return Inertia::render('invoices/Edit', [
+        return Inertia::render('invoices/edit', [
             'invoice' => $invoice,
             'documentSubtypes' => $documentSubtypes,
             'customers' => $customers,
@@ -252,5 +274,32 @@ final class InvoiceController extends Controller
         }
 
         return 'in_stock';
+    }
+
+    /**
+     * Clean UTF-8 characters from a string.
+     */
+    private function cleanUtf8String(string $str): string
+    {
+        // Remove null bytes and other control characters
+        $str = str_replace(["\0", "\x0B"], '', $str);
+
+        // Convert to UTF-8 if it's not already
+        if (! mb_check_encoding($str, 'UTF-8')) {
+            // Try to detect encoding and convert
+            $encoding = mb_detect_encoding($str, ['UTF-8', 'ISO-8859-1', 'Windows-1252'], true);
+            if ($encoding && $encoding !== 'UTF-8') {
+                $str = mb_convert_encoding($str, 'UTF-8', $encoding);
+            } else {
+                // If we can't detect encoding, remove invalid UTF-8 sequences
+                $str = mb_convert_encoding($str, 'UTF-8', 'UTF-8');
+            }
+        }
+
+        // Remove any remaining invalid UTF-8 characters
+        $str = filter_var($str, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH);
+
+        // Trim whitespace
+        return trim($str ?? '');
     }
 }

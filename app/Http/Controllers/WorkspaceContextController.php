@@ -23,7 +23,18 @@ final class WorkspaceContextController extends Controller
             return back()->with('error', 'You do not have access to this workspace.');
         }
 
-        return to_route('dashboard')->with('success', "Switched to {$workspace->name} workspace.");
+        $workspace = $user->refresh()->currentWorkspace;
+
+        $previousRoute = url()->previous();
+
+        if ($previousRoute && ! str_contains($previousRoute, route('workspaces.index'))) {
+            return redirect()->to($previousRoute)
+                ->with('success', "Ahora estás en {$workspace->name}.");
+        }
+
+        return redirect()->route('dashboard')
+            ->with('success', "Ahora estás en {$workspace->name}.");
+
     }
 
     /**

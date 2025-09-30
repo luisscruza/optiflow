@@ -34,6 +34,22 @@ export interface Currency {
     updated_at: string;
 }
 
+export interface BankAccount {
+    id: number;
+    name: string;
+    type: string;
+    currency_id: number;
+    account_number?: string | null;
+    initial_balance: number;
+    initial_balance_date: string;
+    description: string;
+    is_system_account: boolean;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+    currency?: Currency;
+}
+
 export interface SharedData {
     name: string;
     quote: { message: string; author: string };
@@ -243,21 +259,30 @@ export interface Product {
     stock_status?: 'not_tracked' | 'out_of_stock' | 'low_stock' | 'in_stock';
 }
 
-export interface PaginatedProducts {
-    data: Product[];
+export interface PaginationLink {
+    url: string | null;
+    label: string;
+    page?: number | null;
+    active: boolean;
+}
+
+export interface PaginatedResponse<T = any> {
+    data: T[];
     current_page: number;
     last_page: number;
     per_page: number;
     total: number;
-    from?: number;
-    to?: number;
-    links: {
-        first?: string;
-        last?: string;
-        prev?: string;
-        next?: string;
-    };
+    from: number;
+    to: number;
+    first_page_url: string;
+    last_page_url: string;
+    next_page_url: string | null;
+    prev_page_url: string | null;
+    path: string;
+    links: PaginationLink[];
 }
+
+export interface PaginatedProducts extends PaginatedResponse<Product> {}
 
 export interface ProductFilters {
     search?: string;
@@ -366,13 +391,14 @@ export interface DocumentItem {
     tax?: Tax;
 }
 
-export interface Document {
+export interface Invoice {
     id: number;
     workspace_id: number;
     contact_id: number;
     type: 'invoice' | 'quotation' | 'receipt';
     document_subtype_id: number;
     status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled' | 'accepted' | 'rejected' | 'expired' | 'converted';
+    amount_due: number;
     document_number: string;
     issue_date: string;
     due_date: string;
@@ -389,10 +415,61 @@ export interface Document {
     document_subtype: DocumentSubtype;
     created_by_user?: User;
     items?: DocumentItem[];
+    status_config: InvoiceStatusConfig;
+    payment_term: string;
+    payments?: Payment[];
 }
 
-export interface PaginatedDocuments {
-    data: Document[];
+export interface Payment {
+    id: number;
+    invoice_id: number;
+    bank_account_id: number;
+    currency_id: number;
+    amount: number;
+    payment_date: string;
+    payment_method: 'cash' | 'transfer' | 'check' | 'credit_card' | 'debit_card' | 'other';
+    note?: string | null;
+    created_at: string;
+    updated_at: string;
+    bank_account?: BankAccount;
+    currency?: Currency;
+}
+
+export interface BankAccount {
+    id: number;
+    name: string;
+    account_number?: string | null;
+    bank_name?: string | null;
+    is_system_account: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Currency {
+    id: number;
+    code: string;
+    name: string;
+    symbol: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface InvoiceStatusConfig {
+    value: 'paid' | 'partially_paid' | 'pending_payment' | 'cancelled';
+    label: string;
+    variant: 'default' | 'secondary' | 'destructive' | 'outline' | null | undefined;
+    className: string;
+}
+
+export interface PaginatedInvoices extends PaginatedResponse<Invoice> {}
+
+export interface InvoiceFilters {
+    search?: string;
+    status?: string;
+}
+
+export interface PaginatedData<T> {
+    data: T[];
     current_page: number;
     last_page: number;
     per_page: number;
@@ -407,7 +484,25 @@ export interface PaginatedDocuments {
     };
 }
 
-export interface DocumentFilters {
-    search?: string;
-    status?: string;
+export interface ProductImport {
+    id: number;
+    filename: string;
+    original_filename: string;
+    file_path: string;
+    status: 'pending' | 'mapping' | 'processing' | 'completed' | 'failed';
+    headers?: string[] | null;
+    column_mapping?: Record<string, string> | null;
+    import_data?: any[] | null;
+    validation_errors?: any[] | null;
+    import_summary?: {
+        products_created?: number;
+        products_updated?: number;
+        errors?: string[];
+    } | null;
+    total_rows?: number | null;
+    processed_rows?: number | null;
+    error_count: number;
+    completed_at?: string | null;
+    created_at: string;
+    updated_at: string;
 }

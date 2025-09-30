@@ -169,7 +169,9 @@
 <body>
     <div class="header">
         <div class="company-info">
-            <div class="company-name">{{ 'Optiflow' }}</div>
+            <div class="company-name">
+               {{ $company['company_name'] ?? 'Optiflow' }}
+            </div>
             <div>RNC: 123-45678-9</div>
             <div>Teléfono: (809) 123-4567</div>
             <div>Email: testtt</div>
@@ -215,7 +217,8 @@
                 <th style="width: 45%;">Descripción</th>
                 <th style="width: 10%;" class="text-center">Cant.</th>
                 <th style="width: 15%;" class="text-right">Precio Unit.</th>
-                <th style="width: 10%;" class="text-center">ITBIS</th>
+                <th style="width: 10%;" class="text-center">Descuento</th>
+                <th style="width: 10%;" class="text-center">Impuestos</th>
                 <th style="width: 15%;" class="text-right">Total</th>
             </tr>
         </thead>
@@ -224,10 +227,11 @@
                 <tr>
                     <td class="text-center">{{ $index + 1 }}</td>
                     <td>{{ $item->description }}</td>
-                    <td class="text-center">{{ number_format($item->quantity, 2) }}</td>
+                    <td class="text-center text-xs">{{ number_format($item->quantity, 2) }}</td>
                     <td class="text-right">RD$ {{ number_format($item->unit_price, 2) }}</td>
-                    <td class="text-center">{{ number_format($item->tax_rate_snapshot ?? 0, 0) }}%</td>
-                    <td class="text-right">RD$ {{ number_format($item->total + $item->tax_amount, 2) }}</td>
+                    <td class="text-center">RD$ {{ number_format($item->discount_amount ?? 0, 2) }}</td>
+                    <td class="text-center">RD${{ number_format($item->tax_amount ?? 0, 2) }}</td>
+                    <td class="text-right font-bold">RD$ {{ number_format($item->subtotal, 2) }}</td>
                 </tr>
             @endforeach
         </tbody>

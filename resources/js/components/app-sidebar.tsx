@@ -7,10 +7,11 @@ import { dashboard } from '@/routes';
 import contacts from '@/routes/contacts';
 import inventory from '@/routes/inventory';
 import products from '@/routes/products';
+import productImports from '@/routes/product-imports';
 import workspaces from '@/routes/workspaces';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Building2, Folder, LayoutGrid, Package, RotateCcw, Settings, Users2, Receipt } from 'lucide-react';
+import { BookOpen, Building2, Folder, LayoutGrid, Package, RotateCcw, Settings, Users2, Receipt, Upload } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -37,6 +38,11 @@ const mainNavItems: NavItem[] = [
                 title: 'Productos',
                 href: products.index(),
                 icon: Package,
+            },
+            {
+                title: 'Importar Productos',
+                href: productImports.index(),
+                icon: Upload,
             },
             {
                 title: 'Inventario',

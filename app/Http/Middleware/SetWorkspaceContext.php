@@ -34,7 +34,7 @@ final class SetWorkspaceContext
                 $user->refresh();
             }
 
-            $workspace = $user->currentWorkspace;
+            $workspace = $user->refresh()->currentWorkspace;
 
             Context::add('workspace', $workspace);
 
