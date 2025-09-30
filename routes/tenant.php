@@ -8,11 +8,13 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ConvertQuotationToInvoiceController;
 use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\CurrencyRateController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentSubtypeController;
 use App\Http\Controllers\DownloadInvoicePdfController;
 use App\Http\Controllers\DownloadQuotationPdfController;
 use App\Http\Controllers\InitialStockController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImportController;
 use App\Http\Controllers\QuotationController;
@@ -27,7 +29,7 @@ use App\Http\Controllers\WorkspaceMemberController;
 use App\Http\Controllers\WorkspaceMemberRoleController;
 use App\Http\Middleware\HasWorkspace;
 use App\Http\Middleware\SetWorkspaceContext;
-use App\Models\Invoice;
+use App\Models\BankAccount;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain;
@@ -51,9 +53,11 @@ Route::middleware([
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
 
-    Route::get('/test', function () {
-        dd(Invoice::first()->statusConfig);
-    });
+    // Route::get('/test', function () {
+    //     $bank = BankAccount::onlyActive()->first();
+    //     $bank->initial_balance_date = now();
+    //     $bank->save();
+    // });
 
     Route::get('/', function () {
         return redirect()->route('dashboard');
@@ -74,9 +78,7 @@ Route::middleware([
         });
 
         Route::middleware(HasWorkspace::class)->group(function () {
-            Route::get('dashboard', function () {
-                return Inertia::render('dashboard');
-            })->name('dashboard');
+            Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
             Route::get('configuration', [ConfigurationController::class, 'index'])->name('configuration.index');
 
@@ -100,6 +102,8 @@ Route::middleware([
 
             Route::resource('invoices', InvoiceController::class);
             Route::get('invoices/{invoice}/pdf', DownloadInvoicePdfController::class)->name('invoices.pdf');
+
+            Route::post('payments', [PaymentController::class, 'store'])->name('payments.store');
 
             Route::resource('quotations', QuotationController::class);
             Route::get('quotations/{quotation}/pdf', DownloadQuotationPdfController::class)->name('quotations.pdf');

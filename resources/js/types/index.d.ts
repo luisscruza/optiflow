@@ -34,6 +34,22 @@ export interface Currency {
     updated_at: string;
 }
 
+export interface BankAccount {
+    id: number;
+    name: string;
+    type: string;
+    currency_id: number;
+    account_number?: string | null;
+    initial_balance: number;
+    initial_balance_date: string;
+    description: string;
+    is_system_account: boolean;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+    currency?: Currency;
+}
+
 export interface SharedData {
     name: string;
     quote: { message: string; author: string };
@@ -400,6 +416,42 @@ export interface Invoice {
     created_by_user?: User;
     items?: DocumentItem[];
     status_config: InvoiceStatusConfig;
+    payment_term: string;
+    payments?: Payment[];
+}
+
+export interface Payment {
+    id: number;
+    invoice_id: number;
+    bank_account_id: number;
+    currency_id: number;
+    amount: number;
+    payment_date: string;
+    payment_method: 'cash' | 'transfer' | 'check' | 'credit_card' | 'debit_card' | 'other';
+    note?: string | null;
+    created_at: string;
+    updated_at: string;
+    bank_account?: BankAccount;
+    currency?: Currency;
+}
+
+export interface BankAccount {
+    id: number;
+    name: string;
+    account_number?: string | null;
+    bank_name?: string | null;
+    is_system_account: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Currency {
+    id: number;
+    code: string;
+    name: string;
+    symbol: string;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface InvoiceStatusConfig {

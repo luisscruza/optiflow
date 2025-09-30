@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/app-layout';
 import { Product, type BreadcrumbItem, type PaginatedProducts, type Workspace } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
+import { Paginator } from '@/components/ui/paginator';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -181,26 +182,7 @@ export default function InitialStockIndex({ productsWithStock, workspace }: Prop
                                 </Table>
                             </div>
 
-                            {/* Pagination */}
-                            {productsWithStock.last_page > 1 && (
-                                <div className="flex items-center justify-between space-x-2 py-4">
-                                    <div className="text-sm text-muted-foreground">
-                                        Showing {productsWithStock.from} to {productsWithStock.to} of {productsWithStock.total} results
-                                    </div>
-                                    <div className="flex space-x-2">
-                                        {productsWithStock.links.prev && (
-                                            <Button variant="outline" size="sm" onClick={() => router.get(productsWithStock.links.prev!)}>
-                                                Previous
-                                            </Button>
-                                        )}
-                                        {productsWithStock.links.next && (
-                                            <Button variant="outline" size="sm" onClick={() => router.get(productsWithStock.links.next!)}>
-                                                Next
-                                            </Button>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
+                            <Paginator data={productsWithStock} className="mt-4 justify-end" />
                         </CardContent>
                     </Card>
                 </div>

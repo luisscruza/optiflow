@@ -175,17 +175,17 @@ final class Invoice extends Model
         return InvoiceStatus::PendingPayment;
     }
 
-     /**
+    /**
      * Get the status attribute.
      */
     protected function getStatusConfigAttribute(): array
     {
-       return [
+        return [
             'value' => $this->status->value,
             'label' => $this->status->label(),
             'variant' => $this->status->badgeVariant(),
             'className' => $this->status->badgeClassName(),
-       ];
+        ];
     }
 
     /**

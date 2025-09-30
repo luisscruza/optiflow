@@ -378,22 +378,73 @@ final class ImportInvoice extends Command
             return null;
         }
 
-        try {
-            // Try common formats
-            $formats = ['d/m/Y', 'd/m/y', 'Y-m-d', 'm/d/Y'];
+        $dateString = trim($dateString);
 
-            foreach ($formats as $format) {
+        // Try common formats with 4-digit years first
+        $formats = ['d/m/Y', 'Y-m-d', 'm/d/Y', 'd-m-Y', 'Y/m/d'];
+
+        foreach ($formats as $format) {
+            try {
                 $date = Carbon::createFromFormat($format, $dateString);
-                if ($date !== false) {
+                if ($date !== false && $this->isValidDate($date)) {
                     return $date;
                 }
+            } catch (Exception) {
+                // Continue to next format
+                continue;
             }
-
-            // Fallback to Carbon's auto-parsing
-            return Carbon::parse($dateString);
-        } catch (Exception) {
-            return null;
         }
+
+        // Handle 2-digit year formats specially
+        $twoDigitFormats = ['d/m/y', 'm/d/y', 'd-m-y'];
+
+        foreach ($twoDigitFormats as $format) {
+            try {
+                $date = Carbon::createFromFormat($format, $dateString);
+                if ($date !== false) {
+                    // Adjust for proper century - assume years 00-30 are 2000-2030, 31-99 are 1931-1999
+                    $year = $date->year;
+                    if ($year < 100) {
+                        if ($year <= 30) {
+                            $date->addYears(2000);
+                        } elseif ($year <= 99) {
+                            $date->addYears(1900);
+                        }
+                    }
+
+                    if ($this->isValidDate($date)) {
+                        return $date;
+                    }
+                }
+            } catch (Exception) {
+                // Continue to next format
+                continue;
+            }
+        }
+
+        // Fallback to Carbon's auto-parsing
+        try {
+            $date = Carbon::parse($dateString);
+            if ($this->isValidDate($date)) {
+                return $date;
+            }
+        } catch (Exception) {
+            // Auto-parsing failed
+        }
+
+        return null;
+    }
+
+    /**
+     * Validate if a parsed date makes sense for invoice data.
+     */
+    private function isValidDate(Carbon $date): bool
+    {
+        $currentYear = now()->year;
+        $year = $date->year;
+
+        // Accept dates from 1990 to 10 years in the future
+        return $year >= 1990 && $year <= ($currentYear + 10);
     }
 
     /**

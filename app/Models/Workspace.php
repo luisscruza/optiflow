@@ -105,6 +105,16 @@ final class Workspace extends Model
     }
 
     /**
+     * Get the contacts that belong to the workspace.
+     *
+     * @return HasMany<Invoice, $this>
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    /**
      * Get the invitations for this workspace.
      *
      * @return HasMany<UserInvitation, $this>

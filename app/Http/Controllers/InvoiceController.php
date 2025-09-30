@@ -6,7 +6,9 @@ namespace App\Http\Controllers;
 
 use App\Actions\CreateInvoiceAction;
 use App\Actions\UpdateInvoiceAction;
+use App\Enums\PaymentMethod;
 use App\Http\Requests\UpdateInvoiceRequest;
+use App\Models\BankAccount;
 use App\Models\Contact;
 use App\Models\DocumentSubtype;
 use App\Models\Invoice;
@@ -57,6 +59,8 @@ final class InvoiceController extends Controller
                 'search' => $request->get('search'),
                 'status' => $request->get('status'),
             ],
+            'bankAccounts' => Inertia::optional(fn () => BankAccount::onlyActive()->with('currency')->orderBy('name')->get()),
+            'paymentMethods' => Inertia::optional(fn () => PaymentMethod::options()),
         ]);
     }
 
@@ -141,10 +145,30 @@ final class InvoiceController extends Controller
      */
     public function show(Invoice $invoice): Response
     {
-        $invoice->load(['contact', 'documentSubtype', 'items.product', 'items.tax']);
+        $invoice->load([
+            'contact',
+            'documentSubtype',
+            'items.product',
+            'items.tax',
+            'payments.bankAccount',
+            'payments.currency',
+        ]);
+
+        // Get bank accounts and payment methods for payment registration
+        $bankAccounts = BankAccount::onlyActive()->with('currency')->get();
+        $paymentMethods = [
+            'cash' => 'Efectivo',
+            'transfer' => 'Transferencia',
+            'check' => 'Cheque',
+            'credit_card' => 'Tarjeta de Crédito',
+            'debit_card' => 'Tarjeta de Débito',
+            'other' => 'Otro',
+        ];
 
         return Inertia::render('invoices/show', [
             'invoice' => $invoice,
+            'bankAccounts' => $bankAccounts,
+            'paymentMethods' => $paymentMethods,
         ]);
     }
 
@@ -187,7 +211,7 @@ final class InvoiceController extends Controller
 
         $taxes = Tax::orderBy('name')->get();
 
-        return Inertia::render('invoices/Edit', [
+        return Inertia::render('invoices/edit', [
             'invoice' => $invoice,
             'documentSubtypes' => $documentSubtypes,
             'customers' => $customers,

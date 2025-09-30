@@ -9,8 +9,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { PaymentRegistrationModal } from '@/components/payment-registration-modal';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Contact, type Invoice, type InvoiceFilters, type PaginatedInvoices } from '@/types';
+import { type BankAccount, type BreadcrumbItem, type Contact, type Invoice, type InvoiceFilters, type PaginatedInvoices } from '@/types';
 import { useCurrency } from '@/utils/currency';
 import { Paginator } from '@/components/ui/paginator';
 
@@ -24,11 +25,15 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface Props {
     invoices: PaginatedInvoices;
     filters: InvoiceFilters;
+    bankAccounts?: BankAccount[];
+    paymentMethods?: Record<string, string>;
 }
 
-export default function InvoicesIndex({ invoices, filters }: Props) {
+export default function InvoicesIndex({ invoices, filters, bankAccounts = [], paymentMethods = {} }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || 'all');
+    const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+    const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
     const { format: formatCurrency } = useCurrency();
 
     const handleSearch = (e: React.FormEvent) => {
@@ -61,6 +66,21 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
         if (confirm('¿Estás seguro de que deseas eliminar esta factura?')) {
             router.delete(`/invoices/${invoiceId}`);
         }
+    };
+
+    const handleOpenPaymentModal = (invoice: Invoice) => {
+        setSelectedInvoice(invoice);
+        setPaymentModalOpen(true);
+        
+        // Ensure we have the optional data loaded by making a partial reload
+        if (!bankAccounts.length || !Object.keys(paymentMethods).length) {
+            router.reload({ only: ['bankAccounts', 'paymentMethods'] });
+        }
+    };
+
+    const handleClosePaymentModal = () => {
+        setPaymentModalOpen(false);
+        setSelectedInvoice(null);
     };
 
     const formatDate = (dateString: string) => {
@@ -219,7 +239,11 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     { invoice.status !== 'paid' && (
-                                                        <Button variant="ghost" size="sm">
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="sm"
+                                                            onClick={() => handleOpenPaymentModal(invoice)}
+                                                        >
                                                             <DollarSign className="mr-2 h-4 w-4" />
                                                         </Button>
                                                     )}
@@ -277,6 +301,17 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Payment Registration Modal */}
+            {selectedInvoice && (
+                <PaymentRegistrationModal
+                    isOpen={paymentModalOpen}
+                    onClose={handleClosePaymentModal}
+                    invoice={selectedInvoice}
+                    bankAccounts={bankAccounts}
+                    paymentMethods={paymentMethods}
+                />
+            )}
         </AppLayout>
     );
 }
