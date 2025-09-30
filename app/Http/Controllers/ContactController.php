@@ -92,7 +92,11 @@ final class ContactController extends Controller
      */
     public function show(Contact $contact): Response
     {
-        $contact->load(['primaryAddress', 'addresses']);
+        $contact->load(['primaryAddress', 'addresses',
+             'comments.commentator',
+            'comments.comments.commentator', 
+            'comments.comments.comments.commentator',
+    ]);
 
         return Inertia::render('contacts/show', [
             'contact' => $contact,

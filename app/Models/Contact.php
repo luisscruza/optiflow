@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\HasComments;
+use App\Contracts\Commentable;
 use App\Enums\ContactType;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -81,10 +83,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  *
  * @mixin \Eloquent
  */
-final class Contact extends Model
+final class Contact extends Model implements Commentable
 {
     /** @use HasFactory<\Database\Factories\ContactFactory> */
-    use HasFactory;
+    use HasFactory, HasComments;
 
     protected $fillable = [
         'name',

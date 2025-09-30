@@ -34,6 +34,19 @@ export interface Currency {
     updated_at: string;
 }
 
+export interface CommentData {
+    id: number;
+    comment: string;
+    created_at: string;
+    edited_at?: string | null;
+    commentator: {
+        id: number;
+        name: string;
+        email: string;
+    };
+    comments?: CommentData[];
+}
+
 export interface BankAccount {
     id: number;
     name: string;
@@ -418,6 +431,7 @@ export interface Invoice {
     status_config: InvoiceStatusConfig;
     payment_term: string;
     payments?: Payment[];
+    comments?: CommentData[];
 }
 
 export interface Payment {
