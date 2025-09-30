@@ -39,7 +39,6 @@ enum InvoiceStatus: string
         };
     }
 
-
     /**
      * Get the badge variant for the document type.
      */
