@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ReplyIcon, MoreHorizontal, Edit2, Trash2, Loader2 } from 'lucide-react';
 import { CommentForm } from './CommentForm';
+import { MentionText } from './MentionText';
 import comments from '@/routes/comments';
 
 export interface CommentData {
@@ -223,7 +224,7 @@ export const Comment: React.FC<CommentProps> = ({
                         </form>
                     ) : (
                         <div className="text-gray-700 text-sm mb-2 whitespace-pre-wrap">
-                            {comment.comment}
+                            <MentionText text={comment.comment} />
                         </div>
                     )}
 

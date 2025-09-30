@@ -1,9 +1,9 @@
 import React from 'react';
 import { useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2 } from 'lucide-react';
+import { MentionTextarea } from './MentionTextarea';
 import comments from '@/routes/comments';
 
 interface CommentFormProps {
@@ -86,12 +86,11 @@ export const CommentForm: React.FC<CommentFormProps> = ({
                 )}
                 
                 <div className="flex-1">
-                    <Textarea
+                    <MentionTextarea
                         value={data.comment}
-                        onChange={(e) => setData('comment', e.target.value)}
+                        onChange={(value) => setData('comment', value)}
                         placeholder={placeholder}
                         rows={3}
-                        className="resize-none"
                         disabled={processing}
                     />
                     

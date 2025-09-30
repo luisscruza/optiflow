@@ -80,6 +80,8 @@ export interface SharedData {
     };
     defaultCurrency?: Currency | null;
     newlyCreatedContact?: Contact | null;
+    workspaceUsers: User[];
+    unreadNotifications: number;
     flash?: {
         success?: string;
         error?: string;

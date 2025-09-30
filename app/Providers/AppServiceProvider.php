@@ -26,6 +26,7 @@ final class AppServiceProvider extends ServiceProvider
             'invoice' => 'App\Models\Invoice',
             'comment' => 'App\Models\Comment',
             'contact' => 'App\Models\Contact',
+            'user' => 'App\Models\User',
         ]);
 
     }

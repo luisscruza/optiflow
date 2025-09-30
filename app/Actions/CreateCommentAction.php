@@ -5,24 +5,37 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Contracts\Commentable;
+use App\Models\Comment;
 use App\Models\User;
+use App\Services\MentionService;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 final readonly class CreateCommentAction
 {
+    public function __construct(
+        private MentionService $mentionService
+    ) {
+    }
+
     /**
      * Execute the action.
      */
     public function handle(User $user, array $data): void
     {
-        DB::transaction(function () use ($data): void {
+        DB::transaction(function () use ($user, $data): void {
             /** @var class-string<Commentable> $class */
             $class = $this->resolveCommentableClass($data['commentable_type']);
 
             /** @var Commentable $model */
             $model = $class::findOrFail($data['commentable_id']);
-            $model->comment($data['comment']);
+            
+            $comment = $model->comment($data['comment']);
+
+            // Process mentions and send notifications
+            $this->mentionService->processMentions($comment, $user);
+
+        
         });
     }
 
