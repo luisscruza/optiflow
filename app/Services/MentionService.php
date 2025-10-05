@@ -1,14 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\Comment;
 use App\Models\User;
 use App\Notifications\CommentMention;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Notification;
 
-class MentionService
+final class MentionService
 {
     /**
      * Extract mentions from comment text
@@ -17,7 +18,7 @@ class MentionService
     public function extractMentions(string $text): array
     {
         preg_match_all('/@([a-zA-Z0-9._-]+)/', $text, $matches);
-        
+
         return array_unique($matches[1] ?? []);
     }
 
@@ -39,7 +40,7 @@ class MentionService
     public function sendMentionNotifications(Comment $comment, User $mentioner): void
     {
         $mentionedUsernames = $this->extractMentions($comment->comment);
-        
+
         if (empty($mentionedUsernames)) {
             return;
         }
@@ -47,7 +48,7 @@ class MentionService
         $mentionedUsers = $this->findMentionedUsers($mentionedUsernames);
 
         // Don't notify the person who made the comment
-        $mentionedUsers = $mentionedUsers->reject(fn(User $user) => $user->id === $mentioner->id);
+        $mentionedUsers = $mentionedUsers->reject(fn (User $user) => $user->id === $mentioner->id);
 
         foreach ($mentionedUsers as $user) {
             $user->notify(new CommentMention($comment, $mentioner));

@@ -86,7 +86,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 final class Contact extends Model implements Commentable
 {
     /** @use HasFactory<\Database\Factories\ContactFactory> */
-    use HasFactory, HasComments;
+    use HasComments, HasFactory;
 
     protected $fillable = [
         'name',

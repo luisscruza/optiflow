@@ -28,8 +28,11 @@ trait InteractsWithTenancy
      */
     public function setUpTenancy(): void
     {
+        // Configure RefreshDatabase to only transact on the default (central) connection
+        $this->connectionsToTransact = [config('database.default')];
+
         // Check if tenant exists (RefreshDatabase may have wiped it)
-        if (static::$testTenant === null || !Tenant::find(static::$testTenant->id)) {
+        if (static::$testTenant === null || ! Tenant::find(static::$testTenant->id)) {
             static::$testTenant = $this->initializeTenant();
             static::$tenantMigrated = false;
         }
@@ -120,8 +123,7 @@ trait InteractsWithTenancy
             tenancy()->end();
         }
 
-                    URL::forceRootUrl("http://$tenantDomain");
-
+        URL::forceRootUrl("http://$tenantDomain");
 
         return $tenant;
     }

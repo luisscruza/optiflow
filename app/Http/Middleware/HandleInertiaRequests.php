@@ -73,22 +73,22 @@ final class HandleInertiaRequests extends Middleware
      */
     private function getWorkspaceUsers(Request $request): array
     {
-        if (!$request->user()) {
+        if (! $request->user()) {
             return [];
         }
 
-        $currentWorkspace = $request->user()->currentWorkspace;
-        
-        if (!$currentWorkspace) {
+        $currentWorkspace = $request->user()->getCurrentWorkspaceSafely();
+
+        if (! $currentWorkspace) {
             return [];
         }
 
         return User::whereHas('workspaces', function ($query) use ($currentWorkspace) {
             $query->where('workspace_id', $currentWorkspace->id);
         })
-        ->select(['id', 'name', 'email'])
-        ->orderBy('name')
-        ->get()
-        ->toArray();
+            ->select(['id', 'name', 'email'])
+            ->orderBy('name')
+            ->get()
+            ->toArray();
     }
 }

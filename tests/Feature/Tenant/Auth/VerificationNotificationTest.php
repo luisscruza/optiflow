@@ -6,8 +6,6 @@ use App\Models\User;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Notification;
 
-
-
 test('sends verification notification', function () {
     Notification::fake();
 

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 use App\Models\User;
 
-
-
 test('profile page is displayed', function () {
     $user = User::factory()->create();
 
@@ -17,13 +15,16 @@ test('profile page is displayed', function () {
 });
 
 test('profile information can be updated', function () {
+
+    $random = uniqid();
+
     $user = User::factory()->create();
 
     $response = $this
         ->actingAs($user)
         ->patch(route('profile.update'), [
             'name' => 'Test User',
-            'email' => 'test@example.com',
+            'email' => $random.'@example.com',
         ]);
 
     $response
@@ -33,7 +34,7 @@ test('profile information can be updated', function () {
     $user->refresh();
 
     expect($user->name)->toBe('Test User');
-    expect($user->email)->toBe('test@example.com');
+    expect($user->email)->toBe($random.'@example.com');
     expect($user->email_verified_at)->toBeNull();
 });
 

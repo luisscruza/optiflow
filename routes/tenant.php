@@ -52,9 +52,9 @@ Route::middleware([
     InitializeTenancyBySubdomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
-          Route::get('me', function () {
-            return auth()->user();
-        })->name('me');
+    Route::get('me', function () {
+        return auth()->user();
+    })->name('me');
 
     // Route::get('/test', function () {
     //     $bank = BankAccount::onlyActive()->first();

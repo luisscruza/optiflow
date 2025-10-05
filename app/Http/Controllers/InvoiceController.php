@@ -153,8 +153,8 @@ final class InvoiceController extends Controller
             'payments.bankAccount',
             'payments.currency',
             'comments.commentator',
-            'comments.comments.commentator', 
-            'comments.comments.comments.commentator', 
+            'comments.comments.commentator',
+            'comments.comments.comments.commentator',
         ]);
 
         // Get bank accounts and payment methods for payment registration

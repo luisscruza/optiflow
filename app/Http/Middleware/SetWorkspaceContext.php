@@ -27,7 +27,7 @@ final class SetWorkspaceContext
         $user = $request->user();
 
         if ($user) {
-            if (! $user->currentWorkspace && $user->workspaces->isNotEmpty()) {
+            if (! $user->getCurrentWorkspaceSafely() && $user->workspaces->isNotEmpty()) {
                 $user->update([
                     'current_workspace_id' => $user->workspaces->first()->id,
                 ]);

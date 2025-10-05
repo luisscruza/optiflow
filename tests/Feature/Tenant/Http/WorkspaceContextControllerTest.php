@@ -6,7 +6,9 @@ use App\Models\User;
 use App\Models\Workspace;
 
 it('can switch to workspace', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->hasWorkspaces(1)->create();
+    $user->current_workspace_id = $user->workspaces->first()->id;
+    $user->save();
     $workspace = Workspace::factory()->create();
     $workspace->addUser($user, 'member');
 
@@ -17,7 +19,9 @@ it('can switch to workspace', function () {
 });
 
 it('can leave workspace', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->hasWorkspaces(1)->create();
+    $user->current_workspace_id = $user->workspaces->first()->id;
+    $user->save();
     $workspace = Workspace::factory()->create();
     $workspace->addUser($user, 'member');
 

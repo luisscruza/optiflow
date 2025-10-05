@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Contracts\Commentable;
-use App\Models\Comment;
 use App\Models\User;
 use App\Services\MentionService;
 use Illuminate\Support\Facades\DB;
@@ -15,8 +14,7 @@ final readonly class CreateCommentAction
 {
     public function __construct(
         private MentionService $mentionService
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the action.
@@ -29,13 +27,12 @@ final readonly class CreateCommentAction
 
             /** @var Commentable $model */
             $model = $class::findOrFail($data['commentable_id']);
-            
+
             $comment = $model->comment($data['comment']);
 
             // Process mentions and send notifications
             $this->mentionService->processMentions($comment, $user);
 
-        
         });
     }
 

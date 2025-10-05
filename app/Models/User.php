@@ -93,6 +93,23 @@ final class User extends Authenticatable
     }
 
     /**
+     * Safely get the current workspace without throwing an exception.
+     * Returns null if current_workspace_id is not set or not loaded.
+     */
+    public function getCurrentWorkspaceSafely(): ?Workspace
+    {
+        if (! array_key_exists('current_workspace_id', $this->attributes)) {
+            return null;
+        }
+
+        if ($this->current_workspace_id === null) {
+            return null;
+        }
+
+        return $this->currentWorkspace;
+    }
+
+    /**
      * Get the workspaces owned by the user.
      *
      * @return HasMany<Workspace, $this>
