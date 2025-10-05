@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
 
 final class AppServiceProvider extends ServiceProvider
@@ -22,6 +22,12 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Model::unguard();
+        Relation::enforceMorphMap([
+            'invoice' => 'App\Models\Invoice',
+            'comment' => 'App\Models\Comment',
+            'contact' => 'App\Models\Contact',
+            'user' => 'App\Models\User',
+        ]);
+
     }
 }
