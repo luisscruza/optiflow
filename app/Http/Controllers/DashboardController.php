@@ -228,6 +228,11 @@ final class DashboardController extends Controller
             return $current > 0 ? 100 : 0;
         }
 
+        if ($current == 0 ) 
+        {
+            return 0;
+        }
+
         return round((($current - $previous) / $previous) * 100, 2);
     }
 }
