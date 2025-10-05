@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
-uses(Illuminate\Foundation\Testing\RefreshDatabase::class);
+
 
 test('password update page is displayed', function () {
     $user = User::factory()->create();

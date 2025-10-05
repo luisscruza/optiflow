@@ -13,9 +13,17 @@ declare(strict_types=1);
 |
 */
 
+// Apply tenancy trait and hooks to all tests in Feature/Tenant (must be defined before Feature)
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
-    ->in('Feature', 'Unit');
+    ->use(Tests\Concerns\InteractsWithTenancy::class)
+    ->beforeEach(function () {
+        $this->setUpTenancy();
+    })
+    ->afterEach(function () {
+        $this->tearDownTenancy();
+    })
+    ->in('Feature/Tenant', 'Unit/Tenant');
 
 /*
 |--------------------------------------------------------------------------
@@ -42,8 +50,3 @@ expect()->extend('toBeOne', function () {
 | global functions to help you to reduce the number of lines of code in your test files.
 |
 */
-
-function something()
-{
-    // ..
-}

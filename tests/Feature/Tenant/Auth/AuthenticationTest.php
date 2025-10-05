@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 use App\Models\User;
 
-uses(Illuminate\Foundation\Testing\RefreshDatabase::class);
-
 test('login screen can be rendered', function () {
     $response = $this->get(route('login'));
 
@@ -36,12 +34,13 @@ test('users can not authenticate with invalid password', function () {
 });
 
 test('users can logout', function () {
-    $user = User::factory()->create();
 
+    $user = User::factory()->create();
+    
     $response = $this->actingAs($user)->post(route('logout'));
 
     $this->assertGuest();
-    $response->assertRedirect(route('home'));
+    $response->assertRedirect('/login');
 });
 
 test('users are rate limited', function () {

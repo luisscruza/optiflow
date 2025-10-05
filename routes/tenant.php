@@ -52,6 +52,9 @@ Route::middleware([
     InitializeTenancyBySubdomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
+          Route::get('me', function () {
+            return auth()->user();
+        })->name('me');
 
     // Route::get('/test', function () {
     //     $bank = BankAccount::onlyActive()->first();
@@ -76,10 +79,6 @@ Route::middleware([
             Route::patch('{workspace}', [WorkspaceContextController::class, 'update'])->name('update');
             Route::delete('{workspace}', [WorkspaceContextController::class, 'destroy'])->name('destroy');
         });
-
-        Route::post('comments', [\App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');
-        Route::patch('comments/{comment}', [\App\Http\Controllers\CommentController::class, 'update'])->name('comments.update');
-        Route::delete('comments/{comment}', [\App\Http\Controllers\CommentController::class, 'destroy'])->name('comments.destroy');
 
         Route::middleware(HasWorkspace::class)->group(function () {
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -133,6 +132,7 @@ Route::middleware([
             Route::delete('workspace/members/{member}', [WorkspaceMemberController::class, 'destroy'])->name('workspace.members.destroy');
 
             Route::post('workspace/invitations', [WorkspaceInvitationController::class, 'store'])->name('workspace.invitations.store');
+
         });
     });
 
