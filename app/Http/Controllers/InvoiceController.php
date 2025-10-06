@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 use Inertia\Response;
+use stdClass;
 use Throwable;
 
 final class InvoiceController extends Controller
@@ -89,7 +90,7 @@ final class InvoiceController extends Controller
             })
             ->orderBy('name')
             ->get()
-            ->map(function ($product) use ($currentWorkspace): \stdClass {
+            ->map(function ($product) use ($currentWorkspace): stdClass {
                 $stock = $currentWorkspace ? $product->stocks->first() : null;
                 $product->current_stock = $stock;
                 $product->stock_quantity = $stock ? $stock->quantity : 0;
@@ -199,7 +200,7 @@ final class InvoiceController extends Controller
             })
             ->orderBy('name')
             ->get()
-            ->map(function ($product) use ($currentWorkspace): \stdClass {
+            ->map(function ($product) use ($currentWorkspace): stdClass {
                 $stock = $currentWorkspace ? $product->stocks->first() : null;
 
                 $product->current_stock = $stock;
@@ -268,7 +269,7 @@ final class InvoiceController extends Controller
             return 'not_tracked';
         }
 
-        if (!$stock instanceof \App\Models\ProductStock || $stock->quantity <= 0) {
+        if (! $stock instanceof ProductStock || $stock->quantity <= 0) {
             return 'out_of_stock';
         }
 

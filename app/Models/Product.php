@@ -147,7 +147,7 @@ final class Product extends Model
     {
         $stock = $this->getStockForWorkspace($workspace);
 
-        return $stock instanceof \App\Models\ProductStock ? (float) $stock->quantity : 0;
+        return $stock instanceof ProductStock ? (float) $stock->quantity : 0;
     }
 
     /**

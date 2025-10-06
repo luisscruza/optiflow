@@ -20,5 +20,5 @@ Route::middleware('auth')->group(function (): void {
         ->middleware('throttle:6,1')
         ->name('password.update');
 
-    Route::get('settings/appearance', fn() => Inertia::render('settings/appearance'))->name('appearance');
+    Route::get('settings/appearance', fn () => Inertia::render('settings/appearance'))->name('appearance');
 });

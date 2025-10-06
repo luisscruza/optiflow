@@ -26,7 +26,7 @@ final readonly class ConvertQuotationToInvoiceAction
      */
     public function handle(Workspace $workspace, Quotation $quotation, CreateInvoiceAction $createInvoiceAction): InvoiceResult
     {
-        return DB::transaction(function () use ($workspace, $quotation, $createInvoiceAction): \App\DTOs\InvoiceResult {
+        return DB::transaction(function () use ($workspace, $quotation, $createInvoiceAction): InvoiceResult {
             $invoiceData = [
                 'contact_id' => $quotation->contact_id,
                 'document_subtype_id' => $quotation->document_subtype_id,

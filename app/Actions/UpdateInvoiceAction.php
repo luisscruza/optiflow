@@ -29,7 +29,7 @@ final readonly class UpdateInvoiceAction
     public function handle(Workspace $workspace, Invoice $invoice, array $data): InvoiceResult
     {
         try {
-            return DB::transaction(function () use ($workspace, $invoice, $data): \App\DTOs\InvoiceResult {
+            return DB::transaction(function () use ($workspace, $invoice, $data): InvoiceResult {
                 $originalItems = $invoice->items()->with('product')->get()->keyBy('id');
 
                 if (isset($data['ncf']) && $data['ncf'] !== $invoice->document_number) {
@@ -47,7 +47,7 @@ final readonly class UpdateInvoiceAction
                     $this->updateNumerator($documentSubtype, $data['ncf']);
                 }
 
-                $items = array_filter($data['items'] ?? [], fn(array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
+                $items = array_filter($data['items'] ?? [], fn (array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
                     $item['quantity'] > 0);
 
                 try {
@@ -180,7 +180,7 @@ final readonly class UpdateInvoiceAction
         }
 
         // Remove items that are no longer present
-        $itemsToRemove = $originalItems->reject(fn($item): bool => in_array($item->id, $processedIds));
+        $itemsToRemove = $originalItems->reject(fn ($item): bool => in_array($item->id, $processedIds));
 
         foreach ($itemsToRemove as $item) {
             $this->removeInvoiceItem($invoice, $item);

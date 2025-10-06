@@ -9,7 +9,6 @@ use Illuminate\Support\Str;
 
 final class Slug
 {
-
     /**
      * @param  class-string<Model>  $model
      */

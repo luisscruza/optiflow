@@ -32,7 +32,7 @@ trait InteractsWithTenancy
         $this->connectionsToTransact = [config('database.default')];
 
         // Check if tenant exists (RefreshDatabase may have wiped it)
-        if (!static::$testTenant instanceof \App\Models\Central\Tenant || ! Tenant::find(static::$testTenant->id)) {
+        if (! static::$testTenant instanceof Tenant || ! Tenant::find(static::$testTenant->id)) {
             static::$testTenant = $this->initializeTenant();
             static::$tenantMigrated = false;
         }

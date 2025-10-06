@@ -32,7 +32,7 @@ it('returns false when NCF already exists in invoices', function (): void {
     ]);
 
     $ncf = 'B0100000050';
-    
+
     // Create an existing invoice with this document number
     Invoice::factory()->create(['document_number' => $ncf]);
 

@@ -23,10 +23,10 @@ final class WorkspaceInvitationController extends Controller
     /**
      * Assign a user to workspace(s). Create user if they don't exist.
      */
-    public function store(AssignUserToWorkspaceRequest $request, AssignUserToWorkspaceAction $assignUserAction, #[CurrentUser] ?\App\Enums\UserRole $user): RedirectResponse
+    public function store(AssignUserToWorkspaceRequest $request, AssignUserToWorkspaceAction $assignUserAction, #[CurrentUser] ?UserRole $user): RedirectResponse
     {
         $workspaceAssignments = collect($request->validated('workspace_assignments'))
-            ->map(fn(array $assignment): array => [
+            ->map(fn (array $assignment): array => [
                 'workspace_id' => $assignment['workspace_id'],
                 'role' => UserRole::from($assignment['role']),
             ])

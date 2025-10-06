@@ -186,6 +186,7 @@ final class User extends Authenticatable
         if ($this->hasBusinessRole(UserRole::Owner)) {
             return true;
         }
+
         return $this->hasBusinessRole(UserRole::Admin);
     }
 

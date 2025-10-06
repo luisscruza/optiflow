@@ -21,7 +21,7 @@ final readonly class CreateQuotationAction
      */
     public function handle(Workspace $workspace, array $data): QuotationResult
     {
-        return DB::transaction(function () use ($workspace, $data): \App\DTOs\QuotationResult {
+        return DB::transaction(function () use ($workspace, $data): QuotationResult {
 
             $documentSubtype = DocumentSubtype::findOrFail($data['document_subtype_id']);
 
@@ -33,7 +33,7 @@ final readonly class CreateQuotationAction
 
             $this->updateNumerator($documentSubtype, $data['ncf']);
 
-            $items = array_filter($data['items'], fn(array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
+            $items = array_filter($data['items'], fn (array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
                 $item['quantity'] > 0);
 
             $this->createQuotationItems($quotation, $items);

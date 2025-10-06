@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Central;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDatabase;
@@ -39,7 +40,8 @@ use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
  */
 final class Tenant extends BaseTenant implements TenantWithDatabase
 {
-    use HasDatabase, HasDomains;
+    /** @use HasFactory<\Database\Factories\Central\TenantFactory> */
+    use HasDatabase, HasDomains, HasFactory;
 
     /**
      * @return string[]

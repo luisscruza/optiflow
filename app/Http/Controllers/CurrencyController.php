@@ -33,8 +33,8 @@ final class CurrencyController extends Controller
                 'name' => $currency->name,
                 'symbol' => $currency->symbol,
                 'is_default' => $currency->is_default,
-                'current_rate' => (float) $currentRate,
-                'rate_variation' => (float) $variation,
+                'current_rate' => $currentRate,
+                'rate_variation' => $variation,
             ];
         });
 
@@ -44,7 +44,7 @@ final class CurrencyController extends Controller
         $historicalRates = CurrencyRate::with('currency')
             ->orderBy('effective_date', 'desc')
             ->get()
-            ->map(fn($rate): array => [
+            ->map(fn ($rate): array => [
                 'id' => $rate->id,
                 'currency_id' => $rate->currency_id,
                 'rate' => (float) $rate->rate,

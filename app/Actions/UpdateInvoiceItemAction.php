@@ -34,7 +34,7 @@ final class UpdateInvoiceItemAction
                 return;
             }
 
-            if ($existingItem instanceof \App\Models\InvoiceItem) {
+            if ($existingItem instanceof InvoiceItem) {
                 // Update existing item
                 $this->updateItem($invoice, $existingItem, $data);
             } else {
@@ -150,7 +150,7 @@ final class UpdateInvoiceItemAction
 
         $stockForWorkspace = $product->getStockForWorkspace($invoice->workspace);
 
-        if (!$stockForWorkspace instanceof \App\Models\ProductStock) {
+        if (! $stockForWorkspace instanceof \App\Models\ProductStock) {
             throw new InsufficientStockException('No stock record found for product: '.$product->name);
         }
 
@@ -196,7 +196,7 @@ final class UpdateInvoiceItemAction
 
         $stockForWorkspace = $product->getStockForWorkspace($invoice->workspace);
 
-        if (!$stockForWorkspace instanceof \App\Models\ProductStock) {
+        if (! $stockForWorkspace instanceof \App\Models\ProductStock) {
             throw new InsufficientStockException('No stock record found for product: '.$product->name);
         }
 

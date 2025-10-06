@@ -24,7 +24,7 @@ final class UpdateQuotationAction
     public function handle(Workspace $workspace, Quotation $quotation, array $data): QuotationResult
     {
         try {
-            return DB::transaction(function () use ($workspace, $quotation, $data): \App\DTOs\QuotationResult {
+            return DB::transaction(function () use ($quotation, $data): QuotationResult {
                 // Store original state for comparison
                 $originalItems = $quotation->items()->with('product')->get()->keyBy('id');
 
@@ -47,7 +47,7 @@ final class UpdateQuotationAction
                 }
 
                 // Filter valid items (same as CreateQuotationAction)
-                $items = array_filter($data['items'] ?? [], fn(array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
+                $items = array_filter($data['items'] ?? [], fn (array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
                     $item['quantity'] > 0);
 
                 // Process item changes (without stock movements)
@@ -157,7 +157,7 @@ final class UpdateQuotationAction
         }
 
         // Remove items that are no longer present
-        $itemsToRemove = $originalItems->reject(fn($item): bool => in_array($item->id, $processedIds));
+        $itemsToRemove = $originalItems->reject(fn ($item): bool => in_array($item->id, $processedIds));
 
         foreach ($itemsToRemove as $item) {
             $this->removeQuotationItem($item);

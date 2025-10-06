@@ -42,7 +42,7 @@ final readonly class AssignUserToWorkspaceAction
                     'password' => Hash::make($password),
                     'email_verified_at' => now(),
                 ];
-                if ($businessRole instanceof \App\Enums\UserRole) {
+                if ($businessRole instanceof UserRole) {
                     $userData['business_role'] = $businessRole;
                 }
                 $user = User::create($userData);

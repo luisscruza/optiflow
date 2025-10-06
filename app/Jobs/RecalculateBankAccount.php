@@ -73,7 +73,7 @@ final class RecalculateBankAccount implements ShouldQueue
             $transactionsSum = $lockedBankAccount->payments()
                 ->where('payment_date', '>=', $initialBalanceDate)
                 ->get()
-                ->sum(fn($payment): string => bcadd('0', (string) $payment->amount, 2));
+                ->sum(fn ($payment): string => bcadd('0', (string) $payment->amount, 2));
 
             $newBalance = bcadd((string) $initialBalance, (string) $transactionsSum, 2);
 

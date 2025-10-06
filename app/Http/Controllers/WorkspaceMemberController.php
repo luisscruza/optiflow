@@ -33,7 +33,7 @@ final class WorkspaceMemberController extends Controller
             ->orWhere('owner_id', $user->id)
             ->select('workspaces.id', 'workspaces.name')
             ->get()
-            ->map(fn($ws): array => [
+            ->map(fn ($ws): array => [
                 'id' => $ws->id,
                 'name' => $ws->name,
             ]);
@@ -44,7 +44,7 @@ final class WorkspaceMemberController extends Controller
                 'name' => $workspace->name,
                 'is_owner' => $workspace->owner_id === $user->id,
             ],
-            'members' => $members->map(fn($member): array => [
+            'members' => $members->map(fn ($member): array => [
                 'id' => $member->id,
                 'name' => $member->name,
                 'email' => $member->email,

@@ -13,8 +13,6 @@ declare(strict_types=1);
 |
 */
 
-// Apply tenancy trait and hooks to all tests in Feature/Tenant (must be defined before Feature)
-// Note: RefreshDatabase is included here for the central database
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->use(Tests\Concerns\InteractsWithTenancy::class)
@@ -25,6 +23,11 @@ pest()->extend(Tests\TestCase::class)
         $this->tearDownTenancy();
     })
     ->in('Feature/Tenant', 'Unit/Tenant');
+
+// Central tests without tenancy setup
+pest()->extend(Tests\TestCase::class)
+    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->in('Feature/Central', 'Unit/Central');
 
 /*
 |--------------------------------------------------------------------------
@@ -37,7 +40,7 @@ pest()->extend(Tests\TestCase::class)
 |
 */
 
-expect()->extend('toBeOne', fn() => $this->toBe(1));
+expect()->extend('toBeOne', fn () => $this->toBe(1));
 
 /*
 |--------------------------------------------------------------------------

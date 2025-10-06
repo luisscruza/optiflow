@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Enums\BankAccountType;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property BankAccountType $type
  * @property-read Currency|null $currency
  *
+ * @method static \Database\Factories\BankAccountFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BankAccount newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BankAccount newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BankAccount query()
@@ -23,6 +25,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 final class BankAccount extends Model
 {
+    /** @use HasFactory<\Database\Factories\BankAccountFactory> */
+    use HasFactory;
+
     /**
      * @return BelongsTo<Currency, $this>
      */

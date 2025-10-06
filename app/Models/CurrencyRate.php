@@ -47,7 +47,7 @@ final class CurrencyRate extends Model
      */
     public static function getLatestRateForCurrency(int $currencyId, ?Carbon $date = null): ?self
     {
-        $date = $date instanceof \Carbon\Carbon ? $date : Carbon::now();
+        $date = $date instanceof Carbon ? $date : Carbon::now();
 
         return self::where('currency_id', $currencyId)
             ->where('effective_date', '<=', $date)

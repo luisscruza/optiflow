@@ -86,7 +86,7 @@ final readonly class CreateInvoiceItemAction
 
         $stockForWorkspace = $product->getStockForWorkspace($invoice->workspace);
 
-        if (!$stockForWorkspace instanceof \App\Models\ProductStock) {
+        if (! $stockForWorkspace instanceof \App\Models\ProductStock) {
             throw new InsufficientStockException('No stock record found for product: '.$product->name);
         }
 

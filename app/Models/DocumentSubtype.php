@@ -82,7 +82,8 @@ final class DocumentSubtype extends Model
         if ($this->valid_until_date && $this->valid_until_date->isPast()) {
             return false;
         }
-        return !($this->end_number && $this->next_number > $this->end_number);
+
+        return ! ($this->end_number && $this->next_number > $this->end_number);
     }
 
     /**

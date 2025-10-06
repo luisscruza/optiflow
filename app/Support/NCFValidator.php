@@ -36,11 +36,6 @@ final class NCFValidator
         if ($documentSubtype->start_number !== null && $number < $documentSubtype->start_number) {
             return false;
         }
-
-        if ($number < $documentSubtype->next_number) {
-            return false;
-        }
-
-        return true;
+        return $number >= $documentSubtype->next_number;
     }
 }

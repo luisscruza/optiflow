@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
 use Inertia\Inertia;
 use Inertia\Response;
+use stdClass;
 
 final class StockAdjustmentController extends Controller
 {
@@ -40,7 +41,7 @@ final class StockAdjustmentController extends Controller
             ->get(['id', 'name', 'sku']);
 
         // Transform products to include current stock information
-        $products->transform(function ($product): \stdClass {
+        $products->transform(function ($product): stdClass {
             $stock = $product->stocksInCurrentWorkspace->first();
             $product->stock_in_current_workspace = [
                 'quantity' => $stock?->quantity ?? 0,

@@ -52,7 +52,7 @@ Route::middleware([
     InitializeTenancyBySubdomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function (): void {
-    Route::get('me', fn() => auth()->user())->name('me');
+    Route::get('me', fn () => auth()->user())->name('me');
 
     // Route::get('/test', function () {
     //     $bank = BankAccount::onlyActive()->first();
@@ -60,7 +60,7 @@ Route::middleware([
     //     $bank->save();
     // });
 
-    Route::get('/', fn() => redirect()->route('dashboard'))->name('home');
+    Route::get('/', fn () => redirect()->route('dashboard'))->name('home');
 
     Route::prefix('invitations')->name('invitations.')->group(function (): void {
         Route::get('{token}', [WorkspaceInvitationController::class, 'show'])->name('show');
@@ -111,7 +111,7 @@ Route::middleware([
             Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
             Route::patch('document-subtypes/{documentSubtype}/set-default', SetDefaultDocumentSubtypeController::class)->name('document-subtypes.set-default');
 
-            Route::get('inventory', fn() => Inertia::render('inventory/index'))->name('inventory.index');
+            Route::get('inventory', fn () => Inertia::render('inventory/index'))->name('inventory.index');
 
             Route::resource('stock-adjustments', StockAdjustmentController::class)->only(['index', 'create', 'store', 'show'])->parameters([
                 'stock-adjustments' => 'product',
