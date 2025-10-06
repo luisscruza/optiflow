@@ -17,7 +17,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $description
  * @property numeric $quantity
  * @property numeric $unit_price
- * @property numeric $discount
  * @property int $tax_id
  * @property numeric $tax_rate_snapshot
  * @property numeric $total
@@ -131,7 +130,7 @@ final class InvoiceItem extends Model
     #[Scope]
     protected function withDiscount(Builder $query): void
     {
-        $query->where('discount', '>', 0);
+        $query->where('discount_amount', '>', 0);
     }
 
     protected function casts(): array
