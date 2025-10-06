@@ -171,26 +171,6 @@ final class User extends Authenticatable
     }
 
     /**
-     * Check if user is an admin or owner.
-     */
-    public function isAdminOrOwner(): bool
-    {
-        return in_array($this->business_role, [UserRole::Admin, UserRole::Owner]);
-    }
-
-    /**
-     * Check if user can manage other users.
-     */
-    public function canManageUsers(): bool
-    {
-        if ($this->hasBusinessRole(UserRole::Owner)) {
-            return true;
-        }
-
-        return $this->hasBusinessRole(UserRole::Admin);
-    }
-
-    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

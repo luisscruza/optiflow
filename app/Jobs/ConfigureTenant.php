@@ -18,7 +18,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Hash;
-use Log;
 use Stancl\Tenancy\Contracts\TenantWithDatabase;
 
 final class ConfigureTenant implements ShouldQueue
@@ -44,8 +43,6 @@ final class ConfigureTenant implements ShouldQueue
 
     private function createMainUser(Client $client): User
     {
-        Log::debug('here');
-
         return User::create([
             'name' => $client->name,
             'email' => $client->email,

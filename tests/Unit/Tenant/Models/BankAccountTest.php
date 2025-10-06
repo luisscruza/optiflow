@@ -37,7 +37,9 @@ test('belongs to currency', function (): void {
 });
 
 test('has many payments', function (): void {
-    $bankAccount = BankAccount::factory()->create();
+    $currency = Currency::factory()->create();
+
+    $bankAccount = BankAccount::factory()->create(['currency_id' => $currency->id]);
     Payment::factory()->count(3)->create(['bank_account_id' => $bankAccount->id]);
 
     expect($bankAccount->payments)->toHaveCount(3);
