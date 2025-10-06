@@ -179,7 +179,7 @@ final class StockMovement extends Model
     {
         parent::boot();
 
-        self::creating(function (self $movement) {
+        self::creating(function (self $movement): void {
             if ($movement->unit_cost && ! $movement->total_cost) {
                 $movement->total_cost = $movement->quantity * $movement->unit_cost;
             }
@@ -212,7 +212,7 @@ final class StockMovement extends Model
     protected function outgoing(Builder $query): void
     {
         $query->whereIn('type', ['out', 'transfer'])
-            ->orWhere(function ($q) {
+            ->orWhere(function ($q): void {
                 $q->where('type', 'adjustment')->where('quantity', '<', 0);
             });
     }

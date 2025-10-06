@@ -32,7 +32,7 @@ final readonly class CreateInvoiceItemAction
      */
     public function handle(Invoice $invoice, array $items): void
     {
-        DB::transaction(function () use ($items, $invoice) {
+        DB::transaction(function () use ($items, $invoice): void {
 
             foreach ($items as $item) {
                 $product = Product::findOrFail($item['product_id']);
@@ -86,7 +86,7 @@ final readonly class CreateInvoiceItemAction
 
         $stockForWorkspace = $product->getStockForWorkspace($invoice->workspace);
 
-        if (! $stockForWorkspace) {
+        if (! $stockForWorkspace instanceof \App\Models\ProductStock) {
             throw new InsufficientStockException('No stock record found for product: '.$product->name);
         }
 

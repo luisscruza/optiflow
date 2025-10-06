@@ -93,6 +93,23 @@ final class User extends Authenticatable
     }
 
     /**
+     * Safely get the current workspace without throwing an exception.
+     * Returns null if current_workspace_id is not set or not loaded.
+     */
+    public function getCurrentWorkspaceSafely(): ?Workspace
+    {
+        if (! array_key_exists('current_workspace_id', $this->attributes)) {
+            return null;
+        }
+
+        if ($this->current_workspace_id === null) {
+            return null;
+        }
+
+        return $this->currentWorkspace;
+    }
+
+    /**
      * Get the workspaces owned by the user.
      *
      * @return HasMany<Workspace, $this>
@@ -151,22 +168,6 @@ final class User extends Authenticatable
     public function hasBusinessRole(UserRole $role): bool
     {
         return $this->business_role === $role;
-    }
-
-    /**
-     * Check if user is an admin or owner.
-     */
-    public function isAdminOrOwner(): bool
-    {
-        return in_array($this->business_role, [UserRole::Admin, UserRole::Owner]);
-    }
-
-    /**
-     * Check if user can manage other users.
-     */
-    public function canManageUsers(): bool
-    {
-        return $this->hasBusinessRole(UserRole::Owner) || $this->hasBusinessRole(UserRole::Admin);
     }
 
     /**

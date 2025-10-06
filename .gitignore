@@ -27,3 +27,4 @@ yarn-error.log
 /.vscode
 /.zed
 .DS_Store
+tests/Browser/Screenshots

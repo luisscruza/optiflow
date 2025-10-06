@@ -83,11 +83,7 @@ final class DocumentSubtype extends Model
             return false;
         }
 
-        if ($this->end_number && $this->next_number > $this->end_number) {
-            return false;
-        }
-
-        return true;
+        return ! ($this->end_number && $this->next_number > $this->end_number);
     }
 
     /**
@@ -180,10 +176,10 @@ final class DocumentSubtype extends Model
     #[Scope]
     protected function active(Builder $query): void
     {
-        $query->where(function ($q) {
+        $query->where(function ($q): void {
             $q->whereNull('valid_until_date')
                 ->orWhere('valid_until_date', '>', now());
-        })->where(function ($q) {
+        })->where(function ($q): void {
             $q->whereNull('end_number')
                 ->orWhereColumn('next_number', '<=', 'end_number');
         });

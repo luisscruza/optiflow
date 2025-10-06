@@ -51,7 +51,8 @@ Route::middleware([
     'web',
     InitializeTenancyBySubdomain::class,
     PreventAccessFromCentralDomains::class,
-])->group(function () {
+])->group(function (): void {
+    Route::get('me', fn () => auth()->user())->name('me');
 
     // Route::get('/test', function () {
     //     $bank = BankAccount::onlyActive()->first();
@@ -59,25 +60,23 @@ Route::middleware([
     //     $bank->save();
     // });
 
-    Route::get('/', function () {
-        return redirect()->route('dashboard');
-    })->name('home');
+    Route::get('/', fn () => redirect()->route('dashboard'))->name('home');
 
-    Route::prefix('invitations')->name('invitations.')->group(function () {
+    Route::prefix('invitations')->name('invitations.')->group(function (): void {
         Route::get('{token}', [WorkspaceInvitationController::class, 'show'])->name('show');
         Route::post('{token}/accept', [WorkspaceInvitationController::class, 'update'])->name('accept');
         Route::post('{token}/decline', [WorkspaceInvitationController::class, 'destroy'])->name('decline');
     });
 
-    Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(function () {
+    Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(function (): void {
         Route::resource('workspaces', WorkspaceController::class)->only(['index', 'store', 'update']);
 
-        Route::prefix('workspace-context')->name('workspace-context.')->group(function () {
+        Route::prefix('workspace-context')->name('workspace-context.')->group(function (): void {
             Route::patch('{workspace}', [WorkspaceContextController::class, 'update'])->name('update');
             Route::delete('{workspace}', [WorkspaceContextController::class, 'destroy'])->name('destroy');
         });
 
-        Route::middleware(HasWorkspace::class)->group(function () {
+        Route::middleware(HasWorkspace::class)->group(function (): void {
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
             Route::get('configuration', [ConfigurationController::class, 'index'])->name('configuration.index');
@@ -112,9 +111,7 @@ Route::middleware([
             Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
             Route::patch('document-subtypes/{documentSubtype}/set-default', SetDefaultDocumentSubtypeController::class)->name('document-subtypes.set-default');
 
-            Route::get('inventory', function () {
-                return Inertia::render('inventory/index');
-            })->name('inventory.index');
+            Route::get('inventory', fn () => Inertia::render('inventory/index'))->name('inventory.index');
 
             Route::resource('stock-adjustments', StockAdjustmentController::class)->only(['index', 'create', 'store', 'show'])->parameters([
                 'stock-adjustments' => 'product',

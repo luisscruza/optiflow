@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 use Inertia\Response;
+use stdClass;
 use Throwable;
 
 final class InvoiceController extends Controller
@@ -39,9 +40,9 @@ final class InvoiceController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->get('search');
-            $query->where(function ($q) use ($search) {
+            $query->where(function ($q) use ($search): void {
                 $q->where('document_number', 'like', "%{$search}%")
-                    ->orWhereHas('contact', function ($contactQuery) use ($search) {
+                    ->orWhereHas('contact', function ($contactQuery) use ($search): void {
                         $contactQuery->where('name', 'like', "%{$search}%");
                     });
             });
@@ -60,7 +61,7 @@ final class InvoiceController extends Controller
                 'status' => $request->get('status'),
             ],
             'bankAccounts' => Inertia::optional(fn () => BankAccount::onlyActive()->with('currency')->orderBy('name')->get()),
-            'paymentMethods' => Inertia::optional(fn () => PaymentMethod::options()),
+            'paymentMethods' => Inertia::optional(fn (): array => PaymentMethod::options()),
         ]);
     }
 
@@ -82,14 +83,14 @@ final class InvoiceController extends Controller
             ->get();
 
         $products = Product::with(['defaultTax'])
-            ->when($currentWorkspace, function ($query) use ($currentWorkspace) {
-                $query->with(['stocks' => function ($stockQuery) use ($currentWorkspace) {
+            ->when($currentWorkspace, function ($query) use ($currentWorkspace): void {
+                $query->with(['stocks' => function ($stockQuery) use ($currentWorkspace): void {
                     $stockQuery->where('workspace_id', $currentWorkspace->id);
                 }]);
             })
             ->orderBy('name')
             ->get()
-            ->map(function ($product) use ($currentWorkspace) {
+            ->map(function ($product) use ($currentWorkspace): stdClass {
                 $stock = $currentWorkspace ? $product->stocks->first() : null;
                 $product->current_stock = $stock;
                 $product->stock_quantity = $stock ? $stock->quantity : 0;
@@ -152,6 +153,9 @@ final class InvoiceController extends Controller
             'items.tax',
             'payments.bankAccount',
             'payments.currency',
+            'comments.commentator',
+            'comments.comments.commentator',
+            'comments.comments.comments.commentator',
         ]);
 
         // Get bank accounts and payment methods for payment registration
@@ -189,14 +193,14 @@ final class InvoiceController extends Controller
         $customers = Contact::customers()->orderBy('name')->get();
 
         $products = Product::with(['defaultTax'])
-            ->when($currentWorkspace, function ($query) use ($currentWorkspace) {
-                $query->with(['stocks' => function ($stockQuery) use ($currentWorkspace) {
+            ->when($currentWorkspace, function ($query) use ($currentWorkspace): void {
+                $query->with(['stocks' => function ($stockQuery) use ($currentWorkspace): void {
                     $stockQuery->where('workspace_id', $currentWorkspace->id);
                 }]);
             })
             ->orderBy('name')
             ->get()
-            ->map(function ($product) use ($currentWorkspace) {
+            ->map(function ($product) use ($currentWorkspace): stdClass {
                 $stock = $currentWorkspace ? $product->stocks->first() : null;
 
                 $product->current_stock = $stock;
@@ -265,7 +269,7 @@ final class InvoiceController extends Controller
             return 'not_tracked';
         }
 
-        if (! $stock || $stock->quantity <= 0) {
+        if (! $stock instanceof ProductStock || $stock->quantity <= 0) {
             return 'out_of_stock';
         }
 
@@ -274,32 +278,5 @@ final class InvoiceController extends Controller
         }
 
         return 'in_stock';
-    }
-
-    /**
-     * Clean UTF-8 characters from a string.
-     */
-    private function cleanUtf8String(string $str): string
-    {
-        // Remove null bytes and other control characters
-        $str = str_replace(["\0", "\x0B"], '', $str);
-
-        // Convert to UTF-8 if it's not already
-        if (! mb_check_encoding($str, 'UTF-8')) {
-            // Try to detect encoding and convert
-            $encoding = mb_detect_encoding($str, ['UTF-8', 'ISO-8859-1', 'Windows-1252'], true);
-            if ($encoding && $encoding !== 'UTF-8') {
-                $str = mb_convert_encoding($str, 'UTF-8', $encoding);
-            } else {
-                // If we can't detect encoding, remove invalid UTF-8 sequences
-                $str = mb_convert_encoding($str, 'UTF-8', 'UTF-8');
-            }
-        }
-
-        // Remove any remaining invalid UTF-8 characters
-        $str = filter_var($str, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH);
-
-        // Trim whitespace
-        return trim($str ?? '');
     }
 }

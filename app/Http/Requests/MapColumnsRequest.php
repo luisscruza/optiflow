@@ -59,10 +59,10 @@ final class MapColumnsRequest extends FormRequest
      */
     public function withValidator(\Illuminate\Validation\Validator $validator): void
     {
-        $validator->after(function ($validator) {
+        $validator->after(function ($validator): void {
             $allData = $validator->getData();
             $columnMapping = $allData['column_mapping'] ?? [];
-            $mappedFields = array_filter($columnMapping, fn ($value) => $value !== 'none');
+            $mappedFields = array_filter($columnMapping, fn ($value): bool => $value !== 'none');
 
             // Ensure required fields are mapped
             $requiredFields = ['name'];
@@ -74,7 +74,7 @@ final class MapColumnsRequest extends FormRequest
                 }
             }
 
-            if (! empty($missingRequired)) {
+            if ($missingRequired !== []) {
                 // Get field labels for better error messages
                 $availableFields = collect(ProductImport::getAvailableFields())->keyBy('key');
                 $fieldNames = implode(', ', array_map(fn ($field) => $availableFields[$field]['label'] ?? $field, $missingRequired));
@@ -82,10 +82,10 @@ final class MapColumnsRequest extends FormRequest
             }
 
             // Check for duplicate mappings (excluding 'none')
-            $mappedFields = array_filter($mappedFields, fn ($value) => $value !== 'none');
+            $mappedFields = array_filter($mappedFields, fn ($value): bool => $value !== 'none');
             $duplicates = array_diff_assoc($mappedFields, array_unique($mappedFields));
 
-            if (! empty($duplicates)) {
+            if ($duplicates !== []) {
                 $validator->errors()->add('column_mapping', 'Each field can only be mapped once.');
             }
         });

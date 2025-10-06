@@ -22,7 +22,7 @@ final class InitialStockController extends Controller
 
         $productsWithStock = Product::query()
             ->where('track_stock', true)
-            ->with(['stocks' => function ($query) use ($workspace) {
+            ->with(['stocks' => function ($query) use ($workspace): void {
                 $query->where('workspace_id', $workspace->id);
             }])
             ->orderBy('name')
@@ -39,7 +39,7 @@ final class InitialStockController extends Controller
 
         $products = Product::query()
             ->where('track_stock', true)
-            ->whereDoesntHave('stocks', function ($query) use ($workspace) {
+            ->whereDoesntHave('stocks', function ($query) use ($workspace): void {
                 $query->where('workspace_id', $workspace->id);
             })
             ->orderBy('name')

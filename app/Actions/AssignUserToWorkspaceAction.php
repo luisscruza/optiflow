@@ -33,29 +33,23 @@ final readonly class AssignUserToWorkspaceAction
             $isNewUser = false;
 
             if (! $user) {
-                if (! $name || ! $password) {
+                if ($name === null || $name === '' || $name === '0' || ($password === null || $password === '' || $password === '0')) {
                     throw new InvalidArgumentException('Name and password are required for new users');
                 }
-
                 $userData = [
                     'name' => $name,
                     'email' => $email,
                     'password' => Hash::make($password),
                     'email_verified_at' => now(),
                 ];
-
-                if ($businessRole) {
+                if ($businessRole instanceof UserRole) {
                     $userData['business_role'] = $businessRole;
                 }
-
                 $user = User::create($userData);
-
                 $isNewUser = true;
-            } else {
-                if ($businessRole && $user->business_role !== $businessRole) {
-                    $user->business_role = $businessRole;
-                    $user->save();
-                }
+            } elseif ($businessRole && $user->business_role !== $businessRole) {
+                $user->business_role = $businessRole;
+                $user->save();
             }
 
             // Assign user to workspaces
@@ -78,14 +72,14 @@ final readonly class AssignUserToWorkspaceAction
                 }
             }
 
-            if ($isNewUser && $assignedBy && ! empty($workspaceAssignments)) {
+            if ($isNewUser && $assignedBy && $workspaceAssignments !== []) {
                 $firstWorkspace = Workspace::findOrFail($workspaceAssignments[0]['workspace_id']);
                 $user->notify(new WorkspaceUserCreatedNotification(
                     $firstWorkspace,
                     $assignedBy,
                     $password
                 ));
-            } elseif (! $isNewUser && $assignedBy && ! empty($workspaceAssignments)) {
+            } elseif (! $isNewUser && $assignedBy && $workspaceAssignments !== []) {
                 $user->notify(new WorkspaceUserAssignedNotification(
                     collect($workspaceAssignments)->map(fn ($assignment) => Workspace::findOrFail($assignment['workspace_id'])),
                     $assignedBy

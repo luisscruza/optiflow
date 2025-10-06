@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Actions\ProcessProductImportAction;
-use App\Models\ProductImport;
-use App\Models\Workspace;
+use App\Models\Invoice;
+use App\Models\User;
 use Illuminate\Console\Command;
 
 final class Test extends Command
@@ -28,22 +27,12 @@ final class Test extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
-        $stockMapping = [
-            '1' => [
-                'quantity' => 'Cantidad inicial en almacen: COVI Principal',
-                'minimum_quantity' => 'Cantidad minima en almacen: COVI Principal',
-                'maximum_quantity' => 'Cantidad máxima en almacen: COVI Principal',
-            ],
-        ];
+        $invoice = Invoice::first();
 
-        $productImport = ProductImport::first();
+        $user = User::first();
 
-        $workspaces = Workspace::all();
-
-        $process = app(ProcessProductImportAction::class)->handle($productImport, $workspaces, $stockMapping);
-
-        dd($process);
+        $invoice->commentAsUser($user, 'This is a test comment from the command line.');
     }
 }

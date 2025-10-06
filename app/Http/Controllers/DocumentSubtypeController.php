@@ -28,7 +28,7 @@ final class DocumentSubtypeController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->get('search');
-            $query->where(function ($q) use ($search) {
+            $query->where(function ($q) use ($search): void {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('prefix', 'like', "%{$search}%");
             });

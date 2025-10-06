@@ -25,7 +25,7 @@ final class StockTransferController extends Controller
         $transfers = StockMovement::query()
             ->withoutWorkspaceScope()
             ->where('type', 'transfer')
-            ->where(function ($query) use ($workspace) {
+            ->where(function ($query) use ($workspace): void {
                 $query->where('from_workspace_id', $workspace->id)
                     ->orWhere('to_workspace_id', $workspace->id);
             })
@@ -44,11 +44,11 @@ final class StockTransferController extends Controller
 
         $products = Product::query()
             ->where('track_stock', true)
-            ->whereHas('stocks', function ($query) use ($workspace) {
+            ->whereHas('stocks', function ($query) use ($workspace): void {
                 $query->where('workspace_id', $workspace->id)
                     ->where('quantity', '>', 0);
             })
-            ->with(['stocks' => function ($query) use ($workspace) {
+            ->with(['stocks' => function ($query) use ($workspace): void {
                 $query->where('workspace_id', $workspace->id);
             }])
             ->orderBy('name')

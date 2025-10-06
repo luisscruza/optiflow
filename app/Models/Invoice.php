@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Concerns\BelongsToWorkspace;
+use App\Concerns\HasComments;
+use App\Contracts\Commentable;
 use App\Enums\InvoiceStatus;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -78,10 +80,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @mixin \Eloquent
  */
-final class Invoice extends Model
+final class Invoice extends Model implements Commentable
 {
     /** @use HasFactory<\Database\Factories\InvoiceFactory> */
-    use BelongsToWorkspace, HasFactory;
+    use BelongsToWorkspace, HasComments, HasFactory;
 
     protected $appends = [
         'amount_due',

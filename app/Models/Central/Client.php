@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Central;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -31,6 +32,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 final class Client extends Model
 {
+    /** @use HasFactory<\Database\Factories\Central\ClientFactory> */
+    use HasFactory;
+
     /**
      * @return HasMany<Tenant, $this>
      */

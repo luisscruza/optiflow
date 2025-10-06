@@ -27,7 +27,7 @@ final readonly class CreateContactAction
             $contact = $workspace->contacts()->create($data);
 
             // Create the address if provided
-            if ($addressData && ! empty(array_filter($addressData))) {
+            if ($addressData && array_filter($addressData) !== []) {
                 $contact->addresses()->create($addressData);
             }
 

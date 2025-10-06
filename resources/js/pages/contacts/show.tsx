@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Activity, Building2, Calendar, Edit, FileText, Mail, MapPin, Phone, Trash2, Users } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -6,13 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
-import { Address, type BreadcrumbItem, type Contact } from '@/types';
+import { Address, SharedData, type BreadcrumbItem, type Contact } from '@/types';
+import { CommentList } from '@/components/CommentList';
 
 interface Props {
     contact: Contact;
 }
 
 export default function ContactShow({ contact }: Props) {
+        const { auth } = usePage<SharedData>().props;
+    
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Contactos',
@@ -205,6 +208,15 @@ export default function ContactShow({ contact }: Props) {
                                     )}
                                 </CardContent>
                             </Card>
+                                 {/* Comments Section */}
+                                                <CommentList
+                                                    comments={contact.comments || []}
+                                                    commentableType="Contact"
+                                                    commentableId={contact.id}
+                                                    currentUser={auth.user}
+                                                    title="Comentarios del contacto"
+                                                    className="mb-8"
+                                                />
 
                             {/* Address Information */}
                             {contact.primary_address && (

@@ -92,7 +92,7 @@ final class ImportInvoice extends Command
 
             $internalBankAccount = BankAccount::where('is_system_account', true)->first();
 
-            DB::transaction(function () use ($groupedRecords, $progressBar, &$imported, &$skipped, &$errors, $internalBankAccount) {
+            DB::transaction(function () use ($groupedRecords, $progressBar, &$imported, &$skipped, &$errors, $internalBankAccount): void {
                 foreach ($groupedRecords as $documentNumber => $invoiceRows) {
                     try {
                         $result = $this->importInvoice($documentNumber, $invoiceRows, $internalBankAccount);
@@ -117,7 +117,7 @@ final class ImportInvoice extends Command
             $this->info("✓ Imported: {$imported}");
             $this->info("⚠ Skipped: {$skipped}");
 
-            if (! empty($errors)) {
+            if ($errors !== []) {
                 $this->newLine();
                 $this->warn('Errors encountered:');
                 foreach (array_slice($errors, 0, 10) as $error) {
@@ -164,7 +164,7 @@ final class ImportInvoice extends Command
      */
     private function importInvoice(string $documentNumber, array $invoiceRows, BankAccount $internalBankAccount): bool
     {
-        if (empty($invoiceRows)) {
+        if ($invoiceRows === []) {
             return false;
         }
 
@@ -203,7 +203,7 @@ final class ImportInvoice extends Command
 
         // Get document subtype
         $documentSubtypeId = $this->getDocumentSubtypeId($documentNumber);
-        if (! $documentSubtypeId) {
+        if ($documentSubtypeId === null || $documentSubtypeId === 0) {
             throw new Exception("Could not determine document subtype for: {$documentNumber}");
         }
 
@@ -255,7 +255,7 @@ final class ImportInvoice extends Command
     private function createInvoiceItem(Invoice $invoice, array $row): bool
     {
         $productName = $this->cleanUtf8String(trim($row['PRODUCTO/SERVICIO - NOMBRE'] ?? ''));
-        if (empty($productName)) {
+        if ($productName === '' || $productName === '0') {
             return false; // Skip rows without product name
         }
 
@@ -264,17 +264,17 @@ final class ImportInvoice extends Command
         $product = null;
 
         // First try to find by SKU/reference if provided
-        if (! empty($productReference)) {
+        if ($productReference !== '' && $productReference !== '0') {
             $product = Product::where('sku', $productReference)->first();
         }
 
         // Then try to find by exact name match
-        if (! $product && ! empty($productName)) {
+        if (! $product && ($productName !== '' && $productName !== '0')) {
             $product = Product::where('name', $productName)->first();
         }
 
         // Finally try partial name match
-        if (! $product && ! empty($productName)) {
+        if (! $product && ($productName !== '' && $productName !== '0')) {
             $product = Product::where('name', 'like', '%'.$productName.'%')->first();
         }
 
@@ -374,7 +374,7 @@ final class ImportInvoice extends Command
      */
     private function parseDate(string $dateString): ?Carbon
     {
-        if (empty($dateString)) {
+        if ($dateString === '' || $dateString === '0') {
             return null;
         }
 
@@ -386,7 +386,7 @@ final class ImportInvoice extends Command
         foreach ($formats as $format) {
             try {
                 $date = Carbon::createFromFormat($format, $dateString);
-                if ($date !== false && $this->isValidDate($date)) {
+                if ($this->isValidDate($date)) {
                     return $date;
                 }
             } catch (Exception) {
@@ -401,20 +401,17 @@ final class ImportInvoice extends Command
         foreach ($twoDigitFormats as $format) {
             try {
                 $date = Carbon::createFromFormat($format, $dateString);
-                if ($date !== false) {
-                    // Adjust for proper century - assume years 00-30 are 2000-2030, 31-99 are 1931-1999
-                    $year = $date->year;
-                    if ($year < 100) {
-                        if ($year <= 30) {
-                            $date->addYears(2000);
-                        } elseif ($year <= 99) {
-                            $date->addYears(1900);
-                        }
+                // Adjust for proper century - assume years 00-30 are 2000-2030, 31-99 are 1931-1999
+                $year = $date->year;
+                if ($year < 100) {
+                    if ($year <= 30) {
+                        $date->addYears(2000);
+                    } elseif ($year <= 99) {
+                        $date->addYears(1900);
                     }
-
-                    if ($this->isValidDate($date)) {
-                        return $date;
-                    }
+                }
+                if ($this->isValidDate($date)) {
+                    return $date;
                 }
             } catch (Exception) {
                 // Continue to next format
@@ -528,7 +525,7 @@ final class ImportInvoice extends Command
      */
     private function generateSku(string $productReference, string $productName): string
     {
-        if (! empty($productReference)) {
+        if ($productReference !== '' && $productReference !== '0') {
             // Handle scientific notation or large numbers
             if (preg_match('/^\d+\.?\d*[eE][+-]?\d+$/', $productReference)) {
                 // Convert scientific notation back to regular number
@@ -537,9 +534,9 @@ final class ImportInvoice extends Command
 
             // Clean the reference to make it a valid SKU
             $sku = preg_replace('/[^a-zA-Z0-9\-_]/', '-', $productReference);
-            $sku = trim($sku, '-');
+            $sku = trim((string) $sku, '-');
 
-            if (! empty($sku) && mb_strlen($sku) <= 50) { // Reasonable SKU length limit
+            if ($sku !== '' && $sku !== '0' && mb_strlen($sku) <= 50) { // Reasonable SKU length limit
                 return mb_strtoupper($sku);
             }
         }

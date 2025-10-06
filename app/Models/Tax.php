@@ -76,14 +76,6 @@ final class Tax extends Model
     }
 
     /**
-     * Calculate tax amount for a given subtotal.
-     */
-    public function calculateTaxAmount(float $subtotal): float
-    {
-        return round(($subtotal * $this->rate) / 100, 2);
-    }
-
-    /**
      * Scope to get the default tax.
      */
     #[Scope]

@@ -26,7 +26,7 @@ final class UpdateInvoiceItemAction
      */
     public function handle(Invoice $invoice, ?InvoiceItem $existingItem, array $data): void
     {
-        DB::transaction(function () use ($invoice, $existingItem, $data) {
+        DB::transaction(function () use ($invoice, $existingItem, $data): void {
             if (isset($data['remove']) && $data['remove']) {
                 // Remove item
                 $this->removeItem($invoice, $existingItem);
@@ -34,7 +34,7 @@ final class UpdateInvoiceItemAction
                 return;
             }
 
-            if ($existingItem) {
+            if ($existingItem instanceof InvoiceItem) {
                 // Update existing item
                 $this->updateItem($invoice, $existingItem, $data);
             } else {
@@ -150,7 +150,7 @@ final class UpdateInvoiceItemAction
 
         $stockForWorkspace = $product->getStockForWorkspace($invoice->workspace);
 
-        if (! $stockForWorkspace) {
+        if (! $stockForWorkspace instanceof \App\Models\ProductStock) {
             throw new InsufficientStockException('No stock record found for product: '.$product->name);
         }
 
@@ -196,7 +196,7 @@ final class UpdateInvoiceItemAction
 
         $stockForWorkspace = $product->getStockForWorkspace($invoice->workspace);
 
-        if (! $stockForWorkspace) {
+        if (! $stockForWorkspace instanceof \App\Models\ProductStock) {
             throw new InsufficientStockException('No stock record found for product: '.$product->name);
         }
 

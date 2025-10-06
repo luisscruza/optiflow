@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Building2, FileText, Edit, Trash2, Printer, ArrowLeft, ShoppingCart, CreditCard, Calendar, Plus } from 'lucide-react';
 import { useState } from 'react';
 
@@ -8,8 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { PaymentRegistrationModal } from '@/components/payment-registration-modal';
+import { CommentList } from '@/components/CommentList';
 import { useCurrency } from '@/utils/currency';
-import { Invoice, Payment, BankAccount, type BreadcrumbItem } from '@/types';
+import { Invoice, Payment, BankAccount, type BreadcrumbItem, type SharedData } from '@/types';
 
 
 interface Props {
@@ -20,6 +21,7 @@ interface Props {
 
 export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: Props) {
     const { format: formatCurrency } = useCurrency();
+    const { auth } = usePage<SharedData>().props;
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -519,6 +521,16 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
                             </CardContent>
                         </Card>
                     )}
+
+                    {/* Comments Section */}
+                    <CommentList
+                        comments={invoice.comments || []}
+                        commentableType="Invoice"
+                        commentableId={invoice.id}
+                        currentUser={auth.user}
+                        title="Comentarios de la factura"
+                        className="mb-8"
+                    />
 
                     {/* Action Buttons */}
                     <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">

@@ -6,6 +6,7 @@ namespace App\Http\Middleware;
 
 use App\Models\CompanyDetail;
 use App\Models\Currency;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -54,14 +55,40 @@ final class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
-            'companyDetails' => fn () => CompanyDetail::getAll(),
-            'defaultCurrency' => fn () => Currency::getDefault(),
+            'companyDetails' => fn (): array => CompanyDetail::getAll(),
+            'defaultCurrency' => fn (): ?\App\Models\Currency => Currency::getDefault(),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'newlyCreatedContact' => fn () => $request->session()->get('newly_created_contact') ? $request->session()->get('newly_created_contact') : null,
+            'newlyCreatedContact' => fn () => $request->session()->get('newly_created_contact') ?: null,
+            'workspaceUsers' => fn (): array => $this->getWorkspaceUsers($request),
+            'unreadNotifications' => fn () => $request->user()?->unreadNotifications()->count() ?? 0,
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
         ];
+    }
+
+    /**
+     * Get users in the current workspace for mention autocomplete
+     */
+    private function getWorkspaceUsers(Request $request): array
+    {
+        if (! $request->user()) {
+            return [];
+        }
+
+        $currentWorkspace = $request->user()->getCurrentWorkspaceSafely();
+
+        if (! $currentWorkspace) {
+            return [];
+        }
+
+        return User::whereHas('workspaces', function ($query) use ($currentWorkspace): void {
+            $query->where('workspace_id', $currentWorkspace->id);
+        })
+            ->select(['id', 'name', 'email'])
+            ->orderBy('name')
+            ->get()
+            ->toArray();
     }
 }
