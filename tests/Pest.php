@@ -22,12 +22,12 @@ pest()->extend(Tests\TestCase::class)
     ->afterEach(function (): void {
         $this->tearDownTenancy();
     })
-    ->in('Feature/Tenant', 'Unit/Tenant');
+    ->in('Feature/Tenant', 'Unit/Tenant', 'Browser/Tenant');
 
-// Central tests without tenancy setup
+
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
-    ->in('Feature/Central', 'Unit/Central');
+    ->in('Feature/Central', 'Unit/Central', 'Browser/Central');
 
 /*
 |--------------------------------------------------------------------------

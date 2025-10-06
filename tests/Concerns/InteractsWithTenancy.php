@@ -45,7 +45,8 @@ trait InteractsWithTenancy
         URL::forceRootUrl('https://'.$tenantDomain);
         config(['app.url' => 'https://'.$tenantDomain]);
 
-        // Set default server variables for HTTP requests
+        // Set default server variables for HTTP requests (for feature tests)
+        // Note: This doesn't affect browser tests which use real browser navigation
         $this->withServerVariables([
             'HTTP_HOST' => $tenantDomain,
             'SERVER_NAME' => $tenantDomain,
