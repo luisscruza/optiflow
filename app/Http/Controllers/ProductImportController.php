@@ -99,7 +99,7 @@ final class ProductImportController extends Controller
         $import = $productImport;
         // Get available workspaces for the current user
         $user = Auth::user();
-        $workspaces = Workspace::whereHas('users', function ($query) use ($user) {
+        $workspaces = Workspace::whereHas('users', function ($query) use ($user): void {
             $query->where('user_id', $user->id);
         })->get();
 

@@ -35,9 +35,9 @@ final class QuotationController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->get('search');
-            $query->where(function ($q) use ($search) {
+            $query->where(function ($q) use ($search): void {
                 $q->where('document_number', 'like', "%{$search}%")
-                    ->orWhereHas('contact', function ($contactQuery) use ($search) {
+                    ->orWhereHas('contact', function ($contactQuery) use ($search): void {
                         $contactQuery->where('name', 'like', "%{$search}%");
                     });
             });
@@ -135,7 +135,7 @@ final class QuotationController extends Controller
      */
     public function edit(Quotation $quotation): Response
     {
-        $currentWorkspace = Context::get('workspace');
+        Context::get('workspace');
 
         $quotation->load(['contact', 'documentSubtype', 'items.product', 'items.tax']);
 

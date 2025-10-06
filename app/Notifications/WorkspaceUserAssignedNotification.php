@@ -64,7 +64,7 @@ final class WorkspaceUserAssignedNotification extends Notification implements Sh
     public function toArray(object $notifiable): array
     {
         return [
-            'workspaces' => $this->workspaces->map(fn ($workspace) => [
+            'workspaces' => $this->workspaces->map(fn ($workspace): array => [
                 'id' => $workspace->id,
                 'name' => $workspace->name,
             ])->toArray(),

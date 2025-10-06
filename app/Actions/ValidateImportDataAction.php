@@ -37,7 +37,7 @@ final readonly class ValidateImportDataAction
                 $mappedRow = $this->mapRowData($row, $import->column_mapping);
             }
 
-            $validationResult = $this->validateRow($mappedRow, $index + 1);
+            $validationResult = $this->validateRow($mappedRow);
 
             if (empty($validationResult['errors'])) {
                 $validRows[] = $mappedRow;
@@ -94,7 +94,7 @@ final readonly class ValidateImportDataAction
      * @param  array<string, mixed>  $row
      * @return array{data: array<string, mixed>, errors: array<string, array<int, string>>}
      */
-    private function validateRow(array $row, int $rowNumber): array
+    private function validateRow(array $row): array
     {
         $validator = Validator::make($row, [
             'name' => ['required', 'string', 'max:255'],
@@ -149,7 +149,7 @@ final readonly class ValidateImportDataAction
             $taxExists = Tax::where('rate', $row['default_tax_rate'])->exists();
 
             if (! $taxExists) {
-                $validator->after(function ($validator) use ($row) {
+                $validator->after(function ($validator) use ($row): void {
                     $validator->errors()->add('default_tax_rate', "La tasa de impuesto por defecto '{$row['default_tax_rate']}' no existe. Debe crearse antes de importar productos con esta tasa.");
                 });
             }

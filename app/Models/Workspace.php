@@ -97,16 +97,6 @@ final class Workspace extends Model
     /**
      * Get the contacts that belong to the workspace.
      *
-     * @return HasMany<Contact, $this>
-     */
-    public function contacts(): HasMany
-    {
-        return $this->hasMany(Contact::class);
-    }
-
-    /**
-     * Get the contacts that belong to the workspace.
-     *
      * @return HasMany<Invoice, $this>
      */
     public function invoices(): HasMany
@@ -163,7 +153,7 @@ final class Workspace extends Model
     {
         parent::boot();
 
-        self::creating(function ($workspace) {
+        self::creating(function ($workspace): void {
             if (empty($workspace->slug)) {
                 $workspace->slug = Str::slug($workspace->name);
             }

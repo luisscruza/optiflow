@@ -27,7 +27,7 @@ final class TaxController extends Controller
     public function index(Request $request): Response
     {
         $taxes = Tax::query()
-            ->when($request->search, function ($query, $search) {
+            ->when($request->search, function ($query, $search): void {
                 $query->where('name', 'like', "%{$search}%");
             })
             ->orderBy('is_default', 'desc')

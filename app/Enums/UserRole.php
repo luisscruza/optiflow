@@ -9,6 +9,9 @@ enum UserRole: string
     case Owner = 'owner';
     case Admin = 'admin';
     case Sales = 'sales';
+    case Support = 'support';
+    case User = 'user';
+    case Marketing = 'marketing';
 
     /**
      * Get all the roles as an array of strings.

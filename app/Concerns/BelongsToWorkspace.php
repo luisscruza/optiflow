@@ -64,13 +64,13 @@ trait BelongsToWorkspace
      */
     protected static function bootBelongsToWorkspace(): void
     {
-        static::addGlobalScope('workspace', function (Builder $builder) {
+        static::addGlobalScope('workspace', function (Builder $builder): void {
             if (Auth::check() && Auth::user()->current_workspace_id) {
                 $builder->where('workspace_id', Auth::user()->current_workspace_id);
             }
         });
 
-        static::creating(function ($model) {
+        static::creating(function ($model): void {
             if (! $model->workspace_id && Auth::check() && Auth::user()->current_workspace_id) {
                 $model->workspace_id = Auth::user()->current_workspace_id;
             }

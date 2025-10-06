@@ -1,14 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\Comment;
 use App\Models\User;
 use App\Notifications\CommentMention;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Notification;
 
-class MentionService
+final class MentionService
 {
     /**
      * Extract mentions from comment text
@@ -17,7 +18,7 @@ class MentionService
     public function extractMentions(string $text): array
     {
         preg_match_all('/@([a-zA-Z0-9._-]+)/', $text, $matches);
-        
+
         return array_unique($matches[1] ?? []);
     }
 
@@ -26,7 +27,7 @@ class MentionService
      */
     public function findMentionedUsers(array $usernames): Collection
     {
-        if (empty($usernames)) {
+        if ($usernames === []) {
             return collect();
         }
 
@@ -39,15 +40,15 @@ class MentionService
     public function sendMentionNotifications(Comment $comment, User $mentioner): void
     {
         $mentionedUsernames = $this->extractMentions($comment->comment);
-        
-        if (empty($mentionedUsernames)) {
+
+        if ($mentionedUsernames === []) {
             return;
         }
 
         $mentionedUsers = $this->findMentionedUsers($mentionedUsernames);
 
         // Don't notify the person who made the comment
-        $mentionedUsers = $mentionedUsers->reject(fn(User $user) => $user->id === $mentioner->id);
+        $mentionedUsers = $mentionedUsers->reject(fn (User $user): bool => $user->id === $mentioner->id);
 
         foreach ($mentionedUsers as $user) {
             $user->notify(new CommentMention($comment, $mentioner));
@@ -81,8 +82,8 @@ class MentionService
     {
         $query = User::select(['id', 'name', 'email']);
 
-        if ($workspaceId) {
-            $query->whereHas('workspaces', function ($q) use ($workspaceId) {
+        if ($workspaceId !== null && $workspaceId !== 0) {
+            $query->whereHas('workspaces', function ($q) use ($workspaceId): void {
                 $q->where('workspace_id', $workspaceId);
             });
         }

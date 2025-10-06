@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\DocumentType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,7 +21,13 @@ final class DocumentSubtypeFactory extends Factory
     {
         return [
             'name' => fake()->randomElement(['Invoice', 'Quotation', 'Credit Note', 'Proforma']),
-            'sequence' => '1',
+            'type' => fake()->randomElement(DocumentType::cases()),
+            'is_default' => false,
+            'prefix' => fake()->randomElement(['B01', 'B02', 'B14', 'B15']),
+            'start_number' => 1,
+            'end_number' => 99999999,
+            'next_number' => 1,
+            'valid_until_date' => null,
         ];
     }
 

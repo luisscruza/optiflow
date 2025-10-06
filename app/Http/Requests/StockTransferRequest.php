@@ -25,7 +25,7 @@ final class StockTransferRequest extends FormRequest
      */
     public function rules(): array
     {
-        $currentWorkspaceId = Auth::user()->current_workspace_id;
+        Auth::user()->current_workspace_id;
 
         return [
             'product_id' => [

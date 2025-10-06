@@ -36,7 +36,7 @@ final class ContactController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function ($q) use ($search) {
+            $query->where(function ($q) use ($search): void {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
                     ->orWhere('identification_number', 'like', "%{$search}%");
@@ -61,14 +61,14 @@ final class ContactController extends Controller
     {
         return Inertia::render('contacts/create', [
             'identification_types' => collect(IdentificationType::cases())
-                ->map(fn ($type) => [
+                ->map(fn ($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])
                 ->values()
                 ->toArray(),
             'contact_types' => collect(ContactType::cases())
-                ->map(fn ($type) => [
+                ->map(fn ($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])
@@ -93,10 +93,10 @@ final class ContactController extends Controller
     public function show(Contact $contact): Response
     {
         $contact->load(['primaryAddress', 'addresses',
-             'comments.commentator',
-            'comments.comments.commentator', 
+            'comments.commentator',
+            'comments.comments.commentator',
             'comments.comments.comments.commentator',
-    ]);
+        ]);
 
         return Inertia::render('contacts/show', [
             'contact' => $contact,
@@ -113,14 +113,14 @@ final class ContactController extends Controller
         return Inertia::render('contacts/edit', [
             'contact' => $contact,
             'identification_types' => collect(IdentificationType::cases())
-                ->map(fn ($type) => [
+                ->map(fn ($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])
                 ->values()
                 ->toArray(),
             'contact_types' => collect(ContactType::cases())
-                ->map(fn ($type) => [
+                ->map(fn ($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])

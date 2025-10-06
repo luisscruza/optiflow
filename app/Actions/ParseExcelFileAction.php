@@ -60,7 +60,7 @@ final readonly class ParseExcelFileAction
                     }
 
                     // Skip empty rows
-                    if (empty(array_filter($rowData))) {
+                    if (array_filter($rowData) === []) {
                         continue;
                     }
 
@@ -97,7 +97,7 @@ final readonly class ParseExcelFileAction
                 'error' => $e->getMessage(),
             ]);
 
-            throw new RuntimeException('Failed to parse Excel file: '.$e->getMessage());
+            throw new RuntimeException('Failed to parse Excel file: '.$e->getMessage(), $e->getCode(), $e);
         }
     }
 }

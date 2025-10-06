@@ -21,7 +21,7 @@ final class StockMovementFactory extends Factory
      */
     public function definition(): array
     {
-        $type = fake()->randomElement(['in', 'out', 'adjustment', 'transfer']);
+        $type = fake()->randomElement(['in', 'out']);
         $quantity = fake()->randomFloat(2, 1, 50);
         $unitCost = fake()->randomFloat(2, 5, 100);
 

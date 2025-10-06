@@ -19,7 +19,7 @@ final class SyncDGII extends Command
 
     protected $description = 'Sync DGII RNC data into the database';
 
-    protected string $url = 'https://dgii.gov.do/app/WebApps/Consultas/RNC/DGII_RNC.zip';
+    private string $url = 'https://dgii.gov.do/app/WebApps/Consultas/RNC/DGII_RNC.zip';
 
     public function handle(): int
     {
@@ -60,7 +60,7 @@ final class SyncDGII extends Command
 
         $foundFile = null;
         foreach ($iterator as $file) {
-            if ($file->isFile() && mb_strtolower($file->getExtension()) === 'txt') {
+            if ($file->isFile() && mb_strtolower((string) $file->getExtension()) === 'txt') {
                 $foundFile = $file->getPathname();
                 break;
             }
@@ -114,7 +114,7 @@ final class SyncDGII extends Command
             }
         }
 
-        if ($batch) {
+        if ($batch !== []) {
             RNC::upsert(
                 array_values($batch),
                 ['identification'],

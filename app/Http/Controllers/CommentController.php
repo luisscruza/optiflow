@@ -13,7 +13,7 @@ use Illuminate\Http\RedirectResponse;
 
 final class CommentController extends Controller
 {
-    public function store(StoreCommentRequest $request, CreateCommentAction $action, #[CurrentUser] $user): RedirectResponse
+    public function store(StoreCommentRequest $request, CreateCommentAction $action, #[CurrentUser] \App\Models\User $user): RedirectResponse
     {
         $action->handle($user, $request->validated());
 

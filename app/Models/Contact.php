@@ -17,7 +17,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
- * @property int $workspace_id
  * @property string $name
  * @property string|null $email
  * @property string|null $phone
@@ -86,7 +85,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 final class Contact extends Model implements Commentable
 {
     /** @use HasFactory<\Database\Factories\ContactFactory> */
-    use HasFactory, HasComments;
+    use HasComments, HasFactory;
 
     protected $fillable = [
         'name',

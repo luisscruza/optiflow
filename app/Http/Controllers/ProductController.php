@@ -30,7 +30,7 @@ final class ProductController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($search = $request->get('search')) {
-            $query->where(function ($q) use ($search) {
+            $query->where(function ($q) use ($search): void {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('sku', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
@@ -42,7 +42,7 @@ final class ProductController extends Controller
         }
 
         if ($request->get('low_stock')) {
-            $query->whereHas('stockInCurrentWorkspace', function ($q) {
+            $query->whereHas('stockInCurrentWorkspace', function ($q): void {
                 $q->whereColumn('quantity', '<=', 'minimum_quantity');
             });
         }

@@ -91,7 +91,7 @@ final class Address extends Model
                     $this->country,
                 ]);
 
-                return empty($parts) ? null : implode(', ', $parts);
+                return $parts === [] ? null : implode(', ', $parts);
             }
         );
     }
