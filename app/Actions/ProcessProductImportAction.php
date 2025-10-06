@@ -32,7 +32,7 @@ final readonly class ProcessProductImportAction
 
         $import->markAsProcessing();
 
-        return DB::transaction(function () use ($import, $workspaces, $stockMapping) {
+        return DB::transaction(function () use ($import, $workspaces, $stockMapping): array {
             $enhancedImportData = $this->enhanceImportDataWithStockMapping(
                 $import->import_data,
                 $import->column_mapping,
@@ -53,7 +53,7 @@ final readonly class ProcessProductImportAction
             foreach ($validRows as $index => $rowData) {
                 try {
                     $product = $this->createProduct($rowData);
-                    $this->handleStockData($product, $rowData, $workspaces, $stockMapping);
+                    $this->handleStockData($product, $rowData, $workspaces);
 
                     $importedProducts[] = $product->id;
                     $successful++;
@@ -132,7 +132,7 @@ final readonly class ProcessProductImportAction
     /**
      * Handle stock data for workspaces.
      */
-    private function handleStockData(Product $product, array $rowData, Collection $workspaces, array $stockMapping = []): void
+    private function handleStockData(Product $product, array $rowData, Collection $workspaces): void
     {
         if (! $product->track_stock) {
             return;
@@ -165,12 +165,12 @@ final readonly class ProcessProductImportAction
     private function generateSku(string $productName, string $sku): string
     {
 
-        if ($sku && ! empty($sku)) {
+        if ($sku && ($sku !== '' && $sku !== '0')) {
             return $sku;
         }
 
         $baseSku = preg_replace('/[^A-Za-z0-9]/', '', mb_strtoupper($productName));
-        $baseSku = mb_substr($baseSku, 0, 8);
+        $baseSku = mb_substr((string) $baseSku, 0, 8);
         $uniqueSuffix = mb_strtoupper(mb_substr(uniqid(), -4));
 
         return $baseSku.$uniqueSuffix;
@@ -188,7 +188,7 @@ final readonly class ProcessProductImportAction
     {
         $enhancedData = [];
 
-        foreach ($importData as $index => $row) {
+        foreach ($importData as $row) {
             // Start with the basic mapped row data
             $mappedRow = $this->mapRowDataBasic($row, $columnMapping);
 
@@ -222,7 +222,7 @@ final readonly class ProcessProductImportAction
             }
 
             // If we have quantity data from any workspace, add it to the main row for validation
-            if (! empty($mappedRow['workspace_stock_data'])) {
+            if (isset($mappedRow['workspace_stock_data']) && $mappedRow['workspace_stock_data'] !== []) {
                 // Find the first workspace with quantity data
                 foreach ($mappedRow['workspace_stock_data'] as $stockData) {
                     if (isset($stockData['quantity'])) {

@@ -33,12 +33,10 @@ final class WorkspaceMemberController extends Controller
             ->orWhere('owner_id', $user->id)
             ->select('workspaces.id', 'workspaces.name')
             ->get()
-            ->map(function ($ws) {
-                return [
-                    'id' => $ws->id,
-                    'name' => $ws->name,
-                ];
-            });
+            ->map(fn($ws): array => [
+                'id' => $ws->id,
+                'name' => $ws->name,
+            ]);
 
         return Inertia::render('workspace/members', [
             'workspace' => [
@@ -46,16 +44,14 @@ final class WorkspaceMemberController extends Controller
                 'name' => $workspace->name,
                 'is_owner' => $workspace->owner_id === $user->id,
             ],
-            'members' => $members->map(function ($member) {
-                return [
-                    'id' => $member->id,
-                    'name' => $member->name,
-                    'email' => $member->email,
-                    'role' => $member->pivot->role,
-                    'role_label' => UserRole::from($member->pivot->role)->label(),
-                    'joined_at' => $member->pivot->joined_at,
-                ];
-            }),
+            'members' => $members->map(fn($member): array => [
+                'id' => $member->id,
+                'name' => $member->name,
+                'email' => $member->email,
+                'role' => $member->pivot->role,
+                'role_label' => UserRole::from($member->pivot->role)->label(),
+                'joined_at' => $member->pivot->joined_at,
+            ]),
             'pending_invitations' => [],
             'roles' => UserRole::options(),
             'available_workspaces' => $availableWorkspaces,

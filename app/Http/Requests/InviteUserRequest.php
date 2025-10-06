@@ -45,14 +45,14 @@ final class InviteUserRequest extends FormRequest
                 'email:rfc,dns',
                 'max:255',
                 // Check if user already exists globally, if not we'll create them
-                function ($attribute, $value, $fail) use ($workspace) {
+                function ($attribute, $value, $fail) use ($workspace): void {
                     // Check if user already exists in this specific workspace
                     if ($workspace && $workspace->users()->where('email', $value)->exists()) {
                         $fail('Este usuario ya es miembro de la sucursal.');
                     }
                 },
                 // Can't have pending invitation for same email in this workspace
-                function ($attribute, $value, $fail) use ($workspace) {
+                function ($attribute, $value, $fail) use ($workspace): void {
                     if (! $workspace) {
                         return;
                     }

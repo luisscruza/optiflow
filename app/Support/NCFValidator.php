@@ -9,14 +9,6 @@ use App\Models\Invoice;
 
 final class NCFValidator
 {
-    /**
-     * Create a new class instance.
-     */
-    public function __construct()
-    {
-        //
-    }
-
     public static function validate(string $ncf, DocumentSubtype $documentSubtype, array $data): bool
     {
         if (Invoice::where('document_number', $ncf)->exists()) {

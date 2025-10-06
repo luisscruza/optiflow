@@ -38,7 +38,7 @@ trait HasComments
             'comment' => $comment,
             'user_id' => is_null($user) ? null : $user->getKey(),
             'commentable_id' => $this->getKey(),
-            'commentable_type' => get_class($this),
+            'commentable_type' => $this::class,
         ]);
 
         return $this->comments()->save($comment);

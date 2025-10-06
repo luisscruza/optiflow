@@ -8,13 +8,13 @@ use App\Models\Workspace;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create();
     $this->workspace = Workspace::factory()->create(['owner_id' => $this->user->id]);
     $this->user->update(['current_workspace_id' => $this->workspace->id]);
 });
 
-it('displays company details edit page', function () {
+it('displays company details edit page', function (): void {
     $response = $this->actingAs($this->user)->get('/company-details');
 
     $response->assertOk()
@@ -24,7 +24,7 @@ it('displays company details edit page', function () {
         );
 });
 
-it('updates company details successfully', function () {
+it('updates company details successfully', function (): void {
     $companyData = [
         'company_name' => 'Test Company',
         'address' => '123 Test Street',
@@ -46,7 +46,7 @@ it('updates company details successfully', function () {
     expect(CompanyDetail::getByKey('tax_id'))->toBe('123456789');
 });
 
-it('validates required company name', function () {
+it('validates required company name', function (): void {
     $response = $this->actingAs($this->user)
         ->patch('/company-details', [
             'company_name' => '',
@@ -55,7 +55,7 @@ it('validates required company name', function () {
     $response->assertSessionHasErrors(['company_name']);
 });
 
-it('validates email format', function () {
+it('validates email format', function (): void {
     $response = $this->actingAs($this->user)
         ->patch('/company-details', [
             'company_name' => 'Test Company',
@@ -65,7 +65,7 @@ it('validates email format', function () {
     $response->assertSessionHasErrors(['email']);
 });
 
-it('uploads company logo successfully', function () {
+it('uploads company logo successfully', function (): void {
     Storage::fake('public');
 
     $file = UploadedFile::fake()->image('logo.png', 200, 200);
@@ -84,7 +84,7 @@ it('uploads company logo successfully', function () {
     Storage::disk('public')->assertExists($logoPath);
 });
 
-it('validates logo file type', function () {
+it('validates logo file type', function (): void {
     $file = UploadedFile::fake()->create('document.pdf', 100);
 
     $response = $this->actingAs($this->user)
@@ -96,7 +96,7 @@ it('validates logo file type', function () {
     $response->assertSessionHasErrors(['logo']);
 });
 
-it('validates logo file size', function () {
+it('validates logo file size', function (): void {
     $file = UploadedFile::fake()->image('large-logo.png')->size(3000); // 3MB file
 
     $response = $this->actingAs($this->user)

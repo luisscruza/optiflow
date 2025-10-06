@@ -55,11 +55,11 @@ final class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
-            'companyDetails' => fn () => CompanyDetail::getAll(),
-            'defaultCurrency' => fn () => Currency::getDefault(),
+            'companyDetails' => fn (): array => CompanyDetail::getAll(),
+            'defaultCurrency' => fn (): ?\App\Models\Currency => Currency::getDefault(),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'newlyCreatedContact' => fn () => $request->session()->get('newly_created_contact') ? $request->session()->get('newly_created_contact') : null,
-            'workspaceUsers' => fn () => $this->getWorkspaceUsers($request),
+            'newlyCreatedContact' => fn () => $request->session()->get('newly_created_contact') ?: null,
+            'workspaceUsers' => fn (): array => $this->getWorkspaceUsers($request),
             'unreadNotifications' => fn () => $request->user()?->unreadNotifications()->count() ?? 0,
             'flash' => [
                 'success' => $request->session()->get('success'),
@@ -83,7 +83,7 @@ final class HandleInertiaRequests extends Middleware
             return [];
         }
 
-        return User::whereHas('workspaces', function ($query) use ($currentWorkspace) {
+        return User::whereHas('workspaces', function ($query) use ($currentWorkspace): void {
             $query->where('workspace_id', $currentWorkspace->id);
         })
             ->select(['id', 'name', 'email'])

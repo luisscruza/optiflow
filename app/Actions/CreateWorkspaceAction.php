@@ -10,8 +10,6 @@ use App\Support\Slug;
 
 final class CreateWorkspaceAction
 {
-    public function __construct() {}
-
     /**
      * @param  array<string, mixed>  $validated
      */

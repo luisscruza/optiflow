@@ -174,7 +174,7 @@ final class ProductImport extends Model
     public function markAsFailed(?array $errors = null): bool
     {
         $this->status = self::STATUS_FAILED;
-        if ($errors) {
+        if ($errors !== null && $errors !== []) {
             $this->validation_errors = $errors;
         }
 

@@ -31,7 +31,7 @@ final class Comment extends Model implements Commentable
     {
         parent::boot();
 
-        self::deleting(function (self $model) {
+        self::deleting(function (self $model): void {
             $model->comments()->delete();
         });
     }

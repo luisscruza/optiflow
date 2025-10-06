@@ -163,7 +163,7 @@ final class Workspace extends Model
     {
         parent::boot();
 
-        self::creating(function ($workspace) {
+        self::creating(function ($workspace): void {
             if (empty($workspace->slug)) {
                 $workspace->slug = Str::slug($workspace->name);
             }

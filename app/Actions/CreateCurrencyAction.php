@@ -19,7 +19,7 @@ final readonly class CreateCurrencyAction
         return DB::transaction(function () use ($validated): Currency {
             $currency = Currency::create([
                 'name' => $validated['name'],
-                'code' => mb_strtoupper($validated['code']),
+                'code' => mb_strtoupper((string) $validated['code']),
                 'symbol' => $validated['symbol'],
                 'is_default' => false,
                 'is_active' => true,

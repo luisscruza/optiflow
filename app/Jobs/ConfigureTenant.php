@@ -24,12 +24,8 @@ final class ConfigureTenant implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    /** @var TenantWithDatabase */
-    protected $tenant;
-
-    public function __construct(TenantWithDatabase $tenant)
+    public function __construct(private \Stancl\Tenancy\Contracts\TenantWithDatabase $tenant)
     {
-        $this->tenant = $tenant;
     }
 
     /**
@@ -40,7 +36,7 @@ final class ConfigureTenant implements ShouldQueue
         /** @var Client $client */
         $client = $this->tenant->client;
 
-        $this->tenant->run(function () use ($client) {
+        $this->tenant->run(function () use ($client): void {
             $user = $this->createMainUser($client);
             $this->createMainWorkspace($user);
             $this->setCompanyDetails($this->tenant, $client);

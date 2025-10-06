@@ -24,7 +24,7 @@ final class UpdateQuotationAction
     public function handle(Workspace $workspace, Quotation $quotation, array $data): QuotationResult
     {
         try {
-            return DB::transaction(function () use ($workspace, $quotation, $data) {
+            return DB::transaction(function () use ($workspace, $quotation, $data): \App\DTOs\QuotationResult {
                 // Store original state for comparison
                 $originalItems = $quotation->items()->with('product')->get()->keyBy('id');
 
@@ -47,13 +47,11 @@ final class UpdateQuotationAction
                 }
 
                 // Filter valid items (same as CreateQuotationAction)
-                $items = array_filter($data['items'] ?? [], function ($item) {
-                    return isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
-                        $item['quantity'] > 0;
-                });
+                $items = array_filter($data['items'] ?? [], fn(array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
+                    $item['quantity'] > 0);
 
                 // Process item changes (without stock movements)
-                $this->processItemChanges($workspace, $quotation, $originalItems, $items);
+                $this->processItemChanges($quotation, $originalItems, $items);
 
                 // Recalculate document totals (let the model handle this)
                 $quotation->recalculateTotal();
@@ -125,7 +123,7 @@ final class UpdateQuotationAction
             $updateData['payment_term'] = $data['payment_term'];
         }
 
-        if (! empty($updateData)) {
+        if ($updateData !== []) {
             $quotation->update($updateData);
         }
     }
@@ -137,7 +135,6 @@ final class UpdateQuotationAction
      * @param  array<int, array<string, mixed>>  $newItems
      */
     private function processItemChanges(
-        Workspace $workspace,
         Quotation $quotation,
         $originalItems,
         array $newItems
@@ -151,7 +148,7 @@ final class UpdateQuotationAction
             if ($itemId && isset($originalItems[$itemId])) {
                 // Update existing item (without stock movements)
                 $originalItem = $originalItems[$itemId];
-                $this->updateQuotationItem($quotation, $originalItem, $itemData);
+                $this->updateQuotationItem($originalItem, $itemData);
                 $processedIds[] = $itemId;
             } else {
                 // Add new item (without stock movements)
@@ -160,12 +157,10 @@ final class UpdateQuotationAction
         }
 
         // Remove items that are no longer present
-        $itemsToRemove = $originalItems->reject(function ($item) use ($processedIds) {
-            return in_array($item->id, $processedIds);
-        });
+        $itemsToRemove = $originalItems->reject(fn($item): bool => in_array($item->id, $processedIds));
 
         foreach ($itemsToRemove as $item) {
-            $this->removeQuotationItem($quotation, $item);
+            $this->removeQuotationItem($item);
         }
     }
 
@@ -197,7 +192,7 @@ final class UpdateQuotationAction
      *
      * @param  array<string, mixed>  $data
      */
-    private function updateQuotationItem(Quotation $quotation, QuotationItem $existingItem, array $data): void
+    private function updateQuotationItem(QuotationItem $existingItem, array $data): void
     {
         $product = Product::findOrFail($data['product_id']);
 
@@ -218,7 +213,7 @@ final class UpdateQuotationAction
     /**
      * Remove a quotation item (without stock movements).
      */
-    private function removeQuotationItem(Quotation $quotation, QuotationItem $item): void
+    private function removeQuotationItem(QuotationItem $item): void
     {
         $item->delete();
     }

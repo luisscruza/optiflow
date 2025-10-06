@@ -38,7 +38,7 @@ final class AssignUserToWorkspaceRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                function ($attribute, $value, $fail) {
+                function ($attribute, $value, $fail): void {
                     $email = request('email');
                     $existingUser = User::where('email', $email)->first();
 
@@ -52,7 +52,7 @@ final class AssignUserToWorkspaceRequest extends FormRequest
                 'string',
                 'min:8',
                 'confirmed',
-                function ($attribute, $value, $fail) {
+                function ($attribute, $value, $fail): void {
                     $email = request('email');
                     $existingUser = User::where('email', $email)->first();
 
@@ -64,7 +64,7 @@ final class AssignUserToWorkspaceRequest extends FormRequest
             'password_confirmation' => [
                 'sometimes',
                 'string',
-                function ($attribute, $value, $fail) {
+                function ($attribute, $value, $fail): void {
                     $email = request('email');
                     $password = request('password');
                     $existingUser = User::where('email', $email)->first();
@@ -83,7 +83,7 @@ final class AssignUserToWorkspaceRequest extends FormRequest
                 'required',
                 'integer',
                 'exists:workspaces,id',
-                function ($attribute, $value, $fail) {
+                function ($attribute, $value, $fail): void {
                     $email = request('email');
                     $user = User::where('email', $email)->first();
 
@@ -109,7 +109,7 @@ final class AssignUserToWorkspaceRequest extends FormRequest
      */
     public function withValidator($validator): void
     {
-        $validator->sometimes(['name', 'password', 'password_confirmation'], 'required', function ($input) {
+        $validator->sometimes(['name', 'password', 'password_confirmation'], 'required', function ($input): bool {
             $existingUser = User::where('email', $input->email ?? '')->first();
 
             return ! $existingUser;

@@ -64,7 +64,7 @@ final class Tenant extends BaseTenant implements TenantWithDatabase
 
     protected static function booted(): void
     {
-        self::created(function (Tenant $tenant) {
+        self::created(function (Tenant $tenant): void {
             $tenant->createDomain([
                 'domain' => $tenant->domain,
             ]);

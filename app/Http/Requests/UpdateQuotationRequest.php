@@ -74,7 +74,6 @@ final class UpdateQuotationRequest extends FormRequest
             'items.*.quantity.required' => 'La cantidad es requerida para cada item.',
             'items.*.quantity.min' => 'La cantidad debe ser mayor a 0.',
             'items.*.unit_price.required' => 'El precio unitario es requerido para cada item.',
-            'items.*.unit_price.min' => 'El precio unitario debe ser mayor o igual a 0.',
             'items.*.discount_rate.required' => 'El descuento es requerido para cada item.',
             'items.*.discount_rate.min' => 'El descuento debe ser mayor o igual a 0.',
             'items.*.discount_rate.max' => 'El descuento no puede ser mayor al 100%.',

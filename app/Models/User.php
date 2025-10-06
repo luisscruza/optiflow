@@ -183,7 +183,10 @@ final class User extends Authenticatable
      */
     public function canManageUsers(): bool
     {
-        return $this->hasBusinessRole(UserRole::Owner) || $this->hasBusinessRole(UserRole::Admin);
+        if ($this->hasBusinessRole(UserRole::Owner)) {
+            return true;
+        }
+        return $this->hasBusinessRole(UserRole::Admin);
     }
 
     /**

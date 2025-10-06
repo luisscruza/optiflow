@@ -9,13 +9,6 @@ use Illuminate\Support\Str;
 
 final class Slug
 {
-    /**
-     * Create a new class instance.
-     */
-    public function __construct()
-    {
-        //
-    }
 
     /**
      * @param  class-string<Model>  $model

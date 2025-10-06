@@ -19,9 +19,9 @@ final class CurrencyController extends Controller
      */
     public function index(): Response
     {
-        $currencies = Currency::with(['rates' => function ($query) {
+        $currencies = Currency::with(['rates' => function ($query): void {
             $query->latest('effective_date')->limit(1);
-        }])->get()->map(function ($currency) {
+        }])->get()->map(function ($currency): array {
             $currentRate = $currency->getCurrentRate();
             $variation = $currency->rates()->count() > 1
                 ? $currency->getVariation()
@@ -44,14 +44,12 @@ final class CurrencyController extends Controller
         $historicalRates = CurrencyRate::with('currency')
             ->orderBy('effective_date', 'desc')
             ->get()
-            ->map(function ($rate) {
-                return [
-                    'id' => $rate->id,
-                    'currency_id' => $rate->currency_id,
-                    'rate' => (float) $rate->rate,
-                    'date' => $rate->effective_date->format('Y-m-d'),
-                ];
-            });
+            ->map(fn($rate): array => [
+                'id' => $rate->id,
+                'currency_id' => $rate->currency_id,
+                'rate' => (float) $rate->rate,
+                'date' => $rate->effective_date->format('Y-m-d'),
+            ]);
 
         return Inertia::render('currencies/index', [
             'currencies' => $currencies,
@@ -84,7 +82,7 @@ final class CurrencyController extends Controller
      */
     public function show(Currency $currency): Response
     {
-        $currency->load(['rates' => function ($query) {
+        $currency->load(['rates' => function ($query): void {
             $query->orderBy('effective_date', 'desc');
         }]);
 

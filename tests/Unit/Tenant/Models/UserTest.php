@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Models\User;
 use App\Models\Workspace;
 
-it('has workspace relationships', function () {
+it('has workspace relationships', function (): void {
     $user = User::factory()->create();
     $workspace = Workspace::factory()->create(['owner_id' => $user->id]);
     $workspace->addUser($user, 'owner');
@@ -14,7 +14,7 @@ it('has workspace relationships', function () {
     expect($user->ownedWorkspaces()->count())->toBe(1);
 });
 
-it('can switch to workspace', function () {
+it('can switch to workspace', function (): void {
     $user = User::factory()->create();
     $workspace = Workspace::factory()->create();
     $workspace->addUser($user, 'member');
@@ -25,7 +25,7 @@ it('can switch to workspace', function () {
     expect($user->current_workspace_id)->toBe($workspace->id);
 });
 
-it('cannot switch to workspace without access', function () {
+it('cannot switch to workspace without access', function (): void {
     $user = User::factory()->create();
     $workspace = Workspace::factory()->create();
 
@@ -34,7 +34,7 @@ it('cannot switch to workspace without access', function () {
     expect($result)->toBeFalse();
 });
 
-it('can check workspace access', function () {
+it('can check workspace access', function (): void {
     $user = User::factory()->create();
     $workspace = Workspace::factory()->create();
 

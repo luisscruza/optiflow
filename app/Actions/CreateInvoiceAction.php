@@ -26,7 +26,7 @@ final readonly class CreateInvoiceAction
      */
     public function handle(Workspace $workspace, array $data): InvoiceResult
     {
-        return DB::transaction(function () use ($workspace, $data) {
+        return DB::transaction(function () use ($workspace, $data): \App\DTOs\InvoiceResult {
 
             $documentSubtype = DocumentSubtype::findOrFail($data['document_subtype_id']);
 
@@ -38,10 +38,8 @@ final readonly class CreateInvoiceAction
 
             $this->updateNumerator($documentSubtype, $data['ncf']);
 
-            $items = array_filter($data['items'], function ($item) {
-                return isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
-                    $item['quantity'] > 0;
-            });
+            $items = array_filter($data['items'], fn(array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
+                $item['quantity'] > 0);
 
             try {
                 $this->createItems->handle($invoice, $items);

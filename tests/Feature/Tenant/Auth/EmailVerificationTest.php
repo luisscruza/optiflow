@@ -7,7 +7,7 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 
-test('email verification screen can be rendered', function () {
+test('email verification screen can be rendered', function (): void {
     $user = User::factory()
         ->unverified()
         ->hasWorkspaces(1)
@@ -22,7 +22,7 @@ test('email verification screen can be rendered', function () {
     $response->assertStatus(200);
 });
 
-test('email can be verified', function () {
+test('email can be verified', function (): void {
     $user = User::factory()
         ->unverified()
         ->hasWorkspaces(1)
@@ -36,7 +36,7 @@ test('email can be verified', function () {
     $verificationUrl = URL::temporarySignedRoute(
         'verification.verify',
         now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
+        ['id' => $user->id, 'hash' => sha1((string) $user->email)]
     );
 
     $response = $this->actingAs($user)->get($verificationUrl);
@@ -46,7 +46,7 @@ test('email can be verified', function () {
     $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
 });
 
-test('email is not verified with invalid hash', function () {
+test('email is not verified with invalid hash', function (): void {
     $user = User::factory()
         ->unverified()
         ->hasWorkspaces(1)
@@ -66,7 +66,7 @@ test('email is not verified with invalid hash', function () {
     expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
 });
 
-test('email is not verified with invalid user id', function () {
+test('email is not verified with invalid user id', function (): void {
     $user = User::factory()
         ->hasWorkspaces(1)
         ->create([
@@ -79,7 +79,7 @@ test('email is not verified with invalid user id', function () {
     $verificationUrl = URL::temporarySignedRoute(
         'verification.verify',
         now()->addMinutes(60),
-        ['id' => 123, 'hash' => sha1($user->email)]
+        ['id' => 123, 'hash' => sha1((string) $user->email)]
     );
 
     $this->actingAs($user)->get($verificationUrl);
@@ -87,7 +87,7 @@ test('email is not verified with invalid user id', function () {
     expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
 });
 
-test('verified user is redirected to dashboard from verification prompt', function () {
+test('verified user is redirected to dashboard from verification prompt', function (): void {
     $user = User::factory()
         ->hasWorkspaces(1)
         ->create([
@@ -102,7 +102,7 @@ test('verified user is redirected to dashboard from verification prompt', functi
     $response->assertRedirect(route('dashboard', absolute: false));
 });
 
-test('already verified user visiting verification link is redirected without firing event again', function () {
+test('already verified user visiting verification link is redirected without firing event again', function (): void {
     $user = User::factory()
         ->hasWorkspaces(1)
         ->create([
@@ -117,7 +117,7 @@ test('already verified user visiting verification link is redirected without fir
     $verificationUrl = URL::temporarySignedRoute(
         'verification.verify',
         now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
+        ['id' => $user->id, 'hash' => sha1((string) $user->email)]
     );
 
     $this->actingAs($user)->get($verificationUrl)

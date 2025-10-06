@@ -17,8 +17,8 @@ use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 Route::middleware([
     InitializeTenancyBySubdomain::class,
     PreventAccessFromCentralDomains::class,
-])->group(function () {
-    Route::middleware('guest')->group(function () {
+])->group(function (): void {
+    Route::middleware('guest')->group(function (): void {
         Route::get('register', [RegisteredUserController::class, 'create'])
             ->name('register');
 
@@ -44,7 +44,7 @@ Route::middleware([
             ->name('password.store');
     });
 
-    Route::middleware('auth')->group(function () {
+    Route::middleware('auth')->group(function (): void {
         Route::get('verify-email', EmailVerificationPromptController::class)
             ->name('verification.notice');
 

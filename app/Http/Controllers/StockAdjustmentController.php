@@ -40,7 +40,7 @@ final class StockAdjustmentController extends Controller
             ->get(['id', 'name', 'sku']);
 
         // Transform products to include current stock information
-        $products->transform(function ($product) {
+        $products->transform(function ($product): \stdClass {
             $stock = $product->stocksInCurrentWorkspace->first();
             $product->stock_in_current_workspace = [
                 'quantity' => $stock?->quantity ?? 0,
@@ -82,7 +82,7 @@ final class StockAdjustmentController extends Controller
         $stockHistory = $product->stockMovements()
             ->withoutWorkspaceScope()
             ->where('workspace_id', $workspace->id)
-            ->orWhere(function ($query) use ($workspace) {
+            ->orWhere(function ($query) use ($workspace): void {
                 $query->where('from_workspace_id', $workspace->id)
                     ->orWhere('to_workspace_id', $workspace->id);
             })

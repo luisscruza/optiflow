@@ -64,14 +64,14 @@ final class ImportContact extends Command
         }
 
         $csvFiles = glob($folderPath.'/*.csv');
-        if (empty($csvFiles)) {
+        if ($csvFiles === [] || $csvFiles === false) {
             $this->error("No CSV files found in: {$folderPath}");
 
             return self::FAILURE;
         }
 
         // Sort files to process part_0 first (with headers), then others
-        usort($csvFiles, function ($a, $b) {
+        usort($csvFiles, function ($a, $b): int {
             if (str_contains($a, 'part_0')) {
                 return -1;
             }
@@ -83,9 +83,6 @@ final class ImportContact extends Command
         });
 
         $this->info('Found '.count($csvFiles).' CSV files to process');
-
-        $totalImported = 0;
-        $totalSkipped = 0;
 
         foreach ($csvFiles as $index => $file) {
             $this->info("\n".str_repeat('=', 50));
@@ -151,7 +148,7 @@ final class ImportContact extends Command
                 'database_error' => 0,
             ];
 
-            DB::transaction(function () use ($records, $progressBar, &$imported, &$skipped, &$errors, &$skipReasons, $hasHeaders) {
+            DB::transaction(function () use ($records, $progressBar, &$imported, &$skipped, &$errors, &$skipReasons, $hasHeaders): void {
                 foreach ($records as $index => $record) {
                     try {
                         $contactData = $hasHeaders
@@ -226,13 +223,13 @@ final class ImportContact extends Command
                 }
             }
 
-            if (! empty($errors) && count($errors) <= 20) {
+            if ($errors !== [] && count($errors) <= 20) {
                 $this->newLine();
                 $this->warn('Detailed errors:');
                 foreach ($errors as $error) {
                     $this->line($error);
                 }
-            } elseif (! empty($errors)) {
+            } elseif ($errors !== []) {
                 $this->newLine();
                 $this->warn('First 10 detailed errors:');
                 foreach (array_slice($errors, 0, 10) as $error) {
@@ -339,7 +336,7 @@ final class ImportContact extends Command
     {
         $number = trim($number);
 
-        return empty($number) ? null : $number;
+        return $number === '' || $number === '0' ? null : $number;
     }
 
     /**
@@ -348,7 +345,7 @@ final class ImportContact extends Command
     private function cleanPhoneNumber(string $phone): ?string
     {
         $phone = trim($phone);
-        if (empty($phone)) {
+        if ($phone === '' || $phone === '0') {
             return null;
         }
 
@@ -364,7 +361,7 @@ final class ImportContact extends Command
     private function cleanEmail(string $email): ?string
     {
         $email = trim($email);
-        if (empty($email)) {
+        if ($email === '' || $email === '0') {
             return null;
         }
 
@@ -376,7 +373,7 @@ final class ImportContact extends Command
      */
     private function parseCreditLimit(string $creditLimit): float
     {
-        if (empty($creditLimit)) {
+        if ($creditLimit === '' || $creditLimit === '0') {
             return 0.0;
         }
 

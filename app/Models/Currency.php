@@ -120,7 +120,7 @@ final class Currency extends Model
      */
     public function convertFromDefault(float $amount, ?Carbon $date = null): float
     {
-        $rate = $date ? $this->getRateForDate($date) : $this->getCurrentRate();
+        $rate = $date instanceof \Carbon\Carbon ? $this->getRateForDate($date) : $this->getCurrentRate();
 
         if ($rate === 0.0) {
             return $amount;
@@ -134,7 +134,7 @@ final class Currency extends Model
      */
     public function convertToDefault(float $amount, ?Carbon $date = null): float
     {
-        $rate = $date ? $this->getRateForDate($date) : $this->getCurrentRate();
+        $rate = $date instanceof \Carbon\Carbon ? $this->getRateForDate($date) : $this->getCurrentRate();
 
         if ($rate === 0.0) {
             return $amount;

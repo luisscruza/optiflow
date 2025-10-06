@@ -18,10 +18,10 @@ declare(strict_types=1);
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->use(Tests\Concerns\InteractsWithTenancy::class)
-    ->beforeEach(function () {
+    ->beforeEach(function (): void {
         $this->setUpTenancy();
     })
-    ->afterEach(function () {
+    ->afterEach(function (): void {
         $this->tearDownTenancy();
     })
     ->in('Feature/Tenant', 'Unit/Tenant');
@@ -37,9 +37,7 @@ pest()->extend(Tests\TestCase::class)
 |
 */
 
-expect()->extend('toBeOne', function () {
-    return $this->toBe(1);
-});
+expect()->extend('toBeOne', fn() => $this->toBe(1));
 
 /*
 |--------------------------------------------------------------------------

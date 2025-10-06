@@ -28,7 +28,7 @@ final class CreateInitialStockRequest extends FormRequest
             'product_id' => [
                 'required',
                 'integer',
-                Rule::exists('products', 'id')->where(function ($query) {
+                Rule::exists('products', 'id')->where(function ($query): void {
                     $query->where('track_stock', true);
                 }),
             ],

@@ -15,12 +15,10 @@ final readonly class CreateCurrencyRateAction
      */
     public function handle(array $validated): CurrencyRate
     {
-        return DB::transaction(function () use ($validated): CurrencyRate {
-            return CurrencyRate::create([
-                'currency_id' => $validated['currency_id'],
-                'rate' => $validated['rate'],
-                'effective_date' => Carbon::parse($validated['date'])->setTime(now()->hour, now()->minute, now()->second),
-            ]);
-        });
+        return DB::transaction(fn(): CurrencyRate => CurrencyRate::create([
+            'currency_id' => $validated['currency_id'],
+            'rate' => $validated['rate'],
+            'effective_date' => Carbon::parse($validated['date'])->setTime(now()->hour, now()->minute, now()->second),
+        ]));
     }
 }

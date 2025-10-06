@@ -24,7 +24,7 @@ final readonly class UpdateContactAction
             $contact->update($data);
 
             // Update or create the primary address if provided
-            if ($addressData && ! empty(array_filter($addressData))) {
+            if ($addressData && array_filter($addressData) !== []) {
                 $primaryAddress = $contact->addresses()->first();
 
                 if ($primaryAddress) {

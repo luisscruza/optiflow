@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Models\User;
 use App\Models\Workspace;
 
-it('can switch to workspace', function () {
+it('can switch to workspace', function (): void {
     $user = User::factory()->hasWorkspaces(1)->create();
     $user->current_workspace_id = $user->workspaces->first()->id;
     $user->save();
@@ -18,7 +18,7 @@ it('can switch to workspace', function () {
     expect($user->fresh()->current_workspace_id)->toBe($workspace->id);
 });
 
-it('can leave workspace', function () {
+it('can leave workspace', function (): void {
     $user = User::factory()->hasWorkspaces(1)->create();
     $user->current_workspace_id = $user->workspaces->first()->id;
     $user->save();

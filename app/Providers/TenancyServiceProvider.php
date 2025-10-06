@@ -19,7 +19,7 @@ final class TenancyServiceProvider extends ServiceProvider
     // By default, no namespace is used to support the callable array syntax.
     public static string $controllerNamespace = '';
 
-    public function events()
+    public function events(): array
     {
         return [
             // Tenant events
@@ -30,9 +30,7 @@ final class TenancyServiceProvider extends ServiceProvider
                     Jobs\MigrateDatabase::class,
                     Jobs\SeedDatabase::class,
                     ConfigureTenant::class,
-                ])->send(function (Events\TenantCreated $event) {
-                    return $event->tenant;
-                })->shouldBeQueued(false),
+                ])->send(fn(Events\TenantCreated $event) => $event->tenant)->shouldBeQueued(false),
             ],
             Events\SavingTenant::class => [],
             Events\TenantSaved::class => [],
@@ -42,9 +40,7 @@ final class TenancyServiceProvider extends ServiceProvider
             Events\TenantDeleted::class => [
                 JobPipeline::make([
                     Jobs\DeleteDatabase::class,
-                ])->send(function (Events\TenantDeleted $event) {
-                    return $event->tenant;
-                })->shouldBeQueued(false), // `false` by default, but you probably want to make this `true` for production.
+                ])->send(fn(Events\TenantDeleted $event) => $event->tenant)->shouldBeQueued(false), // `false` by default, but you probably want to make this `true` for production.
             ],
 
             // Domain events
@@ -90,12 +86,12 @@ final class TenancyServiceProvider extends ServiceProvider
         ];
     }
 
-    public function register()
+    public function register(): void
     {
         //
     }
 
-    public function boot()
+    public function boot(): void
     {
         $this->bootEvents();
         $this->mapRoutes();
@@ -103,7 +99,7 @@ final class TenancyServiceProvider extends ServiceProvider
         $this->makeTenancyMiddlewareHighestPriority();
     }
 
-    protected function bootEvents()
+    private function bootEvents(): void
     {
         foreach ($this->events() as $event => $listeners) {
             foreach ($listeners as $listener) {
@@ -116,17 +112,17 @@ final class TenancyServiceProvider extends ServiceProvider
         }
     }
 
-    protected function mapRoutes()
+    private function mapRoutes(): void
     {
-        $this->app->booted(function () {
+        $this->app->booted(function (): void {
             if (file_exists(base_path('routes/tenant.php'))) {
-                Route::namespace(static::$controllerNamespace)
+                Route::namespace(self::$controllerNamespace)
                     ->group(base_path('routes/tenant.php'));
             }
         });
     }
 
-    protected function makeTenancyMiddlewareHighestPriority()
+    private function makeTenancyMiddlewareHighestPriority(): void
     {
         $tenancyMiddleware = [
             // Even higher priority than the initialization middleware

@@ -15,10 +15,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-final class UpdateInvoiceAction
+final readonly class UpdateInvoiceAction
 {
     public function __construct(
-        private readonly UpdateInvoiceItemAction $updateInvoiceItemAction
+        private UpdateInvoiceItemAction $updateInvoiceItemAction
     ) {}
 
     /**
@@ -29,7 +29,7 @@ final class UpdateInvoiceAction
     public function handle(Workspace $workspace, Invoice $invoice, array $data): InvoiceResult
     {
         try {
-            return DB::transaction(function () use ($workspace, $invoice, $data) {
+            return DB::transaction(function () use ($workspace, $invoice, $data): \App\DTOs\InvoiceResult {
                 $originalItems = $invoice->items()->with('product')->get()->keyBy('id');
 
                 if (isset($data['ncf']) && $data['ncf'] !== $invoice->document_number) {
@@ -47,13 +47,11 @@ final class UpdateInvoiceAction
                     $this->updateNumerator($documentSubtype, $data['ncf']);
                 }
 
-                $items = array_filter($data['items'] ?? [], function ($item) {
-                    return isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
-                        $item['quantity'] > 0;
-                });
+                $items = array_filter($data['items'] ?? [], fn(array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
+                    $item['quantity'] > 0);
 
                 try {
-                    $this->processItemChanges($workspace, $invoice, $originalItems, $items);
+                    $this->processItemChanges($invoice, $originalItems, $items);
                 } catch (InsufficientStockException $e) {
                     DB::rollBack();
 
@@ -139,7 +137,7 @@ final class UpdateInvoiceAction
             $updateData['payment_term'] = $data['payment_term'];
         }
 
-        if (! empty($updateData)) {
+        if ($updateData !== []) {
             $invoice->update($updateData);
         }
     }
@@ -153,7 +151,6 @@ final class UpdateInvoiceAction
      * @throws InsufficientStockException
      */
     private function processItemChanges(
-        Workspace $workspace,
         Invoice $invoice,
         $originalItems,
         array $newItems
@@ -183,9 +180,7 @@ final class UpdateInvoiceAction
         }
 
         // Remove items that are no longer present
-        $itemsToRemove = $originalItems->reject(function ($item) use ($processedIds) {
-            return in_array($item->id, $processedIds);
-        });
+        $itemsToRemove = $originalItems->reject(fn($item): bool => in_array($item->id, $processedIds));
 
         foreach ($itemsToRemove as $item) {
             $this->removeInvoiceItem($invoice, $item);

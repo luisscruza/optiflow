@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Models\User;
 use App\Models\Workspace;
 
-it('has user relationships', function () {
+it('has user relationships', function (): void {
     $workspace = Workspace::factory()->create();
     $user = User::factory()->create();
     $workspace->addUser($user, 'member');
@@ -14,7 +14,7 @@ it('has user relationships', function () {
     expect($workspace->hasUser($user))->toBeTrue();
 });
 
-it('can add and remove users', function () {
+it('can add and remove users', function (): void {
     $workspace = Workspace::factory()->create();
     $user = User::factory()->create();
 
@@ -25,7 +25,7 @@ it('can add and remove users', function () {
     expect($workspace->hasUser($user))->toBeFalse();
 });
 
-it('generates slug from name', function () {
+it('generates slug from name', function (): void {
     $workspace = new Workspace();
     $workspace->name = 'Test Workspace Name';
     $workspace->owner_id = User::factory()->create()->id;
@@ -34,7 +34,7 @@ it('generates slug from name', function () {
     expect($workspace->slug)->toBe('test-workspace-name');
 });
 
-it('uses slug as route key', function () {
+it('uses slug as route key', function (): void {
     $workspace = new Workspace();
 
     expect($workspace->getRouteKeyName())->toBe('slug');

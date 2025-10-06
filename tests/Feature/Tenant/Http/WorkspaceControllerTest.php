@@ -6,7 +6,7 @@ use App\Enums\UserRole;
 use App\Models\User;
 use App\Models\Workspace;
 
-it('can view workspace index', function () {
+it('can view workspace index', function (): void {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->get(route('workspaces.index'));
@@ -14,7 +14,7 @@ it('can view workspace index', function () {
     $response->assertOk();
 });
 
-it('can create workspace', function () {
+it('can create workspace', function (): void {
     $user = User::factory()->hasWorkspaces(1)->create();
 
     $response = $this->actingAs($user)->post(route('workspaces.store'), [
@@ -28,7 +28,7 @@ it('can create workspace', function () {
     expect(Workspace::where('name', 'Test Workspace')->exists())->toBeTrue();
 });
 
-it('can update workspace as owner', function () {
+it('can update workspace as owner', function (): void {
     $user = User::factory()->create([
         'business_role' => UserRole::Owner,
     ]);
@@ -44,7 +44,7 @@ it('can update workspace as owner', function () {
     expect($workspace->fresh()->name)->toBe('Updated Workspace');
 });
 
-it('cannot update workspace as non-owner', function ($role) {
+it('cannot update workspace as non-owner', function ($role): void {
     $user = User::factory()->create([
         'business_role' => $role,
     ]);

@@ -23,10 +23,10 @@ final class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Relation::enforceMorphMap([
-            'invoice' => 'App\Models\Invoice',
-            'comment' => 'App\Models\Comment',
-            'contact' => 'App\Models\Contact',
-            'user' => 'App\Models\User',
+            'invoice' => \App\Models\Invoice::class,
+            'comment' => \App\Models\Comment::class,
+            'contact' => \App\Models\Contact::class,
+            'user' => \App\Models\User::class,
         ]);
 
     }

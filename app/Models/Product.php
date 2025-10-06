@@ -147,7 +147,7 @@ final class Product extends Model
     {
         $stock = $this->getStockForWorkspace($workspace);
 
-        return $stock ? (float) $stock->quantity : 0;
+        return $stock instanceof \App\Models\ProductStock ? (float) $stock->quantity : 0;
     }
 
     /**
@@ -203,7 +203,7 @@ final class Product extends Model
     {
         $workspaceId = $workspace instanceof Workspace ? $workspace->id : $workspace;
 
-        $query->whereHas('stocks', function ($stockQuery) use ($workspaceId) {
+        $query->whereHas('stocks', function ($stockQuery) use ($workspaceId): void {
             $stockQuery->where('workspace_id', $workspaceId)
                 ->whereColumn('quantity', '<=', 'minimum_quantity');
         });
