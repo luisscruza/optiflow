@@ -10,6 +10,7 @@ use App\Contracts\Commentable;
 use App\Enums\InvoiceStatus;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -81,7 +82,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 final class Invoice extends Model implements Commentable
 {
-    use BelongsToWorkspace, HasComments;
+    /** @use HasFactory<\Database\Factories\InvoiceFactory> */
+    use BelongsToWorkspace, HasComments, HasFactory;
 
     protected $appends = [
         'amount_due',

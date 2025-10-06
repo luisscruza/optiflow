@@ -17,7 +17,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
- * @property int $workspace_id
  * @property string $name
  * @property string|null $email
  * @property string|null $phone

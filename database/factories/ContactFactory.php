@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\ContactType;
+use App\Enums\IdentificationType;
 use App\Models\Workspace;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -20,17 +22,19 @@ final class ContactFactory extends Factory
     public function definition(): array
     {
         return [
-            'workspace_id' => Workspace::factory(),
             'name' => fake()->company(),
             'email' => fake()->companyEmail(),
-            'phone' => fake()->phoneNumber(),
-            'address' => fake()->address(),
-            'contact_type' => fake()->randomElement(['customer', 'supplier', 'both']),
-            'metadata' => [
-                'tax_id' => fake()->optional()->regexify('[A-Z]{2}[0-9]{9}'),
-                'website' => fake()->optional()->url(),
-                'notes' => fake()->optional()->sentence(),
-            ],
+            'contact_type' => ContactType::cases()[array_rand(ContactType::cases())],
+            'phone_primary' => fake()->phoneNumber(),
+            'phone_secondary' => fake()->optional()->phoneNumber(),
+            'mobile' => fake()->optional()->phoneNumber(),
+            'fax' => fake()->optional()->phoneNumber(),
+            'identification_type' => IdentificationType::cases()[array_rand(IdentificationType::cases())],
+            'identification_number' => fake()->optional()->bothify('?#?#?#?#'),
+            'status' => 'active',
+            'observations' => fake()->optional()->sentence(),
+            'credit_limit' => fake()->randomFloat(2, 0, 10000),
+            'metadata' => null,
         ];
     }
 
