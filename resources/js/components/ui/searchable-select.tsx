@@ -87,7 +87,7 @@ function SearchableSelect({
           )}
           style={{ width: "var(--radix-popover-trigger-width)" }}
         >
-          <Command>
+          <Command className="min-w-48">
             <CommandInput placeholder={searchPlaceholder} />
             <CommandList>
               <CommandEmpty>

@@ -11,6 +11,7 @@ use App\Http\Controllers\CurrencyRateController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentSubtypeController;
 use App\Http\Controllers\DownloadInvoicePdfController;
+use App\Http\Controllers\DownloadPrescriptionController;
 use App\Http\Controllers\DownloadQuotationPdfController;
 use App\Http\Controllers\InitialStockController;
 use App\Http\Controllers\InvoiceController;
@@ -120,6 +121,8 @@ Route::middleware([
             Route::post('workspace/invitations', [WorkspaceInvitationController::class, 'store'])->name('workspace.invitations.store');
 
             Route::resource('prescriptions', PrescriptionController::class)->only(['create', 'index', 'store']);
+            Route::get('prescriptions/{prescription}/pdf', DownloadPrescriptionController::class)->name('prescriptions.pdf');
+
         });
     });
 

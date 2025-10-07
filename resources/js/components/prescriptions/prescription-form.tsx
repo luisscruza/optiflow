@@ -13,7 +13,10 @@ import LensometriaAgudeza from '@/components/prescriptions/lensometria-agudeza';
 import BiomicroscopiaModal from '@/components/prescriptions/biomicroscopia-modal';
 import OftalmoscopiaModal from '@/components/prescriptions/oftalmoscopia-modal';
 import QueratometriaPresion from '@/components/prescriptions/queratometria-presion';
+import Refraccion from '@/components/prescriptions/refraccion';
+import RefraccionModal from '@/components/prescriptions/refraccion-modal';
 import { MasterTableData, type Contact, type Workspace } from '@/types';
+import RefraccionSubjetivo from './refraccion-subjetivo';
 
 interface PrescriptionFormData {
     workspace_id: number | null;
@@ -120,6 +123,73 @@ interface PrescriptionFormData {
     presion_oi?: string;
     presion_oi_hora?: string;
 
+    // === REFRACCIÓN FIELDS ===
+    // Refracción - OD
+    refraccion_od_esfera?: string;
+    refraccion_od_cilindro?: string;
+    refraccion_od_eje?: string;
+    refraccion_subjetivo_od_adicion?: string;
+
+    // Refracción - OI
+    refraccion_oi_esfera?: string;
+    refraccion_oi_cilindro?: string;
+    refraccion_oi_eje?: string;
+    refraccion_subjetivo_oi_adicion?: string;
+
+    // Retinoscopía tipo
+    retinoscopia_dinamica?: boolean;
+    retinoscopia_estatica?: boolean;
+
+    // Observaciones de refracción
+    refraccion_observaciones?: string;
+
+    // === REFRACCIÓN MODAL FIELDS ===
+    // Cicloplegia
+    cicloplegia_medicamento?: string;
+    cicloplegia_num_gotas?: string;
+    cicloplegia_hora_aplicacion?: string;
+    cicloplegia_hora_examen?: string;
+
+    // Autorefracción
+    autorefraccion_od_esfera?: string;
+    autorefraccion_od_cilindro?: string;
+    autorefraccion_od_eje?: string;
+    autorefraccion_oi_esfera?: string;
+    autorefraccion_oi_cilindro?: string;
+    autorefraccion_oi_eje?: string;
+
+    // Retinoscopía
+    retinoscopia_od_esfera?: string;
+    retinoscopia_od_cilindro?: string;
+    retinoscopia_od_eje?: string;
+    retinoscopia_oi_esfera?: string;
+    retinoscopia_oi_cilindro?: string;
+    retinoscopia_oi_eje?: string;
+
+    // Subjetivo (en sección de refracción)
+    refraccion_subjetivo_od_esfera?: string;
+    refraccion_subjetivo_od_cilindro?: string;
+    refraccion_subjetivo_od_eje?: string;
+    refraccion_subjetivo_oi_esfera?: string;
+    refraccion_subjetivo_oi_cilindro?: string;
+    refraccion_subjetivo_oi_eje?: string;
+
+    // Subjetivo
+    subjetivo_od_esfera?: string;
+    subjetivo_od_cilindro?: string;
+    subjetivo_od_eje?: string;
+    subjetivo_od_add?: string;
+    subjetivo_od_dp?: string;
+    subjetivo_od_av_lejos?: string;
+    subjetivo_od_av_cerca?: string;
+    subjetivo_oi_esfera?: string;
+    subjetivo_oi_cilindro?: string;
+    subjetivo_oi_eje?: string;
+    subjetivo_oi_add?: string;
+    subjetivo_oi_dp?: string;
+    subjetivo_oi_av_lejos?: string;
+    subjetivo_oi_av_cerca?: string;
+
     // Observaciones
     observaciones?: string;
 }
@@ -148,6 +218,7 @@ export default function PrescriptionForm({
     isEditing = false
 }: PrescriptionFormProps) {
     const [showContactModal, setShowContactModal] = useState(false);
+    const [showRefraccionModal, setShowRefraccionModal] = useState(false);
     const [contactsList, setContactsList] = useState<Contact[]>(customers);
     const [selectedContact, setSelectedContact] = useState<Contact | null>(
         initialData.contact_id ? customers.find(c => c.id === initialData.contact_id) || null : null
@@ -266,6 +337,73 @@ export default function PrescriptionForm({
         // Presión Intraocular - OI
         presion_oi: initialData.presion_oi || '',
         presion_oi_hora: initialData.presion_oi_hora || '',
+
+        // === REFRACCIÓN FIELDS ===
+        // Refracción - OD
+        refraccion_od_esfera: initialData.refraccion_od_esfera || '',
+        refraccion_od_cilindro: initialData.refraccion_od_cilindro || '',
+        refraccion_od_eje: initialData.refraccion_od_eje || '',
+        refraccion_subjetivo_od_adicion: initialData.refraccion_subjetivo_od_adicion || '',
+
+        // Refracción - OI
+        refraccion_oi_esfera: initialData.refraccion_oi_esfera || '',
+        refraccion_oi_cilindro: initialData.refraccion_oi_cilindro || '',
+        refraccion_oi_eje: initialData.refraccion_oi_eje || '',
+        refraccion_subjetivo_oi_adicion: initialData.refraccion_subjetivo_oi_adicion || '',
+
+        // Retinoscopía tipo
+        retinoscopia_dinamica: initialData.retinoscopia_dinamica || false,
+        retinoscopia_estatica: initialData.retinoscopia_estatica || false,
+
+        // Observaciones de refracción
+        refraccion_observaciones: initialData.refraccion_observaciones || '',
+
+        // === REFRACCIÓN MODAL FIELDS ===
+        // Cicloplegia
+        cicloplegia_medicamento: initialData.cicloplegia_medicamento || '',
+        cicloplegia_num_gotas: initialData.cicloplegia_num_gotas || '',
+        cicloplegia_hora_aplicacion: initialData.cicloplegia_hora_aplicacion || '',
+        cicloplegia_hora_examen: initialData.cicloplegia_hora_examen || '',
+
+        // Autorefracción
+        autorefraccion_od_esfera: initialData.autorefraccion_od_esfera || '',
+        autorefraccion_od_cilindro: initialData.autorefraccion_od_cilindro || '',
+        autorefraccion_od_eje: initialData.autorefraccion_od_eje || '',
+        autorefraccion_oi_esfera: initialData.autorefraccion_oi_esfera || '',
+        autorefraccion_oi_cilindro: initialData.autorefraccion_oi_cilindro || '',
+        autorefraccion_oi_eje: initialData.autorefraccion_oi_eje || '',
+
+        // Retinoscopía
+        retinoscopia_od_esfera: initialData.retinoscopia_od_esfera || '',
+        retinoscopia_od_cilindro: initialData.retinoscopia_od_cilindro || '',
+        retinoscopia_od_eje: initialData.retinoscopia_od_eje || '',
+        retinoscopia_oi_esfera: initialData.retinoscopia_oi_esfera || '',
+        retinoscopia_oi_cilindro: initialData.retinoscopia_oi_cilindro || '',
+        retinoscopia_oi_eje: initialData.retinoscopia_oi_eje || '',
+
+        // Subjetivo (en sección de refracción)
+        refraccion_subjetivo_od_esfera: initialData.refraccion_subjetivo_od_esfera || '',
+        refraccion_subjetivo_od_cilindro: initialData.refraccion_subjetivo_od_cilindro || '',
+        refraccion_subjetivo_od_eje: initialData.refraccion_subjetivo_od_eje || '',
+        refraccion_subjetivo_oi_esfera: initialData.refraccion_subjetivo_oi_esfera || '',
+        refraccion_subjetivo_oi_cilindro: initialData.refraccion_subjetivo_oi_cilindro || '',
+        refraccion_subjetivo_oi_eje: initialData.refraccion_subjetivo_oi_eje || '',
+
+        // Subjetivo
+        subjetivo_od_esfera: initialData.subjetivo_od_esfera || '',
+        subjetivo_od_cilindro: initialData.subjetivo_od_cilindro || '',
+        subjetivo_od_eje: initialData.subjetivo_od_eje || '',
+        subjetivo_od_add: initialData.subjetivo_od_add || '',
+        subjetivo_od_dp: initialData.subjetivo_od_dp || '',
+        subjetivo_od_av_lejos: initialData.subjetivo_od_av_lejos || '',
+        subjetivo_od_av_cerca: initialData.subjetivo_od_av_cerca || '',
+        subjetivo_oi_esfera: initialData.subjetivo_oi_esfera || '',
+        subjetivo_oi_cilindro: initialData.subjetivo_oi_cilindro || '',
+        subjetivo_oi_eje: initialData.subjetivo_oi_eje || '',
+        subjetivo_oi_add: initialData.subjetivo_oi_add || '',
+        subjetivo_oi_dp: initialData.subjetivo_oi_dp || '',
+        subjetivo_oi_av_lejos: initialData.subjetivo_oi_av_lejos || '',
+        subjetivo_oi_av_cerca: initialData.subjetivo_oi_av_cerca || '',
 
         // Observaciones
         observaciones: initialData.observaciones || '',
@@ -529,8 +667,9 @@ export default function PrescriptionForm({
                             </div>
                         </div>
 
-                        {/* Queratometría y Presión Intraocular - Bottom Row */}
-                        <div className="mt-4 flex gap-2">
+                        {/* Queratometría y Refracción - Bottom Row */}
+                        <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            {/* Queratometría y Presión Intraocular */}
                             <QueratometriaPresion
                                 data={{
                                     quera_od_horizontal: data.quera_od_horizontal,
@@ -549,7 +688,68 @@ export default function PrescriptionForm({
                                 onChange={(field, value) => setData(field as any, value)}
                                 errors={errors}
                             />
-                           
+
+                            {/* Refracción */}
+                            <div className="space-y-2">
+                                <Refraccion
+                                    data={{
+                                        refraccion_od_esfera: data.refraccion_od_esfera,
+                                        refraccion_od_cilindro: data.refraccion_od_cilindro,
+                                        refraccion_od_eje: data.refraccion_od_eje,
+                                        refraccion_subjetivo_od_adicion: data.refraccion_subjetivo_od_adicion,
+                                        refraccion_oi_esfera: data.refraccion_oi_esfera,
+                                        refraccion_oi_cilindro: data.refraccion_oi_cilindro,
+                                        refraccion_oi_eje: data.refraccion_oi_eje,
+                                        refraccion_subjetivo_oi_adicion: data.refraccion_subjetivo_oi_adicion,
+                                        retinoscopia_dinamica: data.retinoscopia_dinamica,
+                                        retinoscopia_estatica: data.retinoscopia_estatica,
+                                        refraccion_observaciones: data.refraccion_observaciones,
+                                    }}
+                                    onChange={(field, value) => setData(field as any, value)}
+                                    errors={errors}
+                                />
+                                
+                                {/* Refracción Details Button */}
+                                <div className="flex justify-end">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setShowRefraccionModal(true)}
+                                        className="text-xs text-blue-600 border-blue-200 hover:bg-blue-50"
+                                    >
+                                        <Plus className="h-3 w-3 mr-1" />
+                                        Ver detalles completos
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                          <div className="mt-4 grid grid-cols-1 lg:grid-cols-1 gap-4">
+
+
+                            {/* Refracción */}
+                            <div className="space-y-2">
+                                <RefraccionSubjetivo
+                                    data={{
+                                        subjetivo_od_esfera: data.subjetivo_od_esfera,
+                                        subjetivo_od_cilindro: data.subjetivo_od_cilindro,
+                                        subjetivo_od_eje: data.subjetivo_od_eje,
+                                        subjetivo_od_add: data.subjetivo_od_add,
+                                        subjetivo_od_dp: data.subjetivo_od_dp,
+                                        subjetivo_od_av_lejos: data.subjetivo_od_av_lejos,
+                                        subjetivo_od_av_cerca: data.subjetivo_od_av_cerca,
+                                        subjetivo_oi_esfera: data.subjetivo_oi_esfera,
+                                        subjetivo_oi_cilindro: data.subjetivo_oi_cilindro,
+                                        subjetivo_oi_eje: data.subjetivo_oi_eje,
+                                        subjetivo_oi_add: data.subjetivo_oi_add,
+                                        subjetivo_oi_dp: data.subjetivo_oi_dp,
+                                        subjetivo_oi_av_lejos: data.subjetivo_oi_av_lejos,
+                                        subjetivo_oi_av_cerca: data.subjetivo_oi_av_cerca,
+                                    }}
+                                    onChange={(field, value) => setData(field as any, value)}
+                                    errors={errors}
+                                />
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -563,6 +763,75 @@ export default function PrescriptionForm({
                 onAdvancedForm={() => {
                     router.visit('/contacts/create');
                 }}
+            />
+
+            <RefraccionModal
+                isOpen={showRefraccionModal}
+                onClose={() => setShowRefraccionModal(false)}
+                data={{
+                    // Cicloplegia
+                    cicloplegia_medicamento: data.cicloplegia_medicamento,
+                    cicloplegia_num_gotas: data.cicloplegia_num_gotas,
+                    cicloplegia_hora_aplicacion: data.cicloplegia_hora_aplicacion,
+                    cicloplegia_hora_examen: data.cicloplegia_hora_examen,
+
+                    // Autorefracción
+                    autorefraccion_od_esfera: data.autorefraccion_od_esfera,
+                    autorefraccion_od_cilindro: data.autorefraccion_od_cilindro,
+                    autorefraccion_od_eje: data.autorefraccion_od_eje,
+                    autorefraccion_oi_esfera: data.autorefraccion_oi_esfera,
+                    autorefraccion_oi_cilindro: data.autorefraccion_oi_cilindro,
+                    autorefraccion_oi_eje: data.autorefraccion_oi_eje,
+
+                    // Refracción
+                    refraccion_od_esfera: data.refraccion_od_esfera,
+                    refraccion_od_cilindro: data.refraccion_od_cilindro,
+                    refraccion_od_eje: data.refraccion_od_eje,
+                    refraccion_oi_esfera: data.refraccion_oi_esfera,
+                    refraccion_oi_cilindro: data.refraccion_oi_cilindro,
+                    refraccion_oi_eje: data.refraccion_oi_eje,
+
+                    // Retinoscopía
+                    retinoscopia_od_esfera: data.retinoscopia_od_esfera,
+                    retinoscopia_od_cilindro: data.retinoscopia_od_cilindro,
+                    retinoscopia_od_eje: data.retinoscopia_od_eje,
+                    retinoscopia_oi_esfera: data.retinoscopia_oi_esfera,
+                    retinoscopia_oi_cilindro: data.retinoscopia_oi_cilindro,
+                    retinoscopia_oi_eje: data.retinoscopia_oi_eje,
+                    retinoscopia_estatica: data.retinoscopia_estatica,
+                    retinoscopia_dinamica: data.retinoscopia_dinamica,
+
+                    // Subjetivo (en sección de refracción)
+                    refraccion_subjetivo_od_esfera: data.refraccion_subjetivo_od_esfera,
+                    refraccion_subjetivo_od_cilindro: data.refraccion_subjetivo_od_cilindro,
+                    refraccion_subjetivo_od_eje: data.refraccion_subjetivo_od_eje,
+                    refraccion_subjetivo_od_adicion: data.refraccion_subjetivo_od_adicion,
+                    refraccion_subjetivo_oi_esfera: data.refraccion_subjetivo_oi_esfera,
+                    refraccion_subjetivo_oi_cilindro: data.refraccion_subjetivo_oi_cilindro,
+                    refraccion_subjetivo_oi_eje: data.refraccion_subjetivo_oi_eje,
+                    refraccion_subjetivo_oi_adicion: data.refraccion_subjetivo_oi_adicion,
+
+                    // Observaciones de refracción
+                    refraccion_observaciones: data.refraccion_observaciones,
+
+                    // Subjetivo
+                    subjetivo_od_esfera: data.subjetivo_od_esfera,
+                    subjetivo_od_cilindro: data.subjetivo_od_cilindro,
+                    subjetivo_od_eje: data.subjetivo_od_eje,
+                    subjetivo_od_add: data.subjetivo_od_add,
+                    subjetivo_od_dp: data.subjetivo_od_dp,
+                    subjetivo_od_av_lejos: data.subjetivo_od_av_lejos,
+                    subjetivo_od_av_cerca: data.subjetivo_od_av_cerca,
+                    subjetivo_oi_esfera: data.subjetivo_oi_esfera,
+                    subjetivo_oi_cilindro: data.subjetivo_oi_cilindro,
+                    subjetivo_oi_eje: data.subjetivo_oi_eje,
+                    subjetivo_oi_add: data.subjetivo_oi_add,
+                    subjetivo_oi_dp: data.subjetivo_oi_dp,
+                    subjetivo_oi_av_lejos: data.subjetivo_oi_av_lejos,
+                    subjetivo_oi_av_cerca: data.subjetivo_oi_av_cerca,
+                }}
+                onChange={(field, value) => setData(field as any, value)}
+                errors={errors}
             />
 
             {/* Floating Submit Button */}
