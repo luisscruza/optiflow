@@ -85,6 +85,8 @@ final class ProductImport extends Model
 
     /**
      * Get the available product fields that can be mapped.
+     *
+     * @return array<int, array<string, bool|string>>
      */
     public static function getAvailableFields(): array
     {
@@ -103,6 +105,8 @@ final class ProductImport extends Model
 
     /**
      * Get available stock fields that can be mapped per workspace.
+     *
+     * @return array<int, array<string, bool|string>>
      */
     public static function getStockFields(): array
     {
@@ -227,6 +231,9 @@ final class ProductImport extends Model
         return (bool) $this->delete();
     }
 
+    /**
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [

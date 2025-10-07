@@ -43,6 +43,9 @@ final readonly class CreateQuotationAction
         });
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     private function createDocument(Workspace $workspace, array $data): Quotation
     {
         return Quotation::create([

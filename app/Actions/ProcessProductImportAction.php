@@ -96,6 +96,8 @@ final readonly class ProcessProductImportAction
 
     /**
      * Create a product from row data.
+     *
+     * @param  array<string, mixed>  $rowData
      */
     private function createProduct(array $rowData): Product
     {
@@ -131,6 +133,8 @@ final readonly class ProcessProductImportAction
 
     /**
      * Handle stock data for workspaces.
+     *
+     * @param  array<string, mixed>  $rowData
      */
     private function handleStockData(Product $product, array $rowData, Collection $workspaces): void
     {

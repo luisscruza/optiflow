@@ -117,6 +117,9 @@ final class QuotationItem extends Model
         $query->where('discount', '>', 0);
     }
 
+    /**
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [

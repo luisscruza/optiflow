@@ -33,7 +33,7 @@ final readonly class AssignUserToWorkspaceAction
             $isNewUser = false;
 
             if (! $user) {
-                if ($name === null || $name === '' || $name === '0' || ($password === null || $password === '' || $password === '0')) {
+                if (in_array($name, [null, '', '0'], true) || (in_array($password, [null, '', '0'], true))) {
                     throw new InvalidArgumentException('Name and password are required for new users');
                 }
                 $userData = [

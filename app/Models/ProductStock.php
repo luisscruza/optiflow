@@ -166,6 +166,9 @@ final class ProductStock extends Model
         $query->where('quantity', '>=', $requiredQuantity);
     }
 
+    /**
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [

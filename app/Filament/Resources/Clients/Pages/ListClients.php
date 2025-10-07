@@ -12,6 +12,9 @@ final class ListClients extends ListRecords
 {
     protected static string $resource = ClientResource::class;
 
+    /**
+     * @return CreateAction[]
+     */
     protected function getHeaderActions(): array
     {
         return [

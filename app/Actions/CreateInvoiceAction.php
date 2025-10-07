@@ -56,6 +56,9 @@ final readonly class CreateInvoiceAction
         });
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     private function createDocument(Workspace $workspace, array $data): Invoice
     {
         return Invoice::create([

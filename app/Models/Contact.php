@@ -251,6 +251,9 @@ final class Contact extends Model implements Commentable
         );
     }
 
+    /**
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [

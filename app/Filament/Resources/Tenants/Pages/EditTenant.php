@@ -12,6 +12,9 @@ final class EditTenant extends EditRecord
 {
     protected static string $resource = TenantResource::class;
 
+    /**
+     * @return DeleteAction[]
+     */
     protected function getHeaderActions(): array
     {
         return [

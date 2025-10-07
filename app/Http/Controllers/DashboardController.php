@@ -77,6 +77,9 @@ final class DashboardController extends Controller
         return $salesData;
     }
 
+    /**
+     * @return array<string, array<string, float|int>|array<string, float>>
+     */
     private function getSummaryStatistics(Carbon $startDate, Carbon $endDate): array
     {
         // Current month totals
@@ -183,6 +186,9 @@ final class DashboardController extends Controller
         ];
     }
 
+    /**
+     * @return array<string, array<string, float|int>>
+     */
     private function getAccountsData(): array
     {
         // Accounts receivable (outstanding invoices)

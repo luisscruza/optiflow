@@ -123,6 +123,8 @@ final class UpdateInvoiceItemAction
 
     /**
      * Validate stock availability
+     *
+     * @param  array<string, mixed>  $item
      */
     private function validateStock(Invoice $invoice, array $item, Product $product): void
     {
@@ -133,6 +135,8 @@ final class UpdateInvoiceItemAction
 
     /**
      * Decrease stock for new items
+     *
+     * @param  array<string, mixed>  $item
      */
     private function decreaseStock(Invoice $invoice, array $item, Product $product): void
     {
@@ -159,6 +163,8 @@ final class UpdateInvoiceItemAction
 
     /**
      * Create document line
+     *
+     * @param  array<string, mixed>  $item
      */
     private function createLine(Invoice $invoice, array $item, Product $product): void
     {

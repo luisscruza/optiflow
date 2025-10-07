@@ -179,6 +179,8 @@ final class Invoice extends Model implements Commentable
 
     /**
      * Get the status attribute.
+     *
+     * @return array<string, mixed>
      */
     protected function getStatusConfigAttribute(): array
     {
@@ -198,6 +200,9 @@ final class Invoice extends Model implements Commentable
         return max(0, $this->total_amount - $this->payments()->sum('amount'));
     }
 
+    /**
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [

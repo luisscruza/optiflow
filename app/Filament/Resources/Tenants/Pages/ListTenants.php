@@ -12,6 +12,9 @@ final class ListTenants extends ListRecords
 {
     protected static string $resource = TenantResource::class;
 
+    /**
+     * @return CreateAction[]
+     */
     protected function getHeaderActions(): array
     {
         return [
