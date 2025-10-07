@@ -8,6 +8,8 @@ use App\Concerns\BelongsToWorkspace;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+
 
 /**
  * @property-read \Illuminate\Database\Eloquent\Collection<int, MastertableItem> $canalesDeReferimiento
@@ -39,6 +41,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 final class Prescription extends Model
 {
     use BelongsToWorkspace;
+
+    protected $appends = [
+        'human_readable_date',
+    ];
+
+      /**
+     * Get the age of the contact based on birth_date.
+     */
+    protected function humanReadableDate(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): ?string => $this->created_at?->diffForHumans()
+        );
+    }
+
 
     /**
      * @return BelongsTo<Contact, $this>

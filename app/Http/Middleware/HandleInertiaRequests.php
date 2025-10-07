@@ -8,6 +8,7 @@ use App\Models\CompanyDetail;
 use App\Models\Currency;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Inertia\Middleware;
 
 final class HandleInertiaRequests extends Middleware
@@ -48,6 +49,8 @@ final class HandleInertiaRequests extends Middleware
                 ],
             ];
         }
+
+        App::setLocale('es');
 
         return [
             ...parent::share($request),

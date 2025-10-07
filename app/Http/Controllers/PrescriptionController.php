@@ -79,7 +79,7 @@ final class PrescriptionController extends Controller
                 });
         }
 
-                $prescriptions = $query->paginate(15)->withQueryString();
+        $prescriptions = $query->paginate(15)->withQueryString();
 
 
         return inertia('prescriptions/index', [

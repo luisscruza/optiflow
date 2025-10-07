@@ -147,7 +147,7 @@ export default function PrescriptionsIndex({ prescriptions, filters = {} }: Prop
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>ID</TableHead>
-                                            <TableHead>Cliente</TableHead>
+                                            <TableHead>Paciente</TableHead>
                                             <TableHead>Fecha</TableHead>
                                             <TableHead>Sucursal</TableHead>
                                             <TableHead className="text-right">Acciones</TableHead>
@@ -169,7 +169,8 @@ export default function PrescriptionsIndex({ prescriptions, filters = {} }: Prop
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                                                        Sin fecha registrada
+                                                        {new Date(prescription.created_at).toLocaleDateString()}
+                                                        <span className='text-xs font-semibold italic'> ({prescription.human_readable_date})</span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>

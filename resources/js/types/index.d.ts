@@ -491,6 +491,8 @@ export interface Prescription {
     id: number;
     patient: Contact;
     workspace: Workspace;
+    created_at: string;
+    human_readable_date: string;
 }
 
 export interface InvoiceStatusConfig {
