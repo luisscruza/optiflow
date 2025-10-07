@@ -209,6 +209,15 @@ final class Contact extends Model implements Commentable
     }
 
     /**
+     * Scope to get customers.
+     */
+    #[Scope]
+    protected function optometrists(Builder $query): void
+    {
+        $query->where('contact_type', ContactType::Optometrist->value);
+    }
+
+    /**
      * Scope to get suppliers.
      */
     #[Scope]

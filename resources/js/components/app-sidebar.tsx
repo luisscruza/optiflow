@@ -11,8 +11,9 @@ import productImports from '@/routes/product-imports';
 import workspaces from '@/routes/workspaces';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Building2, Folder, LayoutGrid, Package, RotateCcw, Settings, Users2, Receipt, Upload } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Package, RotateCcw, Settings, Users2, Receipt, Eye, Upload } from 'lucide-react';
 import AppLogo from './app-logo';
+import prescriptions from '@/routes/prescriptions';
 
 const mainNavItems: NavItem[] = [
     {
@@ -55,6 +56,11 @@ const mainNavItems: NavItem[] = [
         title: 'Contactos',
         href: contacts.index(),
         icon: Users2,
+    },
+        {
+        title: 'Recetas',
+        href: prescriptions.create(),
+        icon: Eye,
     },
     {
         title: 'Configuración',

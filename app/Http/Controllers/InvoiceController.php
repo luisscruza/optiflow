@@ -78,7 +78,6 @@ final class InvoiceController extends Controller
             ->get();
 
         $customers = Contact::customers()
-            ->when($currentWorkspace, fn ($query) => $query->where('workspace_id', $currentWorkspace->id))
             ->orderBy('name')
             ->get();
 

@@ -15,6 +15,7 @@ use App\Http\Controllers\DownloadQuotationPdfController;
 use App\Http\Controllers\InitialStockController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImportController;
 use App\Http\Controllers\QuotationController;
@@ -29,7 +30,6 @@ use App\Http\Controllers\WorkspaceMemberController;
 use App\Http\Controllers\WorkspaceMemberRoleController;
 use App\Http\Middleware\HasWorkspace;
 use App\Http\Middleware\SetWorkspaceContext;
-use App\Models\BankAccount;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain;
@@ -52,14 +52,6 @@ Route::middleware([
     InitializeTenancyBySubdomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function (): void {
-    Route::get('me', fn () => auth()->user())->name('me');
-
-    // Route::get('/test', function () {
-    //     $bank = BankAccount::onlyActive()->first();
-    //     $bank->initial_balance_date = now();
-    //     $bank->save();
-    // });
-
     Route::get('/', fn () => redirect()->route('dashboard'))->name('home');
 
     Route::prefix('invitations')->name('invitations.')->group(function (): void {
@@ -127,6 +119,7 @@ Route::middleware([
 
             Route::post('workspace/invitations', [WorkspaceInvitationController::class, 'store'])->name('workspace.invitations.store');
 
+            Route::resource('prescriptions', PrescriptionController::class)->only(['create', 'index', 'store']);
         });
     });
 

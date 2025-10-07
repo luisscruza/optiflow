@@ -8,6 +8,7 @@ enum ContactType: string
 {
     case Customer = 'customer';
     case Supplier = 'supplier';
+    case Optometrist = 'optometrist';
 
     /**
      * Get all contact types as an array for form options.
@@ -19,6 +20,7 @@ enum ContactType: string
         return [
             self::Customer->value => self::Customer->label(),
             self::Supplier->value => self::Supplier->label(),
+            self::Optometrist->value => self::Optometrist->label(),
         ];
     }
 
@@ -30,6 +32,7 @@ enum ContactType: string
         return match ($this) {
             self::Customer => 'Cliente',
             self::Supplier => 'Proveedor',
+            self::Optometrist => 'Optometrista',
         };
     }
 

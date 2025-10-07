@@ -16,6 +16,7 @@ interface Props {
     onSuccess?: (contact: any) => void;
     contact_types?: Array<{ value: ContactType; label: string }>;
     identification_types?: Array<{ value: IdentificationType; label: string }>;
+    types?: ContactType[]; 
 }
 
 export default function QuickContactModal({
@@ -26,12 +27,14 @@ export default function QuickContactModal({
     contact_types = [
         { value: 'customer', label: 'Cliente' },
         { value: 'supplier', label: 'Proveedor' },
+        { value: 'optometrist', label: 'Optometrista' },
     ],
     identification_types = [
         { value: 'cedula', label: 'Cédula' },
         { value: 'rnc', label: 'RNC' },
         { value: 'pasaporte', label: 'Pasaporte' },
     ],
+    types = ['customer', 'supplier'],
 }: Props) {
     const [selectedContactType, setSelectedContactType] = useState<ContactType | ''>('customer');
     const [selectedIdentificationType, setSelectedIdentificationType] = useState<IdentificationType | ''>('');
@@ -149,7 +152,8 @@ export default function QuickContactModal({
 
                             {/* Contact Type Selection */}
                             <div className="grid grid-cols-2 gap-4">
-                                {contact_types.map((type) => (
+                                {/* Filtramos que los contact types sean los que pasan en el props de types... */}
+                                {contact_types.filter((type) => types.includes(type.value)).map((type) => (
                                     <label key={type.value} className="cursor-pointer">
                                         <input
                                             type="radio"

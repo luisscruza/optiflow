@@ -16,6 +16,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Si existe la tabla, borrala
+        if (Schema::hasTable('prescriptions')) {
+            Schema::dropIfExists('prescriptions');
+        }
+
         Schema::create('prescriptions', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Workspace::class)->constrained()->cascadeOnDelete();
@@ -51,60 +56,60 @@ return new class extends Migration
             $table->string('av_cerca_ph_oi')->nullable();
 
             // === BIOMICROSCOPÍA - OJO DERECHO ===
-            $table->text('biomicroscopia_od_cejas')->nullable()->default('Presentes y completas');
-            $table->text('biomicroscopia_od_pestanas')->nullable()->default('Presentes y completas');
-            $table->text('biomicroscopia_od_parpados')->nullable()->default('Dociles');
-            $table->text('biomicroscopia_od_conjuntiva')->nullable()->default('Transparente');
-            $table->text('biomicroscopia_od_esclerotica')->nullable()->default('Sin alteracion');
-            $table->text('biomicroscopia_od_cornea')->nullable()->default('Transparente');
-            $table->text('biomicroscopia_od_iris')->nullable()->default('Completo');
-            $table->text('biomicroscopia_od_pupila')->nullable()->default('Normoreactiva');
-            $table->text('biomicroscopia_od_cristalino')->nullable()->default('transparente');
-            
+            $table->text('biomicroscopia_od_cejas')->nullable();
+            $table->text('biomicroscopia_od_pestanas')->nullable();
+            $table->text('biomicroscopia_od_parpados')->nullable();
+            $table->text('biomicroscopia_od_conjuntiva')->nullable();
+            $table->text('biomicroscopia_od_esclerotica')->nullable();
+            $table->text('biomicroscopia_od_cornea')->nullable();
+            $table->text('biomicroscopia_od_iris')->nullable();
+            $table->text('biomicroscopia_od_pupila')->nullable();
+            $table->text('biomicroscopia_od_cristalino')->nullable();
+
             // === BIOMICROSCOPÍA - OJO IZQUIERDO ===
-            $table->text('biomicroscopia_oi_cejas')->nullable()->default('Presentes y completas');
-            $table->text('biomicroscopia_oi_pestanas')->nullable()->default('Presentes y completas');
-            $table->text('biomicroscopia_oi_parpados')->nullable()->default('Dociles');
-            $table->text('biomicroscopia_oi_conjuntiva')->nullable()->default('Transparente');
-            $table->text('biomicroscopia_oi_esclerotica')->nullable()->default('Sin alteracion');
-            $table->text('biomicroscopia_oi_cornea')->nullable()->default('Transparente');
-            $table->text('biomicroscopia_oi_iris')->nullable()->default('Completo');
-            $table->text('biomicroscopia_oi_pupila')->nullable()->default('Normoreactiva');
-            $table->text('biomicroscopia_oi_cristalino')->nullable()->default('transparente');
-            
+            $table->text('biomicroscopia_oi_cejas')->nullable();
+            $table->text('biomicroscopia_oi_pestanas')->nullable();
+            $table->text('biomicroscopia_oi_parpados')->nullable();
+            $table->text('biomicroscopia_oi_conjuntiva')->nullable();
+            $table->text('biomicroscopia_oi_esclerotica')->nullable();
+            $table->text('biomicroscopia_oi_cornea')->nullable();
+            $table->text('biomicroscopia_oi_iris')->nullable();
+            $table->text('biomicroscopia_oi_pupila')->nullable();
+            $table->text('biomicroscopia_oi_cristalino')->nullable();
+
             // === BIOMICROSCOPÍA - OBSERVACIONES ===
             $table->text('biomicroscopia_observaciones')->nullable();
 
             // === EXAMEN PUPILAR ===
             // OD (Ojo Derecho)
-            $table->enum('pupilar_od_fotomotor_directo', ['Normoreactivo', 'Hiporreactivo', 'Arreactivo'])->default('Normoreactivo');
-            $table->enum('pupilar_od_consensual', ['Normoreactivo', 'Hiporreactivo', 'Arreactivo'])->default('Normoreactivo');
-            $table->enum('pupilar_od_acomodativo', ['Normoreactivo', 'Hiporreactivo', 'Arreactivo'])->default('Normoreactivo');
-            
+            $table->enum('pupilar_od_fotomotor_directo', ['Normoreactivo', 'Hiporreactivo', 'Arreactivo'])->nullable();
+            $table->enum('pupilar_od_consensual', ['Normoreactivo', 'Hiporreactivo', 'Arreactivo'])->nullable();
+            $table->enum('pupilar_od_acomodativo', ['Normoreactivo', 'Hiporreactivo', 'Arreactivo'])->nullable();
+
             // OI (Ojo Izquierdo)
-            $table->enum('pupilar_oi_fotomotor_directo', ['Normoreactivo', 'Hiporreactivo', 'Arreactivo'])->default('Normoreactivo');
-            $table->enum('pupilar_oi_consensual', ['Normoreactivo', 'Hiporreactivo', 'Arreactivo'])->default('Normoreactivo');
-            $table->enum('pupilar_oi_acomodativo', ['Normoreactivo', 'Hiporreactivo', 'Arreactivo'])->default('Normoreactivo');
+            $table->enum('pupilar_oi_fotomotor_directo', ['Normoreactivo', 'Hiporreactivo', 'Arreactivo'])->nullable();
+            $table->enum('pupilar_oi_consensual', ['Normoreactivo', 'Hiporreactivo', 'Arreactivo'])->nullable();
+            $table->enum('pupilar_oi_acomodativo', ['Normoreactivo', 'Hiporreactivo', 'Arreactivo'])->nullable();
 
             // === OFTALMOSCOPÍA ===
             // OD (Ojo Derecho)
             $table->string('oftalmoscopia_od_color')->nullable();
-            $table->string('oftalmoscopia_od_papila')->nullable()->default('Definida');
+            $table->string('oftalmoscopia_od_papila')->nullable();
             $table->string('oftalmoscopia_od_excavacion')->nullable();
-            $table->string('oftalmoscopia_od_relacion_av')->nullable()->default('2/3'); // Relación Arteria/Vena
+            $table->string('oftalmoscopia_od_relacion_av')->nullable(); // Relación Arteria/Vena
             $table->string('oftalmoscopia_od_macula')->nullable();
-            $table->string('oftalmoscopia_od_brillo_foveal')->nullable()->default('Presente');
-            $table->string('oftalmoscopia_od_fijacion')->nullable()->default('Central');
-            
+            $table->string('oftalmoscopia_od_brillo_foveal')->nullable();
+            $table->string('oftalmoscopia_od_fijacion')->nullable();
+
             // OI (Ojo Izquierdo)
             $table->string('oftalmoscopia_oi_color')->nullable();
-            $table->string('oftalmoscopia_oi_papila')->nullable()->default('Definida');
+            $table->string('oftalmoscopia_oi_papila')->nullable();
             $table->string('oftalmoscopia_oi_excavacion')->nullable();
-            $table->string('oftalmoscopia_oi_relacion_av')->nullable()->default('2/3'); // Relación Arteria/Vena
-            $table->string('oftalmoscopia_oi_macula')->nullable()->default('Avascular');
-            $table->string('oftalmoscopia_oi_brillo_foveal')->nullable()->default('Presente');
-            $table->string('oftalmoscopia_oi_fijacion')->nullable()->default('Central');
-            
+            $table->string('oftalmoscopia_oi_relacion_av')->nullable(); // Relación Arteria/Vena
+            $table->string('oftalmoscopia_oi_macula')->nullable(); // Avascular
+            $table->string('oftalmoscopia_oi_brillo_foveal')->nullable(); // Presente
+            $table->string('oftalmoscopia_oi_fijacion')->nullable(); // Central
+
             // === OFTALMOSCOPÍA - OBSERVACIONES ===
             $table->text('oftalmoscopia_observaciones')->nullable();
 
@@ -186,7 +191,7 @@ return new class extends Migration
             $table->string('subjetivo_od_dp')->nullable(); // Distancia pupilar
             $table->string('subjetivo_od_av_lejos')->nullable(); // 20/
             $table->string('subjetivo_od_av_cerca')->nullable();
-            
+
             $table->string('subjetivo_oi_esfera')->nullable();
             $table->string('subjetivo_oi_cilindro')->nullable();
             $table->string('subjetivo_oi_eje')->nullable();
@@ -196,7 +201,7 @@ return new class extends Migration
             $table->string('subjetivo_oi_av_cerca')->nullable();
 
             // === TEST'S ===
-            
+
             // === VISIÓN CROMÁTICA ===
             $table->string('vision_cromatica_test_usado')->nullable();
             $table->text('vision_cromatica_od')->nullable();
@@ -218,44 +223,44 @@ return new class extends Migration
             $table->text('test_adicionales')->nullable(); // Campo de texto libre para otros tests
 
             // === MOTILIDAD OCULAR ===
-            
+
             // === OJO DOMINANTE Y MANO DOMINANTE ===
             $table->enum('ojo_dominante', ['Derecho', 'Izquierdo'])->nullable();
             $table->enum('mano_dominante', ['Derecha', 'Izquierda'])->nullable();
-            
+
             // === KAPPA ===
             $table->enum('kappa_od', ['Positivo', 'Negativo', 'Neutro'])->nullable();
             $table->enum('kappa_oi', ['Positivo', 'Negativo', 'Neutro'])->nullable();
-            
+
             // === DUCCIONES ===
-            $table->text('ducciones_od')->nullable()->default('Suaves, completas, confortables');
-            $table->text('ducciones_oi')->nullable()->default('Suaves, completas, confortables');
-            
+            $table->text('ducciones_od')->nullable();
+            $table->text('ducciones_oi')->nullable();
+
             // === HIRSHBERG ===
-            $table->string('hirshberg')->nullable()->default('Centrado');
-            
+            $table->string('hirshberg')->nullable();
+
             // === VERSIONES ===
             // Grid de OK boxes - almacenar como JSON o campos individuales
             $table->json('versiones_grid')->nullable(); // Puede almacenar matriz de OK/valores
-            
+
             // === TEST USADO (Cover Test) ===
-            $table->string('motilidad_test_usado')->nullable()->default('Cover Test');
-            
+            $table->string('motilidad_test_usado')->nullable();
+
             // RFP (Sin corrección) y RFN (Con corrección)
             $table->string('motilidad_rfp_vl')->nullable(); // RFP Visión Lejana
             $table->string('motilidad_rfp_vc')->nullable(); // RFP Visión Cercana
             $table->string('motilidad_rfn_vl')->nullable(); // RFN Visión Lejana
             $table->string('motilidad_rfn_vc')->nullable(); // RFN Visión Cercana
-            
+
             // Saltos Vergenciales
             $table->string('motilidad_saltos_vergenciales_vl')->nullable();
             $table->string('motilidad_saltos_vergenciales_vc')->nullable();
-            
+
             // === PPC (Punto Próximo de Convergencia) ===
             $table->string('ppc_objeto_real')->nullable();
             $table->string('ppc_luz')->nullable();
             $table->string('ppc_filtro_rojo')->nullable();
-            
+
             // === LAG (Acomodación y Flexibilidad) ===
             // OD
             $table->string('lag_od_acomodacion')->nullable();
@@ -263,18 +268,18 @@ return new class extends Migration
             // OI
             $table->string('lag_oi_acomodacion')->nullable();
             $table->string('lag_oi_flexibilidad')->nullable();
-            
+
             // ARP (Acomodación Relativa Positiva)
             $table->string('arp_subjetiva')->nullable();
             $table->string('arp_objetiva')->nullable();
-            
+
             // ARN (Acomodación Relativa Negativa)
             $table->string('arn_amplitud')->nullable();
-            
+
             // AO (Ambos Ojos)
             $table->string('ao_valor')->nullable();
             $table->string('ao_aa')->nullable(); // A/A column
-            
+
             // === OBSERVACIONES DE MOTILIDAD ===
             $table->text('motilidad_observaciones')->nullable();
 
@@ -296,11 +301,10 @@ return new class extends Migration
             $table->integer('num_dispositivos_medicos')->default(0);
             $table->text('diagnosticos')->nullable(); // Texto libre para diagnósticos múltiples
 
-            $table->json('diagnosticos_cie')->nullable(); // JSON array de diagnósticos múltiples   
+            $table->json('diagnosticos_cie')->nullable(); // JSON array de diagnósticos múltiples
 
             // === METADATA ===
             $table->date('proxima_cita')->nullable();
-            $table->string('status')->default('draft'); // draft, final, cancelled
             $table->timestamps();
             $table->softDeletes();
 
@@ -308,7 +312,6 @@ return new class extends Migration
             $table->index('patient_id');
             $table->index('created_by');
             $table->index('fecha_examen');
-            $table->index('status');
         });
     }
 

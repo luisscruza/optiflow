@@ -346,6 +346,19 @@ export interface Contact {
     supplied_stocks_count?: number;
 }
 
+export interface MasterTableData {
+    id: number;
+    name: string;
+    alias: string;
+    description?: string;
+    items: Array<{
+        id: number;
+        mastertable_id: number;
+        name: string;
+    }>;
+}
+
+
 export interface PaginatedContacts {
     data: Contact[];
     current_page: number;
@@ -371,7 +384,7 @@ export interface IdentificationTypeOption {
     label: string;
 }
 
-export type ContactType = 'customer' | 'supplier';
+export type ContactType = 'customer' | 'supplier' | 'optometrist';
 export type IdentificationType = 'cedula' | 'pasaporte' | 'rnc' | 'nif' | 'nie';
 
 export type ContactType = 'customer' | 'supplier';

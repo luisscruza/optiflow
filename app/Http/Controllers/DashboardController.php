@@ -224,13 +224,11 @@ final class DashboardController extends Controller
 
     private function calculatePercentageChange(float $previous, float $current): float
     {
-        if ($previous === 0) {
-            return $current > 0 ? 100 : 0;
-        }
+        $epsilon = 1e-8; // small tolerance to prevent division by near-zero
 
-        if ($current == 0 ) 
-        {
-            return 0;
+        if (abs($previous) < $epsilon) {
+            // Define what you consider the correct behavior when "previous" is (near) zero
+            return $current > 0 ? 100 : 0;
         }
 
         return round((($current - $previous) / $previous) * 100, 2);
