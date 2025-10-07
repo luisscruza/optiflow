@@ -39,6 +39,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static Builder<static>|Address whereProvince($value)
  * @method static Builder<static>|Address whereType($value)
  * @method static Builder<static>|Address whereUpdatedAt($value)
+ * @method static \Database\Factories\AddressFactory factory($count = null, $state = [])
  *
  * @mixin \Eloquent
  */

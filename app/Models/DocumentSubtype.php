@@ -59,14 +59,6 @@ final class DocumentSubtype extends Model
     use HasFactory;
 
     /**
-     * Get default document subtype.
-     */
-    public static function getDefault(): ?self
-    {
-        return self::where('is_default', true)->first();
-    }
-
-    /**
      * Get document subtype by prefix.
      */
     public static function findByPrefix(string $prefix): ?self

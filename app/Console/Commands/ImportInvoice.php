@@ -517,7 +517,7 @@ final class ImportInvoice extends Command
         $str = filter_var($str, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH);
 
         // Trim whitespace
-        return trim($str ?? '');
+        return trim($str);
     }
 
     /**

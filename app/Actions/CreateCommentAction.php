@@ -25,7 +25,7 @@ final readonly class CreateCommentAction
             /** @var class-string<Commentable> $class */
             $class = $this->resolveCommentableClass($data['commentable_type']);
 
-            /** @var Commentable $model */
+            /** @var Model $model */
             $model = $class::findOrFail($data['commentable_id']);
 
             $comment = $model->comment($data['comment']);

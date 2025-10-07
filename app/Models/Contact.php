@@ -80,6 +80,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @method static Builder<static>|Contact wherePhoneSecondary($value)
  * @method static Builder<static>|Contact whereStatus($value)
  *
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Comment> $comments
+ * @property-read int|null $comments_count
+ *
+ * @method static Builder<static>|Contact optometrists()
+ *
  * @mixin \Eloquent
  */
 final class Contact extends Model implements Commentable

@@ -78,6 +78,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static Builder<static>|Invoice whereSubtotalAmount($value)
  * @method static Builder<static>|Invoice whereTaxAmount($value)
  *
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Comment> $comments
+ * @property-read int|null $comments_count
+ * @property-read float $amount_due
+ * @property-read InvoiceStatus $status
+ * @property-read array<string, mixed> $status_config
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Payment> $payments
+ * @property-read int|null $payments_count
+ *
  * @mixin \Eloquent
  */
 final class Invoice extends Model implements Commentable

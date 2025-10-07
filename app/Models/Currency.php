@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -32,6 +34,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency whereSymbol($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency whereUpdatedAt($value)
+ * @method static \Database\Factories\CurrencyFactory factory($count = null, $state = [])
  *
  * @mixin \Eloquent
  */
@@ -40,29 +43,10 @@ final class Currency extends Model
     /** @use HasFactory<\Database\Factories\CurrencyFactory> */
     use HasFactory;
 
-    protected $casts = [
-        'is_default' => 'boolean',
-        'is_active' => 'boolean',
-    ];
-
-    /**
-     * Get the default currency.
-     */
-    public static function getDefault(): ?self
-    {
-        return self::where('is_default', true)->where('is_active', true)->first();
-    }
-
-    /**
-     * Get all active currencies.
-     */
-    public static function getActive(): \Illuminate\Database\Eloquent\Collection
-    {
-        return self::where('is_active', true)->orderBy('is_default', 'desc')->orderBy('name')->get();
-    }
-
     /**
      * Get all rates for this currency.
+     *
+     * @return HasMany<CurrencyRate, $this>
      */
     public function rates(): HasMany
     {
@@ -168,5 +152,34 @@ final class Currency extends Model
         $percentage = ($change / $previous->rate) * 100;
 
         return round($percentage, 2);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'is_default' => 'boolean',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    /**
+     * Scope to get default currency.
+     */
+    #[Scope]
+    protected function default(Builder $query): void
+    {
+        $query->where('is_default', true);
+    }
+
+    /**
+     * Scope to get active currencies.
+     */
+    #[Scope]
+    protected function active(Builder $query): void
+    {
+        $query->where('is_active', true);
     }
 }

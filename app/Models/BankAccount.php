@@ -21,6 +21,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BankAccount newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BankAccount query()
  *
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Payment> $payments
+ * @property-read int|null $payments_count
+ *
+ * @method static Builder<static>|BankAccount onlyActive()
+ *
  * @mixin \Eloquent
  */
 final class BankAccount extends Model

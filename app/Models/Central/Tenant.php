@@ -35,6 +35,7 @@ use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant whereUpdatedAt($value)
+ * @method static \Database\Factories\Central\TenantFactory factory($count = null, $state = [])
  *
  * @mixin \Eloquent
  */

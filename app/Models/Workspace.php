@@ -53,6 +53,9 @@ use Illuminate\Support\Str;
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Workspace whereCode($value)
  *
+ * @property-read Collection<int, Invoice> $invoices
+ * @property-read int|null $invoices_count
+ *
  * @mixin \Eloquent
  */
 final class Workspace extends Model
