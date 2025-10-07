@@ -39,6 +39,8 @@ final class CreateContactRequest extends FormRequest
             'status' => ['required', 'string', 'in:active,inactive'],
             'observations' => ['nullable', 'string'],
             'credit_limit' => ['nullable', 'numeric', 'min:0'],
+            'gender' => ['required', 'string', 'in:male,female,-'],
+            'birth_date' => ['nullable', 'date', 'before:today'],
             // Address validation
             'address.province' => ['nullable', 'string', 'max:255'],
             'address.municipality' => ['nullable', 'string', 'max:255'],

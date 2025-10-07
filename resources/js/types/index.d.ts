@@ -379,6 +379,10 @@ export interface ContactFilters {
     search?: string;
 }
 
+export interface PrescriptionFilters {
+    search?: string;
+}
+
 export interface IdentificationTypeOption {
     value: string;
     label: string;
@@ -483,6 +487,12 @@ export interface Currency {
     updated_at: string;
 }
 
+export interface Prescription {
+    id: number;
+    patient: Contact;
+    workspace: Workspace;
+}
+
 export interface InvoiceStatusConfig {
     value: 'paid' | 'partially_paid' | 'pending_payment' | 'cancelled';
     label: string;
@@ -491,6 +501,8 @@ export interface InvoiceStatusConfig {
 }
 
 export interface PaginatedInvoices extends PaginatedResponse<Invoice> {}
+
+export interface PaginatedPrescriptions extends PaginatedResponse<Prescription> {}
 
 export interface InvoiceFilters {
     search?: string;

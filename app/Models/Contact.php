@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Concerns\HasComments;
 use App\Contracts\Commentable;
 use App\Enums\ContactType;
+use App\Enums\Gender;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -246,6 +247,16 @@ final class Contact extends Model implements Commentable
         );
     }
 
+     /**
+     * Get the age of the contact based on birth_date.
+     */
+    protected function age(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): ?int => $this->birth_date?->age
+        );
+    }
+
     /**
      * Get the full address as a single string.
      */
@@ -264,6 +275,8 @@ final class Contact extends Model implements Commentable
         return [
             'metadata' => 'array',
             'credit_limit' => 'decimal:2',
+            'birth_date' => 'immutable_date',
+            'gender' => Gender::class,
         ];
     }
 }

@@ -59,7 +59,7 @@ const mainNavItems: NavItem[] = [
     },
         {
         title: 'Recetas',
-        href: prescriptions.create(),
+        href: prescriptions.index(),
         icon: Eye,
     },
     {

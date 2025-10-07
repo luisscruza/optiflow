@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Receta Médica - {{ $prescription->patient_name ?? 'José Isaías Pérez Gracia' }}</title>
+    <title>Receta - {{ $prescription->patient->name }}</title>
     <style>
 
 
@@ -129,9 +129,9 @@
                 <th>Sucursal:</th>
             </tr>
             <tr>
-                <td>{{ $prescription->date ?? '06/10/2025' }}</td>
+                <td>{{ $prescription->created_at->format('d/m/Y') }}</td>
                 <td>{{ $prescription->optometrist?->name ?? 'Receta Externa' }}</td>
-                <td>{{ $prescription->branch ?? 'Óptica COVI Salcedo' }}</td>
+                <td>{{ $prescription->workspace->name }} </td>
             </tr>
         </table>
     </div>
@@ -147,11 +147,11 @@
                 <th>Tel.:</th>
             </tr>
             <tr>
-                <td>{{ $prescription->patient_name ?? 'Jose Isaias Perez Gracia' }}</td>
-                <td>{{ $prescription->patient_age ?? '8' }}</td>
-                <td>{{ $prescription->patient_gender ?? 'Masculino' }}</td>
-                <td>{{ $prescription->patient_id ?? '7183' }}</td>
-                <td>{{ $prescription->patient_phone ?? '+18297587128' }}</td>
+                <td>{{ $prescription->patient->name }}</td>
+                <td>{{ $prescription->patient->age }}</td>
+                <td>{{ $prescription->patient->gender->label() }}</td>
+                <td>{{ $prescription->patient->id }}</td>
+                <td>{{ $prescription->patient->phone_primary }}</td>
             </tr>
         </table>
     </div>
@@ -170,17 +170,17 @@
         <tbody>
             <tr>
                 <td class="eye-label">Ojo derecho</td>
-                <td>{{ $prescription->od_sphere ?? '-5.00' }}</td>
-                <td>{{ $prescription->od_cylinder ?? '-2.75' }}</td>
-                <td>{{ $prescription->od_axis ?? '168°' }}</td>
-                <td>{{ $prescription->od_addition ?? 'N/A' }}</td>
+                <td>{{ $prescription->subjetivo_od_esfera }}</td>
+                <td>{{ $prescription->subjetivo_od_cilindro }}</td>
+                <td>{{ $prescription->subjetivo_od_eje }}</td>
+                <td>{{ $prescription->subjetivo_od_add }}</td>
             </tr>
             <tr>
                 <td class="eye-label">Ojo izquierdo</td>
-                <td>{{ $prescription->os_sphere ?? '-5.50' }}</td>
-                <td>{{ $prescription->os_cylinder ?? '-3.50' }}</td>
-                <td>{{ $prescription->os_axis ?? '171°' }}</td>
-                <td>{{ $prescription->os_addition ?? 'N/A' }}</td>
+                <td>{{ $prescription->subjetivo_oi_esfera }}</td>
+                <td>{{ $prescription->subjetivo_oi_cilindro }}</td>
+                <td>{{ $prescription->subjetivo_oi_eje }}</td>
+                <td>{{ $prescription->subjetivo_oi_add }}</td>
             </tr>
         </tbody>
     </table>

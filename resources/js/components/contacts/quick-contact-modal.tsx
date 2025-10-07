@@ -248,6 +248,36 @@ export default function QuickContactModal({
                                 {errors.name && <p className="text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
                             </div>
 
+                             <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="gender">Sexo *</Label>
+                                    <select
+                                        name="gender"
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        <option value="">Seleccionar sexo</option>
+                                        <option value="male">Masculino</option>
+                                        <option value="female">Femenino</option>
+                                        <option value="-">Prefiero no decirlo</option>
+                                    </select>
+                                    {errors['gender'] && (
+                                        <p className="text-sm text-red-600 dark:text-red-400">{errors['gender']}</p>
+                                    )}
+                                </div>
+                                    <div className="space-y-2">
+                                    <Label htmlFor="gender">Fecha de nacimiento *</Label>
+                                    <Input
+                                        name="birth_date"
+                                        type="date"
+                                        placeholder="Fecha de nacimiento"
+                                        required
+                                    />
+                                    {errors['birth_date'] && (
+                                        <p className="text-sm text-red-600 dark:text-red-400">{errors['birth_date']}</p>
+                                    )}
+                                </div>
+                            </div>
+
                             {/* Address */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
@@ -286,8 +316,8 @@ export default function QuickContactModal({
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="phone_primary">Teléfono</Label>
-                                    <Input name="phone_primary" type="tel" placeholder="000-000-0000" />
+                                    <Label htmlFor="phone_primary">Teléfono *</Label>
+                                    <Input name="phone_primary" type="tel" placeholder="000-000-0000" required />
                                     {errors.phone_primary && <p className="text-sm text-red-600 dark:text-red-400">{errors.phone_primary}</p>}
                                 </div>
                             </div>

@@ -107,6 +107,16 @@ final class Workspace extends Model
         return $this->hasMany(Invoice::class);
     }
 
+     /**
+     * Get the prescriptions that belong to the workspace.
+     *
+     * @return HasMany<Prescription, $this>
+     */
+    public function prescriptions(): HasMany
+    {
+        return $this->hasMany(Prescription::class);
+    }
+
     /**
      * Get the invitations for this workspace.
      *
