@@ -24,7 +24,6 @@ pest()->extend(Tests\TestCase::class)
     })
     ->in('Feature/Tenant', 'Unit/Tenant', 'Browser/Tenant');
 
-
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature/Central', 'Unit/Central', 'Browser/Central');
