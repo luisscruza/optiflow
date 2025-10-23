@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('addresses', function (Blueprint $table) {
+        Schema::create('addresses', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('contact_id')->constrained()->cascadeOnDelete();
             $table->string('type')->default('primary'); // primary, secondary, billing, shipping

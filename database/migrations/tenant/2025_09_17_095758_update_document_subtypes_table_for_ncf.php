@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('document_subtypes', function (Blueprint $table) {
+        Schema::table('document_subtypes', function (Blueprint $table): void {
             // NCF fields for Dominican Republic fiscal compliance
             $table->boolean('is_default')->default(false)->after('name'); // If this is the default NCF type
             $table->date('valid_until_date')->nullable()->after('is_default'); // Fecha de vencimiento
@@ -37,7 +37,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('document_subtypes', function (Blueprint $table) {
+        Schema::table('document_subtypes', function (Blueprint $table): void {
             // Drop indexes first
             $table->dropIndex(['is_default']);
             $table->dropIndex(['valid_until_date']);

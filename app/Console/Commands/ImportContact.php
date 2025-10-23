@@ -164,7 +164,7 @@ final class ImportContact extends Command
                         }
 
                         // Check if contact already exists by name
-                        $existingContactByName = Contact::where('name', $contactData['name'])->first();
+                        $existingContactByName = Contact::query()->where('name', $contactData['name'])->first();
 
                         if ($existingContactByName) {
                             $skipped++;
@@ -176,7 +176,7 @@ final class ImportContact extends Command
 
                         // Check if contact already exists by identification number (if provided)
                         if (! empty($contactData['identification_number'])) {
-                            $existingContactByIdNumber = Contact::where('identification_number', $contactData['identification_number'])->first();
+                            $existingContactByIdNumber = Contact::query()->where('identification_number', $contactData['identification_number'])->first();
 
                             if ($existingContactByIdNumber) {
                                 $skipped++;
@@ -187,7 +187,7 @@ final class ImportContact extends Command
                             }
                         }
 
-                        Contact::create($contactData);
+                        Contact::query()->create($contactData);
                         $imported++;
                     } catch (Exception $e) {
                         $skipped++;
@@ -257,7 +257,7 @@ final class ImportContact extends Command
         $identificationType = $this->mapIdentificationType($record['Tipo de identificación'] ?? '');
 
         return [
-            'name' => trim($record['Nombre/Razón social'] ?? ''),
+            'name' => mb_trim($record['Nombre/Razón social'] ?? ''),
             'identification_type' => $identificationType,
             'identification_number' => $this->cleanIdentificationNumber($record['RNC/Cédula'] ?? ''),
             'phone_primary' => $this->cleanPhoneNumber($record['Teléfono 1'] ?? ''),
@@ -282,7 +282,7 @@ final class ImportContact extends Command
     {
         // Convert indexed array to expected format
         $mappedRecord = [
-            'name' => trim($record[0] ?? ''),
+            'name' => mb_trim($record[0] ?? ''),
             'identification_type' => $record[1] ?? '',
             'identification_number' => $record[2] ?? '',
             'phone_primary' => $record[3] ?? '',
@@ -319,7 +319,7 @@ final class ImportContact extends Command
      */
     private function mapIdentificationType(string $type): ?string
     {
-        $type = mb_strtolower(trim($type));
+        $type = mb_strtolower(mb_trim($type));
 
         return match ($type) {
             'cédula', 'cedula' => IdentificationType::Cedula->value,
@@ -334,7 +334,7 @@ final class ImportContact extends Command
      */
     private function cleanIdentificationNumber(string $number): ?string
     {
-        $number = trim($number);
+        $number = mb_trim($number);
 
         return $number === '' || $number === '0' ? null : $number;
     }
@@ -344,7 +344,7 @@ final class ImportContact extends Command
      */
     private function cleanPhoneNumber(string $phone): ?string
     {
-        $phone = trim($phone);
+        $phone = mb_trim($phone);
         if ($phone === '' || $phone === '0') {
             return null;
         }
@@ -360,7 +360,7 @@ final class ImportContact extends Command
      */
     private function cleanEmail(string $email): ?string
     {
-        $email = trim($email);
+        $email = mb_trim($email);
         if ($email === '' || $email === '0') {
             return null;
         }

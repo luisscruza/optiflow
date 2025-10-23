@@ -80,7 +80,7 @@ final readonly class ValidateImportDataAction
                         $mapped['default_tax_rate'] = $this->parseNumericValue($value);
                         break;
                     default:
-                        $mapped[$productField] = is_string($value) ? trim($value) : $value;
+                        $mapped[$productField] = is_string($value) ? mb_trim($value) : $value;
                 }
             }
         }
@@ -146,7 +146,7 @@ final readonly class ValidateImportDataAction
 
         if (isset($row['default_tax_rate']) && $row['default_tax_rate'] !== null) {
 
-            $taxExists = Tax::where('rate', $row['default_tax_rate'])->exists();
+            $taxExists = Tax::query()->where('rate', $row['default_tax_rate'])->exists();
 
             if (! $taxExists) {
                 $validator->after(function ($validator) use ($row): void {
@@ -193,7 +193,7 @@ final readonly class ValidateImportDataAction
             return (bool) $value;
         }
 
-        $stringValue = mb_strtolower(trim((string) $value));
+        $stringValue = mb_strtolower(mb_trim((string) $value));
 
         return in_array($stringValue, ['true', 'yes', '1', 'sí', 'verdadero', 'on']);
     }

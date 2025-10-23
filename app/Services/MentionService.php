@@ -31,7 +31,7 @@ final class MentionService
             return collect();
         }
 
-        return User::whereLike('name', $usernames)->get();
+        return User::query()->whereLike('name', $usernames)->get();
     }
 
     /**
@@ -80,7 +80,7 @@ final class MentionService
      */
     public function getUsersForAutocomplete(?int $workspaceId = null): Collection
     {
-        $query = User::select(['id', 'name', 'email']);
+        $query = User::query()->select(['id', 'name', 'email']);
 
         if ($workspaceId !== null && $workspaceId !== 0) {
             $query->whereHas('workspaces', function ($q) use ($workspaceId): void {

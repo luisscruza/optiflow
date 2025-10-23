@@ -81,7 +81,7 @@ final class QuotationController extends Controller
             ->get();
 
         $documentSubtype = $request->filled('document_subtype_id')
-            ? DocumentSubtype::findOrFail($request->get('document_subtype_id'))
+            ? DocumentSubtype::query()->findOrFail($request->get('document_subtype_id'))
             : DocumentSubtype::forQuotation()->active()->first();
 
         $availableWorkspaces = Auth::user()?->workspaces ?? collect();
@@ -151,7 +151,7 @@ final class QuotationController extends Controller
             ->orderBy('name')
             ->get();
 
-        $taxes = Tax::orderBy('name')->get();
+        $taxes = Tax::query()->orderBy('name')->get();
 
         return Inertia::render('quotations/Edit', [
             'quotation' => $quotation,

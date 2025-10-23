@@ -22,6 +22,6 @@ final class CreateDocumentSubtypeAction
 
         $validated['next_number'] = $validated['start_number'];
 
-        return DocumentSubtype::create($validated);
+        return DocumentSubtype::query()->create($validated);
     }
 }

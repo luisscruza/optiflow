@@ -41,7 +41,7 @@ final class WorkspaceInvitationController extends Controller
         );
 
         $workspaceNames = collect($workspaceAssignments)
-            ->map(fn ($assignment) => \App\Models\Workspace::find($assignment['workspace_id'])->name)
+            ->map(fn ($assignment) => \App\Models\Workspace::query()->find($assignment['workspace_id'])->name)
             ->join(', ', ' y ');
 
         return redirect()->back()->with('success',
@@ -54,7 +54,7 @@ final class WorkspaceInvitationController extends Controller
      */
     public function show(string $token): Response
     {
-        $invitation = UserInvitation::where('token', $token)
+        $invitation = UserInvitation::query()->where('token', $token)
             ->with(['workspace', 'invitedBy'])
             ->firstOrFail();
 
@@ -88,7 +88,7 @@ final class WorkspaceInvitationController extends Controller
      */
     public function update(Request $request, string $token, AcceptInvitationAction $acceptInvitationAction): RedirectResponse
     {
-        $invitation = UserInvitation::where('token', $token)->firstOrFail();
+        $invitation = UserInvitation::query()->where('token', $token)->firstOrFail();
 
         if (! $invitation->isPending()) {
             return redirect()->route('invitations.show', $token)->withErrors([
@@ -99,7 +99,7 @@ final class WorkspaceInvitationController extends Controller
         }
 
         if (! Auth::check()) {
-            $existingUser = User::where('email', $invitation->email)->first();
+            $existingUser = User::query()->where('email', $invitation->email)->first();
 
             if ($existingUser) {
                 return redirect()->route('login')->with([
@@ -143,7 +143,7 @@ final class WorkspaceInvitationController extends Controller
      */
     public function destroy(string $token): RedirectResponse
     {
-        $invitation = UserInvitation::where('token', $token)->firstOrFail();
+        $invitation = UserInvitation::query()->where('token', $token)->firstOrFail();
 
         if (! $invitation->isPending()) {
             return redirect()->route('invitations.show', $token)->withErrors([

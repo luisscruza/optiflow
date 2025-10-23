@@ -15,7 +15,7 @@ final class CreateWorkspaceAction
      */
     public function handle(User $user, array $validated): Workspace
     {
-        $workspace = Workspace::create([
+        $workspace = Workspace::query()->create([
             'name' => $validated['name'],
             'slug' => Slug::generateUniqueSlug($validated['name'], Workspace::class),
             'code' => $validated['code'],

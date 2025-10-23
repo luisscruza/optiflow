@@ -13,7 +13,7 @@ final class RNCRetrieveController extends Controller
 {
     public function __invoke(RNCRetrievalRequest $request): JsonResponse
     {
-        $rnc = RNC::findOrFail($request->string('rnc')->value())->except('created_at', 'updated_at');
+        $rnc = RNC::query()->findOrFail($request->string('rnc')->value())->except('created_at', 'updated_at');
 
         return response()->json($rnc);
     }

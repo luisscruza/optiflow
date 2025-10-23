@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('stock_movements', function (Blueprint $table) {
+        Schema::table('stock_movements', function (Blueprint $table): void {
             // Add transfer-specific fields
 
         });
@@ -24,7 +24,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('stock_movements', function (Blueprint $table) {
+        Schema::table('stock_movements', function (Blueprint $table): void {
             $table->dropForeign(['from_workspace_id']);
             $table->dropForeign(['to_workspace_id']);
             $table->dropIndex(['from_workspace_id', 'to_workspace_id']);

@@ -15,7 +15,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('prescription_item', function (Blueprint $table) {
+        Schema::create('prescription_item', function (Blueprint $table): void {
             $table->id();
             $table->foreignIdFor(Prescription::class)->cascadeOnDelete();
             $table->foreignIdFor(MastertableItem::class)->cascadeOnDelete();

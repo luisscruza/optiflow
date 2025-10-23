@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('product_imports', function (Blueprint $table) {
+        Schema::create('product_imports', function (Blueprint $table): void {
             $table->id();
             $table->string('filename');
             $table->string('original_filename');

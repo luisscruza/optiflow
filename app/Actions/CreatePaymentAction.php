@@ -23,7 +23,7 @@ final readonly class CreatePaymentAction
                 throw new InvalidArgumentException('Payment amount exceeds the amount due on the invoice.');
             }
 
-            $account = BankAccount::findOrFail($data['bank_account_id']);
+            $account = BankAccount::query()->findOrFail($data['bank_account_id']);
 
             $payment = $invoice->payments()->create([
                 'bank_account_id' => $data['bank_account_id'],

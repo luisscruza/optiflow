@@ -60,7 +60,7 @@ final class UserInvitation extends Model
     {
         do {
             $token = Str::random(60);
-        } while (self::where('token', $token)->exists());
+        } while (self::query()->where('token', $token)->exists());
 
         return $token;
     }
@@ -119,6 +119,8 @@ final class UserInvitation extends Model
 
     /**
      * Get the workspace this invitation belongs to.
+     *
+     * @return BelongsTo<Workspace, $this>
      */
     public function workspace(): BelongsTo
     {
@@ -127,6 +129,8 @@ final class UserInvitation extends Model
 
     /**
      * Get the user who sent the invitation.
+     *
+     * @return BelongsTo<User, $this>
      */
     public function invitedBy(): BelongsTo
     {
@@ -135,6 +139,8 @@ final class UserInvitation extends Model
 
     /**
      * Get the user who accepted the invitation.
+     *
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {

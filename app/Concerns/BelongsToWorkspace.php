@@ -22,24 +22,6 @@ trait BelongsToWorkspace
     }
 
     /**
-     * Scope a query to a specific workspace.
-     */
-    public function scopeForWorkspace(Builder $query, int|Workspace $workspace): Builder
-    {
-        $workspaceId = $workspace instanceof Workspace ? $workspace->id : $workspace;
-
-        return $query->where('workspace_id', $workspaceId);
-    }
-
-    /**
-     * Scope a query without the global workspace scope.
-     */
-    public function scopeWithoutWorkspaceScope(Builder $query): Builder
-    {
-        return $query->withoutGlobalScope('workspace');
-    }
-
-    /**
      * Check if the model belongs to the current user's workspace.
      */
     public function belongsToCurrentWorkspace(): bool
@@ -75,5 +57,23 @@ trait BelongsToWorkspace
                 $model->workspace_id = Auth::user()->current_workspace_id;
             }
         });
+    }
+
+    /**
+     * Scope a query to a specific workspace.
+     */
+    protected function scopeForWorkspace(Builder $query, int|Workspace $workspace): Builder
+    {
+        $workspaceId = $workspace instanceof Workspace ? $workspace->id : $workspace;
+
+        return $query->where('workspace_id', $workspaceId);
+    }
+
+    /**
+     * Scope a query without the global workspace scope.
+     */
+    protected function scopeWithoutWorkspaceScope(Builder $query): Builder
+    {
+        return $query->withoutGlobalScope('workspace');
     }
 }

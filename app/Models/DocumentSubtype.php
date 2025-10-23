@@ -63,7 +63,7 @@ final class DocumentSubtype extends Model
      */
     public static function findByPrefix(string $prefix): ?self
     {
-        return self::where('prefix', $prefix)->first();
+        return self::query()->where('prefix', $prefix)->first();
     }
 
     /**

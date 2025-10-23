@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Concerns\BelongsToWorkspace;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-
 
 /**
  * @property-read \Illuminate\Database\Eloquent\Collection<int, MastertableItem> $canalesDeReferimiento
@@ -46,17 +45,6 @@ final class Prescription extends Model
         'human_readable_date',
     ];
 
-      /**
-     * Get the age of the contact based on birth_date.
-     */
-    protected function humanReadableDate(): Attribute
-    {
-        return Attribute::make(
-            get: fn (): ?string => $this->created_at?->diffForHumans()
-        );
-    }
-
-
     /**
      * @return BelongsTo<Contact, $this>
      */
@@ -74,7 +62,7 @@ final class Prescription extends Model
     }
 
     /**
-     * @return BelongsToMany<MastertableItem>
+     * @return BelongsToMany<MastertableItem, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function motivos(): BelongsToMany
     {
@@ -84,7 +72,7 @@ final class Prescription extends Model
     }
 
     /**
-     * @return BelongsToMany<MastertableItem>
+     * @return BelongsToMany<MastertableItem, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function estadoActual(): BelongsToMany
     {
@@ -94,7 +82,7 @@ final class Prescription extends Model
     }
 
     /**
-     * @return BelongsToMany<MastertableItem>
+     * @return BelongsToMany<MastertableItem, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function historiaOcularFamiliar(): BelongsToMany
     {
@@ -104,7 +92,7 @@ final class Prescription extends Model
     }
 
     /**
-     * @return BelongsToMany<MastertableItem>
+     * @return BelongsToMany<MastertableItem, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function lentesRecomendados(): BelongsToMany
     {
@@ -114,7 +102,7 @@ final class Prescription extends Model
     }
 
     /**
-     * @return BelongsToMany<MastertableItem>
+     * @return BelongsToMany<MastertableItem, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function gotasRecomendadas(): BelongsToMany
     {
@@ -124,7 +112,7 @@ final class Prescription extends Model
     }
 
     /**
-     * @return BelongsToMany<MastertableItem>
+     * @return BelongsToMany<MastertableItem, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function monturasRecomendadas(): BelongsToMany
     {
@@ -134,12 +122,22 @@ final class Prescription extends Model
     }
 
     /**
-     * @return BelongsToMany<MastertableItem>
+     * @return BelongsToMany<MastertableItem, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function canalesDeReferimiento(): BelongsToMany
     {
         return $this->belongsToMany(MastertableItem::class, 'prescription_item', 'prescription_id', 'mastertable_item_id')
             ->wherePivot('mastertable_alias', 'canales_de_referimiento')
             ->withPivot('mastertable_alias');
+    }
+
+    /**
+     * Get the age of the contact based on birth_date.
+     */
+    protected function humanReadableDate(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): ?string => $this->created_at?->diffForHumans()
+        );
     }
 }

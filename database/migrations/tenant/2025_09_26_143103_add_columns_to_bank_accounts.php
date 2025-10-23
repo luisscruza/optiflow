@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('bank_accounts', function (Blueprint $table) {
+        Schema::table('bank_accounts', function (Blueprint $table): void {
             $table->boolean('is_system_account')->default(false);
             $table->boolean('is_active')->default(true);
         });

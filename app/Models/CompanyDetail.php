@@ -36,7 +36,7 @@ final class CompanyDetail extends Model
      */
     public static function getByKey(string $key, string $default = ''): string
     {
-        return self::where('key', $key)->value('value') ?? $default;
+        return self::query()->where('key', $key)->value('value') ?? $default;
     }
 
     /**
@@ -44,7 +44,7 @@ final class CompanyDetail extends Model
      */
     public static function setByKey(string $key, string|int $value): void
     {
-        self::updateOrCreate(['key' => $key], ['value' => $value]);
+        self::query()->updateOrCreate(['key' => $key], ['value' => $value]);
     }
 
     /**
@@ -52,6 +52,6 @@ final class CompanyDetail extends Model
      */
     public static function getAll(): array
     {
-        return self::pluck('value', 'key')->toArray();
+        return self::query()->pluck('value', 'key')->toArray();
     }
 }

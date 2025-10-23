@@ -57,7 +57,7 @@ final class InviteUserRequest extends FormRequest
                         return;
                     }
 
-                    $pendingInvitation = UserInvitation::where('email', $value)
+                    $pendingInvitation = UserInvitation::query()->where('email', $value)
                         ->where('workspace_id', $workspace->id)
                         ->where('status', 'pending')
                         ->where('expires_at', '>', now())

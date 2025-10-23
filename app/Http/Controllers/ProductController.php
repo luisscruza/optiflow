@@ -65,7 +65,7 @@ final class ProductController extends Controller
     public function create(): Response
     {
         return Inertia::render('products/create', [
-            'taxes' => Tax::select('id', 'name', 'rate', 'is_default')->get(),
+            'taxes' => Tax::query()->select('id', 'name', 'rate', 'is_default')->get(),
         ]);
     }
 
@@ -101,7 +101,7 @@ final class ProductController extends Controller
 
         return Inertia::render('products/edit', [
             'product' => $product,
-            'taxes' => Tax::select('id', 'name', 'rate')->get(),
+            'taxes' => Tax::query()->select('id', 'name', 'rate')->get(),
         ]);
     }
 

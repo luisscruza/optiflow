@@ -20,7 +20,7 @@ final class StockAdjustmentAction
      */
     public function handle(User $user, array $data): StockMovement
     {
-        $product = Product::findOrFail($data['product_id']);
+        $product = Product::query()->findOrFail($data['product_id']);
 
         if (! $product->track_stock) {
             throw new InvalidArgumentException('Cannot adjust stock for products that do not track inventory.');
@@ -32,16 +32,13 @@ final class StockAdjustmentAction
 
         return DB::transaction(function () use ($user, $product, $data): StockMovement {
             // Get or create stock record for this workspace
-            $stock = ProductStock::firstOrCreate(
-                [
-                    'product_id' => $product->id,
-                    'workspace_id' => $user->current_workspace_id,
-                ],
-                [
-                    'quantity' => 0,
-                    'minimum_quantity' => 0,
-                ]
-            );
+            $stock = ProductStock::query()->firstOrCreate([
+                'product_id' => $product->id,
+                'workspace_id' => $user->current_workspace_id,
+            ], [
+                'quantity' => 0,
+                'minimum_quantity' => 0,
+            ]);
 
             // Calculate the adjustment quantity
             $adjustmentQuantity = match ($data['adjustment_type']) {
@@ -64,7 +61,7 @@ final class StockAdjustmentAction
             $stock->save();
 
             // Create stock movement record
-            $movement = StockMovement::create([
+            $movement = StockMovement::query()->create([
                 'workspace_id' => $user->current_workspace_id,
                 'product_id' => $product->id,
                 'type' => 'adjustment',

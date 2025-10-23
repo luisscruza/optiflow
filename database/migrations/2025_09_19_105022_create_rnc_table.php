@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rncs', function (Blueprint $table) {
+        Schema::create('rncs', function (Blueprint $table): void {
             $table->string('identification')->primary();
             $table->string('name')->nullable();
             $table->string('comercial_name')->nullable();

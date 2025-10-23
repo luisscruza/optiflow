@@ -107,7 +107,7 @@ final class Workspace extends Model
         return $this->hasMany(Invoice::class);
     }
 
-     /**
+    /**
      * Get the prescriptions that belong to the workspace.
      *
      * @return HasMany<Prescription, $this>

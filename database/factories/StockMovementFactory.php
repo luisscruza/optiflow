@@ -42,7 +42,7 @@ final class StockMovementFactory extends Factory
      */
     public function incoming(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'type' => 'in',
             'note' => 'Stock added to inventory',
         ]);
@@ -53,7 +53,7 @@ final class StockMovementFactory extends Factory
      */
     public function outgoing(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'type' => 'out',
             'note' => 'Stock removed from inventory',
         ]);
@@ -64,7 +64,7 @@ final class StockMovementFactory extends Factory
      */
     public function adjustment(): static
     {
-        return $this->state(function (array $attributes) {
+        return $this->state(function (array $attributes): array {
             $isPositive = fake()->boolean();
 
             return [
@@ -80,7 +80,7 @@ final class StockMovementFactory extends Factory
      */
     public function transfer(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'type' => 'transfer',
             'note' => 'Stock transferred between workspaces',
         ]);
@@ -94,7 +94,7 @@ final class StockMovementFactory extends Factory
         $productId = $product instanceof Product ? $product->id : $product;
         $workspaceId = $workspace instanceof Workspace ? $workspace->id : $workspace;
 
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'product_id' => $productId,
             'workspace_id' => $workspaceId,
         ]);
@@ -107,7 +107,7 @@ final class StockMovementFactory extends Factory
     {
         $invoiceId = $invoice instanceof Invoice ? $invoice->id : $invoice;
 
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'related_invoice_id' => $invoiceId,
             'type' => 'out', // Usually invoices reduce stock
             'note' => 'Stock movement from invoice #'.$invoiceId,
@@ -119,7 +119,7 @@ final class StockMovementFactory extends Factory
      */
     public function withQuantity(float $quantity): static
     {
-        return $this->state(function (array $attributes) use ($quantity) {
+        return $this->state(function (array $attributes) use ($quantity): array {
             $unitCost = $attributes['unit_cost'] ?? fake()->randomFloat(2, 5, 100);
 
             return [
@@ -134,7 +134,7 @@ final class StockMovementFactory extends Factory
      */
     public function withCost(float $unitCost): static
     {
-        return $this->state(function (array $attributes) use ($unitCost) {
+        return $this->state(function (array $attributes) use ($unitCost): array {
             $quantity = $attributes['quantity'] ?? fake()->randomFloat(2, 1, 50);
 
             return [

@@ -40,7 +40,7 @@ final class AssignUserToWorkspaceRequest extends FormRequest
                 'max:255',
                 function ($attribute, $value, $fail): void {
                     $email = request('email');
-                    $existingUser = User::where('email', $email)->first();
+                    $existingUser = User::query()->where('email', $email)->first();
 
                     if (! $existingUser && empty($value)) {
                         $fail('El nombre es obligatorio para nuevos usuarios.');
@@ -54,7 +54,7 @@ final class AssignUserToWorkspaceRequest extends FormRequest
                 'confirmed',
                 function ($attribute, $value, $fail): void {
                     $email = request('email');
-                    $existingUser = User::where('email', $email)->first();
+                    $existingUser = User::query()->where('email', $email)->first();
 
                     if (! $existingUser && empty($value)) {
                         $fail('La contraseña es obligatoria para nuevos usuarios.');
@@ -67,7 +67,7 @@ final class AssignUserToWorkspaceRequest extends FormRequest
                 function ($attribute, $value, $fail): void {
                     $email = request('email');
                     $password = request('password');
-                    $existingUser = User::where('email', $email)->first();
+                    $existingUser = User::query()->where('email', $email)->first();
 
                     if (! $existingUser && ! empty($password) && empty($value)) {
                         $fail('La confirmación de contraseña es obligatoria para nuevos usuarios.');
@@ -85,10 +85,10 @@ final class AssignUserToWorkspaceRequest extends FormRequest
                 'exists:workspaces,id',
                 function ($attribute, $value, $fail): void {
                     $email = request('email');
-                    $user = User::where('email', $email)->first();
+                    $user = User::query()->where('email', $email)->first();
 
                     if ($user) {
-                        $workspace = Workspace::find($value);
+                        $workspace = Workspace::query()->find($value);
                         if ($workspace && $workspace->users()->where('user_id', $user->id)->exists()) {
                             $fail('El usuario ya es miembro de '.$workspace->name.'.');
                         }
@@ -110,7 +110,7 @@ final class AssignUserToWorkspaceRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->sometimes(['name', 'password', 'password_confirmation'], 'required', function ($input): bool {
-            $existingUser = User::where('email', $input->email ?? '')->first();
+            $existingUser = User::query()->where('email', $input->email ?? '')->first();
 
             return ! $existingUser;
         });

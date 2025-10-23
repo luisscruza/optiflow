@@ -104,22 +104,19 @@ final readonly class ProcessProductImportAction
         // Handle tax mapping
         $defaultTaxId = null;
         if (isset($rowData['default_tax_rate']) && $rowData['default_tax_rate'] !== null) {
-            $tax = Tax::where('rate', $rowData['default_tax_rate'])->first();
+            $tax = Tax::query()->where('rate', $rowData['default_tax_rate'])->first();
             $defaultTaxId = $tax?->id;
         }
 
         // Handle category
         $categoryId = null;
         if (isset($rowData['category']) && $rowData['category']) {
-            $category = ProductCategory::firstOrCreate(
-                ['name' => $rowData['category']],
-                ['slug' => Slug::generateUniqueSlug($rowData['category'], ProductCategory::class)]
-            );
+            $category = ProductCategory::query()->firstOrCreate(['name' => $rowData['category']], ['slug' => Slug::generateUniqueSlug($rowData['category'], ProductCategory::class)]);
 
             $categoryId = $category->id;
         }
 
-        return Product::create([
+        return Product::query()->create([
             'name' => $rowData['name'],
             'sku' => $this->generateSku($rowData['name'], $rowData['sku']),
             'description' => $rowData['description'] ?? null,
@@ -270,7 +267,7 @@ final readonly class ProcessProductImportAction
                         $mapped['default_tax_rate'] = $this->parseNumericValue($value);
                         break;
                     default:
-                        $mapped[$productField] = is_string($value) ? trim($value) : $value;
+                        $mapped[$productField] = is_string($value) ? mb_trim($value) : $value;
                 }
             }
         }
@@ -310,7 +307,7 @@ final readonly class ProcessProductImportAction
             return (bool) $value;
         }
 
-        $stringValue = mb_strtolower(trim((string) $value));
+        $stringValue = mb_strtolower(mb_trim((string) $value));
 
         return in_array($stringValue, ['true', 'yes', '1', 'sí', 'verdadero', 'on']);
     }

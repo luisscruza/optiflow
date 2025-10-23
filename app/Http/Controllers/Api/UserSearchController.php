@@ -18,7 +18,7 @@ final class UserSearchController extends Controller
             return response()->json([]);
         }
 
-        $users = User::where('email', 'like', "%{$email}%")
+        $users = User::query()->where('email', 'like', "%{$email}%")
             ->select('id', 'name', 'email')
             ->limit(10)
             ->get();

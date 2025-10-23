@@ -21,7 +21,7 @@ return new class extends Migration
             Schema::dropIfExists('prescriptions');
         }
 
-        Schema::create('prescriptions', function (Blueprint $table) {
+        Schema::create('prescriptions', function (Blueprint $table): void {
             $table->id();
             $table->foreignIdFor(Workspace::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Contact::class, 'patient_id')->constrained('contacts')->cascadeOnDelete();

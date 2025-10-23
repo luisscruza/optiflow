@@ -29,7 +29,7 @@ final readonly class AssignUserToWorkspaceAction
         ?User $assignedBy = null
     ): User {
         return DB::transaction(function () use ($email, $name, $password, $workspaceAssignments, $businessRole, $assignedBy): User {
-            $user = User::where('email', $email)->first();
+            $user = User::query()->where('email', $email)->first();
             $isNewUser = false;
 
             if (! $user) {
@@ -45,7 +45,7 @@ final readonly class AssignUserToWorkspaceAction
                 if ($businessRole instanceof UserRole) {
                     $userData['business_role'] = $businessRole;
                 }
-                $user = User::create($userData);
+                $user = User::query()->create($userData);
                 $isNewUser = true;
             } elseif ($businessRole && $user->business_role !== $businessRole) {
                 $user->business_role = $businessRole;
@@ -54,7 +54,7 @@ final readonly class AssignUserToWorkspaceAction
 
             // Assign user to workspaces
             foreach ($workspaceAssignments as $assignment) {
-                $workspace = Workspace::findOrFail($assignment['workspace_id']);
+                $workspace = Workspace::query()->findOrFail($assignment['workspace_id']);
                 $role = $assignment['role'];
 
                 if (! $workspace->users()->where('user_id', $user->id)->exists()) {
@@ -73,7 +73,7 @@ final readonly class AssignUserToWorkspaceAction
             }
 
             if ($isNewUser && $assignedBy && $workspaceAssignments !== []) {
-                $firstWorkspace = Workspace::findOrFail($workspaceAssignments[0]['workspace_id']);
+                $firstWorkspace = Workspace::query()->findOrFail($workspaceAssignments[0]['workspace_id']);
                 $user->notify(new WorkspaceUserCreatedNotification(
                     $firstWorkspace,
                     $assignedBy,
@@ -81,7 +81,7 @@ final readonly class AssignUserToWorkspaceAction
                 ));
             } elseif (! $isNewUser && $assignedBy && $workspaceAssignments !== []) {
                 $user->notify(new WorkspaceUserAssignedNotification(
-                    collect($workspaceAssignments)->map(fn ($assignment) => Workspace::findOrFail($assignment['workspace_id'])),
+                    collect($workspaceAssignments)->map(fn ($assignment) => Workspace::query()->findOrFail($assignment['workspace_id'])),
                     $assignedBy
                 ));
             }

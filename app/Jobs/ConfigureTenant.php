@@ -43,7 +43,7 @@ final class ConfigureTenant implements ShouldQueue
 
     private function createMainUser(Client $client): User
     {
-        return User::create([
+        return User::query()->create([
             'name' => $client->name,
             'email' => $client->email,
             'password' => Hash::make('password'),
@@ -74,7 +74,7 @@ final class ConfigureTenant implements ShouldQueue
             ],
             [
                 'key' => 'currency',
-                'value' => Currency::where('is_default', true)->first()->id,
+                'value' => Currency::query()->where('is_default', true)->first()->id,
             ],
             [
                 'key' => 'address',

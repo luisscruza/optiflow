@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('taxes', function (Blueprint $table) {
+        Schema::create('taxes', function (Blueprint $table): void {
             $table->id();
             $table->string('name'); // e.g., "IBIS 18%"
             $table->decimal('rate', 5, 2); // e.g., 18.00 (percentage)

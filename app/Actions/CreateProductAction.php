@@ -23,7 +23,7 @@ final readonly class CreateProductAction
     {
         return DB::transaction(function () use ($user, $data) {
             // Create the product
-            $product = Product::create([
+            $product = Product::query()->create([
                 'name' => $data['name'],
                 'sku' => $data['sku'],
                 'description' => $data['description'] ?? null,

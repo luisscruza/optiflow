@@ -14,7 +14,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('mastertable_items', function (Blueprint $table) {
+        Schema::create('mastertable_items', function (Blueprint $table): void {
             $table->id();
             $table->foreignIdFor(Mastertable::class)->cascadeOnDelete();
             $table->string('name');

@@ -36,7 +36,7 @@ final class ProductStockFactory extends Factory
      */
     public function lowStock(): static
     {
-        return $this->state(function (array $attributes) {
+        return $this->state(function (array $attributes): array {
             $minimumQuantity = fake()->numberBetween(10, 20);
 
             return [
@@ -51,7 +51,7 @@ final class ProductStockFactory extends Factory
      */
     public function outOfStock(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'quantity' => 0,
         ]);
     }
@@ -61,7 +61,7 @@ final class ProductStockFactory extends Factory
      */
     public function wellStocked(): static
     {
-        return $this->state(function (array $attributes) {
+        return $this->state(function (array $attributes): array {
             $minimumQuantity = fake()->numberBetween(5, 15);
 
             return [
@@ -79,7 +79,7 @@ final class ProductStockFactory extends Factory
         $productId = $product instanceof Product ? $product->id : $product;
         $workspaceId = $workspace instanceof Workspace ? $workspace->id : $workspace;
 
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'product_id' => $productId,
             'workspace_id' => $workspaceId,
         ]);
@@ -90,7 +90,7 @@ final class ProductStockFactory extends Factory
      */
     public function withQuantity(float $quantity): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'quantity' => $quantity,
         ]);
     }
@@ -100,7 +100,7 @@ final class ProductStockFactory extends Factory
      */
     public function withMinimumQuantity(float $minimumQuantity): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'minimum_quantity' => $minimumQuantity,
         ]);
     }

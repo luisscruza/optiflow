@@ -172,17 +172,18 @@ final class Invoice extends Model implements Commentable
     /**
      * Get the status attribute.
      */
-    protected function getStatusAttribute(): InvoiceStatus
+    protected function status(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        if ($this->payments()->sum('amount') >= $this->total_amount) {
-            return InvoiceStatus::Paid;
-        }
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function (): InvoiceStatus {
+            if ($this->payments()->sum('amount') >= $this->total_amount) {
+                return InvoiceStatus::Paid;
+            }
+            if ($this->payments()->sum('amount') > 0) {
+                return InvoiceStatus::PartiallyPaid;
+            }
 
-        if ($this->payments()->sum('amount') > 0) {
-            return InvoiceStatus::PartiallyPaid;
-        }
-
-        return InvoiceStatus::PendingPayment;
+            return InvoiceStatus::PendingPayment;
+        });
     }
 
     /**
@@ -190,22 +191,22 @@ final class Invoice extends Model implements Commentable
      *
      * @return array<string, mixed>
      */
-    protected function getStatusConfigAttribute(): array
+    protected function statusConfig(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        return [
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn (): array => [
             'value' => $this->status->value,
             'label' => $this->status->label(),
             'variant' => $this->status->badgeVariant(),
             'className' => $this->status->badgeClassName(),
-        ];
+        ]);
     }
 
     /**
      * Get the status attribute.
      */
-    protected function getAmountDueAttribute(): float
+    protected function amountDue(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        return max(0, $this->total_amount - $this->payments()->sum('amount'));
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn (): float|int => max(0, $this->total_amount - $this->payments()->sum('amount')));
     }
 
     /**

@@ -14,7 +14,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('currency_rates', function (Blueprint $table) {
+        Schema::create('currency_rates', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('currency_id')->constrained()->onDelete('cascade');
             $table->decimal('rate', 10, 4); // Rate against the default currency

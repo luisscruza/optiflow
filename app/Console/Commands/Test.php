@@ -29,9 +29,9 @@ final class Test extends Command
      */
     public function handle(): void
     {
-        $invoice = Invoice::first();
+        $invoice = Invoice::query()->first();
 
-        $user = User::first();
+        $user = User::query()->first();
 
         $invoice->commentAsUser($user, 'This is a test comment from the command line.');
     }

@@ -22,7 +22,7 @@ final class StockTransferAction
      */
     public function handle(User $user, array $data): array
     {
-        $product = Product::findOrFail($data['product_id']);
+        $product = Product::query()->findOrFail($data['product_id']);
 
         if (! $product->track_stock) {
             throw new InvalidArgumentException('Cannot transfer stock for products that do not track inventory.');
@@ -37,8 +37,8 @@ final class StockTransferAction
         }
 
         // Verify user has access to both workspaces
-        $fromWorkspace = Workspace::findOrFail($data['from_workspace_id']);
-        $toWorkspace = Workspace::findOrFail($data['to_workspace_id']);
+        $fromWorkspace = Workspace::query()->findOrFail($data['from_workspace_id']);
+        $toWorkspace = Workspace::query()->findOrFail($data['to_workspace_id']);
 
         if (! $user->workspaces()->whereIn('workspaces.id', [$fromWorkspace->id, $toWorkspace->id])->count() === 2) {
             throw new InvalidArgumentException('User does not have access to one or both workspaces.');
@@ -46,7 +46,7 @@ final class StockTransferAction
 
         return DB::transaction(function () use ($product, $data, $fromWorkspace, $toWorkspace): array {
             // Get source stock record
-            $fromStock = ProductStock::withoutGlobalScopes()->where([
+            $fromStock = ProductStock::query()->withoutGlobalScopes()->where([
                 'product_id' => $product->id,
                 'workspace_id' => $fromWorkspace->id,
             ])->first();
@@ -59,7 +59,7 @@ final class StockTransferAction
             }
 
             // Get or create destination stock record
-            $toStock = ProductStock::withoutGlobalScopes()->firstOrCreate(
+            $toStock = ProductStock::query()->withoutGlobalScopes()->firstOrCreate(
                 [
                     'product_id' => $product->id,
                     'workspace_id' => $toWorkspace->id,
@@ -80,7 +80,7 @@ final class StockTransferAction
             $reference = $data['reference'] ?? "TRANSFER-{$fromWorkspace->id}-{$toWorkspace->id}-".time();
 
             // Create a single transfer movement record
-            $transferMovement = StockMovement::withoutGlobalScopes()->create([
+            $transferMovement = StockMovement::query()->withoutGlobalScopes()->create([
                 'workspace_id' => $fromWorkspace->id, // Primary workspace (where it's initiated from)
                 'product_id' => $product->id,
                 'type' => 'transfer',

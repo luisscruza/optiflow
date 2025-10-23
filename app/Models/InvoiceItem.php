@@ -95,21 +95,25 @@ final class InvoiceItem extends Model
         return $this->belongsTo(Tax::class);
     }
 
-    public function getDiscountAmountAttribute(): float
+    protected function discountAmount(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        $discountRate = $this->discount_rate ?? 0;
-        $discountMultiplier = (100 - $discountRate) / 100;
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function (): int|float {
+            $discountRate = $this->discount_rate ?? 0;
+            $discountMultiplier = (100 - $discountRate) / 100;
 
-        return ($this->quantity * $this->unit_price) * (1 - $discountMultiplier);
+            return ($this->quantity * $this->unit_price) * (1 - $discountMultiplier);
+        });
     }
 
-    public function getSubtotalAttribute(): float
+    protected function subtotal(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        $discountRate = $this->discount_rate ?? 0;
-        $discountMultiplier = (100 - $discountRate) / 100;
-        $taxAmount = $this->tax_amount ?? 0;
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function (): int|float {
+            $discountRate = $this->discount_rate ?? 0;
+            $discountMultiplier = (100 - $discountRate) / 100;
+            $taxAmount = $this->tax_amount ?? 0;
 
-        return ($this->quantity * $this->unit_price) * $discountMultiplier + $taxAmount;
+            return ($this->quantity * $this->unit_price) * $discountMultiplier + $taxAmount;
+        });
     }
 
     /**

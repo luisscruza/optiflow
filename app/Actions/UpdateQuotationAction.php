@@ -30,7 +30,7 @@ final class UpdateQuotationAction
 
                 // Validate NCF if document number changed
                 if (isset($data['ncf']) && $data['ncf'] !== $quotation->document_number) {
-                    $documentSubtype = DocumentSubtype::findOrFail($data['document_subtype_id']);
+                    $documentSubtype = DocumentSubtype::query()->findOrFail($data['document_subtype_id']);
 
                     if (! NCFValidator::validate($data['ncf'], $documentSubtype, $data)) {
                         return new QuotationResult(error: 'El NCF proporcionado no es válido.');
@@ -42,7 +42,7 @@ final class UpdateQuotationAction
 
                 // Update numerator if NCF changed
                 if (isset($data['ncf']) && $data['ncf'] !== $quotation->document_number) {
-                    $documentSubtype = DocumentSubtype::findOrFail($data['document_subtype_id']);
+                    $documentSubtype = DocumentSubtype::query()->findOrFail($data['document_subtype_id']);
                     $this->updateNumerator($documentSubtype, $data['ncf']);
                 }
 
@@ -171,7 +171,7 @@ final class UpdateQuotationAction
      */
     private function createQuotationItem(Quotation $quotation, array $data): void
     {
-        $product = Product::findOrFail($data['product_id']);
+        $product = Product::query()->findOrFail($data['product_id']);
 
         $quotation->items()->create([
             'product_id' => $product->id,
@@ -194,7 +194,7 @@ final class UpdateQuotationAction
      */
     private function updateQuotationItem(QuotationItem $existingItem, array $data): void
     {
-        $product = Product::findOrFail($data['product_id']);
+        $product = Product::query()->findOrFail($data['product_id']);
 
         $existingItem->update([
             'product_id' => $product->id,
@@ -223,7 +223,7 @@ final class UpdateQuotationAction
      */
     private function updateNumerator(DocumentSubtype $documentSubtype, string $ncf): void
     {
-        $number = (int) ltrim(mb_substr($ncf, mb_strlen($documentSubtype->prefix)), '0');
+        $number = (int) mb_ltrim(mb_substr($ncf, mb_strlen($documentSubtype->prefix)), '0');
 
         if ($number >= $documentSubtype->next_number) {
             $documentSubtype->update(['next_number' => $number + 1]);

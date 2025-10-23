@@ -28,7 +28,7 @@ final readonly class CreateInvoiceAction
     {
         return DB::transaction(function () use ($workspace, $data): InvoiceResult {
 
-            $documentSubtype = DocumentSubtype::findOrFail($data['document_subtype_id']);
+            $documentSubtype = DocumentSubtype::query()->findOrFail($data['document_subtype_id']);
 
             if (! NCFValidator::validate($data['ncf'], $documentSubtype, $data)) {
                 return new InvoiceResult(error: 'El NCF proporcionado no es válido.');
@@ -61,7 +61,7 @@ final readonly class CreateInvoiceAction
      */
     private function createDocument(Workspace $workspace, array $data): Invoice
     {
-        return Invoice::create([
+        return Invoice::query()->create([
             'workspace_id' => $workspace->id,
             'contact_id' => $data['contact_id'],
             'document_subtype_id' => $data['document_subtype_id'],
@@ -83,7 +83,7 @@ final readonly class CreateInvoiceAction
      */
     private function updateNumerator(DocumentSubtype $documentSubtype, string $ncf): void
     {
-        $number = (int) ltrim(mb_substr($ncf, mb_strlen($documentSubtype->prefix)), '0');
+        $number = (int) mb_ltrim(mb_substr($ncf, mb_strlen($documentSubtype->prefix)), '0');
 
         if ($number >= $documentSubtype->next_number) {
             $documentSubtype->update(['next_number' => $number + 1]);

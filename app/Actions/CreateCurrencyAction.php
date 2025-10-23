@@ -17,7 +17,7 @@ final readonly class CreateCurrencyAction
     public function handle(array $validated): Currency
     {
         return DB::transaction(function () use ($validated): Currency {
-            $currency = Currency::create([
+            $currency = Currency::query()->create([
                 'name' => $validated['name'],
                 'code' => mb_strtoupper((string) $validated['code']),
                 'symbol' => $validated['symbol'],
@@ -26,7 +26,7 @@ final readonly class CreateCurrencyAction
             ]);
 
             // Create initial rate
-            CurrencyRate::create([
+            CurrencyRate::query()->create([
                 'currency_id' => $currency->id,
                 'rate' => $validated['initial_rate'],
                 'effective_date' => Carbon::now(),

@@ -36,7 +36,7 @@ final class DocumentSubtypeFactory extends Factory
      */
     public function invoice(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'name' => 'Invoice',
             'sequence' => '1',
         ]);
@@ -47,7 +47,7 @@ final class DocumentSubtypeFactory extends Factory
      */
     public function quotation(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'name' => 'Quotation',
             'sequence' => '1',
         ]);
@@ -58,7 +58,7 @@ final class DocumentSubtypeFactory extends Factory
      */
     public function creditNote(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'name' => 'Credit Note',
             'sequence' => '1',
         ]);
@@ -69,7 +69,7 @@ final class DocumentSubtypeFactory extends Factory
      */
     public function proforma(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'name' => 'Proforma',
             'sequence' => '1',
         ]);
@@ -80,7 +80,7 @@ final class DocumentSubtypeFactory extends Factory
      */
     public function withSequence(string $sequence): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'sequence' => $sequence,
         ]);
     }

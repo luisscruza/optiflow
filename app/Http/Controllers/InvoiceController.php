@@ -102,7 +102,7 @@ final class InvoiceController extends Controller
             });
 
         $documentSubtype = $request->filled('document_subtype_id')
-            ? DocumentSubtype::findOrFail($request->get('document_subtype_id'))
+            ? DocumentSubtype::query()->findOrFail($request->get('document_subtype_id'))
             : DocumentSubtype::active()->where('is_default', true)->first();
 
         $availableWorkspaces = Auth::user()?->workspaces ?? collect();
@@ -212,7 +212,7 @@ final class InvoiceController extends Controller
                 return $product;
             });
 
-        $taxes = Tax::orderBy('name')->get();
+        $taxes = Tax::query()->orderBy('name')->get();
 
         return Inertia::render('invoices/edit', [
             'invoice' => $invoice,

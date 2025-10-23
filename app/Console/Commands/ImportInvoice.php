@@ -90,7 +90,7 @@ final class ImportInvoice extends Command
             $skipped = 0;
             $errors = [];
 
-            $internalBankAccount = BankAccount::where('is_system_account', true)->first();
+            $internalBankAccount = BankAccount::query()->where('is_system_account', true)->first();
 
             DB::transaction(function () use ($groupedRecords, $progressBar, &$imported, &$skipped, &$errors, $internalBankAccount): void {
                 foreach ($groupedRecords as $documentNumber => $invoiceRows) {
@@ -172,22 +172,22 @@ final class ImportInvoice extends Command
         $firstRow = $invoiceRows[0];
 
         // Check if invoice already exists
-        if (Invoice::where('document_number', $documentNumber)->exists()) {
+        if (Invoice::query()->where('document_number', $documentNumber)->exists()) {
             return false; // Skip duplicates
         }
 
         // Find contact by name
-        $contactName = $this->cleanUtf8String(trim($firstRow['CLIENTE'] ?? ''));
-        $contact = Contact::where('name', $contactName)->first();
+        $contactName = $this->cleanUtf8String(mb_trim($firstRow['CLIENTE'] ?? ''));
+        $contact = Contact::query()->where('name', $contactName)->first();
 
         if (! $contact) {
             // Try partial match
-            $contact = Contact::where('name', 'like', '%'.$contactName.'%')->first();
+            $contact = Contact::query()->where('name', 'like', '%'.$contactName.'%')->first();
         }
 
         if (! $contact) {
             // Create the contact if it doesn't exist
-            $contact = Contact::create([
+            $contact = Contact::query()->create([
                 'name' => $contactName,
                 'contact_type' => \App\Enums\ContactType::Customer,
                 'identification_type' => \App\Enums\IdentificationType::Cedula, // Default to Cédula
@@ -214,7 +214,7 @@ final class ImportInvoice extends Command
         $status = $this->mapStatus($firstRow['ESTADO'] ?? '');
 
         // Create invoice
-        $invoice = Invoice::create([
+        $invoice = Invoice::query()->create([
             'workspace_id' => (int) ($firstRow['WORKSPACE'] ?? 1),
             'contact_id' => $contact->id,
             'document_subtype_id' => $documentSubtypeId,
@@ -254,28 +254,28 @@ final class ImportInvoice extends Command
      */
     private function createInvoiceItem(Invoice $invoice, array $row): bool
     {
-        $productName = $this->cleanUtf8String(trim($row['PRODUCTO/SERVICIO - NOMBRE'] ?? ''));
+        $productName = $this->cleanUtf8String(mb_trim($row['PRODUCTO/SERVICIO - NOMBRE'] ?? ''));
         if ($productName === '' || $productName === '0') {
             return false; // Skip rows without product name
         }
 
         // Try to find product by reference or name
-        $productReference = $this->cleanUtf8String(trim($row['PRODUCTO/SERVICIO - REFERENCIA'] ?? ''));
+        $productReference = $this->cleanUtf8String(mb_trim($row['PRODUCTO/SERVICIO - REFERENCIA'] ?? ''));
         $product = null;
 
         // First try to find by SKU/reference if provided
         if ($productReference !== '' && $productReference !== '0') {
-            $product = Product::where('sku', $productReference)->first();
+            $product = Product::query()->where('sku', $productReference)->first();
         }
 
         // Then try to find by exact name match
         if (! $product && ($productName !== '' && $productName !== '0')) {
-            $product = Product::where('name', $productName)->first();
+            $product = Product::query()->where('name', $productName)->first();
         }
 
         // Finally try partial name match
         if (! $product && ($productName !== '' && $productName !== '0')) {
-            $product = Product::where('name', 'like', '%'.$productName.'%')->first();
+            $product = Product::query()->where('name', 'like', '%'.$productName.'%')->first();
         }
 
         // Create product if it doesn't exist
@@ -286,12 +286,12 @@ final class ImportInvoice extends Command
             $counter = 1;
 
             // Ensure SKU is unique
-            while (Product::where('sku', $sku)->exists()) {
+            while (Product::query()->where('sku', $sku)->exists()) {
                 $sku = $baseSku.'-'.$counter;
                 $counter++;
             }
 
-            $product = Product::create([
+            $product = Product::query()->create([
                 'name' => $productName,
                 'sku' => $sku,
                 'description' => null,
@@ -304,13 +304,10 @@ final class ImportInvoice extends Command
         }
 
         // Get or create tax based on the CSV data
-        $taxName = $this->cleanUtf8String(trim($row['NOMBRE IMPUESTO'] ?? 'ITBIS'));
+        $taxName = $this->cleanUtf8String(mb_trim($row['NOMBRE IMPUESTO'] ?? 'ITBIS'));
         $taxRate = (float) ($row['TAX RATE'] ?? 18);
 
-        $tax = Tax::firstOrCreate(
-            ['name' => $taxName],
-            ['rate' => $taxRate]
-        );
+        $tax = Tax::query()->firstOrCreate(['name' => $taxName], ['rate' => $taxRate]);
 
         $quantity = (float) ($row['CANTIDAD'] ?? 1);
         $unitPrice = (float) ($row['PRECIO UNITARIO'] ?? 0);
@@ -323,7 +320,7 @@ final class ImportInvoice extends Command
         $subtotalAfterDiscount = $subtotal - $discountAmount;
         $taxAmount = $subtotalAfterDiscount * ($taxRate / 100);
 
-        InvoiceItem::create([
+        InvoiceItem::query()->create([
             'invoice_id' => $invoice->id,
             'product_id' => $product->id,
             'description' => $productName,
@@ -361,7 +358,7 @@ final class ImportInvoice extends Command
      */
     private function mapStatus(string $status): string
     {
-        return match (trim($status)) {
+        return match (mb_trim($status)) {
             'Cobrada' => 'paid',
             'Por cobrar' => 'pending_payment',
             'Anulada' => 'cancelled',
@@ -378,7 +375,7 @@ final class ImportInvoice extends Command
             return null;
         }
 
-        $dateString = trim($dateString);
+        $dateString = mb_trim($dateString);
 
         // Try common formats with 4-digit years first
         $formats = ['d/m/Y', 'Y-m-d', 'm/d/Y', 'd-m-Y', 'Y/m/d'];
@@ -517,7 +514,7 @@ final class ImportInvoice extends Command
         $str = filter_var($str, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH);
 
         // Trim whitespace
-        return trim($str);
+        return mb_trim($str);
     }
 
     /**
@@ -534,7 +531,7 @@ final class ImportInvoice extends Command
 
             // Clean the reference to make it a valid SKU
             $sku = preg_replace('/[^a-zA-Z0-9\-_]/', '-', $productReference);
-            $sku = trim((string) $sku, '-');
+            $sku = mb_trim((string) $sku, '-');
 
             if ($sku !== '' && $sku !== '0' && mb_strlen($sku) <= 50) { // Reasonable SKU length limit
                 return mb_strtoupper($sku);

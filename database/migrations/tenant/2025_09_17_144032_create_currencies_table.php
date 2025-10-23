@@ -14,7 +14,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('currencies', function (Blueprint $table) {
+        Schema::create('currencies', function (Blueprint $table): void {
             $table->id();
             $table->string('name'); // e.g., "Dominican Peso"
             $table->string('code', 3)->unique(); // e.g., "DOP"

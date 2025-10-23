@@ -15,7 +15,7 @@ final class PaymentController extends Controller
     {
         $validatedData = $request->validated();
 
-        $invoice = Invoice::find($validatedData['invoice_id']);
+        $invoice = Invoice::query()->find($validatedData['invoice_id']);
 
         $action->handle($invoice, $validatedData);
 

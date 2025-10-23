@@ -23,7 +23,7 @@ final readonly class CreateQuotationAction
     {
         return DB::transaction(function () use ($workspace, $data): QuotationResult {
 
-            $documentSubtype = DocumentSubtype::findOrFail($data['document_subtype_id']);
+            $documentSubtype = DocumentSubtype::query()->findOrFail($data['document_subtype_id']);
 
             if (! NCFValidator::validate($data['ncf'], $documentSubtype, $data)) {
                 return new QuotationResult(error: 'El NCF proporcionado no es válido.');
@@ -48,7 +48,7 @@ final readonly class CreateQuotationAction
      */
     private function createDocument(Workspace $workspace, array $data): Quotation
     {
-        return Quotation::create([
+        return Quotation::query()->create([
             'workspace_id' => $workspace->id,
             'contact_id' => $data['contact_id'],
             'document_subtype_id' => $data['document_subtype_id'],
@@ -82,7 +82,7 @@ final readonly class CreateQuotationAction
     private function createQuotationItems(Quotation $quotation, array $items): void
     {
         foreach ($items as $item) {
-            $product = Product::findOrFail($item['product_id']);
+            $product = Product::query()->findOrFail($item['product_id']);
 
             $quotation->items()->create([
                 'product_id' => $product->id,
@@ -104,7 +104,7 @@ final readonly class CreateQuotationAction
      */
     private function updateNumerator(DocumentSubtype $documentSubtype, string $ncf): void
     {
-        $number = (int) ltrim(mb_substr($ncf, mb_strlen($documentSubtype->prefix)), '0');
+        $number = (int) mb_ltrim(mb_substr($ncf, mb_strlen($documentSubtype->prefix)), '0');
 
         if ($number >= $documentSubtype->next_number) {
             $documentSubtype->update(['next_number' => $number + 1]);

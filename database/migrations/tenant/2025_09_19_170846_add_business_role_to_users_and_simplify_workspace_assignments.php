@@ -15,7 +15,7 @@ return new class extends Migration
     public function up(): void
     {
         // Add business_role to users table
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('users', function (Blueprint $table): void {
             $table->string('business_role')->default(UserRole::Sales->value)->after('email_verified_at');
             $table->index('business_role');
         });
@@ -29,7 +29,7 @@ return new class extends Migration
     public function down(): void
     {
         // Remove business_role from users table
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('users', function (Blueprint $table): void {
             $table->dropIndex(['business_role']);
             $table->dropColumn('business_role');
         });

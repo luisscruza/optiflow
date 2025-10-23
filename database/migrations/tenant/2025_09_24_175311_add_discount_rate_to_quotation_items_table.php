@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('quotation_items', function (Blueprint $table) {
+        Schema::table('quotation_items', function (Blueprint $table): void {
             $table->decimal('discount_rate', 5, 2)->nullable();
         });
     }
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('quotation_items', function (Blueprint $table) {
+        Schema::table('quotation_items', function (Blueprint $table): void {
             //
         });
     }

@@ -49,7 +49,7 @@ final class CurrencyRate extends Model
     {
         $date = $date instanceof Carbon ? $date : Carbon::now();
 
-        return self::where('currency_id', $currencyId)
+        return self::query()->where('currency_id', $currencyId)
             ->where('effective_date', '<=', $date)
             ->orderBy('effective_date', 'desc')
             ->first();
@@ -60,15 +60,12 @@ final class CurrencyRate extends Model
      */
     public static function setRateForDate(int $currencyId, float $rate, Carbon $date): self
     {
-        return self::updateOrCreate(
-            [
-                'currency_id' => $currencyId,
-                'effective_date' => $date,
-            ],
-            [
-                'rate' => $rate,
-            ]
-        );
+        return self::query()->updateOrCreate([
+            'currency_id' => $currencyId,
+            'effective_date' => $date,
+        ], [
+            'rate' => $rate,
+        ]);
     }
 
     /**
@@ -76,7 +73,7 @@ final class CurrencyRate extends Model
      */
     public static function getHistoricalRates(int $currencyId, Carbon $startDate, Carbon $endDate): \Illuminate\Database\Eloquent\Collection
     {
-        return self::where('currency_id', $currencyId)
+        return self::query()->where('currency_id', $currencyId)
             ->whereBetween('effective_date', [$startDate, $endDate])
             ->orderBy('effective_date')
             ->get();
@@ -84,6 +81,8 @@ final class CurrencyRate extends Model
 
     /**
      * Get the currency that owns this rate.
+     *
+     * @return BelongsTo<Currency, $this>
      */
     public function currency(): BelongsTo
     {
@@ -95,7 +94,7 @@ final class CurrencyRate extends Model
      */
     public function getVariation(): array
     {
-        $previousRate = self::where('currency_id', $this->currency_id)
+        $previousRate = self::query()->where('currency_id', $this->currency_id)
             ->where('effective_date', '<', $this->effective_date)
             ->orderBy('effective_date', 'desc')
             ->first();

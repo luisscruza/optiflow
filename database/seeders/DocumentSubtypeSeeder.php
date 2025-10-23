@@ -127,10 +127,7 @@ final class DocumentSubtypeSeeder extends Seeder
         ];
 
         foreach ($ncfTypes as $ncfType) {
-            DocumentSubtype::firstOrCreate(
-                ['prefix' => $ncfType['prefix']],
-                $ncfType
-            );
+            DocumentSubtype::query()->firstOrCreate(['prefix' => $ncfType['prefix']], $ncfType);
         }
     }
 }

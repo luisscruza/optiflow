@@ -120,7 +120,7 @@ Route::middleware([
 
             Route::post('workspace/invitations', [WorkspaceInvitationController::class, 'store'])->name('workspace.invitations.store');
 
-            Route::resource('prescriptions', PrescriptionController::class)->only(['create', 'index', 'store']);
+            Route::resource('prescriptions', PrescriptionController::class);
             Route::get('prescriptions/{prescription}/pdf', DownloadPrescriptionController::class)->name('prescriptions.pdf');
 
         });

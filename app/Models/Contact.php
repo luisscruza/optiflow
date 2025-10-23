@@ -247,7 +247,7 @@ final class Contact extends Model implements Commentable
         );
     }
 
-     /**
+    /**
      * Get the age of the contact based on birth_date.
      */
     protected function age(): Attribute

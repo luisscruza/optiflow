@@ -165,25 +165,29 @@ final class Product extends Model
     /**
      * Get the profit margin percentage.
      */
-    public function getProfitMarginAttribute(): ?float
+    protected function profitMargin(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        if (! $this->cost || $this->cost <= 0) {
-            return null;
-        }
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function (): ?float {
+            if (! $this->cost || $this->cost <= 0) {
+                return null;
+            }
 
-        return round((($this->price - $this->cost) / $this->cost) * 100, 2);
+            return round((($this->price - $this->cost) / $this->cost) * 100, 2);
+        });
     }
 
     /**
      * Get the profit amount.
      */
-    public function getProfitAttribute(): ?float
+    protected function profit(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        if (! $this->cost) {
-            return null;
-        }
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function (): null|int|float {
+            if (! $this->cost) {
+                return null;
+            }
 
-        return $this->price - $this->cost;
+            return $this->price - $this->cost;
+        });
     }
 
     /**

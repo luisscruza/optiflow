@@ -53,7 +53,7 @@ final class InvoiceItemFactory extends Factory
      */
     public function withoutDiscount(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'discount_amount' => 0,
             'discount_rate' => 0,
         ]);
@@ -64,7 +64,7 @@ final class InvoiceItemFactory extends Factory
      */
     public function withQuantity(float $quantity): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'quantity' => $quantity,
         ]);
     }
@@ -74,7 +74,7 @@ final class InvoiceItemFactory extends Factory
      */
     public function withUnitPrice(float $unitPrice): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'unit_price' => $unitPrice,
         ]);
     }

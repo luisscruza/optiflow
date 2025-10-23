@@ -14,7 +14,7 @@ trait HasComments
     /**
      * Return all comments for this model.
      *
-     * @return MorphMany<Comment, Model>
+     * @return MorphMany<Comment, $this>
      */
     public function comments(): MorphMany
     {

@@ -123,29 +123,32 @@ final class ProductStock extends Model
     /**
      * Get the stock level status.
      */
-    public function getStatusAttribute(): string
+    protected function status(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        if ($this->quantity <= 0) {
-            return 'out_of_stock';
-        }
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function (): string {
+            if ($this->quantity <= 0) {
+                return 'out_of_stock';
+            }
+            if ($this->isLow()) {
+                return 'low_stock';
+            }
 
-        if ($this->isLow()) {
-            return 'low_stock';
-        }
-
-        return 'in_stock';
+            return 'in_stock';
+        });
     }
 
     /**
      * Get the stock level percentage compared to minimum.
      */
-    public function getLevelPercentageAttribute(): float
+    protected function levelPercentage(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        if ($this->minimum_quantity <= 0) {
-            return 100;
-        }
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function (): int|float {
+            if ($this->minimum_quantity <= 0) {
+                return 100;
+            }
 
-        return round(($this->quantity / $this->minimum_quantity) * 100, 2);
+            return round(($this->quantity / $this->minimum_quantity) * 100, 2);
+        });
     }
 
     /**

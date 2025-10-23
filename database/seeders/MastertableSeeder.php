@@ -107,7 +107,7 @@ final class MastertableSeeder extends Seeder
         ];
 
         foreach ($mastertables as $tableData) {
-            $mastertable = Mastertable::create([
+            $mastertable = Mastertable::query()->create([
                 'name' => $tableData['name'],
                 'alias' => $tableData['alias'],
                 'description' => $tableData['description'],

@@ -19,6 +19,8 @@ return [
         '127.0.0.1',
         'localhost',
         'opticanet.test',
+        'serene-night-pi7njpmywt.ploi.club',
+        'optiflow.com.do',
     ],
 
     /**

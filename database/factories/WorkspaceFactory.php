@@ -37,7 +37,7 @@ final class WorkspaceFactory extends Factory
      */
     public function inactive(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'is_active' => false,
         ]);
     }
@@ -47,7 +47,7 @@ final class WorkspaceFactory extends Factory
      */
     public function withSettings(array $settings): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'settings' => $settings,
         ]);
     }

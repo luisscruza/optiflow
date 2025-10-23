@@ -38,7 +38,7 @@ final class ProductFactory extends Factory
      */
     public function tracksStock(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'track_stock' => true,
         ]);
     }
@@ -48,7 +48,7 @@ final class ProductFactory extends Factory
      */
     public function doesntTrackStock(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'track_stock' => false,
         ]);
     }
@@ -58,7 +58,7 @@ final class ProductFactory extends Factory
      */
     public function service(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'name' => fake()->randomElement([
                 'Consulting', 'Support', 'Installation', 'Training', 'Maintenance',
             ]).' Service',
@@ -75,7 +75,7 @@ final class ProductFactory extends Factory
     {
         $cost = fake()->randomFloat(2, $min * 0.4, $max * 0.7);
 
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'cost' => $cost,
             'price' => fake()->randomFloat(2, $min, $max),
             'track_stock' => true,
@@ -89,7 +89,7 @@ final class ProductFactory extends Factory
     {
         $taxId = $tax instanceof Tax ? $tax->id : $tax;
 
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'default_tax_id' => $taxId,
         ]);
     }

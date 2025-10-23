@@ -35,7 +35,7 @@ final class AddressFactory extends Factory
      */
     public function primary(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'is_primary' => true,
         ]);
     }
@@ -45,7 +45,7 @@ final class AddressFactory extends Factory
      */
     public function billing(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'type' => 'billing',
         ]);
     }
@@ -55,7 +55,7 @@ final class AddressFactory extends Factory
      */
     public function shipping(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'type' => 'shipping',
         ]);
     }
@@ -67,7 +67,7 @@ final class AddressFactory extends Factory
     {
         $contactId = $contact instanceof Contact ? $contact->id : $contact;
 
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'contact_id' => $contactId,
         ]);
     }

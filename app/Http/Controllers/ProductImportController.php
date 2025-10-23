@@ -64,7 +64,7 @@ final class ProductImportController extends Controller
             $filePath = $file->storeAs('imports', $filename);
 
             // Create the import record
-            $import = ProductImport::create([
+            $import = ProductImport::query()->create([
                 'filename' => $filename,
                 'original_filename' => $file->getClientOriginalName(),
                 'file_path' => $filePath,
@@ -99,7 +99,7 @@ final class ProductImportController extends Controller
         $import = $productImport;
         // Get available workspaces for the current user
         $user = Auth::user();
-        $workspaces = Workspace::whereHas('users', function ($query) use ($user): void {
+        $workspaces = Workspace::query()->whereHas('users', function ($query) use ($user): void {
             $query->where('user_id', $user->id);
         })->get();
 
@@ -158,7 +158,7 @@ final class ProductImportController extends Controller
             $workspaceIds = $validatedData['workspaces'];
             $stockMapping = $validatedData['stock_mapping'] ?? [];
 
-            $workspaces = Workspace::whereIn('id', $workspaceIds)->get();
+            $workspaces = Workspace::query()->whereIn('id', $workspaceIds)->get();
 
             // Process the import in the background (or synchronously for now)
             $result = $this->processProductImportAction->handle($productImport, $workspaces, $stockMapping);

@@ -86,7 +86,7 @@ final class StockMovement extends Model
     /**
      * Get the user for this movement.
      *
-     * @return BelongsTo<Product, $this>
+     * @return BelongsTo<User, $this>
      */
     public function createdBy(): BelongsTo
     {
@@ -141,38 +141,6 @@ final class StockMovement extends Model
     }
 
     /**
-     * Get the effective quantity (positive for incoming, negative for outgoing).
-     */
-    public function getEffectiveQuantityAttribute(): float
-    {
-        if ($this->isOutgoing() && $this->quantity > 0) {
-            return -$this->quantity;
-        }
-
-        return $this->quantity;
-    }
-
-    /**
-     * Get a human-readable description of the movement.
-     */
-    public function getDescriptionAttribute(): string
-    {
-        $direction = $this->isIncoming() ? 'Added' : 'Removed';
-        $quantity = abs($this->quantity);
-        $productName = $this->product->name ?? 'Unknown Product';
-
-        $description = "{$direction} {$quantity} units of {$productName}";
-
-        if ($this->type === 'transfer') {
-            $description .= ' (Transfer)';
-        } elseif ($this->type === 'adjustment') {
-            $description .= ' (Adjustment)';
-        }
-
-        return $description;
-    }
-
-    /**
      * Boot the model.
      */
     protected static function boot(): void
@@ -183,6 +151,40 @@ final class StockMovement extends Model
             if ($movement->unit_cost && ! $movement->total_cost) {
                 $movement->total_cost = $movement->quantity * $movement->unit_cost;
             }
+        });
+    }
+
+    /**
+     * Get the effective quantity (positive for incoming, negative for outgoing).
+     */
+    protected function effectiveQuantity(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function () {
+            if ($this->isOutgoing() && $this->quantity > 0) {
+                return -$this->quantity;
+            }
+
+            return $this->quantity;
+        });
+    }
+
+    /**
+     * Get a human-readable description of the movement.
+     */
+    protected function description(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function (): string {
+            $direction = $this->isIncoming() ? 'Added' : 'Removed';
+            $quantity = abs($this->quantity);
+            $productName = $this->product->name ?? 'Unknown Product';
+            $description = "{$direction} {$quantity} units of {$productName}";
+            if ($this->type === 'transfer') {
+                $description .= ' (Transfer)';
+            } elseif ($this->type === 'adjustment') {
+                $description .= ' (Adjustment)';
+            }
+
+            return $description;
         });
     }
 

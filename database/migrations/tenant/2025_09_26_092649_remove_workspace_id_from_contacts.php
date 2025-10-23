@@ -21,11 +21,11 @@ return new class extends Migration
             DB::statement("DROP INDEX IF EXISTS {$index->name}");
         }
 
-        Schema::table('contacts', function (Blueprint $table) {
+        Schema::table('contacts', function (Blueprint $table): void {
             // Drop foreign key constraint if it exists
             try {
                 $table->dropForeign(['workspace_id']);
-            } catch (Exception $e) {
+            } catch (Exception) {
                 // Foreign key might not exist, continue
             }
 
@@ -39,7 +39,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('contacts', function (Blueprint $table) {
+        Schema::table('contacts', function (Blueprint $table): void {
             $table->unsignedBigInteger('workspace_id')->after('id');
 
             $table->foreign('workspace_id')

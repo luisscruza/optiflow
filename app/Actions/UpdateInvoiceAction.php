@@ -33,7 +33,7 @@ final readonly class UpdateInvoiceAction
                 $originalItems = $invoice->items()->with('product')->get()->keyBy('id');
 
                 if (isset($data['ncf']) && $data['ncf'] !== $invoice->document_number) {
-                    $documentSubtype = DocumentSubtype::findOrFail($data['document_subtype_id']);
+                    $documentSubtype = DocumentSubtype::query()->findOrFail($data['document_subtype_id']);
 
                     if (! NCFValidator::validate($data['ncf'], $documentSubtype, $data)) {
                         return new InvoiceResult(error: 'El NCF proporcionado no es válido.');
@@ -43,7 +43,7 @@ final readonly class UpdateInvoiceAction
                 $this->updateDocumentFields($invoice, $data);
 
                 if (isset($data['ncf']) && $data['ncf'] !== $invoice->document_number) {
-                    $documentSubtype = DocumentSubtype::findOrFail($data['document_subtype_id']);
+                    $documentSubtype = DocumentSubtype::query()->findOrFail($data['document_subtype_id']);
                     $this->updateNumerator($documentSubtype, $data['ncf']);
                 }
 
@@ -204,7 +204,7 @@ final readonly class UpdateInvoiceAction
      */
     private function updateNumerator(DocumentSubtype $documentSubtype, string $ncf): void
     {
-        $number = (int) ltrim(mb_substr($ncf, mb_strlen($documentSubtype->prefix)), '0');
+        $number = (int) mb_ltrim(mb_substr($ncf, mb_strlen($documentSubtype->prefix)), '0');
 
         if ($number >= $documentSubtype->next_number) {
             $documentSubtype->update(['next_number' => $number + 1]);

@@ -13,11 +13,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('invoice_items', function (Blueprint $table) {
+        Schema::table('invoice_items', function (Blueprint $table): void {
             $table->float('tax_amount');
         });
 
-        Schema::table('quotation_items', function (Blueprint $table) {
+        Schema::table('quotation_items', function (Blueprint $table): void {
             $table->float('tax_amount');
         });
     }

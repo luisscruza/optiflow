@@ -83,7 +83,7 @@ final class SyncDGII extends Command
         $this->info('Importing DGII data into database...');
 
         DB::disableQueryLog();
-        RNC::truncate();
+        RNC::query()->truncate();
 
         $handle = fopen($txtFilePath, 'r');
         $batch = [];
@@ -103,9 +103,10 @@ final class SyncDGII extends Command
             $batch[$row['identification']] = $row;
 
             if (count($batch) >= 1000) {
-                RNC::upsert(
+                RNC::query()->upsert(
                     array_values($batch),
-                    ['identification'], // unique key
+                    ['identification'],
+                    // unique key
                     ['name', 'comercial_name', 'status', 'updated_at']
                 );
                 $count += count($batch);
@@ -115,11 +116,7 @@ final class SyncDGII extends Command
         }
 
         if ($batch !== []) {
-            RNC::upsert(
-                array_values($batch),
-                ['identification'],
-                ['name', 'comercial_name', 'status', 'updated_at']
-            );
+            RNC::query()->upsert(array_values($batch), ['identification'], ['name', 'comercial_name', 'status', 'updated_at']);
             $count += count($batch);
         }
 

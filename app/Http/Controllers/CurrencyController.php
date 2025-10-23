@@ -38,7 +38,7 @@ final class CurrencyController extends Controller
             ];
         });
 
-        $defaultCurrency = Currency::where('is_default', true)->first();
+        $defaultCurrency = Currency::query()->where('is_default', true)->first();
 
         // Get historical rates for the last 30 days
         $historicalRates = CurrencyRate::with('currency')

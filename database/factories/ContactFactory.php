@@ -43,7 +43,7 @@ final class ContactFactory extends Factory
      */
     public function customer(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'contact_type' => 'customer',
         ]);
     }
@@ -53,7 +53,7 @@ final class ContactFactory extends Factory
      */
     public function supplier(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'contact_type' => 'supplier',
         ]);
     }
@@ -63,7 +63,7 @@ final class ContactFactory extends Factory
      */
     public function both(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'contact_type' => 'both',
         ]);
     }
@@ -75,7 +75,7 @@ final class ContactFactory extends Factory
     {
         $workspaceId = $workspace instanceof Workspace ? $workspace->id : $workspace;
 
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'workspace_id' => $workspaceId,
         ]);
     }

@@ -30,7 +30,7 @@ final readonly class CreatePrescriptionAction
                 ])
                 ->toArray();
 
-            Prescription::create($prescriptionData);
+            Prescription::query()->create($prescriptionData);
         });
     }
 }

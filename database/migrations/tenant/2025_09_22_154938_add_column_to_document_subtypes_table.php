@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('document_subtypes', function (Blueprint $table) {
+        Schema::table('document_subtypes', function (Blueprint $table): void {
             $table->string('type')->default('invoice')->after('name');
         });
     }

@@ -33,7 +33,7 @@ final class TaxFactory extends Factory
      */
     public function default(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'is_default' => true,
         ]);
     }
@@ -43,7 +43,7 @@ final class TaxFactory extends Factory
      */
     public function withRate(float $rate): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'name' => 'IVA '.$rate.'%',
             'rate' => $rate,
         ]);

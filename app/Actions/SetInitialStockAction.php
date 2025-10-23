@@ -21,7 +21,7 @@ final class SetInitialStockAction
      */
     public function handle(?User $user, array $data, ?Workspace $workspace = null): ProductStock
     {
-        $product = Product::findOrFail($data['product_id']);
+        $product = Product::query()->findOrFail($data['product_id']);
 
         if (! $product->track_stock) {
             throw new InvalidArgumentException('Cannot set initial stock for products that do not track inventory.');
@@ -34,7 +34,7 @@ final class SetInitialStockAction
         // }
 
         return DB::transaction(function () use ($product, $data, $workspaceId): ProductStock {
-            $existingStock = ProductStock::where([
+            $existingStock = ProductStock::query()->where([
                 'product_id' => $product->id,
                 'workspace_id' => $workspaceId,
             ])->first();
@@ -45,7 +45,7 @@ final class SetInitialStockAction
                 );
             }
 
-            $stock = ProductStock::create([
+            $stock = ProductStock::query()->create([
                 'product_id' => $product->id,
                 'workspace_id' => $workspaceId,
                 'quantity' => $data['quantity'],
@@ -53,7 +53,7 @@ final class SetInitialStockAction
             ]);
 
             if ($data['quantity']) {
-                StockMovement::create([
+                StockMovement::query()->create([
                     'workspace_id' => $workspaceId,
                     'product_id' => $product->id,
                     'type' => 'initial',

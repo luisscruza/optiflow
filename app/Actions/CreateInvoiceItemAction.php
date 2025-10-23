@@ -35,7 +35,7 @@ final readonly class CreateInvoiceItemAction
         DB::transaction(function () use ($items, $invoice): void {
 
             foreach ($items as $item) {
-                $product = Product::findOrFail($item['product_id']);
+                $product = Product::query()->findOrFail($item['product_id']);
 
                 $this->validateStock($invoice, $item, $product);
                 $this->decreaseStock($invoice, $item, $product);

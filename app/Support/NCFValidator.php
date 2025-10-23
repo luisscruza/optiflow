@@ -14,12 +14,12 @@ final class NCFValidator
      */
     public static function validate(string $ncf, DocumentSubtype $documentSubtype, array $data): bool
     {
-        if (Invoice::where('document_number', $ncf)->exists()) {
+        if (Invoice::query()->where('document_number', $ncf)->exists()) {
             return false;
         }
 
         $prefix = mb_substr($ncf, 0, mb_strlen($documentSubtype->prefix));
-        $number = (int) ltrim(mb_substr($ncf, mb_strlen($documentSubtype->prefix)), '0');
+        $number = (int) mb_ltrim(mb_substr($ncf, mb_strlen($documentSubtype->prefix)), '0');
 
         if ($prefix !== $documentSubtype->prefix) {
             return false;

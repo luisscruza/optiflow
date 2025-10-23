@@ -28,6 +28,5 @@ final class AppServiceProvider extends ServiceProvider
             'contact' => \App\Models\Contact::class,
             'user' => \App\Models\User::class,
         ]);
-
     }
 }

@@ -53,7 +53,7 @@ final class UpdateInvoiceItemAction
      */
     private function createItem(Invoice $invoice, array $data): void
     {
-        $product = Product::findOrFail($data['product_id']);
+        $product = Product::query()->findOrFail($data['product_id']);
 
         $this->validateStock($invoice, $data, $product);
         $this->decreaseStock($invoice, $data, $product);
@@ -70,7 +70,7 @@ final class UpdateInvoiceItemAction
      */
     private function updateItem(Invoice $invoice, InvoiceItem $existingItem, array $data): void
     {
-        $product = Product::findOrFail($data['product_id']);
+        $product = Product::query()->findOrFail($data['product_id']);
         $originalQuantity = $existingItem->quantity;
         $newQuantity = $data['quantity'];
 
@@ -254,10 +254,10 @@ final class UpdateInvoiceItemAction
      */
     private function findTaxIdByRate(float $taxRate): int
     {
-        $tax = Tax::where('rate', $taxRate)->first();
+        $tax = Tax::query()->where('rate', $taxRate)->first();
 
         if (! $tax) {
-            $tax = Tax::first();
+            $tax = Tax::query()->first();
         }
 
         return $tax ? $tax->id : 1;

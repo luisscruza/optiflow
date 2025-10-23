@@ -61,7 +61,7 @@ final class RecalculateBankAccount implements ShouldQueue
     private function recalculateBalance(): void
     {
         DB::transaction(function (): void {
-            $lockedBankAccount = BankAccount::lockForUpdate()->find($this->bankAccount->id);
+            $lockedBankAccount = BankAccount::query()->lockForUpdate()->find($this->bankAccount->id);
 
             if (! $lockedBankAccount) {
                 throw new InvalidArgumentException('Bank account not found during transaction');

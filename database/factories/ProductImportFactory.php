@@ -42,7 +42,7 @@ final class ProductImportFactory extends Factory
      */
     public function completed(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'status' => ProductImport::STATUS_COMPLETED,
             'processed_rows' => $attributes['total_rows'],
             'successful_rows' => $attributes['total_rows'],
@@ -61,7 +61,7 @@ final class ProductImportFactory extends Factory
      */
     public function failed(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'status' => ProductImport::STATUS_FAILED,
             'validation_errors' => [
                 'general' => ['Import failed due to validation errors'],
@@ -78,7 +78,7 @@ final class ProductImportFactory extends Factory
      */
     public function mapping(): static
     {
-        return $this->state(fn () => [
+        return $this->state(fn (): array => [
             'status' => ProductImport::STATUS_MAPPING,
             'headers' => ['Product Name', 'Product Code', 'Sell Price', 'Cost Price', 'Description'],
         ]);

@@ -86,7 +86,7 @@ final class HandleInertiaRequests extends Middleware
             return [];
         }
 
-        return User::whereHas('workspaces', function ($query) use ($currentWorkspace): void {
+        return User::query()->whereHas('workspaces', function ($query) use ($currentWorkspace): void {
             $query->where('workspace_id', $currentWorkspace->id);
         })
             ->select(['id', 'name', 'email'])

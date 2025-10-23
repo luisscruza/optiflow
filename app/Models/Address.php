@@ -63,6 +63,8 @@ final class Address extends Model
 
     /**
      * Get the contact that owns this address.
+     *
+     * @return BelongsTo<Contact, $this>
      */
     public function contact(): BelongsTo
     {
