@@ -2,8 +2,8 @@ import { Head, usePage } from '@inertiajs/react';
 
 import PrescriptionForm from '@/components/prescriptions/prescription-form';
 import AppLayout from '@/layouts/app-layout';
-import { MasterTableData, Prescription, type BreadcrumbItem, type Contact, type Workspace } from '@/types';
 import prescriptions from '@/routes/prescriptions';
+import { MasterTableData, Prescription, type BreadcrumbItem, type Contact, type Workspace } from '@/types';
 
 interface Props {
     prescription: Prescription;
@@ -16,7 +16,7 @@ export default function EditPrescription({ prescription, customers, optometrists
     const { workspace } = usePage().props as { workspace?: { current: Workspace | null; available: Workspace[] } };
 
     if (!workspace || !workspace.available?.length) {
-        return null; 
+        return null;
     }
 
     const breadcrumbs: BreadcrumbItem[] = [

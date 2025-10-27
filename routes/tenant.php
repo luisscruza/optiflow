@@ -53,7 +53,7 @@ Route::middleware([
     InitializeTenancyBySubdomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function (): void {
-    Route::get('/', fn () => redirect()->route('dashboard'))->name('home');
+    Route::get('/', fn() => redirect()->route('dashboard'))->name('home');
 
     Route::prefix('invitations')->name('invitations.')->group(function (): void {
         Route::get('{token}', [WorkspaceInvitationController::class, 'show'])->name('show');
@@ -68,6 +68,10 @@ Route::middleware([
             Route::patch('{workspace}', [WorkspaceContextController::class, 'update'])->name('update');
             Route::delete('{workspace}', [WorkspaceContextController::class, 'destroy'])->name('destroy');
         });
+
+                Route::post('comments', [\App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');
+        Route::patch('comments/{comment}', [\App\Http\Controllers\CommentController::class, 'update'])->name('comments.update');
+        Route::delete('comments/{comment}', [\App\Http\Controllers\CommentController::class, 'destroy'])->name('comments.destroy');
 
         Route::middleware(HasWorkspace::class)->group(function (): void {
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -104,7 +108,7 @@ Route::middleware([
             Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
             Route::patch('document-subtypes/{documentSubtype}/set-default', SetDefaultDocumentSubtypeController::class)->name('document-subtypes.set-default');
 
-            Route::get('inventory', fn () => Inertia::render('inventory/index'))->name('inventory.index');
+            Route::get('inventory', fn() => Inertia::render('inventory/index'))->name('inventory.index');
 
             Route::resource('stock-adjustments', StockAdjustmentController::class)->only(['index', 'create', 'store', 'show'])->parameters([
                 'stock-adjustments' => 'product',
@@ -122,10 +126,9 @@ Route::middleware([
 
             Route::resource('prescriptions', PrescriptionController::class);
             Route::get('prescriptions/{prescription}/pdf', DownloadPrescriptionController::class)->name('prescriptions.pdf');
-
         });
     });
 
-    require __DIR__.'/settings.php';
-    require __DIR__.'/auth.php';
+    require __DIR__ . '/settings.php';
+    require __DIR__ . '/auth.php';
 });
