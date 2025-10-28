@@ -89,7 +89,7 @@ final class InvoiceController extends Controller
             })
             ->orderBy('name')
             ->get()
-            ->map(function ($product) use ($currentWorkspace): stdClass {
+            ->map(function ($product) use ($currentWorkspace): Product {
                 $stock = $currentWorkspace ? $product->stocks->first() : null;
                 $product->current_stock = $stock;
                 $product->stock_quantity = $stock ? $stock->quantity : 0;
