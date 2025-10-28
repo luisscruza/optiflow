@@ -71,7 +71,6 @@ final class QuotationController extends Controller
             ->orderBy('name')->get();
 
         $customers = Contact::customers()
-            ->when($currentWorkspace, fn ($query) => $query->where('workspace_id', $currentWorkspace->id))
             ->orderBy('name')
             ->get();
 
