@@ -43,7 +43,7 @@ interface FormData {
 export default function StockTransfersCreate({ products, availableWorkspaces, workspace }: Props) {
     const { data, setData, post, processing, errors, reset } = useForm<FormData>({
         product_id: '',
-        from_workspace_id: workspace.id.toString(),
+        from_workspace_id: workspace?.id?.toString(),
         to_workspace_id: '',
         quantity: '',
         note: '',
