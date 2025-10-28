@@ -23,7 +23,6 @@ use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 use Inertia\Response;
-use stdClass;
 use Throwable;
 
 final class InvoiceController extends Controller
@@ -199,7 +198,7 @@ final class InvoiceController extends Controller
             })
             ->orderBy('name')
             ->get()
-            ->map(function ($product) use ($currentWorkspace): stdClass {
+            ->map(function ($product) use ($currentWorkspace): Product {
                 $stock = $currentWorkspace ? $product->stocks->first() : null;
 
                 $product->current_stock = $stock;
