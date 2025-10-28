@@ -759,7 +759,7 @@ export default function PrescriptionForm({
                 open={showContactModal}
                 onOpenChange={setShowContactModal}
                 onSuccess={handleContactCreated}
-                types={['customer']}
+                types={['customer', 'optometrist']}
                 onAdvancedForm={() => {
                     router.visit('/contacts/create');
                 }}
