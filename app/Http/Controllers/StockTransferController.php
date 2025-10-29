@@ -24,7 +24,11 @@ final class StockTransferController extends Controller
 
         $transfers = StockMovement::query()
             ->withoutWorkspaceScope()
-            ->where('type', 'transfer')
+            ->whereIn('type', [
+                \App\Enums\StockMovementType::TRANSFER,
+                \App\Enums\StockMovementType::TRANSFER_IN,
+                \App\Enums\StockMovementType::TRANSFER_OUT,
+            ])
             ->where(function ($query) use ($workspace): void {
                 $query->where('from_workspace_id', $workspace->id)
                     ->orWhere('to_workspace_id', $workspace->id);
