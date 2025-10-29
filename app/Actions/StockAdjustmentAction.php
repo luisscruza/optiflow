@@ -14,7 +14,7 @@ use InvalidArgumentException;
 final class StockAdjustmentAction
 {
     /**
-     * Adjust stock quantity for a product in a workspace.
+     * Ajustar inventario quantity for a product in a workspace.
      *
      * @param  array{product_id: int, adjustment_type: string, quantity: float, reason: string, reference?: string, unit_cost?: float}  $data
      */
@@ -23,7 +23,7 @@ final class StockAdjustmentAction
         $product = Product::query()->findOrFail($data['product_id']);
 
         if (! $product->track_stock) {
-            throw new InvalidArgumentException('Cannot adjust stock for products that do not track inventory.');
+            throw new InvalidArgumentException('Cannot Ajustar inventario for products that do not track inventory.');
         }
 
         if (! $user->current_workspace_id) {
@@ -52,7 +52,7 @@ final class StockAdjustmentAction
             $newQuantity = $stock->quantity + $adjustmentQuantity;
             if ($newQuantity < 0) {
                 throw new InvalidArgumentException(
-                    "Cannot adjust stock to negative quantity. Current: {$stock->quantity}, Adjustment: {$adjustmentQuantity}"
+                    "Cannot Ajustar inventario to negative quantity. Current: {$stock->quantity}, Adjustment: {$adjustmentQuantity}"
                 );
             }
 
@@ -67,7 +67,7 @@ final class StockAdjustmentAction
                 'type' => 'adjustment',
                 'quantity' => $adjustmentQuantity,
                 'unit_cost' => $data['unit_cost'] ?? null,
-                'note' => ($data['reference'] ? "[{$data['reference']}] " : '').$data['reason'],
+                'note' => ($data['reference'] ? "[{$data['reference']}] " : '') . $data['reason'],
             ]);
 
             return $movement->load(['product']);

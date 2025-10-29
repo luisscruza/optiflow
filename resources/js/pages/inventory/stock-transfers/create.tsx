@@ -29,7 +29,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface Props {
     products: Product[];
     availableWorkspaces: Workspace[];
-    workspace: Workspace;
+    workspace: {
+        current: Workspace;
+        available: Workspace[];
+    };
 }
 
 interface FormData {
@@ -43,7 +46,7 @@ interface FormData {
 export default function StockTransfersCreate({ products, availableWorkspaces, workspace }: Props) {
     const { data, setData, post, processing, errors, reset } = useForm<FormData>({
         product_id: '',
-        from_workspace_id: workspace?.id?.toString(),
+        from_workspace_id: workspace?.current?.id?.toString(),
         to_workspace_id: '',
         quantity: '',
         note: '',
@@ -65,9 +68,31 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
     };
 
     const getAvailableStock = () => {
-        if (!selectedProduct || !selectedProduct.stocks) return 0;
-        const stock = selectedProduct.stocks.find((s) => s.workspace_id === workspace.id);
-        return stock ? stock.quantity : 0;
+        console.log('=== getAvailableStock DEBUG ===');
+        console.log('selectedProduct:', selectedProduct);
+        console.log('workspace:', workspace);
+        console.log('workspace.current.id:', workspace?.current?.id);
+        console.log('workspace.current.id type:', typeof workspace?.current?.id);
+        
+        if (!selectedProduct || !selectedProduct.stocks) {
+            console.log('No selectedProduct or stocks');
+            return 0;
+        }
+        
+        console.log('selectedProduct.stocks:', selectedProduct.stocks);
+        
+        selectedProduct.stocks.forEach((s, index) => {
+            console.log(`Stock ${index}:`, s);
+            console.log(`  workspace_id: ${s.workspace_id} (type: ${typeof s.workspace_id})`);
+            console.log(`  quantity: ${s.quantity}`);
+            console.log(`  Match with workspace.current.id (${workspace.current.id})?`, s.workspace_id === Number(workspace.current.id));
+        });
+        
+        const stock = selectedProduct.stocks.find((s) => s.workspace_id === Number(workspace.current.id));
+        console.log('Found stock:', stock);
+        const result = stock ? Number(stock.quantity) : 0;
+        console.log('Result:', result);
+        return result;
     };
 
     return (
@@ -80,7 +105,7 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
                     <div className="flex items-center space-x-4">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight">Nueva transferencia de inventario</h1>
-                            <p className="text-muted-foreground">Transfiere stock desde {workspace.name} a otro espacio de trabajo</p>
+                                                                    <p className="text-muted-foreground">Transfiere stock desde {workspace.current.name} a otro espacio de trabajo</p>
                         </div>
                     </div>
 
@@ -89,7 +114,7 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
                         <Card>
                             <CardHeader>
                                 <CardTitle>Detalles de la transferencia</CardTitle>
-                                    <CardDescription>Selecciona un producto y el espacio de trabajo de destino para la transferencia</CardDescription>
+                                <CardDescription>Selecciona un producto y el espacio de trabajo de destino para la transferencia</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -98,12 +123,23 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
                                         <Label htmlFor="product_id">Producto *</Label>
                                         <Select value={data.product_id} onValueChange={handleProductChange}>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Select a product with available stock" />
+                                                <SelectValue placeholder="Selecciona un producto con stock disponible" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {products.map((product) => {
-                                                    const stock = product.stocks?.find((s) => s.workspace_id === workspace.id);
-                                                    const availableQty = stock ? stock.quantity : 0;
+                                                    console.log('=== Product in dropdown ===');
+                                                    console.log('Product:', product);
+                                                    console.log('Product.stocks:', product.stocks);
+                                                    console.log('workspace.current.id:', workspace?.current?.id, 'type:', typeof workspace?.current?.id);
+                                                    
+                                                    const stock = product.stocks?.find((s) => {
+                                                        console.log(`Comparing: ${s.workspace_id} (${typeof s.workspace_id}) === ${Number(workspace.current.id)} (number)`);
+                                                        return s.workspace_id === Number(workspace.current.id);
+                                                    });
+                                                    console.log('Found stock for product:', stock);
+                                                    
+                                                    const availableQty = stock ? Number(stock.quantity) : 0;
+                                                    console.log('Available qty:', availableQty);
 
                                                     return (
                                                         <SelectItem key={product.id} value={product.id.toString()}>
@@ -144,7 +180,7 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
                                         <Label>Desde espacio de trabajo</Label>
                                         <div className="flex items-center space-x-2 rounded-md bg-muted p-3">
                                             <Building2 className="h-4 w-4 text-muted-foreground" />
-                                            <span className="font-medium">{workspace.name}</span>
+                                            <span className="font-medium">{workspace.current.name}</span>
                                             <span className="text-sm text-muted-foreground">(Actual)</span>
                                         </div>
                                     </div>
@@ -215,7 +251,7 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
                                                     <span className="text-muted-foreground">Cantidad:</span> {data.quantity}
                                                 </p>
                                                 <p>
-                                                    <span className="text-muted-foreground">Desde:</span> {workspace.name}
+                                                    <span className="text-muted-foreground">Desde:</span> {workspace.current.name}
                                                 </p>
                                                 <p>
                                                     <span className="text-muted-foreground">Hacia:</span>{' '}

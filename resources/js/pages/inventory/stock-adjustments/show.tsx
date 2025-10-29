@@ -149,7 +149,7 @@ export default function StockAdjustmentsShow({ product, currentStock, stockHisto
                             </p>
                         </div>
                         <Button asChild>
-                            <Link href="/stock-adjustments/create">New Adjustment</Link>
+                            <Link href="/stock-adjustments/create">Nuevo ajuste</Link>
                         </Button>
                     </div>
 
@@ -157,7 +157,7 @@ export default function StockAdjustmentsShow({ product, currentStock, stockHisto
                     <div className="grid gap-4 md:grid-cols-3">
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Current Stock</CardTitle>
+                                <CardTitle className="text-sm font-medium">Inventario actual</CardTitle>
                                 <Package className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
@@ -172,23 +172,23 @@ export default function StockAdjustmentsShow({ product, currentStock, stockHisto
 
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Minimum Quantity</CardTitle>
+                                <CardTitle className="text-sm font-medium">Cantidad mínima</CardTitle>
                                 <TrendingDown className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">{currentStock ? formatQuantity(currentStock.minimum_quantity) : '0'}</div>
-                                <p className="text-xs text-muted-foreground">Reorder threshold</p>
+                                <p className="text-xs text-muted-foreground">Cantidad mínima configurada</p>
                             </CardContent>
                         </Card>
 
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Total Movements</CardTitle>
+                                <CardTitle className="text-sm font-medium">Movimientos</CardTitle>
                                 <RotateCcw className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">{stockHistory.total}</div>
-                                <p className="text-xs text-muted-foreground">All time transactions</p>
+                                <p className="text-xs text-muted-foreground">Total de movimientos de inventario registrados</p>
                             </CardContent>
                         </Card>
                     </div>
@@ -196,8 +196,8 @@ export default function StockAdjustmentsShow({ product, currentStock, stockHisto
                     {/* Stock Movement History */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Movement History</CardTitle>
-                            <CardDescription>Complete history of stock movements for this product</CardDescription>
+                            <CardTitle>Historial de movimientos</CardTitle>
+                            <CardDescription>Historial completo de movimientos de stock para este producto</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="rounded-md border">

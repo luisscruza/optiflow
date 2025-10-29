@@ -481,11 +481,11 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
                                         <div className="flex items-center justify-end gap-2">
                                             <span className="text-sm font-medium text-gray-600">NCF</span>
                                             <span className="rounded bg-gray-100 px-2 py-1 font-mono text-sm">{data.ncf || 'N/A'}</span>
-                                            <button 
-                                                type="button" 
+                                            <button
+                                                type="button"
                                                 onClick={() => setShowNcfModal(true)}
                                                 disabled={!data.document_subtype_id}
-                                                className="text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
                                                 title="Editar NCF manualmente"
                                             >
                                                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1152,8 +1152,8 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
                 isOpen={showNcfModal}
                 onClose={() => setShowNcfModal(false)}
                 currentNcf={data.ncf}
-                prefix={documentSubtypes.find(d => d.id === data.document_subtype_id)?.prefix || ''}
-                nextNumber={documentSubtypes.find(d => d.id === data.document_subtype_id)?.next_number || 0}
+                prefix={documentSubtypes.find((d) => d.id === data.document_subtype_id)?.prefix || ''}
+                nextNumber={documentSubtypes.find((d) => d.id === data.document_subtype_id)?.next_number || 0}
                 onSave={(newNcf) => setData('ncf', newNcf)}
                 invoiceId={invoice.id}
             />

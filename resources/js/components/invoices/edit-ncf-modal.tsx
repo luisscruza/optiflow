@@ -1,18 +1,11 @@
-import { useState } from 'react';
 import { AlertCircle, Settings } from 'lucide-react';
+import { useState } from 'react';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface EditNcfModalProps {
     isOpen: boolean;
@@ -24,15 +17,7 @@ interface EditNcfModalProps {
     invoiceId?: number;
 }
 
-export function EditNcfModal({
-    isOpen,
-    onClose,
-    currentNcf,
-    prefix,
-    nextNumber,
-    onSave,
-    invoiceId,
-}: EditNcfModalProps) {
+export function EditNcfModal({ isOpen, onClose, currentNcf, prefix, nextNumber, onSave, invoiceId }: EditNcfModalProps) {
     // Extract only the numeric part from current NCF
     const currentNumber = currentNcf.substring(prefix.length);
     const [number, setNumber] = useState(currentNumber);
@@ -160,7 +145,7 @@ export function EditNcfModal({
                         type="button"
                         onClick={handleValidateAndSave}
                         disabled={validating || !number || number === currentNumber}
-                        className="bg-blue-600 hover:bg-blue-700 ml-2"
+                        className="ml-2 bg-blue-600 hover:bg-blue-700"
                     >
                         {validating ? (
                             <>

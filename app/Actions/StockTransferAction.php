@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Enums\StockMovementType;
 use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\StockMovement;
 use App\Models\User;
 use App\Models\Workspace;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -70,25 +71,23 @@ final class StockTransferAction
                 ]
             );
 
-            // Update stock quantities
             $fromStock->quantity -= $data['quantity'];
             $fromStock->save();
 
             $toStock->quantity += $data['quantity'];
             $toStock->save();
 
-            $reference = $data['reference'] ?? "TRANSFER-{$fromWorkspace->id}-{$toWorkspace->id}-".time();
+            $reference = $data['reference'] ?? "TRANSFERENCIA-{$fromWorkspace->id}-{$toWorkspace->id}-".time();
 
-            // Create a single transfer movement record
             $transferMovement = StockMovement::query()->withoutGlobalScopes()->create([
                 'workspace_id' => $fromWorkspace->id, // Primary workspace (where it's initiated from)
                 'product_id' => $product->id,
-                'type' => 'transfer',
+                'type' => StockMovementType::TRANSFER_OUT,
                 'quantity' => $data['quantity'],
                 'from_workspace_id' => $fromWorkspace->id,
                 'to_workspace_id' => $toWorkspace->id,
                 'reference_number' => $reference,
-                'note' => $data['notes'] ?? "Transfer from {$fromWorkspace->name} to {$toWorkspace->name}",
+                'note' => $data['notes'] ?? "Transferido desde {$fromWorkspace->name} hacia {$toWorkspace->name}",
                 'user_id' => Auth::id(),
             ]);
 

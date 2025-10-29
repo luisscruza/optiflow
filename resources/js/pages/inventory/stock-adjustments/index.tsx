@@ -43,12 +43,12 @@ export default function StockAdjustmentsIndex({ stockAdjustments, workspace }: P
 
     const getStockStatus = (quantity: number, minimum: number) => {
         if (quantity <= 0) {
-            return { label: 'Out of Stock', variant: 'destructive' as const };
+            return { label: 'Sin stock', variant: 'destructive' as const };
         }
         if (quantity <= minimum) {
-            return { label: 'Low Stock', variant: 'secondary' as const };
+            return { label: 'Stock bajo', variant: 'secondary' as const };
         }
-        return { label: 'In Stock', variant: 'default' as const };
+        return { label: 'En stock', variant: 'default' as const };
     };
 
     return (
@@ -61,13 +61,13 @@ export default function StockAdjustmentsIndex({ stockAdjustments, workspace }: P
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight">Ajuste de inventario</h1>
-                            <p className="text-muted-foreground">Manage and track stock level adjustments for your products</p>
+                            <p className="text-muted-foreground">Gestiona y rastrea ajustes de niveles de stock para tus productos</p>
                         </div>
 
                         <Button asChild>
                             <Link href="/stock-adjustments/create">
                                 <Plus className="mr-2 h-4 w-4" />
-                                New Adjustment
+                                Nuevo ajuste
                             </Link>
                         </Button>
                     </div>
@@ -75,8 +75,8 @@ export default function StockAdjustmentsIndex({ stockAdjustments, workspace }: P
                     {/* Filters */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Current Stock Levels</CardTitle>
-                            <CardDescription>Overview of product stock levels in {workspace.name}</CardDescription>
+                            <CardTitle>Niveles de stock actuales</CardTitle>
+                            <CardDescription>Resumen de niveles de stock de productos en {workspace.name}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="mb-6 flex items-center space-x-4">
@@ -96,13 +96,13 @@ export default function StockAdjustmentsIndex({ stockAdjustments, workspace }: P
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Product</TableHead>
+                                            <TableHead>Producto</TableHead>
                                             <TableHead>SKU</TableHead>
-                                            <TableHead className="text-right">Current Stock</TableHead>
-                                            <TableHead className="text-right">Minimum</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead>Last Updated</TableHead>
-                                            <TableHead className="text-right">Actions</TableHead>
+                                            <TableHead className="text-right">Stock actual</TableHead>
+                                            <TableHead className="text-right">Mínimo</TableHead>
+                                            <TableHead>Estado</TableHead>
+                                            <TableHead>Última actualización</TableHead>
+                                            <TableHead className="text-right">Acciones</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -111,9 +111,9 @@ export default function StockAdjustmentsIndex({ stockAdjustments, workspace }: P
                                                 <TableCell colSpan={7} className="py-8 text-center">
                                                     <div className="flex flex-col items-center space-y-2">
                                                         <Package className="h-8 w-8 text-muted-foreground" />
-                                                        <p className="text-muted-foreground">No products with stock found</p>
+                                                        <p className="text-muted-foreground">No se encontraron productos con stock</p>
                                                         <Button asChild size="sm" variant="outline">
-                                                            <Link href="/products/create">Add your first product</Link>
+                                                            <Link href="/products/create">Agrega tu primer producto</Link>
                                                         </Button>
                                                     </div>
                                                 </TableCell>
@@ -148,7 +148,7 @@ export default function StockAdjustmentsIndex({ stockAdjustments, workspace }: P
                                                             <Button asChild size="sm" variant="outline">
                                                                 <Link href={`/stock-adjustments/${stock.product?.id}`}>
                                                                     <Eye className="mr-1 h-3 w-3" />
-                                                                    View History
+                                                                    Ver historial
                                                                 </Link>
                                                             </Button>
                                                         </TableCell>
@@ -164,17 +164,17 @@ export default function StockAdjustmentsIndex({ stockAdjustments, workspace }: P
                             {stockAdjustments.last_page > 1 && (
                                 <div className="flex items-center justify-between space-x-2 py-4">
                                     <div className="text-sm text-muted-foreground">
-                                        Showing {stockAdjustments.from} to {stockAdjustments.to} of {stockAdjustments.total} results
+                                        Mostrando {stockAdjustments.from} a {stockAdjustments.to} de {stockAdjustments.total} resultados
                                     </div>
                                     <div className="flex space-x-2">
                                         {stockAdjustments.links.prev && (
                                             <Button variant="outline" size="sm" onClick={() => router.get(stockAdjustments.links.prev!)}>
-                                                Previous
+                                                Anterior
                                             </Button>
                                         )}
                                         {stockAdjustments.links.next && (
                                             <Button variant="outline" size="sm" onClick={() => router.get(stockAdjustments.links.next!)}>
-                                                Next
+                                                Siguiente
                                             </Button>
                                         )}
                                     </div>

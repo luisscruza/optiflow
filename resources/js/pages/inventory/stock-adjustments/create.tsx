@@ -21,7 +21,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/stock-adjustments',
     },
     {
-        title: 'New Adjustment',
+        title: 'Nuevo Ajuste',
         href: '/stock-adjustments/create',
     },
 ];
@@ -66,22 +66,22 @@ export default function StockAdjustmentsCreate({ products, workspace }: Props) {
     };
 
     const adjustmentTypes = [
-        { value: 'set_quantity', label: 'Set Quantity', description: 'Set the exact stock quantity' },
-        { value: 'add_quantity', label: 'Add Quantity', description: 'Add to current stock' },
-        { value: 'remove_quantity', label: 'Remove Quantity', description: 'Remove from current stock' },
+        { value: 'set_quantity', label: 'Establecer cantidad', description: 'Establecer la cantidad exacta de stock' },
+        { value: 'add_quantity', label: 'Agregar cantidad', description: 'Agregar al stock actual' },
+        { value: 'remove_quantity', label: 'Remover cantidad', description: 'Remover del stock actual' },
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="New Stock Adjustment" />
+            <Head title="Nuevo ajuste de Inventario" />
 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="space-y-8">
                     {/* Header */}
                     <div className="flex items-center space-x-4">
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight">New Stock Adjustment</h1>
-                            <p className="text-muted-foreground">Adjust stock levels for products in {workspace.name}</p>
+                            <h1 className="text-3xl font-bold tracking-tight">Nuevo Ajuste de Inventario</h1>
+                            <p className="text-muted-foreground">Ajustar niveles de stock para productos en {workspace.name}</p>
                         </div>
                     </div>
 
@@ -89,17 +89,17 @@ export default function StockAdjustmentsCreate({ products, workspace }: Props) {
                     <div className="max-w-2xl">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Adjustment Details</CardTitle>
-                                <CardDescription>Select a product and specify the type and amount of adjustment</CardDescription>
+                                <CardTitle>Detalles del ajuste</CardTitle>
+                                <CardDescription>Selecciona un producto y especifica el tipo y cantidad del ajuste</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     {/* Product Selection */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="product_id">Product *</Label>
+                                        <Label htmlFor="product_id">Producto *</Label>
                                         <Select value={data.product_id} onValueChange={handleProductChange}>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Select a product" />
+                                                <SelectValue placeholder="Selecciona un producto" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {products.map((product) => (
@@ -125,7 +125,7 @@ export default function StockAdjustmentsCreate({ products, workspace }: Props) {
                                                     <p className="text-sm text-muted-foreground">SKU: {selectedProduct.sku}</p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-sm text-muted-foreground">Current Stock</p>
+                                                    <p className="text-sm text-muted-foreground">Stock actual</p>
                                                     <p className="text-2xl font-bold">{selectedProduct.stock_in_current_workspace?.quantity || 0}</p>
                                                 </div>
                                             </div>
@@ -134,10 +134,10 @@ export default function StockAdjustmentsCreate({ products, workspace }: Props) {
 
                                     {/* Adjustment Type */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="adjustment_type">Adjustment Type *</Label>
+                                        <Label htmlFor="adjustment_type">Tipo de ajuste *</Label>
                                         <Select value={data.adjustment_type} onValueChange={(value) => setData('adjustment_type', value)}>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Select adjustment type" />
+                                                <SelectValue placeholder="Selecciona tipo de ajuste" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {adjustmentTypes.map((type) => (
@@ -155,7 +155,7 @@ export default function StockAdjustmentsCreate({ products, workspace }: Props) {
 
                                     {/* Quantity */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="quantity">Quantity *</Label>
+                                        <Label htmlFor="quantity">Cantidad *</Label>
                                         <Input
                                             id="quantity"
                                             type="number"
@@ -163,14 +163,14 @@ export default function StockAdjustmentsCreate({ products, workspace }: Props) {
                                             min="0"
                                             value={data.quantity}
                                             onChange={(e) => setData('quantity', e.target.value)}
-                                            placeholder="Enter quantity"
+                                            placeholder="Ingresa cantidad"
                                         />
                                         {errors.quantity && <p className="text-sm text-destructive">{errors.quantity}</p>}
                                     </div>
 
                                     {/* Unit Cost */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="unit_cost">Unit Cost</Label>
+                                        <Label htmlFor="unit_cost">Costo unitario</Label>
                                         <Input
                                             id="unit_cost"
                                             type="number"
@@ -178,19 +178,19 @@ export default function StockAdjustmentsCreate({ products, workspace }: Props) {
                                             min="0"
                                             value={data.unit_cost}
                                             onChange={(e) => setData('unit_cost', e.target.value)}
-                                            placeholder="Optional unit cost"
+                                            placeholder="Costo unitario opcional"
                                         />
                                         {errors.unit_cost && <p className="text-sm text-destructive">{errors.unit_cost}</p>}
                                     </div>
 
                                     {/* Reference */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="reference">Reference</Label>
+                                        <Label htmlFor="reference">Referencia</Label>
                                         <Input
                                             id="reference"
                                             value={data.reference}
                                             onChange={(e) => setData('reference', e.target.value)}
-                                            placeholder="Optional reference (e.g. PO#, invoice#)"
+                                            placeholder="Referencia opcional (ej. PO#, factura#)"
                                             maxLength={100}
                                         />
                                         {errors.reference && <p className="text-sm text-destructive">{errors.reference}</p>}
@@ -198,12 +198,12 @@ export default function StockAdjustmentsCreate({ products, workspace }: Props) {
 
                                     {/* Reason */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="reason">Reason *</Label>
+                                        <Label htmlFor="reason">Razón *</Label>
                                         <Textarea
                                             id="reason"
                                             value={data.reason}
                                             onChange={(e) => setData('reason', e.target.value)}
-                                            placeholder="Explain the reason for this adjustment"
+                                            placeholder="Explica la razón de este ajuste"
                                             rows={3}
                                             maxLength={500}
                                         />
@@ -213,10 +213,10 @@ export default function StockAdjustmentsCreate({ products, workspace }: Props) {
                                     {/* Actions */}
                                     <div className="flex items-center justify-end space-x-2">
                                         <Button variant="outline" asChild>
-                                            <Link href="/stock-adjustments">Cancel</Link>
+                                            <Link href="/stock-adjustments">Cancelar</Link>
                                         </Button>
                                         <Button type="submit" disabled={processing}>
-                                            {processing ? 'Processing...' : 'Create Adjustment'}
+                                            {processing ? 'Procesando...' : 'Crear ajuste'}
                                         </Button>
                                     </div>
                                 </form>

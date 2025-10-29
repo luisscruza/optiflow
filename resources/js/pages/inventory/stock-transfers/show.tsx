@@ -7,7 +7,6 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type StockMovement, type Workspace } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 
-
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Inventario',
@@ -184,7 +183,7 @@ export default function StockTransfersShow({ transfer, workspace }: Props) {
                                     </Link>
                                 </Button>
                                 <Button asChild variant="outline">
-                                    <Link href="/stock-adjustments/create">Adjust Stock</Link>
+                                    <Link href="/stock-adjustments/create">Ajustar inventario</Link>
                                 </Button>
                             </div>
                         </CardContent>

@@ -8,6 +8,7 @@ enum StockMovementType: string
 {
     case INITIAL = 'initial';
     case ADJUSTMENT = 'adjustment';
+    case TRANSFER = 'transfer';
     case TRANSFER_IN = 'transfer_in';
     case TRANSFER_OUT = 'transfer_out';
     case SALE = 'out';
