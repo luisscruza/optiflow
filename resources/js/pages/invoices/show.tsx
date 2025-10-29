@@ -69,6 +69,10 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
                 return <Badge variant="destructive">Vencida</Badge>;
             case 'cancelled':
                 return <Badge variant="destructive">Cancelada</Badge>;
+            case 'pending_payment':
+                return <Badge variant="destructive">Pago pendiente</Badge>;
+            case 'partially_paid':
+                return <Badge variant="outline">Parcialmente pagada</Badge>;
             default:
                 return <Badge variant="secondary">{status}</Badge>;
         }

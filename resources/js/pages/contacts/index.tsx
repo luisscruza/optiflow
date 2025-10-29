@@ -67,11 +67,29 @@ export default function ContactsIndex({ contacts, filters }: Props) {
     };
 
     const getContactTypeIcon = (type: string) => {
-        return type === 'customer' ? <Users className="h-4 w-4" /> : <Building2 className="h-4 w-4" />;
+        switch (type) {
+            case 'customer':
+                return <Building2 className="h-5 w-5 text-primary" />;
+            case 'supplier':
+                return <Users className="h-5 w-5 text-secondary" />;
+            case 'optometrist':
+                return <Users className="h-5 w-5 text-foreground" />;
+            default:
+                return <Users className="h-5 w-5 text-foreground" />;
+        }
     };
 
     const getContactTypeBadge = (type: string) => {
-        return type === 'customer' ? <Badge variant="default">Cliente</Badge> : <Badge variant="secondary">Proveedor</Badge>;
+        switch (type) {
+            case 'customer':
+                return <Badge variant="default">Cliente</Badge>;
+            case 'supplier':
+                return <Badge variant="secondary">Proveedor</Badge>;
+            case 'optometrist':
+                return <Badge variant="outline">Optómetra</Badge>;
+            default:
+                return <Badge variant="outline">{type}</Badge>;
+        }
     };
 
     const formatContactInfo = (contact: Contact) => {
@@ -142,6 +160,7 @@ export default function ContactsIndex({ contacts, filters }: Props) {
                                     <SelectItem value="all">Todos</SelectItem>
                                     <SelectItem value="customer">Clientes</SelectItem>
                                     <SelectItem value="supplier">Proveedores</SelectItem>
+                                    <SelectItem value="optometrist">Optómetras</SelectItem>
                                 </SelectContent>
                             </Select>
                             <Button type="submit">
@@ -290,7 +309,8 @@ export default function ContactsIndex({ contacts, filters }: Props) {
                 </Card>
 
                 {/* Quick Contact Modal */}
-                <QuickContactModal open={showQuickModal} onOpenChange={setShowQuickModal} onAdvancedForm={handleAdvancedForm} />
+                <QuickContactModal open={showQuickModal}                 types={['customer', 'optometrist', 'supplier']}
+  onOpenChange={setShowQuickModal} onAdvancedForm={handleAdvancedForm} />
             </div>
         </AppLayout>
     );

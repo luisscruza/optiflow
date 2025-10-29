@@ -121,12 +121,6 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
                     </div>
 
                     <div className="flex space-x-3">
-                        <Button asChild variant="outline">
-                            <Link href="/bank-accounts">
-                                <Building2 className="mr-2 h-4 w-4" />
-                                Cuentas bancarias
-                            </Link>
-                        </Button>
                         <Button asChild className="bg-primary hover:bg-primary/90">
                             <Link href="/quotations/create">
                                 <Plus className="mr-2 h-4 w-4" />
@@ -281,6 +275,7 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
                                                                     Ver PDF
                                                                 </a>
                                                             </DropdownMenuItem>
+                                                            { quotation.status !== 'converted' && (
                                                             <DropdownMenuItem
                                                                 onClick={() => handleConvertToInvoice(quotation.id)}
                                                                 className="text-blue-600 dark:text-blue-400"
@@ -288,6 +283,7 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
                                                                 <FileText className="mr-2 h-4 w-4" />
                                                                 Convertir a factura
                                                             </DropdownMenuItem>
+                                                            )}
                                                             <DropdownMenuItem
                                                                 onClick={() => handleDelete(quotation.id)}
                                                                 className="text-red-600 dark:text-red-400"

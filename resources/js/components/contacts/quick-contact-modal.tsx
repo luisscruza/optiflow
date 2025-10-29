@@ -1,6 +1,6 @@
-import { Form, router } from '@inertiajs/react';
+import { Form } from '@inertiajs/react';
 import { ArrowRight, Search } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -16,7 +16,7 @@ interface Props {
     onSuccess?: (contact: any) => void;
     contact_types?: Array<{ value: ContactType; label: string }>;
     identification_types?: Array<{ value: IdentificationType; label: string }>;
-    types?: ContactType[]; 
+    types?: ContactType[];
 }
 
 export default function QuickContactModal({
@@ -27,7 +27,7 @@ export default function QuickContactModal({
     contact_types = [
         { value: 'customer', label: 'Cliente' },
         { value: 'supplier', label: 'Proveedor' },
-        { value: 'optometrist', label: 'Optometrista' },
+        { value: 'optometrist', label: 'Optómetra' },
     ],
     identification_types = [
         { value: 'cedula', label: 'Cédula' },
@@ -42,7 +42,7 @@ export default function QuickContactModal({
     const [contactName, setContactName] = useState('');
     const [isSearchingRNC, setIsSearchingRNC] = useState(false);
     const [rncSearchError, setRncSearchError] = useState<string | null>(null);
-    
+
     const identificationTypeRef = useRef<HTMLSelectElement>(null);
     const identificationNumberRef = useRef<HTMLInputElement>(null);
     const contactNameRef = useRef<HTMLInputElement>(null);
@@ -58,7 +58,7 @@ export default function QuickContactModal({
             setContactName('');
             setIsSearchingRNC(false);
             setRncSearchError(null);
-            
+
             // Reset form inputs
             if (identificationTypeRef.current) {
                 identificationTypeRef.current.value = '';
@@ -94,7 +94,7 @@ export default function QuickContactModal({
 
     const searchRNC = async () => {
         if (!identificationNumber || selectedIdentificationType !== 'rnc') return;
-        
+
         setIsSearchingRNC(true);
         setRncSearchError(null);
 
@@ -133,17 +133,17 @@ export default function QuickContactModal({
                     <DialogTitle className="flex items-center justify-between">Nuevo contacto</DialogTitle>
                 </DialogHeader>
 
-                <Form 
-                    action="/contacts" 
-                    method="post" 
-                    resetOnSuccess 
+                <Form
+                    action="/contacts"
+                    method="post"
+                    resetOnSuccess
                     onSuccess={(page: any) => {
                         onOpenChange(false);
                         if (onSuccess) {
                             const contact = page.props.newlyCreatedContact;
                             onSuccess(contact);
                         }
-                    }} 
+                    }}
                     className="space-y-6"
                 >
                     {({ errors, processing, wasSuccessful }) => (
@@ -153,27 +153,29 @@ export default function QuickContactModal({
                             {/* Contact Type Selection */}
                             <div className="grid grid-cols-2 gap-4">
                                 {/* Filtramos que los contact types sean los que pasan en el props de types... */}
-                                {contact_types.filter((type) => types.includes(type.value)).map((type) => (
-                                    <label key={type.value} className="cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name="contact_type"
-                                            value={type.value}
-                                            className="sr-only"
-                                            checked={selectedContactType === type.value}
-                                            onChange={() => setSelectedContactType(type.value)}
-                                        />
-                                        <div
-                                            className={`rounded-lg border py-2.5 text-center transition-colors ${
-                                                selectedContactType === type.value
-                                                    ? 'border-gray-500 bg-gray-50 text-gray-700 dark:bg-gray-900/20 dark:text-gray-300'
-                                                    : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
-                                            }`}
-                                        >
-                                            <div className="font-medium">{type.label}</div>
-                                        </div>
-                                    </label>
-                                ))}
+                                {contact_types
+                                    .filter((type) => types.includes(type.value))
+                                    .map((type) => (
+                                        <label key={type.value} className="cursor-pointer">
+                                            <input
+                                                type="radio"
+                                                name="contact_type"
+                                                value={type.value}
+                                                className="sr-only"
+                                                checked={selectedContactType === type.value}
+                                                onChange={() => setSelectedContactType(type.value)}
+                                            />
+                                            <div
+                                                className={`rounded-lg border py-2.5 text-center transition-colors ${
+                                                    selectedContactType === type.value
+                                                        ? 'border-gray-500 bg-gray-50 text-gray-700 dark:bg-gray-900/20 dark:text-gray-300'
+                                                        : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
+                                                }`}
+                                            >
+                                                <div className="font-medium">{type.label}</div>
+                                            </div>
+                                        </label>
+                                    ))}
                             </div>
                             {errors.contact_type && <p className="text-sm text-red-600 dark:text-red-400">{errors.contact_type}</p>}
 
@@ -202,10 +204,10 @@ export default function QuickContactModal({
                                 <div className="space-y-2">
                                     <Label htmlFor="identification_number">Número</Label>
                                     <div className="flex gap-2">
-                                        <Input 
+                                        <Input
                                             ref={identificationNumberRef}
-                                            name="identification_number" 
-                                            type="text" 
+                                            name="identification_number"
+                                            type="text"
                                             placeholder="Número de identificación"
                                             onChange={(e) => {
                                                 setIdentificationNumber(e.target.value);
@@ -228,27 +230,25 @@ export default function QuickContactModal({
                                     {errors.identification_number && (
                                         <p className="text-sm text-red-600 dark:text-red-400">{errors.identification_number}</p>
                                     )}
-                                    {rncSearchError && (
-                                        <p className="text-sm text-red-600 dark:text-red-400">{rncSearchError}</p>
-                                    )}
+                                    {rncSearchError && <p className="text-sm text-red-600 dark:text-red-400">{rncSearchError}</p>}
                                 </div>
                             </div>
 
                             {/* Name */}
                             <div className="space-y-2">
                                 <Label htmlFor="name">Nombre o Razón social *</Label>
-                                <Input 
+                                <Input
                                     ref={contactNameRef}
-                                    name="name" 
-                                    type="text" 
-                                    placeholder="Nombre completo o razón social" 
-                                    required 
+                                    name="name"
+                                    type="text"
+                                    placeholder="Nombre completo o razón social"
+                                    required
                                     onChange={(e) => setContactName(e.target.value)}
                                 />
                                 {errors.name && <p className="text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
                             </div>
 
-                             <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="gender">Sexo *</Label>
                                     <select
@@ -260,21 +260,12 @@ export default function QuickContactModal({
                                         <option value="female">Femenino</option>
                                         <option value="-">Prefiero no decirlo</option>
                                     </select>
-                                    {errors['gender'] && (
-                                        <p className="text-sm text-red-600 dark:text-red-400">{errors['gender']}</p>
-                                    )}
+                                    {errors['gender'] && <p className="text-sm text-red-600 dark:text-red-400">{errors['gender']}</p>}
                                 </div>
-                                    <div className="space-y-2">
+                                <div className="space-y-2">
                                     <Label htmlFor="gender">Fecha de nacimiento *</Label>
-                                    <Input
-                                        name="birth_date"
-                                        type="date"
-                                        placeholder="Fecha de nacimiento"
-                                        required
-                                    />
-                                    {errors['birth_date'] && (
-                                        <p className="text-sm text-red-600 dark:text-red-400">{errors['birth_date']}</p>
-                                    )}
+                                    <Input name="birth_date" type="date" placeholder="Fecha de nacimiento" required />
+                                    {errors['birth_date'] && <p className="text-sm text-red-600 dark:text-red-400">{errors['birth_date']}</p>}
                                 </div>
                             </div>
 

@@ -452,34 +452,7 @@ export default function PrescriptionForm({
                     <CardContent className="px-6 py-6">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             {/* First Column - Workspace Selection */}
-                            <div className="space-y-6">
-                                {/* Workspace Selection */}
-                                <div className="space-y-3">
-                                    <Label className="text-sm font-medium text-gray-900 flex items-center gap-1">
-                                        <Building2 className="h-4 w-4" />
-                                        Sucursal
-                                        <span className="text-red-500">*</span>
-                                    </Label>
-                                    <Select
-                                        value={data.workspace_id?.toString() || ''}
-                                        onValueChange={handleWorkspaceSwitch}
-                                    >
-                                        <SelectTrigger className={`h-10 ${errors.workspace_id ? 'border-red-300 ring-red-500/20' : 'border-gray-300'}`}>
-                                            <SelectValue placeholder="Seleccionar espacio de trabajo" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {available.map((workspace) => (
-                                                <SelectItem key={workspace.id} value={workspace.id.toString()}>
-                                                    {workspace.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.workspace_id && (
-                                        <p className="text-sm text-red-600">{errors.workspace_id}</p>
-                                    )}
-                                </div>
-                            </div>
+
 
                             {/* Second Column - Contact Selection */}
                             <div className="space-y-6">

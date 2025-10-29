@@ -1,9 +1,9 @@
 import { Form } from '@inertiajs/react';
-import { CalendarIcon, DollarSignIcon } from 'lucide-react';
+import { DollarSignIcon } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -18,13 +18,7 @@ interface PaymentRegistrationModalProps {
     paymentMethods: Record<string, string>;
 }
 
-export function PaymentRegistrationModal({ 
-    isOpen, 
-    onClose, 
-    invoice, 
-    bankAccounts, 
-    paymentMethods 
-}: PaymentRegistrationModalProps) {
+export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccounts, paymentMethods }: PaymentRegistrationModalProps) {
     const [selectedBankAccount, setSelectedBankAccount] = useState<string>('');
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
     const [amount, setAmount] = useState<string>('');
@@ -32,61 +26,74 @@ export function PaymentRegistrationModal({
 
     // Format today's datetime for the input default value (datetime-local format)
     const now = new Date();
-    const today = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+    const today = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 
     const handleFillFullAmount = () => {
         setAmount(invoice.amount_due.toString());
     };
 
+    // Validation: Check if all required fields are filled
+    const isFormValid = selectedBankAccount !== '' && selectedPaymentMethod !== '' && amount !== '' && parseFloat(amount) > 0;
+
+    // Calculate remaining balance for partial payments
+    const paymentAmount = amount !== '' ? parseFloat(amount) : 0;
+    const remainingBalance = invoice.amount_due - paymentAmount;
+    const isPartialPayment = paymentAmount > 0 && paymentAmount < invoice.amount_due;
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center space-x-2">
-                        <DollarSignIcon className="h-5 w-5" />
+                    <DialogTitle className="flex items-center gap-2 text-xl">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+                            <DollarSignIcon className="h-5 w-5" />
+                        </div>
                         <span>Registrar pago</span>
                     </DialogTitle>
-                    <DialogDescription>
-                        Registra un pago para la factura {invoice.document_number}
-                        <br />
-                        <strong>Cliente:</strong> {invoice.contact.name}
-                        <br />
-                        <strong>Valor por cobrar:</strong> {formatCurrency(invoice.amount_due)}
-                    </DialogDescription>
                 </DialogHeader>
+
+                {/* Invoice Summary Card - Redesigned to stand out */}
+                <div className="rounded-lg border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-5 shadow-sm">
+                    <div className="space-y-3">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 space-y-2">
+                                <div>
+                                    <p className="text-xs font-medium tracking-wide text-emerald-700 uppercase">Factura</p>
+                                    <p className="text-lg font-bold text-gray-900">{invoice.document_number}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-medium tracking-wide text-emerald-700 uppercase">Cliente</p>
+                                    <p className="text-base font-semibold text-gray-900">{invoice.contact.name}</p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <p className="mb-1 text-xs font-medium tracking-wide text-emerald-700 uppercase">Valor por cobrar</p>
+                                <div className="rounded-lg border border-emerald-200 bg-white px-4 py-3 shadow-sm">
+                                    <p className="text-2xl font-bold text-emerald-600">{formatCurrency(invoice.amount_due)}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <Form action="/payments" method="post" resetOnSuccess onSuccess={onClose}>
                     {({ processing, wasSuccessful, errors }) => (
-                        <div className="space-y-4">
+                        <div className="space-y-5">
                             <input type="hidden" name="invoice_id" value={invoice.id} />
-                            
-                            <div className="space-y-4 py-4">
-                                {/* Payment Date */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="payment_date" className="text-right">
-                                        Fecha y hora
-                                    </Label>
-                                    <div className="relative">
-                                        <Input
-                                            id="payment_date"
-                                            name="payment_date"
-                                            type="datetime-local"
-                                            defaultValue={today}
-                                            className="w-full"
-                                            required
-                                        />
-                                        <CalendarIcon className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                                    </div>
-                                    {errors.payment_date && (
-                                        <p className="text-sm text-red-600">{errors.payment_date}</p>
-                                    )}
-                                </div>
+                            {/* Use current system date/time automatically */}
+                            <input type="hidden" name="payment_date" value={today} />
 
-                                {/* Bank Account */}
+                            <div className="space-y-5">
+                                {/* Bank Account - Required */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="bank_account_id">Cuenta bancaria</Label>
+                                    <Label htmlFor="bank_account_id" className="flex items-center gap-1 text-sm font-semibold text-gray-900">
+                                        Cuenta bancaria
+                                        <span className="text-red-500">*</span>
+                                    </Label>
                                     <Select name="bank_account_id" value={selectedBankAccount} onValueChange={setSelectedBankAccount} required>
-                                        <SelectTrigger>
+                                        <SelectTrigger
+                                            className={`h-11 ${selectedBankAccount === '' ? 'border-gray-300' : 'border-emerald-300 bg-emerald-50/30'}`}
+                                        >
                                             <SelectValue placeholder="Selecciona una cuenta" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -97,21 +104,23 @@ export function PaymentRegistrationModal({
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {errors.bank_account_id && (
-                                        <p className="text-sm text-red-600">{errors.bank_account_id}</p>
-                                    )}
+                                    {errors.bank_account_id && <p className="text-sm text-red-600">{errors.bank_account_id}</p>}
+                                    {selectedBankAccount === '' && <p className="text-xs text-gray-500">Debes seleccionar una cuenta bancaria</p>}
                                 </div>
 
-                                {/* Amount */}
+                                {/* Amount - Required & Highlighted */}
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                        <Label htmlFor="amount">Valor</Label>
+                                        <Label htmlFor="amount" className="flex items-center gap-1 text-sm font-semibold text-gray-900">
+                                            Valor del pago
+                                            <span className="text-red-500">*</span>
+                                        </Label>
                                         <Button
                                             type="button"
                                             variant="outline"
                                             size="sm"
                                             onClick={handleFillFullAmount}
-                                            className="text-xs px-2 py-1 h-6"
+                                            className="h-7 border-emerald-300 px-3 py-1 text-xs text-emerald-700 hover:bg-emerald-50"
                                         >
                                             Monto completo
                                         </Button>
@@ -122,28 +131,41 @@ export function PaymentRegistrationModal({
                                             name="amount"
                                             type="number"
                                             step="0.01"
-                                            min="0"
+                                            min="0.01"
                                             max={invoice.amount_due}
                                             value={amount}
                                             onChange={(e) => setAmount(e.target.value)}
                                             placeholder="0.00"
-                                            className="pl-12"
+                                            className={`h-12 pl-14 text-lg font-semibold ${
+                                                amount === '' ? 'border-gray-300' : 'border-emerald-300 bg-emerald-50/30 text-emerald-700'
+                                            }`}
                                             required
                                         />
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                                            RD$
-                                        </span>
+                                        <span className="absolute top-1/2 left-4 -translate-y-1/2 text-lg font-semibold text-gray-500">RD$</span>
                                     </div>
-                                    {errors.amount && (
-                                        <p className="text-sm text-red-600">{errors.amount}</p>
+                                    {errors.amount && <p className="text-sm text-red-600">{errors.amount}</p>}
+                                    {amount !== '' && parseFloat(amount) > invoice.amount_due && (
+                                        <p className="text-sm text-amber-600">⚠️ El monto excede el valor por cobrar</p>
                                     )}
+                                    {isPartialPayment && (
+                                        <div className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2">
+                                            <span className="text-sm font-medium text-gray-500">Monto pendiente:</span>
+                                            <span className="text-base font-bold text-gray-700">{formatCurrency(remainingBalance)}</span>
+                                        </div>
+                                    )}
+                                    {amount === '' && <p className="text-xs text-gray-500">Ingresa el monto del pago</p>}
                                 </div>
 
-                                {/* Payment Method */}
+                                {/* Payment Method - Required */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="payment_method">Método de pago</Label>
+                                    <Label htmlFor="payment_method" className="flex items-center gap-1 text-sm font-semibold text-gray-900">
+                                        Método de pago
+                                        <span className="text-red-500">*</span>
+                                    </Label>
                                     <Select name="payment_method" value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod} required>
-                                        <SelectTrigger>
+                                        <SelectTrigger
+                                            className={`h-11 ${selectedPaymentMethod === '' ? 'border-gray-300' : 'border-emerald-300 bg-emerald-50/30'}`}
+                                        >
                                             <SelectValue placeholder="Selecciona un método" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -154,39 +176,52 @@ export function PaymentRegistrationModal({
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {errors.payment_method && (
-                                        <p className="text-sm text-red-600">{errors.payment_method}</p>
-                                    )}
+                                    {errors.payment_method && <p className="text-sm text-red-600">{errors.payment_method}</p>}
+                                    {selectedPaymentMethod === '' && <p className="text-xs text-gray-500">Debes seleccionar un método de pago</p>}
                                 </div>
 
                                 {/* Note */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="note">Nota (opcional)</Label>
+                                    <Label htmlFor="note" className="text-sm font-semibold text-gray-900">
+                                        Nota (opcional)
+                                    </Label>
                                     <Input
                                         id="note"
                                         name="note"
                                         placeholder="Información adicional sobre el pago"
-                                        className="w-full"
+                                        className="h-11 w-full border-gray-300 focus:border-emerald-500 focus:ring-emerald-500/20"
                                     />
-                                    {errors.note && (
-                                        <p className="text-sm text-red-600">{errors.note}</p>
-                                    )}
+                                    {errors.note && <p className="text-sm text-red-600">{errors.note}</p>}
                                 </div>
                             </div>
 
-                            <DialogFooter>
-                                <Button type="button" variant="outline" onClick={onClose}>
+                            <DialogFooter className="gap-2 sm:gap-0">
+                                <Button type="button" variant="outline" onClick={onClose} className="border-gray-300">
                                     Cancelar
                                 </Button>
-                                <Button type="submit" disabled={processing} className="bg-primary hover:bg-primary/90">
-                                    {processing ? 'Procesando...' : 'Agregar pago'}
+                                <Button
+                                    type="submit"
+                                    disabled={processing || !isFormValid}
+                                    className={`ml-2 min-w-[140px] ${
+                                        !isFormValid ? 'cursor-not-allowed bg-gray-400 hover:bg-gray-400' : 'bg-emerald-600 hover:bg-emerald-700'
+                                    }`}
+                                >
+                                    {processing ? (
+                                        <>
+                                            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                                            Procesando...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <DollarSignIcon className="mr-2 h-4 w-4" />
+                                            Agregar pago
+                                        </>
+                                    )}
                                 </Button>
                             </DialogFooter>
 
                             {wasSuccessful && (
-                                <div className="mt-2 p-3 bg-green-50 text-green-700 rounded-md text-sm">
-                                    ¡Pago registrado exitosamente!
-                                </div>
+                                <div className="mt-2 rounded-md bg-green-50 p-3 text-sm text-green-700">¡Pago registrado exitosamente!</div>
                             )}
                         </div>
                     )}

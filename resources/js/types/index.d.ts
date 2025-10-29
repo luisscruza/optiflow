@@ -436,7 +436,7 @@ export interface Invoice {
     contact_id: number;
     type: 'invoice' | 'quotation' | 'receipt';
     document_subtype_id: number;
-    status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled' | 'accepted' | 'rejected' | 'expired' | 'converted';
+    status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled' | 'accepted' | 'rejected' | 'expired' | 'converted' | 'pending_payment' | 'partially_paid';
     amount_due: number;
     document_number: string;
     issue_date: string;

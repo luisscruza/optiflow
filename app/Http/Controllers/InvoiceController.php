@@ -76,9 +76,15 @@ final class InvoiceController extends Controller
             ->orderBy('name')
             ->get();
 
-        $customers = Contact::customers()
+        $customers = Contact::query()
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->map(function ($contact) {
+               $phone = $contact->phone_primary ?? null;
+               $contact->name = "{$contact->name}" . ($phone ? " ({$phone})" : '');
+               
+               return $contact;
+            });
 
         $products = Product::with(['defaultTax'])
             ->when($currentWorkspace, function ($query) use ($currentWorkspace): void {

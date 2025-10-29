@@ -30,7 +30,7 @@ final class ContactController extends Controller
             ->with(['primaryAddress'])
             ->orderBy('name');
 
-        if ($request->has('type') && in_array($request->type, ['customer', 'supplier'])) {
+        if ($request->has('type') && in_array($request->type, ContactType::values(), true)) {
             $query->where('contact_type', $request->type);
         }
 

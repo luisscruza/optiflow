@@ -24,6 +24,16 @@ enum ContactType: string
         ];
     }
 
+      /**
+     * Get all contact type values.
+     *
+     * @return list<string>
+     */
+    public static function values(): array
+    {
+        return array_map(fn (self $type): string => $type->value, self::cases());
+    }
+
     /**
      * Get the display label for the contact type.
      */
@@ -32,7 +42,7 @@ enum ContactType: string
         return match ($this) {
             self::Customer => 'Cliente',
             self::Supplier => 'Proveedor',
-            self::Optometrist => 'Optometrista',
+            self::Optometrist => 'Optómetra',
         };
     }
 
