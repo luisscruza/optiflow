@@ -44,7 +44,7 @@ final class StockAdjustmentAction
             $adjustmentQuantity = match ($data['adjustment_type']) {
                 'set_quantity' => $data['quantity'] - $stock->quantity,
                 'add_quantity' => $data['quantity'],
-                'remove_quantity' => -abs($data['quantity']),
+                'remove_quantity' => -abs((float) $data['quantity']),
                 default => throw new InvalidArgumentException('Invalid adjustment type. Must be: set_quantity, add_quantity, or remove_quantity.')
             };
 
