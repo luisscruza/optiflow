@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Enums\StockMovementType;
 
 final class StockTransferController extends Controller
 {
@@ -25,9 +26,9 @@ final class StockTransferController extends Controller
         $transfers = StockMovement::query()
             ->withoutWorkspaceScope()
             ->whereIn('type', [
-                \App\Enums\StockMovementType::TRANSFER,
-                \App\Enums\StockMovementType::TRANSFER_IN,
-                \App\Enums\StockMovementType::TRANSFER_OUT,
+                StockMovementType::TRANSFER,
+                StockMovementType::TRANSFER_IN,
+                StockMovementType::TRANSFER_OUT,
             ])
             ->where(function ($query) use ($workspace): void {
                 $query->where('from_workspace_id', $workspace->id)

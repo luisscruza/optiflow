@@ -67,7 +67,7 @@ final class StockAdjustmentAction
                 'type' => 'adjustment',
                 'quantity' => $adjustmentQuantity,
                 'unit_cost' => $data['unit_cost'] ?? null,
-                'note' => ($data['reference'] ? "[{$data['reference']}] " : '') . $data['reason'],
+                'note' => ($data['reference'] ? "[{$data['reference']}] " : '').$data['reason'],
             ]);
 
             return $movement->load(['product']);
