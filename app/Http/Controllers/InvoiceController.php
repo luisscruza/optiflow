@@ -80,10 +80,10 @@ final class InvoiceController extends Controller
             ->orderBy('name')
             ->get()
             ->map(function ($contact) {
-               $phone = $contact->phone_primary ?? null;
-               $contact->name = "{$contact->name}" . ($phone ? " ({$phone})" : '');
-               
-               return $contact;
+                $phone = $contact->phone_primary ?? null;
+                $contact->name = "{$contact->name}".($phone ? " ({$phone})" : '');
+
+                return $contact;
             });
 
         $products = Product::with(['defaultTax'])
@@ -142,7 +142,6 @@ final class InvoiceController extends Controller
         }
 
         return redirect()->route('invoices.index')->with('success', 'Factura creada exitosamente.');
-
     }
 
     /**
@@ -183,7 +182,7 @@ final class InvoiceController extends Controller
     /**
      * Show the form for editing the specified invoice.
      */
-    public function edit(Invoice $invoice): Response
+    public function edit(Request $request, Invoice $invoice): Response
     {
         $currentWorkspace = Context::get('workspace');
 
@@ -219,12 +218,20 @@ final class InvoiceController extends Controller
 
         $taxes = Tax::query()->orderBy('name')->get();
 
+        // Get the NCF - only generate a new one if the document_subtype_id changed
+        $ncf = $invoice->document_number;
+        if ($request->filled('document_subtype_id') && (int) $request->get('document_subtype_id') !== $invoice->document_subtype_id) {
+            $documentSubtype = DocumentSubtype::query()->findOrFail($request->get('document_subtype_id'));
+            $ncf = $documentSubtype->generateNCF();
+        }
+
         return Inertia::render('invoices/edit', [
             'invoice' => $invoice,
             'documentSubtypes' => $documentSubtypes,
             'customers' => $customers,
             'products' => $products,
             'taxes' => $taxes,
+            'ncf' => $ncf, // Always send the NCF, not optional
         ]);
     }
 

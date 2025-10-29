@@ -3,6 +3,7 @@ import { AlertTriangle, FileText, Plus, Save, ShoppingCart, Trash2 } from 'lucid
 import { useState } from 'react';
 
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
+import { EditNcfModal } from '@/components/invoices/edit-ncf-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -82,6 +83,7 @@ export default function CreateInvoice({
 }: Props) {
     const [itemId, setItemId] = useState(3);
     const [showContactModal, setShowContactModal] = useState(false);
+    const [showNcfModal, setShowNcfModal] = useState(false);
     const [contactsList, setContactsList] = useState<Contact[]>(customers);
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
 
@@ -450,8 +452,14 @@ export default function CreateInvoice({
                                         <h2 className="text-xl font-bold text-gray-900">Factura No. 1</h2>
                                         <div className="flex items-center justify-end gap-2">
                                             <span className="text-sm font-medium text-gray-600">NCF</span>
-                                            <span className="rounded bg-gray-100 px-2 py-1 font-mono text-sm">{ncf || 'N/A'}</span>
-                                            <button type="button" className="text-gray-400 hover:text-gray-600">
+                                            <span className="rounded bg-gray-100 px-2 py-1 font-mono text-sm">{data.ncf || 'N/A'}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowNcfModal(true)}
+                                                disabled={!data.document_subtype_id}
+                                                className="text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+                                                title="Editar NCF manualmente"
+                                            >
                                                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path
                                                         strokeLinecap="round"
@@ -1137,6 +1145,15 @@ export default function CreateInvoice({
                 onAdvancedForm={() => {
                     router.visit('/contacts/create');
                 }}
+            />
+
+            <EditNcfModal
+                isOpen={showNcfModal}
+                onClose={() => setShowNcfModal(false)}
+                currentNcf={data.ncf}
+                prefix={documentSubtypes.find((d) => d.id === data.document_subtype_id)?.prefix || ''}
+                nextNumber={documentSubtypes.find((d) => d.id === data.document_subtype_id)?.next_number || 0}
+                onSave={(newNcf) => setData('ncf', newNcf)}
             />
         </AppLayout>
     );

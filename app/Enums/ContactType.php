@@ -24,7 +24,7 @@ enum ContactType: string
         ];
     }
 
-      /**
+    /**
      * Get all contact type values.
      *
      * @return list<string>

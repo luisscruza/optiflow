@@ -32,9 +32,9 @@ final readonly class UpdateInvoiceAction
             return DB::transaction(function () use ($workspace, $invoice, $data): InvoiceResult {
                 $originalItems = $invoice->items()->with('product')->get()->keyBy('id');
 
-                if (isset($data['ncf']) && $data['ncf'] !== $invoice->document_number) {
-                    $documentSubtype = DocumentSubtype::query()->findOrFail($data['document_subtype_id']);
+                $documentSubtype = DocumentSubtype::query()->findOrFail($data['document_subtype_id']);
 
+                if (isset($data['ncf']) && $data['ncf'] !== $invoice->document_number) {
                     if (! NCFValidator::validate($data['ncf'], $documentSubtype, $data)) {
                         return new InvoiceResult(error: 'El NCF proporcionado no es válido.');
                     }
@@ -42,8 +42,8 @@ final readonly class UpdateInvoiceAction
 
                 $this->updateDocumentFields($invoice, $data);
 
+                // Only update numerator if the NCF actually changed
                 if (isset($data['ncf']) && $data['ncf'] !== $invoice->document_number) {
-                    $documentSubtype = DocumentSubtype::query()->findOrFail($data['document_subtype_id']);
                     $this->updateNumerator($documentSubtype, $data['ncf']);
                 }
 
