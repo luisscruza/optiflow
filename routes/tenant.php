@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\CompanyDetailsController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\ContactController;
@@ -69,9 +70,9 @@ Route::middleware([
             Route::delete('{workspace}', [WorkspaceContextController::class, 'destroy'])->name('destroy');
         });
 
-                Route::post('comments', [\App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');
-        Route::patch('comments/{comment}', [\App\Http\Controllers\CommentController::class, 'update'])->name('comments.update');
-        Route::delete('comments/{comment}', [\App\Http\Controllers\CommentController::class, 'destroy'])->name('comments.destroy');
+        Route::post('comments', [App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');
+        Route::patch('comments/{comment}', [App\Http\Controllers\CommentController::class, 'update'])->name('comments.update');
+        Route::delete('comments/{comment}', [App\Http\Controllers\CommentController::class, 'destroy'])->name('comments.destroy');
 
         Route::middleware(HasWorkspace::class)->group(function (): void {
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -95,6 +96,8 @@ Route::middleware([
             Route::resource('taxes', TaxController::class);
 
             Route::resource('contacts', ContactController::class);
+
+            Route::resource('bank-accounts', BankAccountController::class);
 
             Route::resource('invoices', InvoiceController::class);
             Route::get('invoices/{invoice}/pdf', DownloadInvoicePdfController::class)->name('invoices.pdf');

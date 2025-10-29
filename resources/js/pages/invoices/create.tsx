@@ -526,34 +526,6 @@ export default function CreateInvoice({ documentSubtypes, customers, products, n
                                             )}
                                         </div>
 
-                                        {/* Workspace Selection */}
-                                        {availableWorkspaces && availableWorkspaces.length > 1 && (
-                                            <div className="space-y-3">
-                                                <Label className="text-sm font-medium text-gray-900 flex items-center gap-1">
-                                                    <Building2 className="h-4 w-4" />
-                                                    Espacio de Trabajo
-                                                    <span className="text-red-500">*</span>
-                                                </Label>
-                                                <Select
-                                                    value={data.workspace_id?.toString() || ''}
-                                                    onValueChange={handleWorkspaceSwitch}
-                                                >
-                                                    <SelectTrigger className={`h-10 ${errors.workspace_id ? 'border-red-300 ring-red-500/20' : 'border-gray-300'}`}>
-                                                        <SelectValue placeholder="Seleccionar espacio de trabajo" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {availableWorkspaces.map((workspace) => (
-                                                            <SelectItem key={workspace.id} value={workspace.id.toString()}>
-                                                                {workspace.name}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                {errors.workspace_id && (
-                                                    <p className="text-sm text-red-600">{errors.workspace_id}</p>
-                                                )}
-                                            </div>
-                                        )}
 
                                         <div className="space-y-3">
                                             <Label className="text-sm font-medium text-gray-900">

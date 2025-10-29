@@ -42,6 +42,14 @@ final class Payment extends Model
         return $this->belongsTo(Currency::class);
     }
 
+    /**
+     * @return BelongsTo<Invoice, $this>
+     */
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
+    }
+
     protected function casts(): array
     {
         return [

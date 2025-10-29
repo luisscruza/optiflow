@@ -37,12 +37,12 @@ enum PaymentMethod: string
     public function label(): string
     {
         return match ($this) {
-            self::Cash => 'Cash',
-            self::Check => 'Check',
-            self::CreditCard => 'Credit Card',
-            self::BankTransfer => 'Bank Transfer',
-            self::MobilePayment => 'Mobile Payment',
-            self::Other => 'Other',
+            self::Cash => 'Efectivo',
+            self::Check => 'Cheque',
+            self::CreditCard => 'Tarjeta de crédito/débito',
+            self::BankTransfer => 'Transferencia bancaria',
+            self::MobilePayment => 'Pago móvil',
+            self::Other => 'Otro',
         };
     }
 }

@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, DollarSign, Edit, Eye, FileText, Filter, Plus, Printer, Search, Trash2, User } from 'lucide-react';
+import { Building2, Edit, Eye, FileText, Filter, Plus, Printer, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Contact, type Document, type InvoiceFilters, type PaginatedInvoices } from '@/types';
+import { type BreadcrumbItem, type Document, type InvoiceFilters, type PaginatedInvoices } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -81,10 +81,7 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
         const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
 
         return (
-            <Badge
-                variant={config.variant}
-                className={config.className || undefined}
-            >
+            <Badge variant={config.variant} className={config.className || undefined}>
                 {config.label}
             </Badge>
         );
@@ -95,7 +92,7 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
         return date.toLocaleDateString('es-DO', {
             day: '2-digit',
             month: '2-digit',
-            year: 'numeric'
+            year: 'numeric',
         });
     };
 
@@ -120,12 +117,16 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
                 <div className="mb-8 flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Cotizaciones</h1>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Gestiona tus cotizaciones y realiza un seguimiento de las propuestas.
-                        </p>
+                        <p className="text-gray-600 dark:text-gray-400">Gestiona tus cotizaciones y realiza un seguimiento de las propuestas.</p>
                     </div>
 
                     <div className="flex space-x-3">
+                        <Button asChild variant="outline">
+                            <Link href="/bank-accounts">
+                                <Building2 className="mr-2 h-4 w-4" />
+                                Cuentas bancarias
+                            </Link>
+                        </Button>
                         <Button asChild className="bg-primary hover:bg-primary/90">
                             <Link href="/quotations/create">
                                 <Plus className="mr-2 h-4 w-4" />
@@ -221,46 +222,34 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
                                     <TableBody>
                                         {quotations.data.map((quotation) => (
                                             <TableRow key={quotation.id}>
-                                                <TableCell className="font-medium text-gray-500">
-                                                    {quotation.id}
-                                                </TableCell>
+                                                <TableCell className="font-medium text-gray-500">{quotation.id}</TableCell>
                                                 <TableCell>
-                                                    <div className="font-medium">
-                                                        {quotation.document_number}
-                                                    </div>
+                                                    <div className="font-medium">{quotation.document_number}</div>
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="font-medium">{quotation.contact.name}</div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="text-sm">
-                                                        {formatDate(quotation.issue_date)}
-                                                    </div>
+                                                    <div className="text-sm">{formatDate(quotation.issue_date)}</div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className={`text-sm ${
-                                                        isExpired(quotation.due_date, quotation.status)
-                                                            ? 'text-red-600 font-medium'
-                                                            : 'text-gray-600'
-                                                    }`}>
+                                                    <div
+                                                        className={`text-sm ${
+                                                            isExpired(quotation.due_date, quotation.status)
+                                                                ? 'font-medium text-red-600'
+                                                                : 'text-gray-600'
+                                                        }`}
+                                                    >
                                                         {formatDate(quotation.due_date)}
                                                     </div>
                                                 </TableCell>
+                                                <TableCell className="text-right font-medium">{formatCurrency(quotation.total_amount)}</TableCell>
                                                 <TableCell className="text-right font-medium">
-                                                    {formatCurrency(quotation.total_amount)}
-                                                </TableCell>
-                                                <TableCell className="text-right font-medium">
-                                                    <span className={
-                                                        getBalanceAmount(quotation) > 0
-                                                            ? 'text-red-600'
-                                                            : 'text-green-600'
-                                                    }>
+                                                    <span className={getBalanceAmount(quotation) > 0 ? 'text-red-600' : 'text-green-600'}>
                                                         {formatCurrency(getBalanceAmount(quotation))}
                                                     </span>
                                                 </TableCell>
-                                                <TableCell>
-                                                    {getStatusBadge(quotation.status)}
-                                                </TableCell>
+                                                <TableCell>{getStatusBadge(quotation.status)}</TableCell>
                                                 <TableCell className="text-right">
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
@@ -286,26 +275,26 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
                                                                     href={`/quotations/${quotation.id}/pdf`}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
-                                                                    className="flex items-center w-full"
+                                                                    className="flex w-full items-center"
                                                                 >
                                                                     <Printer className="mr-2 h-4 w-4" />
                                                                     Ver PDF
                                                                 </a>
                                                             </DropdownMenuItem>
-                                                                <DropdownMenuItem
-                                                                    onClick={() => handleConvertToInvoice(quotation.id)}
-                                                                    className="text-blue-600 dark:text-blue-400"
-                                                                >
-                                                                    <FileText className="mr-2 h-4 w-4" />
-                                                                    Convertir a factura
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem
-                                                                    onClick={() => handleDelete(quotation.id)}
-                                                                    className="text-red-600 dark:text-red-400"
-                                                                >
-                                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                                    Eliminar
-                                                                </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                onClick={() => handleConvertToInvoice(quotation.id)}
+                                                                className="text-blue-600 dark:text-blue-400"
+                                                            >
+                                                                <FileText className="mr-2 h-4 w-4" />
+                                                                Convertir a factura
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                onClick={() => handleDelete(quotation.id)}
+                                                                className="text-red-600 dark:text-red-400"
+                                                            >
+                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                Eliminar
+                                                            </DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 </TableCell>

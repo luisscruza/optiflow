@@ -51,16 +51,24 @@ export interface BankAccount {
     id: number;
     name: string;
     type: string;
+    type_label?: string;
     currency_id: number;
     account_number?: string | null;
     initial_balance: number;
     initial_balance_date: string;
     description: string;
+    balance: number;
     is_system_account: boolean;
     is_active: boolean;
     created_at: string;
     updated_at: string;
     currency?: Currency;
+    recent_payments?: Array<{
+        id: number;
+        amount: number;
+        payment_date: string;
+        payment_method: string;
+    }>;
 }
 
 export interface SharedData {
@@ -357,7 +365,6 @@ export interface MasterTableData {
         name: string;
     }>;
 }
-
 
 export interface PaginatedContacts {
     data: Contact[];

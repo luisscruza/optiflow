@@ -170,7 +170,7 @@ test('amount due is zero when fully paid', function (): void {
         'amount' => 1000,
     ]);
 
-    expect($invoice->fresh()->amount_due)->toBe(0.0);
+    expect($invoice->fresh()->amount_due)->toBe(0);
 });
 
 test('amount due never goes negative', function (): void {
@@ -180,7 +180,7 @@ test('amount due never goes negative', function (): void {
         'amount' => 1500,
     ]);
 
-    expect($invoice->fresh()->amount_due)->toBe(0.0);
+    expect($invoice->fresh()->amount_due)->toBe(0);
 });
 
 test('casts work correctly', function (): void {

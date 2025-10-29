@@ -25,7 +25,7 @@ const configurationSections = [
                 description: 'Nombre, dirección, contacto',
                 href: '/company-details',
             },
-                {
+            {
                 title: 'Sucursales',
                 description: 'Gestiona las sucursales de tu empresa',
                 href: '/workspaces',
@@ -34,6 +34,11 @@ const configurationSections = [
                 title: 'Monedas',
                 description: 'Gestiona las monedas y tasas de cambio',
                 href: '/currencies',
+            },
+            {
+                title: 'Cuentas bancarias',
+                description: 'Administra tus cuentas y transacciones',
+                href: '/bank-accounts',
             },
         ],
     },
@@ -95,7 +100,9 @@ export default function ConfigurationIndex() {
                         </div>
                         <div>
                             <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Configuración</h1>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Configura la información de tu empresa y adapta Alegra a tu negocio.</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Configura la información de tu empresa y adapta Alegra a tu negocio.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -114,7 +121,9 @@ export default function ConfigurationIndex() {
                                         </div>
                                         <div className="flex-1">
                                             <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">{section.title}</CardTitle>
-                                            <CardDescription className="mt-1 text-sm text-gray-600 dark:text-gray-400">{section.description}</CardDescription>
+                                            <CardDescription className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                                {section.description}
+                                            </CardDescription>
                                         </div>
                                     </div>
                                 </CardHeader>
@@ -124,7 +133,7 @@ export default function ConfigurationIndex() {
                                             <Link
                                                 key={item.title}
                                                 href={item.href}
-                                                className="block rounded-md border border-gray-200 bg-white dark:bg-transparent dark:border-gray-700 p-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+                                                className="block rounded-md border border-gray-200 bg-white p-3 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-transparent dark:hover:bg-gray-800"
                                             >
                                                 <div className="flex items-center justify-between">
                                                     <div>

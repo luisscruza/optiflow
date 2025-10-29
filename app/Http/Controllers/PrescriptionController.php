@@ -37,7 +37,7 @@ final class PrescriptionController extends Controller
             ])
             ->orderBy('name')
             ->get()
-            ->mapWithKeys(fn(Mastertable $mastertable): array => [
+            ->mapWithKeys(fn (Mastertable $mastertable): array => [
                 $mastertable->alias => [
                     'id' => $mastertable->id,
                     'name' => $mastertable->name,
@@ -45,7 +45,7 @@ final class PrescriptionController extends Controller
                     'description' => $mastertable->description,
                     'items' => $mastertable->items
                         ->sortBy('name')
-                        ->map(fn(MastertableItem $item): array => [
+                        ->map(fn (MastertableItem $item): array => [
                             'id' => $item->id,
                             'mastertable_id' => $item->mastertable_id,
                             'name' => $item->name,
@@ -124,7 +124,7 @@ final class PrescriptionController extends Controller
             ])
             ->orderBy('name')
             ->get()
-            ->mapWithKeys(fn(Mastertable $mastertable): array => [
+            ->mapWithKeys(fn (Mastertable $mastertable): array => [
                 $mastertable->alias => [
                     'id' => $mastertable->id,
                     'name' => $mastertable->name,
@@ -132,7 +132,7 @@ final class PrescriptionController extends Controller
                     'description' => $mastertable->description,
                     'items' => $mastertable->items
                         ->sortBy('name')
-                        ->map(fn(MastertableItem $item): array => [
+                        ->map(fn (MastertableItem $item): array => [
                             'id' => $item->id,
                             'mastertable_id' => $item->mastertable_id,
                             'name' => $item->name,
