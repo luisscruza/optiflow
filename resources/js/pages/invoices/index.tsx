@@ -84,6 +84,7 @@ export default function InvoicesIndex({ invoices, filters, bankAccounts = [], pa
     };
 
     const formatDate = (dateString: string) => {
+        if (!dateString) return '-';
         const date = new Date(dateString);
         return date.toLocaleDateString('es-DO', {
             day: '2-digit',
