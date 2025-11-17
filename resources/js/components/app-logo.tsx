@@ -8,7 +8,7 @@ export default function AppLogo() {
     return (
         <>  {
 companyDetails.logo ? (
-                <img src={companyDetails.logo} alt="Company Logo" className="h-8 w-8 rounded-full object-cover" />
+                <img src={companyDetails.logo} alt="Company Logo" className="h-14 rounded-full object-cover" />
             ) : (
                 <AppLogoIcon className=" text-primary-600" />
             )

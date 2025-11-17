@@ -21,7 +21,8 @@ final class CompanyDetailsController extends Controller
 
         // Convert logo path to full URL if it exists
         if (! empty($companyDetails['logo'])) {
-            $companyDetails['logo'] = asset('storage/'.$companyDetails['logo']);
+            // Use tenant_asset helper which points to TenantAssetsController
+            $companyDetails['logo'] = tenant_asset($companyDetails['logo']);
         }
 
         return Inertia::render('configuration/company-details/edit', [

@@ -58,17 +58,32 @@ final class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
-            'companyDetails' => fn (): array => CompanyDetail::getAll(),
-            'defaultCurrency' => fn (): ?\App\Models\Currency => Currency::query()->default()->first(),
+            'companyDetails' => fn(): array => $this->getCompanyDetails(),
+            'defaultCurrency' => fn(): ?\App\Models\Currency => Currency::query()->default()->first(),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'newlyCreatedContact' => fn () => $request->session()->get('newly_created_contact') ?: null,
-            'workspaceUsers' => fn (): array => $this->getWorkspaceUsers($request),
-            'unreadNotifications' => fn () => $request->user()?->unreadNotifications()->count() ?? 0,
+            'newlyCreatedContact' => fn() => $request->session()->get('newly_created_contact') ?: null,
+            'workspaceUsers' => fn(): array => $this->getWorkspaceUsers($request),
+            'unreadNotifications' => fn() => $request->user()?->unreadNotifications()->count() ?? 0,
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
         ];
+    }
+
+    /**
+     * Get company details with logo URL
+     */
+    private function getCompanyDetails(): array
+    {
+        $companyDetails = CompanyDetail::getAll();
+
+        // Convert logo path to full URL if it exists
+        if (! empty($companyDetails['logo'])) {
+            $companyDetails['logo'] = tenant_asset($companyDetails['logo']);
+        }
+
+        return $companyDetails;
     }
 
     /**

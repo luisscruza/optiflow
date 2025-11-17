@@ -33,9 +33,9 @@ final class DownloadPrescriptionController extends Controller
         $pdf = Pdf::loadView('prescriptions.pdf', [
             'prescription' => $prescription,
             'company' => CompanyDetail::getAll(),
-        ])->setPaper('a4', 'landscape');
+        ])->setPaper('a4', 'portrait');
 
-        $filename = "prescription-{$prescription->id}.pdf";
+        $filename = "receta-{$prescription->patient->name}-{$prescription->id}.pdf";
 
         return $pdf->stream($filename);
     }

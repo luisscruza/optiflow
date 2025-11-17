@@ -1,4 +1,4 @@
-import { Head, router, Form } from '@inertiajs/react';
+import { Form, Head, router } from '@inertiajs/react';
 import { ArrowLeft, Building2, Save } from 'lucide-react';
 import { useState } from 'react';
 
@@ -62,9 +62,10 @@ export default function CompanyDetailsEdit({ companyDetails }: Props) {
                     </Button>
                 </div>
 
-                <Form action="/company-details" method="patch">
+                <Form action="/company-details" method="post" encType="multipart/form-data">
                     {({ errors, processing, wasSuccessful }) => (
                         <>
+                            <input type="hidden" name="_method" value="PATCH" />
                             <div className="space-y-6">
                                 {/* Basic Information */}
                                 <Card>
@@ -103,9 +104,7 @@ export default function CompanyDetailsEdit({ companyDetails }: Props) {
                                                     placeholder="130382573"
                                                     className={errors.tax_id ? 'border-red-500' : ''}
                                                 />
-                                                {errors.tax_id && (
-                                                    <p className="text-sm text-red-600 dark:text-red-400">{errors.tax_id}</p>
-                                                )}
+                                                {errors.tax_id && <p className="text-sm text-red-600 dark:text-red-400">{errors.tax_id}</p>}
                                             </div>
                                         </div>
 
@@ -119,9 +118,7 @@ export default function CompanyDetailsEdit({ companyDetails }: Props) {
                                                 rows={3}
                                                 className={errors.address ? 'border-red-500' : ''}
                                             />
-                                            {errors.address && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.address}</p>
-                                            )}
+                                            {errors.address && <p className="text-sm text-red-600 dark:text-red-400">{errors.address}</p>}
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -130,9 +127,7 @@ export default function CompanyDetailsEdit({ companyDetails }: Props) {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Información de Contacto</CardTitle>
-                                        <CardDescription>
-                                            Datos de contacto que aparecerán en facturas y comunicaciones oficiales.
-                                        </CardDescription>
+                                        <CardDescription>Datos de contacto que aparecerán en facturas y comunicaciones oficiales.</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-6">
                                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -146,9 +141,7 @@ export default function CompanyDetailsEdit({ companyDetails }: Props) {
                                                     placeholder="+1 809 555 0123"
                                                     className={errors.phone ? 'border-red-500' : ''}
                                                 />
-                                                {errors.phone && (
-                                                    <p className="text-sm text-red-600 dark:text-red-400">{errors.phone}</p>
-                                                )}
+                                                {errors.phone && <p className="text-sm text-red-600 dark:text-red-400">{errors.phone}</p>}
                                             </div>
 
                                             <div className="space-y-2">
@@ -161,9 +154,7 @@ export default function CompanyDetailsEdit({ companyDetails }: Props) {
                                                     placeholder="info@empresa.com"
                                                     className={errors.email ? 'border-red-500' : ''}
                                                 />
-                                                {errors.email && (
-                                                    <p className="text-sm text-red-600 dark:text-red-400">{errors.email}</p>
-                                                )}
+                                                {errors.email && <p className="text-sm text-red-600 dark:text-red-400">{errors.email}</p>}
                                             </div>
                                         </div>
 
@@ -176,12 +167,8 @@ export default function CompanyDetailsEdit({ companyDetails }: Props) {
                                                 placeholder="DOP"
                                                 className={errors.currency ? 'border-red-500' : ''}
                                             />
-                                            <p className="text-xs text-muted-foreground">
-                                                Código de moneda (ej: DOP, USD, EUR)
-                                            </p>
-                                            {errors.currency && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.currency}</p>
-                                            )}
+                                            <p className="text-xs text-muted-foreground">Código de moneda (ej: DOP, USD, EUR)</p>
+                                            {errors.currency && <p className="text-sm text-red-600 dark:text-red-400">{errors.currency}</p>}
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -190,9 +177,7 @@ export default function CompanyDetailsEdit({ companyDetails }: Props) {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Logotipo</CardTitle>
-                                        <CardDescription>
-                                            Sube el logotipo de tu empresa que aparecerá en documentos y facturas.
-                                        </CardDescription>
+                                        <CardDescription>Sube el logotipo de tu empresa que aparecerá en documentos y facturas.</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-6">
                                         <div className="space-y-4">
@@ -211,13 +196,7 @@ export default function CompanyDetailsEdit({ companyDetails }: Props) {
                                                         <p className="text-xs text-muted-foreground">
                                                             {logoFile ? logoFile.name : 'Logotipo guardado'}
                                                         </p>
-                                                        <Button
-                                                            type="button"
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={removeLogo}
-                                                            className="mt-2"
-                                                        >
+                                                        <Button type="button" variant="outline" size="sm" onClick={removeLogo} className="mt-2">
                                                             Remover
                                                         </Button>
                                                     </div>
@@ -226,9 +205,7 @@ export default function CompanyDetailsEdit({ companyDetails }: Props) {
 
                                             {/* Logo Upload Input */}
                                             <div className="space-y-2">
-                                                <Label htmlFor="logo">
-                                                    {logoPreview ? 'Cambiar Logotipo' : 'Subir Logotipo'}
-                                                </Label>
+                                                <Label htmlFor="logo">{logoPreview ? 'Cambiar Logotipo' : 'Subir Logotipo'}</Label>
                                                 <Input
                                                     id="logo"
                                                     name="logo"
@@ -240,9 +217,7 @@ export default function CompanyDetailsEdit({ companyDetails }: Props) {
                                                 <p className="text-xs text-muted-foreground">
                                                     Formatos soportados: PNG, JPG, JPEG. Tamaño máximo: 2MB
                                                 </p>
-                                                {errors.logo && (
-                                                    <p className="text-sm text-red-600 dark:text-red-400">{errors.logo}</p>
-                                                )}
+                                                {errors.logo && <p className="text-sm text-red-600 dark:text-red-400">{errors.logo}</p>}
                                             </div>
                                         </div>
                                     </CardContent>
@@ -269,7 +244,7 @@ export default function CompanyDetailsEdit({ companyDetails }: Props) {
                                     ) : (
                                         <>
                                             <Save className="mr-2 h-4 w-4" />
-                                            Guardar Cambios
+                                            Guardar cambios
                                         </>
                                     )}
                                 </Button>
