@@ -73,21 +73,21 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
         console.log('workspace:', workspace);
         console.log('workspace.current.id:', workspace?.current?.id);
         console.log('workspace.current.id type:', typeof workspace?.current?.id);
-        
+
         if (!selectedProduct || !selectedProduct.stocks) {
             console.log('No selectedProduct or stocks');
             return 0;
         }
-        
+
         console.log('selectedProduct.stocks:', selectedProduct.stocks);
-        
+
         selectedProduct.stocks.forEach((s, index) => {
             console.log(`Stock ${index}:`, s);
             console.log(`  workspace_id: ${s.workspace_id} (type: ${typeof s.workspace_id})`);
             console.log(`  quantity: ${s.quantity}`);
             console.log(`  Match with workspace.current.id (${workspace.current.id})?`, s.workspace_id === Number(workspace.current.id));
         });
-        
+
         const stock = selectedProduct.stocks.find((s) => s.workspace_id === Number(workspace.current.id));
         console.log('Found stock:', stock);
         const result = stock ? Number(stock.quantity) : 0;
@@ -105,7 +105,7 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
                     <div className="flex items-center space-x-4">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight">Nueva transferencia de inventario</h1>
-                                                                    <p className="text-muted-foreground">Transfiere stock desde {workspace.current.name} a otro espacio de trabajo</p>
+                            <p className="text-muted-foreground">Transfiere stock desde {workspace.current.name} a otro espacio de trabajo</p>
                         </div>
                     </div>
 
@@ -130,14 +130,21 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
                                                     console.log('=== Product in dropdown ===');
                                                     console.log('Product:', product);
                                                     console.log('Product.stocks:', product.stocks);
-                                                    console.log('workspace.current.id:', workspace?.current?.id, 'type:', typeof workspace?.current?.id);
-                                                    
+                                                    console.log(
+                                                        'workspace.current.id:',
+                                                        workspace?.current?.id,
+                                                        'type:',
+                                                        typeof workspace?.current?.id,
+                                                    );
+
                                                     const stock = product.stocks?.find((s) => {
-                                                        console.log(`Comparing: ${s.workspace_id} (${typeof s.workspace_id}) === ${Number(workspace.current.id)} (number)`);
+                                                        console.log(
+                                                            `Comparing: ${s.workspace_id} (${typeof s.workspace_id}) === ${Number(workspace.current.id)} (number)`,
+                                                        );
                                                         return s.workspace_id === Number(workspace.current.id);
                                                     });
                                                     console.log('Found stock for product:', stock);
-                                                    
+
                                                     const availableQty = stock ? Number(stock.quantity) : 0;
                                                     console.log('Available qty:', availableQty);
 

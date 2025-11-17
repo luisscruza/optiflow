@@ -86,7 +86,7 @@ export default function ContactsIndex({ contacts, filters }: Props) {
             case 'supplier':
                 return <Badge variant="secondary">Proveedor</Badge>;
             case 'optometrist':
-                return <Badge variant="outline">Optómetra</Badge>;
+                return <Badge variant="outline">Evaluador</Badge>;
             default:
                 return <Badge variant="outline">{type}</Badge>;
         }
@@ -160,7 +160,7 @@ export default function ContactsIndex({ contacts, filters }: Props) {
                                     <SelectItem value="all">Todos</SelectItem>
                                     <SelectItem value="customer">Clientes</SelectItem>
                                     <SelectItem value="supplier">Proveedores</SelectItem>
-                                    <SelectItem value="optometrist">Optómetras</SelectItem>
+                                    <SelectItem value="optometrist">Evaluadors</SelectItem>
                                 </SelectContent>
                             </Select>
                             <Button type="submit">
@@ -309,8 +309,12 @@ export default function ContactsIndex({ contacts, filters }: Props) {
                 </Card>
 
                 {/* Quick Contact Modal */}
-                <QuickContactModal open={showQuickModal}                 types={['customer', 'optometrist', 'supplier']}
-  onOpenChange={setShowQuickModal} onAdvancedForm={handleAdvancedForm} />
+                <QuickContactModal
+                    open={showQuickModal}
+                    types={['customer', 'optometrist', 'supplier']}
+                    onOpenChange={setShowQuickModal}
+                    onAdvancedForm={handleAdvancedForm}
+                />
             </div>
         </AppLayout>
     );

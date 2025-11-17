@@ -1,20 +1,19 @@
-import { Plus, Building2, Save } from 'lucide-react';
+import { router, useForm } from '@inertiajs/react';
+import { Plus, Save } from 'lucide-react';
 import { useState } from 'react';
-import { useForm, router } from '@inertiajs/react';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/searchable-select';
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
+import BiomicroscopiaModal from '@/components/prescriptions/biomicroscopia-modal';
 import ClinicalHistory from '@/components/prescriptions/clinical-history';
 import LensometriaAgudeza from '@/components/prescriptions/lensometria-agudeza';
-import BiomicroscopiaModal from '@/components/prescriptions/biomicroscopia-modal';
 import OftalmoscopiaModal from '@/components/prescriptions/oftalmoscopia-modal';
 import QueratometriaPresion from '@/components/prescriptions/queratometria-presion';
 import Refraccion from '@/components/prescriptions/refraccion';
 import RefraccionModal from '@/components/prescriptions/refraccion-modal';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/searchable-select';
 import { MasterTableData, type Contact, type Workspace } from '@/types';
 import RefraccionSubjetivo from './refraccion-subjetivo';
 
@@ -215,16 +214,16 @@ export default function PrescriptionForm({
     submitUrl,
     redirectUrl,
     submitButtonText = 'Guardar receta',
-    isEditing = false
+    isEditing = false,
 }: PrescriptionFormProps) {
     const [showContactModal, setShowContactModal] = useState(false);
     const [showRefraccionModal, setShowRefraccionModal] = useState(false);
     const [contactsList, setContactsList] = useState<Contact[]>(customers);
     const [selectedContact, setSelectedContact] = useState<Contact | null>(
-        initialData.contact_id ? customers.find(c => c.id === initialData.contact_id) || null : null
+        initialData.contact_id ? customers.find((c) => c.id === initialData.contact_id) || null : null,
     );
     const [selectedOptometrist, setSelectedOptometrist] = useState<Contact | null>(
-        initialData.optometrist_id ? optometrists.find(o => o.id === initialData.optometrist_id) || null : null
+        initialData.optometrist_id ? optometrists.find((o) => o.id === initialData.optometrist_id) || null : null,
     );
 
     if (!workspace || !workspace.available?.length) {
@@ -426,13 +425,13 @@ export default function PrescriptionForm({
     };
 
     const handleContactCreated = (newContact: Contact) => {
-        setContactsList(prev => [...prev, newContact]);
+        setContactsList((prev) => [...prev, newContact]);
         setData('contact_id', newContact.id);
         setSelectedContact(newContact);
     };
 
     const handleContactSelect = (contactId: string) => {
-        const contact = contactsList.find(c => c.id === parseInt(contactId));
+        const contact = contactsList.find((c) => c.id === parseInt(contactId));
         setData('contact_id', parseInt(contactId));
         setSelectedContact(contact || null);
     };
@@ -450,14 +449,13 @@ export default function PrescriptionForm({
                 {/* Customer and Document Details - Three Column Layout */}
                 <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
                     <CardContent className="px-6 py-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                             {/* First Column - Workspace Selection */}
-
 
                             {/* Second Column - Contact Selection */}
                             <div className="space-y-6">
                                 <div className="space-y-3">
-                                    <Label className="text-sm font-medium text-gray-900 flex items-center gap-1">
+                                    <Label className="flex items-center gap-1 text-sm font-medium text-gray-900">
                                         Contacto
                                         <span className="text-red-500">*</span>
                                     </Label>
@@ -477,7 +475,7 @@ export default function PrescriptionForm({
                                                     onClick={() => setShowContactModal(true)}
                                                     className="text-primary hover:bg-primary/10"
                                                 >
-                                                    <Plus className="h-4 w-4 mr-1" />
+                                                    <Plus className="mr-1 h-4 w-4" />
                                                     Crear nuevo contacto
                                                 </Button>
                                             }
@@ -489,22 +487,20 @@ export default function PrescriptionForm({
                                             variant="outline"
                                             size="sm"
                                             onClick={() => setShowContactModal(true)}
-                                            className="h-10 px-3 border-gray-300 text-primary hover:bg-primary/10"
+                                            className="h-10 border-gray-300 px-3 text-primary hover:bg-primary/10"
                                         >
                                             <Plus className="h-4 w-4" />
                                         </Button>
                                     </div>
-                                    {errors.contact_id && (
-                                        <p className="text-sm text-red-600">{errors.contact_id}</p>
-                                    )}
+                                    {errors.contact_id && <p className="text-sm text-red-600">{errors.contact_id}</p>}
                                 </div>
                             </div>
 
                             {/* Third Column - Optometrist Selection */}
                             <div className="space-y-6">
                                 <div className="space-y-3">
-                                    <Label className="text-sm font-medium text-gray-900 flex items-center gap-1">
-                                        Optómetra
+                                    <Label className="flex items-center gap-1 text-sm font-medium text-gray-900">
+                                        Evaluador
                                         <span className="text-red-500">*</span>
                                     </Label>
                                     <SearchableSelect
@@ -514,19 +510,17 @@ export default function PrescriptionForm({
                                         }))}
                                         value={data.optometrist_id?.toString() || ''}
                                         onValueChange={(value) => {
-                                            const optometrist = optometrists.find(o => o.id === parseInt(value));
+                                            const optometrist = optometrists.find((o) => o.id === parseInt(value));
                                             setData('optometrist_id', parseInt(value));
                                             setSelectedOptometrist(optometrist || null);
                                         }}
                                         placeholder="Buscar optometra..."
                                         searchPlaceholder="Escribir para buscar..."
-                                        emptyText="No se encontró ningún optómetra."
+                                        emptyText="No se encontró ningún Evaluador."
                                         className="flex-1"
                                         triggerClassName={`h-10 ${errors.optometrist_id ? 'border-red-300 ring-red-500/20' : 'border-gray-300'}`}
                                     />
-                                    {errors.optometrist_id && (
-                                        <p className="text-sm text-red-600">{errors.optometrist_id}</p>
-                                    )}
+                                    {errors.optometrist_id && <p className="text-sm text-red-600">{errors.optometrist_id}</p>}
                                 </div>
                             </div>
                         </div>
@@ -551,10 +545,10 @@ export default function PrescriptionForm({
 
                 {/* Lensometría, Examen Externo y Oftalmoscopía - Three Column Layout */}
                 <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
-                    <CardContent className="p-4 flex flex-col justify-start">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <CardContent className="flex flex-col justify-start p-4">
+                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                             {/* Left Side - Lensometría y Agudeza Visual */}
-                            <div className="lg:col-span-1 flex flex-col">
+                            <div className="flex flex-col lg:col-span-1">
                                 <LensometriaAgudeza
                                     data={{
                                         lensometria_od: data.lensometria_od,
@@ -580,7 +574,7 @@ export default function PrescriptionForm({
                             </div>
 
                             {/* Middle - Examen Externo/Biomicroscopía */}
-                            <div className="lg:col-span-1 flex flex-col">
+                            <div className="flex flex-col lg:col-span-1">
                                 <BiomicroscopiaModal
                                     data={{
                                         biomicroscopia_od_cejas: data.biomicroscopia_od_cejas,
@@ -609,7 +603,7 @@ export default function PrescriptionForm({
                             </div>
 
                             {/* Right Side - Oftalmoscopía */}
-                            <div className="lg:col-span-1 flex flex-col">
+                            <div className="flex flex-col lg:col-span-1">
                                 <OftalmoscopiaModal
                                     data={{
                                         pupilar_od_fotomotor_directo: data.pupilar_od_fotomotor_directo,
@@ -641,7 +635,7 @@ export default function PrescriptionForm({
                         </div>
 
                         {/* Queratometría y Refracción - Bottom Row */}
-                        <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
                             {/* Queratometría y Presión Intraocular */}
                             <QueratometriaPresion
                                 data={{
@@ -681,7 +675,7 @@ export default function PrescriptionForm({
                                     onChange={(field, value) => setData(field as any, value)}
                                     errors={errors}
                                 />
-                                
+
                                 {/* Refracción Details Button */}
                                 <div className="flex justify-end">
                                     <Button
@@ -689,17 +683,15 @@ export default function PrescriptionForm({
                                         variant="outline"
                                         size="sm"
                                         onClick={() => setShowRefraccionModal(true)}
-                                        className="text-xs text-blue-600 border-blue-200 hover:bg-blue-50"
+                                        className="border-blue-200 text-xs text-blue-600 hover:bg-blue-50"
                                     >
-                                        <Plus className="h-3 w-3 mr-1" />
+                                        <Plus className="mr-1 h-3 w-3" />
                                         Ver detalles completos
                                     </Button>
                                 </div>
                             </div>
                         </div>
-                          <div className="mt-4 grid grid-cols-1 lg:grid-cols-1 gap-4">
-
-
+                        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-1">
                             {/* Refracción */}
                             <div className="space-y-2">
                                 <RefraccionSubjetivo
@@ -808,32 +800,27 @@ export default function PrescriptionForm({
             />
 
             {/* Floating Submit Button */}
-            <div className="fixed bottom-6 right-6 z-50">
+            <div className="fixed right-6 bottom-6 z-50">
                 <Button
                     type="submit"
                     form="prescription-form"
                     size="lg"
                     disabled={processing || !isFormValid}
-                    className="flex bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all duration-200 group disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    className="group flex bg-blue-600 shadow-lg transition-all duration-200 hover:bg-blue-700 hover:shadow-xl disabled:cursor-not-allowed disabled:bg-gray-400"
                     onClick={handleSubmit}
                 >
                     {processing ? (
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                        <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-white"></div>
                     ) : (
                         <>
-                            <Save className="h-5 w-5 mr-2" />
+                            <Save className="mr-2 h-5 w-5" />
                             {submitButtonText}
                         </>
                     )}
                 </Button>
                 {/* Tooltip */}
-                <div className="absolute bottom-16 right-0 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg">
-                    {!isFormValid
-                        ? 'Complete los campos requeridos'
-                        : processing
-                            ? 'Guardando...'
-                            : submitButtonText
-                    }
+                <div className="absolute right-0 bottom-16 rounded-lg bg-gray-900 px-3 py-2 text-xs whitespace-nowrap text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                    {!isFormValid ? 'Complete los campos requeridos' : processing ? 'Guardando...' : submitButtonText}
                 </div>
             </div>
         </>

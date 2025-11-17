@@ -27,7 +27,7 @@ export default function QuickContactModal({
     contact_types = [
         { value: 'customer', label: 'Cliente' },
         { value: 'supplier', label: 'Proveedor' },
-        { value: 'optometrist', label: 'Optómetra' },
+        { value: 'optometrist', label: 'Evaluador' },
     ],
     identification_types = [
         { value: 'cedula', label: 'Cédula' },
