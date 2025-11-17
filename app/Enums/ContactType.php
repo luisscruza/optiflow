@@ -42,7 +42,7 @@ enum ContactType: string
         return match ($this) {
             self::Customer => 'Cliente',
             self::Supplier => 'Proveedor',
-            self::Optometrist => 'Optómetra',
+            self::Optometrist => 'Evaluador',
         };
     }
 

@@ -16,7 +16,7 @@ final class UpdateWorkspaceRequest extends FormRequest
      */
     public function authorize(#[CurrentUser] User $user): bool
     {
-        return $user->hasBusinessRole(UserRole::Owner);
+        return $user->hasBusinessRole(UserRole::Owner) || $user->hasBusinessRole(UserRole::Admin);
     }
 
     /**

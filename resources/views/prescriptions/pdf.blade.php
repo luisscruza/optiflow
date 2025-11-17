@@ -237,6 +237,8 @@
                 <div class="validity-info">
                     <strong>Vigencia:</strong> 2 meses<br>
                     <strong>Sucursal:</strong> {{ $prescription->workspace->name }} <br>
+                                        <strong>Evaluado por:</strong> {{ $prescription->optometrist->name }} <br>
+
                     <strong>Fecha:</strong> {{ \Carbon\Carbon::parse($prescription->created_at)->locale('es')->isoFormat('D [de] MMMM [de] YYYY h:mm A') }}
                 </div>
             </td>
