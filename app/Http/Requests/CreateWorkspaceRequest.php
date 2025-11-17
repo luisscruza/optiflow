@@ -27,6 +27,8 @@ final class CreateWorkspaceRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'code' => ['nullable', 'string', 'max:50'],
             'description' => ['nullable', 'string', 'max:1000'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'phone' => ['nullable', 'string', 'max:50'],
         ];
     }
 
@@ -42,6 +44,8 @@ final class CreateWorkspaceRequest extends FormRequest
             'name.max' => 'The workspace name may not be greater than 255 characters.',
             'code.max' => 'The code may not be greater than 50 characters.',
             'description.max' => 'The description may not be greater than 1000 characters.',
+            'address.max' => 'The address may not be greater than 500 characters.',
+            'phone.max' => 'The phone may not be greater than 50 characters.',
         ];
     }
 }

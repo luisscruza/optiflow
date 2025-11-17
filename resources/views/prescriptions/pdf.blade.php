@@ -13,192 +13,252 @@
 
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 25px 30px;
             padding: 0;
             font-size: 11px;
-            line-height: 1.4;
-            color: #000;
+            line-height: 1.5;
+            color: #1a1a1a;
             background: white;
         }
 
-        .header {
+        .header-table {
             width: 100%;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #000;
-            overflow: hidden;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #2c5aa0;
         }
 
-        .header-left {
-            float: left;
-            width: 65%;
-        }
-
-        .header-right {
-            float: right;
-            width: 33%;
-            text-align: right;
-        }
-
-        .doctor-info {
-            font-size: 16px;
+        .company-name {
+            font-size: 18px;
             font-weight: bold;
-            margin-bottom: 5px;
+            color: #000;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
         }
 
         .contact-info {
-            font-size: 10px;
-            margin-bottom: 2px;
+            font-size: 9.5px;
+            margin-bottom: 3px;
+            color: #000;
+            line-height: 1.4;
+        }
+
+        .contact-info strong {
+            color: #000;
+        }
+
+        .logo-cell {
+            text-align: center;
+            vertical-align: middle;
+            padding: 0 15px;
         }
 
         .prescription-numbers {
-            font-size: 11px;
-            font-weight: bold;
+            font-size: 10px;
+            margin-bottom: 5px;
+            color: #000;
+        }
+
+        .validity-info {
+            font-size: 9px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e0e0e0;
+            color: #666;
         }
 
         .date-location {
-            font-size: 10px;
-            margin: 10px 0;
-            text-align: left;
+            font-size: 9.5px;
+            margin: 12px 0;
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border-left: 3px solid #2c5aa0;
+            color: #000;
         }
 
         .title {
             text-align: center;
-            font-size: 16px;
+            font-size: 17px;
             font-weight: bold;
-            margin: 15px 0;
+            margin: 20px 0 18px 0;
             text-transform: uppercase;
+            color: #000;
+            letter-spacing: 1.5px;
         }
 
         .patient-info {
             font-size: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 18px;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
         }
 
         .patient-info-line {
-            margin-bottom: 3px;
+            margin-bottom: 5px;
+            line-height: 1.6;
+            color: #000;
+        }
+
+        .patient-info strong {
+            color: #000;
         }
 
         .prescription-table {
             width: 100%;
             border-collapse: collapse;
-            border: 1px solid #000;
-            margin: 15px 0;
+            margin: 18px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .prescription-table th {
-            background-color: #fff;
             color: #000;
-            padding: 6px 4px;
+            padding: 10px 6px;
             text-align: center;
-            font-weight: bold;
             border: 1px solid #000;
-            font-size: 10px;
+            font-size: 9.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
 
         .prescription-table td {
-            padding: 6px 4px;
+            padding: 10px 6px;
             border: 1px solid #000;
             text-align: center;
-            font-size: 10px;
+            font-size: 10.5px;
+            background-color: #ffffff;
+        }
+
+        .prescription-table tbody tr:nth-child(odd) {
+            background-color: #f8f9fa;
         }
 
         .prescription-table .eye-label {
             text-align: left;
-            padding-left: 15px;
-            font-weight: normal;
+            padding-left: 18px;
+            color: #000;
+            background-color: #fff !important;
         }
 
         .footer-info {
             font-size: 10px;
-            margin-top: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
         }
 
         .footer-line {
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            line-height: 1.6;
+            color: #000;
+        }
+
+        .footer-line strong {
+            color: #000;
         }
 
         .signature-section {
-            margin-top: 40px;
-            text-align: right;
+            margin-top: 50px;
+            text-align: center;
         }
 
         .signature-line {
-            border-top: 1px solid #000;
-            width: 300px;
-            margin-left: auto;
-            padding-top: 5px;
+            border-top: 2px solid #2c5aa0;
+            width: 280px;
+            margin: 0 auto;
+            padding-top: 8px;
             font-size: 10px;
             text-align: center;
+            color: #000;
+        }
+
+        .section-title {
+            font-size: 11px;
+            color: #000;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .distances-section {
+            margin: 15px 0;
+            padding: 0;
+            font-size: 11px;
+            display: table;
+            width: 100%;
+        }
+
+        .distance-item {
+            display: inline-block;
+            margin-right: 40px;
+            padding: 8px 15px;
+            background-color: #fff;
+            border: 1px solid #d0d0d0;
+            border-radius: 4px;
+        }
+
+        .distance-item strong {
+            color: #000;
         }
 
     </style>
 </head>
 <body>
     <!-- Header -->
-    <table style="width: 100%; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px;">
+    <table class="header-table">
         <tr>
-            <td style="width: 50%; vertical-align: top;">
-                <div class="doctor-info">
+            <td style="width: 48%; vertical-align: top;">
+                <div class="company-name">
                     {{ $company['company_name'] }}
                 </div>
                 <div class="contact-info">
-                    @if(isset($company['phone']) && !empty($company['phone']))
-                    Teléfono: {{ $company['phone'] ?? $prescription->workspace->phone ?? '-' }}
-                    @endif
+                     {{ $prescription->workspace->address }} 
                 </div>
-                <div class="contact-info">
-                    {{ $company['company_email'] ?? '-' }}
+                     <div class="contact-info">
+                     {{ $prescription->workspace->phone }} 
                 </div>
-                <div class="contact-info">
-                    {{ $company['company_address'] ?? $prescription->workspace->address }} 
-                </div>
+
             </td>
-            <td style="width: 20%; vertical-align: middle; text-align: center;">
+            <td class="logo-cell" style="width: 22%; vertical-align: middle;">
                 @if(isset($company['logo']) && !empty($company['logo']))
-                    <img src="{{ storage_path('app/public/' . $company['logo']) }}" alt="Logo" style="max-height: 80px; max-width: 150px;">
+                    <img src="{{ storage_path('app/public/' . $company['logo']) }}" alt="Logo" style="max-height: 90px; max-width: 160px; display: block; margin: 0 auto;">
                 @endif
             </td>
             <td style="width: 30%; vertical-align: top; text-align: right;">
                 <div class="prescription-numbers">
-                    Historia N° &nbsp;&nbsp; {{ str_pad($prescription->patient->id, 5, '0', STR_PAD_LEFT) }}
+                    HISTORIA N° {{ str_pad($prescription->patient->id, 5, '0', STR_PAD_LEFT) }}
                 </div>
                 <div class="prescription-numbers">
-                    Receta N° &nbsp;&nbsp; {{ str_pad($prescription->id, 5, '0', STR_PAD_LEFT) }}
+                    RECETA N° {{ str_pad($prescription->id, 5, '0', STR_PAD_LEFT) }}
                 </div>
-                <div class="contact-info" style="margin-top: 5px;">
-                    Vigencia: (2) DOS MESES
-                </div>
-                <div class="contact-info">
-                    Sucursal: {{ $prescription->workspace->name }}
+                <div class="validity-info">
+                    <strong>Vigencia:</strong> 2 meses<br>
+                    <strong>Sucursal:</strong> {{ $prescription->workspace->name }} <br>
+                    <strong>Fecha:</strong> {{ \Carbon\Carbon::parse($prescription->created_at)->locale('es')->isoFormat('D [de] MMMM [de] YYYY h:mm A') }}
                 </div>
             </td>
         </tr>
     </table>
-
-    <!-- Date and location -->
-    <div class="date-location">
-        {{ ucfirst(\Carbon\Carbon::parse($prescription->created_at)->locale('es')->isoFormat('dddd, D [de] MMMM [de] YYYY [a las] h:mm:ss a')) }}
-    </div>
-
-    <hr style="border: none; border-top: 1px solid #000; margin: 10px 0;">
-
     <!-- Title -->
     <div class="title">
-        PRESCRIPCIÓN DE LENTES
+        Prescripción de Lentes
     </div>
 
     <!-- Patient info -->
     <div class="patient-info">
         <div class="patient-info-line">
             <strong>Paciente:</strong> {{ strtoupper($prescription->patient->name) }}
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <strong>Identificación:</strong> {{ $prescription->patient->identification_number ?? 'N/A' }}
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            @if($prescription->patient->phone_primary)
-            <strong>Celular:</strong> {{ $prescription->patient->phone_primary ?? 'N/A' }}
+            @if($prescription->patient->identification_number)
+            <strong>Identificación:</strong> {{ $prescription->patient->identification_number }}
             @endif
-            &nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            @if($prescription->patient->phone_primary)
+            <strong>Teléfono:</strong> {{ $prescription->patient->phone_primary }}
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            @endif
             <strong>Edad:</strong> {{ $prescription->patient->age }} año(s)
         </div>
     </div>
@@ -207,82 +267,95 @@
     <table class="prescription-table">
         <thead>
             <tr>
-                <th style="width: 15%;">Rx Final</th>
-                <th style="width: 11%;">Esfera</th>
-                <th style="width: 11%;">Cilindro</th>
-                <th style="width: 9%;">Eje</th>
-                <th style="width: 11%;">Adición</th>
-                <th style="width: 9%;">Alt Bif</th>
-                <th style="width: 11%;">Dist. P.</th>
-                <th style="width: 11%;">AV L</th>
-                <th style="width: 12%;">AV C</th>
+                <th style="width: 16%;">Rx Final</th>
+                <th style="width: 13%;">Esfera</th>
+                <th style="width: 13%;">Cilindro</th>
+                <th style="width: 10%;">Eje</th>
+                <th style="width: 13%;">Adición</th>
+                <th style="width: 10%;">Alt Bif</th>
+                <th style="width: 12%;">AV Lejos</th>
+                <th style="width: 13%;">AV Cerca</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td class="eye-label">Ojo derecho</td>
-                <td>{{ $prescription->subjetivo_od_esfera ?? '-' }}</td>
-                <td>{{ $prescription->subjetivo_od_cilindro ?? '-' }}</td>
-                <td>{{ $prescription->subjetivo_od_eje ?? '-' }}</td>
-                <td>{{ $prescription->subjetivo_od_add ?? '-' }}</td>
-                <td></td>
-                @php
-                    $dpOd = $prescription->subjetivo_od_dp ?? '-';
-                    $dpOi = $prescription->subjetivo_oi_dp ?? '-';
-                    
-                    // Si ambos valores son iguales y no están vacíos, mostrar como DP junto
-                    if ($dpOd && $dpOi && $dpOd === $dpOi) {
-                        $dpDisplay = $dpOd;
-                        $dpDisplayOi = '';
-                    } else {
-                        // Si son diferentes, mostrar separados
-                        $dpDisplay = $dpOd;
-                        $dpDisplayOi = $dpOi;
-                    }
-                @endphp
-                <td>{{ $dpDisplay }}</td>
+                <td class="eye-label">OD (Derecho)</td>
+                <td><strong>{{ $prescription->subjetivo_od_esfera ?? '-' }}</strong></td>
+                <td><strong>{{ $prescription->subjetivo_od_cilindro ?? '-' }}</strong></td>
+                <td><strong>{{ $prescription->subjetivo_od_eje ?? '-' }}</strong></td>
+                <td><strong>{{ $prescription->subjetivo_od_add ?? '-' }}</strong></td>
+                <td>-</td>
                 <td>{{ $prescription->subjetivo_od_av_lejos ? '20/' . $prescription->subjetivo_od_av_lejos : '-' }}</td>
                 <td>{{ $prescription->subjetivo_od_av_cerca ? '20/' . $prescription->subjetivo_od_av_cerca : '-' }}</td>
             </tr>
             <tr>
-                <td class="eye-label">Ojo izquierdo</td>
-                <td>{{ $prescription->subjetivo_oi_esfera ?? '-' }}</td>
-                <td>{{ $prescription->subjetivo_oi_cilindro ?? '-' }}</td>
-                <td>{{ $prescription->subjetivo_oi_eje ?? '-' }}</td>
-                <td>{{ $prescription->subjetivo_oi_add ?? '-' }}</td>
-                <td></td>
-                <td>{{ $dpDisplayOi }}</td>
+                <td class="eye-label">OI (Izquierdo)</td>
+                <td><strong>{{ $prescription->subjetivo_oi_esfera ?? '-' }}</strong></td>
+                <td><strong>{{ $prescription->subjetivo_oi_cilindro ?? '-' }}</strong></td>
+                <td><strong>{{ $prescription->subjetivo_oi_eje ?? '-' }}</strong></td>
+                <td><strong>{{ $prescription->subjetivo_oi_add ?? '-' }}</strong></td>
+                <td>-</td>
                 <td>{{ $prescription->subjetivo_oi_av_lejos ? '20/' . $prescription->subjetivo_oi_av_lejos : '-' }}</td>
                 <td>{{ $prescription->subjetivo_oi_av_cerca ? '20/' . $prescription->subjetivo_oi_av_cerca : '-' }}</td>
             </tr>
         </tbody>
     </table>
 
+    @php
+        $dpOd = $prescription->subjetivo_od_dp ?? null;
+        $dpOi = $prescription->subjetivo_oi_dp ?? null;
+        
+        // Determinar si mostrar DP junto o separado
+        $showCombinedDP = $dpOd && $dpOi && $dpOd === $dpOi;
+        $showSeparateDP = ($dpOd && $dpOi && $dpOd !== $dpOi) || ($dpOd && !$dpOi) || (!$dpOd && $dpOi);
+    @endphp
+
+    @if($showCombinedDP || $showSeparateDP)
+    <!-- Distances section -->
+    <div class="distances-section">
+        @if($showCombinedDP)
+            <div class="distance-item">
+                <strong>Distancia Naso Pupilar:</strong> {{ $dpOd }}mm
+            </div>
+        @else
+            @if($dpOd)
+            <div class="distance-item">
+                <strong>DNP OD:</strong> {{ $dpOd }}mm
+            </div>
+            @endif
+            @if($dpOi)
+            <div class="distance-item">
+                <strong>DNP OI:</strong> {{ $dpOi }}mm
+            </div>
+            @endif
+        @endif
+    </div>
+    @endif
+
     <!-- Footer information -->
     <div class="footer-info">
         <div class="footer-line">
-            <strong>Próximo control visual:</strong> {{ \Carbon\Carbon::parse($prescription->created_at)->addMonths(12)->format('d/m/Y') }}
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <strong>Próximo Control Visual:</strong> {{ \Carbon\Carbon::parse($prescription->created_at)->addMonths(12)->locale('es')->isoFormat('D [de] MMMM [de] YYYY') }}
         </div>
         @if($prescription->motivos && $prescription->motivos->count() > 0)
             <div class="footer-line">
                 <strong>Diagnósticos:</strong>
                 @foreach($prescription->motivos as $motivo)
-                    {{ strtoupper($motivo->name) }}{{ !$loop->last ? ',' : '-' }}
+                    {{ ucfirst($motivo->name) }}{{ !$loop->last ? ', ' : '' }}
                 @endforeach
             </div>
         @endif
         @if($prescription->lentesRecomendados && $prescription->lentesRecomendados->count() > 0)
             <div class="footer-line">
-                <strong>Recomendación:</strong>
+                <strong>Tipo de Lentes Recomendados:</strong>
                 @foreach($prescription->lentesRecomendados as $lente)
-                    {{ strtoupper($lente->name) }}{{ !$loop->last ? ',' : '-' }}
+                    {{ ucfirst($lente->name) }}{{ !$loop->last ? ', ' : '' }}
                 @endforeach
             </div>
         @endif
         @if($prescription->refraccion_observaciones)
             <div class="footer-line">
-                <strong>Observaciones:</strong> {{ $prescription->refraccion_observaciones }}
+                <strong>Observaciones Adicionales:</strong> {{ $prescription->refraccion_observaciones }}
             </div>
         @endif
     </div>
@@ -290,7 +363,7 @@
     <!-- Signature section -->
     <div class="signature-section">
         <div class="signature-line">
-            Firma profesional
+            FIRMA PROFESIONAL
         </div>
     </div>
 </body>

@@ -20,6 +20,8 @@ final class CreateWorkspaceAction
             'slug' => Slug::generateUniqueSlug($validated['name'], Workspace::class),
             'code' => $validated['code'],
             'description' => $validated['description'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'phone' => $validated['phone'] ?? null,
             'owner_id' => $user->id,
             'is_active' => true,
             'is_default' => $validated['is_personal'] ?? false,

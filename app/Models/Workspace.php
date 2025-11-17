@@ -20,6 +20,8 @@ use Illuminate\Support\Str;
  * @property string $name
  * @property string $slug
  * @property string|null $description
+ * @property string|null $address
+ * @property string|null $phone
  * @property int $owner_id
  * @property array<array-key, mixed>|null $settings
  * @property bool $is_active
@@ -52,6 +54,8 @@ use Illuminate\Support\Str;
  * @property-read int|null $invitations_count
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Workspace whereCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Workspace whereAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Workspace wherePhone($value)
  *
  * @property-read Collection<int, Invoice> $invoices
  * @property-read int|null $invoices_count
@@ -190,7 +194,7 @@ final class Workspace extends Model
     protected function membersCount(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->members()->count(),
+            get: fn() => $this->members()->count(),
         );
     }
 }

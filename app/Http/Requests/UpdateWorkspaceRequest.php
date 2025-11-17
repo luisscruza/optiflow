@@ -30,6 +30,8 @@ final class UpdateWorkspaceRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:1000'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'phone' => ['nullable', 'string', 'max:50'],
         ];
     }
 
@@ -44,6 +46,8 @@ final class UpdateWorkspaceRequest extends FormRequest
             'name.required' => 'The workspace name is required.',
             'name.max' => 'The workspace name may not be greater than 255 characters.',
             'description.max' => 'The description may not be greater than 1000 characters.',
+            'address.max' => 'The address may not be greater than 500 characters.',
+            'phone.max' => 'The phone may not be greater than 50 characters.',
         ];
     }
 }

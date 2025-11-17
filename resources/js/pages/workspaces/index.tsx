@@ -1,4 +1,4 @@
-import { Building2, Crown, Edit, MoreHorizontal, Plus, Settings, Users } from 'lucide-react';
+import { Building2, Crown, Edit, MoreHorizontal, Plus, Users } from 'lucide-react';
 import { useState } from 'react';
 
 import { update as switchWorkspace } from '@/actions/App/Http/Controllers/WorkspaceContextController';
@@ -6,15 +6,15 @@ import { index, store, update } from '@/actions/App/Http/Controllers/WorkspaceCo
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -29,6 +29,8 @@ interface Workspace {
     name: string;
     code?: string;
     description: string | null;
+    address?: string | null;
+    phone?: string | null;
     is_owner: boolean;
     members_count: number;
     created_at: string;
@@ -39,6 +41,8 @@ interface WorkspaceFormData {
     name: string;
     code: string;
     description: string;
+    address: string;
+    phone: string;
 }
 
 interface Props {
@@ -56,6 +60,8 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
         name: '',
         code: '',
         description: '',
+        address: '',
+        phone: '',
     });
     const [errors, setErrors] = useState<Partial<WorkspaceFormData>>({});
 
@@ -68,6 +74,8 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
             name: '',
             code: '',
             description: '',
+            address: '',
+            phone: '',
         });
         setErrors({});
     };
@@ -82,6 +90,8 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
             name: workspace.name,
             code: workspace.code || '',
             description: workspace.description || '',
+            address: workspace.address || '',
+            phone: workspace.phone || '',
         });
         setEditingWorkspace(workspace);
         setErrors({});
@@ -92,10 +102,8 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
         setIsSubmitting(true);
         setErrors({});
 
-        const url = isEdit && editingWorkspace 
-            ? update(editingWorkspace.slug).url 
-            : store().url;
-        
+        const url = isEdit && editingWorkspace ? update(editingWorkspace.slug).url : store().url;
+
         const method = isEdit ? 'patch' : 'post';
 
         router[method](url, formData, {
@@ -115,13 +123,13 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
     };
 
     const handleInputChange = (field: keyof WorkspaceFormData, value: string) => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
             [field]: value,
         }));
         // Clear error for this field when user starts typing
         if (errors[field]) {
-            setErrors(prev => ({
+            setErrors((prev) => ({
                 ...prev,
                 [field]: undefined,
             }));
@@ -183,9 +191,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                         <CardContent className="flex flex-col items-center justify-center py-12">
                             <Building2 className="mb-4 h-12 w-12 text-gray-400" />
                             <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">No hay sucursales aún</h3>
-                            <p className="mb-6 max-w-md text-center text-gray-600 dark:text-gray-400">
-                                Comienza creando tu primera sucursal.
-                            </p>
+                            <p className="mb-6 max-w-md text-center text-gray-600 dark:text-gray-400">Comienza creando tu primera sucursal.</p>
                             <Button onClick={handleCreateWorkspace}>
                                 <Plus className="mr-2 h-4 w-4" />
                                 Crear tu primer espacio de trabajo
@@ -226,14 +232,10 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="text-sm text-gray-600 dark:text-gray-400">
-                                                {workspace.code || '-'}
-                                            </span>
+                                            <span className="text-sm text-gray-600 dark:text-gray-400">{workspace.code || '-'}</span>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="text-sm text-gray-600 dark:text-gray-400">
-                                                {workspace.description || '-'}
-                                            </span>
+                                            <span className="text-sm text-gray-600 dark:text-gray-400">{workspace.description || '-'}</span>
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-1 text-sm">
@@ -268,7 +270,6 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                                                                 Cambiar a este espacio de trabajo
                                                             </DropdownMenuItem>
                                                         )}
-                                                       
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </div>
@@ -286,9 +287,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Nueva sucursal</DialogTitle>
-                        <DialogDescription>
-                            Crea una nueva sucursal para distribuir tus ingresos y gastos.
-                        </DialogDescription>
+                        <DialogDescription>Crea una nueva sucursal para distribuir tus ingresos y gastos.</DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
@@ -299,9 +298,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                                 onChange={(e) => handleInputChange('name', e.target.value)}
                                 placeholder="Ej: Sucursal Centro"
                             />
-                            {errors.name && (
-                                <p className="text-sm text-red-600 dark:text-red-400">{errors.name}</p>
-                            )}
+                            {errors.name && <p className="text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="create-code">Código</Label>
@@ -311,9 +308,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                                 onChange={(e) => handleInputChange('code', e.target.value)}
                                 placeholder="Ej: SUC001"
                             />
-                            {errors.code && (
-                                <p className="text-sm text-red-600 dark:text-red-400">{errors.code}</p>
-                            )}
+                            {errors.code && <p className="text-sm text-red-600 dark:text-red-400">{errors.code}</p>}
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="create-description">Descripción</Label>
@@ -324,9 +319,27 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                                 placeholder="Descripción opcional de la sucursal"
                                 rows={3}
                             />
-                            {errors.description && (
-                                <p className="text-sm text-red-600 dark:text-red-400">{errors.description}</p>
-                            )}
+                            {errors.description && <p className="text-sm text-red-600 dark:text-red-400">{errors.description}</p>}
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="create-address">Dirección</Label>
+                            <Input
+                                id="create-address"
+                                value={formData.address}
+                                onChange={(e) => handleInputChange('address', e.target.value)}
+                                placeholder="Ej: Calle Principal #123, Col. Centro"
+                            />
+                            {errors.address && <p className="text-sm text-red-600 dark:text-red-400">{errors.address}</p>}
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="create-phone">Teléfono</Label>
+                            <Input
+                                id="create-phone"
+                                value={formData.phone}
+                                onChange={(e) => handleInputChange('phone', e.target.value)}
+                                placeholder="Ej: +52 55 1234 5678"
+                            />
+                            {errors.phone && <p className="text-sm text-red-600 dark:text-red-400">{errors.phone}</p>}
                         </div>
                     </div>
                     <DialogFooter>
@@ -345,9 +358,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Editar sucursal</DialogTitle>
-                        <DialogDescription>
-                            Modifica la información de la sucursal.
-                        </DialogDescription>
+                        <DialogDescription>Modifica la información de la sucursal.</DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
@@ -358,9 +369,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                                 onChange={(e) => handleInputChange('name', e.target.value)}
                                 placeholder="Ej: Sucursal Centro"
                             />
-                            {errors.name && (
-                                <p className="text-sm text-red-600 dark:text-red-400">{errors.name}</p>
-                            )}
+                            {errors.name && <p className="text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-code">Código</Label>
@@ -370,9 +379,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                                 onChange={(e) => handleInputChange('code', e.target.value)}
                                 placeholder="Ej: SUC001"
                             />
-                            {errors.code && (
-                                <p className="text-sm text-red-600 dark:text-red-400">{errors.code}</p>
-                            )}
+                            {errors.code && <p className="text-sm text-red-600 dark:text-red-400">{errors.code}</p>}
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-description">Descripción</Label>
@@ -383,9 +390,27 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                                 placeholder="Descripción opcional de la sucursal"
                                 rows={3}
                             />
-                            {errors.description && (
-                                <p className="text-sm text-red-600 dark:text-red-400">{errors.description}</p>
-                            )}
+                            {errors.description && <p className="text-sm text-red-600 dark:text-red-400">{errors.description}</p>}
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-address">Dirección</Label>
+                            <Input
+                                id="edit-address"
+                                value={formData.address}
+                                onChange={(e) => handleInputChange('address', e.target.value)}
+                                placeholder="Ej: Calle Principal #123, Col. Centro"
+                            />
+                            {errors.address && <p className="text-sm text-red-600 dark:text-red-400">{errors.address}</p>}
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-phone">Teléfono</Label>
+                            <Input
+                                id="edit-phone"
+                                value={formData.phone}
+                                onChange={(e) => handleInputChange('phone', e.target.value)}
+                                placeholder="Ej: +52 55 1234 5678"
+                            />
+                            {errors.phone && <p className="text-sm text-red-600 dark:text-red-400">{errors.phone}</p>}
                         </div>
                     </div>
                     <DialogFooter>
