@@ -59,12 +59,12 @@ export default function PrescriptionShow({ prescription }: Props) {
                                     Editar
                                 </Button>
                             </Link>
-                            <Link href={prescriptions.pdf(prescription).url}>
+                            <a target="blank" href={prescriptions.pdf(prescription).url}>
                                 <Button>
                                     <Printer className="mr-2 h-4 w-4" />
                                     Descargar PDF
                                 </Button>
-                            </Link>
+                            </a>
                         </div>
                     </div>
 
