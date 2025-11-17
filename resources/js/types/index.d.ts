@@ -436,7 +436,18 @@ export interface Invoice {
     contact_id: number;
     type: 'invoice' | 'quotation' | 'receipt';
     document_subtype_id: number;
-    status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled' | 'accepted' | 'rejected' | 'expired' | 'converted' | 'pending_payment' | 'partially_paid';
+    status:
+        | 'draft'
+        | 'sent'
+        | 'paid'
+        | 'overdue'
+        | 'cancelled'
+        | 'accepted'
+        | 'rejected'
+        | 'expired'
+        | 'converted'
+        | 'pending_payment'
+        | 'partially_paid';
     amount_due: number;
     document_number: string;
     issue_date: string;
@@ -497,9 +508,150 @@ export interface Currency {
 export interface Prescription {
     id: number;
     patient: Contact;
+    optometrist?: Contact;
     workspace: Workspace;
     created_at: string;
     human_readable_date: string;
+
+    // Many-to-many relationships
+    motivos?: MastertableItem[];
+    estadoActual?: MastertableItem[];
+    historiaOcularFamiliar?: MastertableItem[];
+    lentesRecomendados?: MastertableItem[];
+    gotasRecomendadas?: MastertableItem[];
+    monturasRecomendadas?: MastertableItem[];
+
+    // Custom clinical history text fields
+    motivos_consulta_otros?: string;
+    estado_salud_actual_otros?: string;
+    historia_ocular_familiar_otros?: string;
+
+    // Lensometría
+    lensometria_od?: string;
+    lensometria_oi?: string;
+    lensometria_add?: string;
+
+    // Agudeza Visual - Lejana
+    av_lejos_sc_od?: string;
+    av_lejos_sc_oi?: string;
+    av_lejos_cc_od?: string;
+    av_lejos_cc_oi?: string;
+    av_lejos_ph_od?: string;
+    av_lejos_ph_oi?: string;
+
+    // Agudeza Visual - Cercana
+    av_cerca_sc_od?: string;
+    av_cerca_sc_oi?: string;
+    av_cerca_cc_od?: string;
+    av_cerca_cc_oi?: string;
+    av_cerca_ph_od?: string;
+    av_cerca_ph_oi?: string;
+
+    // Biomicroscopía
+    biomicroscopia_od_cejas?: string;
+    biomicroscopia_od_parpados?: string;
+    biomicroscopia_od_pestanas?: string;
+    biomicroscopia_od_conjuntiva?: string;
+    biomicroscopia_od_cornea?: string;
+    biomicroscopia_od_camara_anterior?: string;
+    biomicroscopia_od_iris?: string;
+    biomicroscopia_od_cristalino?: string;
+
+    biomicroscopia_oi_cejas?: string;
+    biomicroscopia_oi_parpados?: string;
+    biomicroscopia_oi_pestanas?: string;
+    biomicroscopia_oi_conjuntiva?: string;
+    biomicroscopia_oi_cornea?: string;
+    biomicroscopia_oi_camara_anterior?: string;
+    biomicroscopia_oi_iris?: string;
+    biomicroscopia_oi_cristalino?: string;
+
+    // Oftalmoscopía
+    oftalmoscopia_od_papila?: string;
+    oftalmoscopia_od_excavacion?: string;
+    oftalmoscopia_od_vasos?: string;
+    oftalmoscopia_od_retina?: string;
+    oftalmoscopia_od_macula?: string;
+    oftalmoscopia_od_fijacion?: string;
+
+    oftalmoscopia_oi_papila?: string;
+    oftalmoscopia_oi_excavacion?: string;
+    oftalmoscopia_oi_vasos?: string;
+    oftalmoscopia_oi_retina?: string;
+    oftalmoscopia_oi_macula?: string;
+    oftalmoscopia_oi_fijacion?: string;
+
+    oftalmoscopia_observaciones?: string;
+
+    // Queratometría
+    quera_od_horizontal?: string;
+    quera_od_vertical?: string;
+    quera_od_eje?: string;
+    quera_od_dif?: string;
+
+    quera_oi_horizontal?: string;
+    quera_oi_vertical?: string;
+    quera_oi_eje?: string;
+    quera_oi_dif?: string;
+
+    // Presión Intraocular
+    presion_od?: string;
+    presion_od_hora?: string;
+    presion_oi?: string;
+    presion_oi_hora?: string;
+
+    // Refracción
+    refraccion_od_esfera?: string;
+    refraccion_od_cilindro?: string;
+    refraccion_od_eje?: string;
+    refraccion_subjetivo_od_adicion?: string;
+
+    refraccion_oi_esfera?: string;
+    refraccion_oi_cilindro?: string;
+    refraccion_oi_eje?: string;
+    refraccion_subjetivo_oi_adicion?: string;
+
+    retinoscopia_dinamica?: boolean;
+    retinoscopia_estatica?: boolean;
+    refraccion_observaciones?: string;
+
+    // Refracción Modal Fields
+    cicloplegia_medicamento?: string;
+    cicloplegia_num_gotas?: string;
+    cicloplegia_hora_aplicacion?: string;
+    cicloplegia_hora_examen?: string;
+
+    refraccion_cicloplejica_od_esfera?: string;
+    refraccion_cicloplejica_od_cilindro?: string;
+    refraccion_cicloplejica_od_eje?: string;
+    refraccion_cicloplejica_od_av?: string;
+
+    refraccion_cicloplejica_oi_esfera?: string;
+    refraccion_cicloplejica_oi_cilindro?: string;
+    refraccion_cicloplejica_oi_eje?: string;
+    refraccion_cicloplejica_oi_av?: string;
+
+    refraccion_subjetivo_lejos_od_esfera?: string;
+    refraccion_subjetivo_lejos_od_cilindro?: string;
+    refraccion_subjetivo_lejos_od_eje?: string;
+    refraccion_subjetivo_lejos_od_av?: string;
+
+    refraccion_subjetivo_lejos_oi_esfera?: string;
+    refraccion_subjetivo_lejos_oi_cilindro?: string;
+    refraccion_subjetivo_lejos_oi_eje?: string;
+    refraccion_subjetivo_lejos_oi_av?: string;
+
+    refraccion_subjetivo_cerca_od_esfera?: string;
+    refraccion_subjetivo_cerca_od_cilindro?: string;
+    refraccion_subjetivo_cerca_od_eje?: string;
+    refraccion_subjetivo_cerca_od_adicion?: string;
+    refraccion_subjetivo_cerca_od_av?: string;
+
+    refraccion_subjetivo_cerca_oi_esfera?: string;
+    refraccion_subjetivo_cerca_oi_cilindro?: string;
+    refraccion_subjetivo_cerca_oi_eje?: string;
+    refraccion_subjetivo_cerca_oi_adicion?: string;
+    refraccion_subjetivo_cerca_oi_av?: string;
 }
 
 export interface InvoiceStatusConfig {

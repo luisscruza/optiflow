@@ -8,15 +8,14 @@ use App\Models\Prescription;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
-final readonly class CreatePrescriptionAction
+final readonly class UpdatePrescriptionAction
 {
     /**
      * Execute the action.
      */
-    public function handle(User $user, array $data): Prescription
+    public function handle(Prescription $prescription, User $user, array $data): void
     {
-        return DB::transaction(function () use ($user, $data): Prescription {
-
+        DB::transaction(function () use ($prescription, $data): void {
             $prescriptionData = collect($data)
                 ->except([
                     'motivos_consulta',
@@ -26,13 +25,12 @@ final readonly class CreatePrescriptionAction
                 ])
                 ->merge([
                     'patient_id' => $data['contact_id'],
-                    'created_by' => $user->id,
                 ])
                 ->toArray();
 
-            $prescription = Prescription::query()->create($prescriptionData);
+            $prescription->update($prescriptionData);
 
-            // Handle many-to-many relationships
+            // Handle many-to-many relationships if they exist in the data
             if (isset($data['motivos_consulta'])) {
                 $this->syncItems($prescription, $data['motivos_consulta'], 'motivos_consulta');
             }
@@ -44,8 +42,6 @@ final readonly class CreatePrescriptionAction
             if (isset($data['historia_ocular_familiar'])) {
                 $this->syncItems($prescription, $data['historia_ocular_familiar'], 'historia_ocular_familiar');
             }
-
-            return $prescription;
         });
     }
 
@@ -56,6 +52,17 @@ final readonly class CreatePrescriptionAction
      */
     private function syncItems(Prescription $prescription, array $itemIds, string $alias): void
     {
+        // Remove existing items for this alias
+        $prescription->belongsToMany(
+            related: \App\Models\MastertableItem::class,
+            table: 'prescription_item',
+            foreignPivotKey: 'prescription_id',
+            relatedPivotKey: 'mastertable_item_id'
+        )
+            ->wherePivot('mastertable_alias', $alias)
+            ->detach();
+
+        // Attach new items
         $attachData = collect($itemIds)->mapWithKeys(function ($itemId) use ($alias): array {
             return [$itemId => ['mastertable_alias' => $alias]];
         })->all();

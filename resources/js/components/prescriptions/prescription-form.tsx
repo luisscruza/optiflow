@@ -24,6 +24,9 @@ interface PrescriptionFormData {
     motivos_consulta: number[];
     estado_salud_actual: number[];
     historia_ocular_familiar: number[];
+    motivos_consulta_otros?: string;
+    estado_salud_actual_otros?: string;
+    historia_ocular_familiar_otros?: string;
 
     // Lensometría
     lensometria_od?: string;
@@ -239,6 +242,9 @@ export default function PrescriptionForm({
         motivos_consulta: initialData.motivos_consulta || [],
         estado_salud_actual: initialData.estado_salud_actual || [],
         historia_ocular_familiar: initialData.historia_ocular_familiar || [],
+        motivos_consulta_otros: initialData.motivos_consulta_otros || '',
+        estado_salud_actual_otros: initialData.estado_salud_actual_otros || '',
+        historia_ocular_familiar_otros: initialData.historia_ocular_familiar_otros || '',
 
         // Lensometría
         lensometria_od: initialData.lensometria_od || '',
@@ -534,6 +540,9 @@ export default function PrescriptionForm({
                         motivos_consulta: data.motivos_consulta,
                         estado_salud_actual: data.estado_salud_actual,
                         historia_ocular_familiar: data.historia_ocular_familiar,
+                        motivos_consulta_otros: data.motivos_consulta_otros,
+                        estado_salud_actual_otros: data.estado_salud_actual_otros,
+                        historia_ocular_familiar_otros: data.historia_ocular_familiar_otros,
                     }}
                     onDataChange={(field, value) => setData(field, value)}
                     errors={{
@@ -546,9 +555,9 @@ export default function PrescriptionForm({
                 {/* Lensometría, Examen Externo y Oftalmoscopía - Three Column Layout */}
                 <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
                     <CardContent className="flex flex-col justify-start p-4">
-                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                             {/* Left Side - Lensometría y Agudeza Visual */}
-                            <div className="flex flex-col lg:col-span-1">
+                            <div className="flex flex-col">
                                 <LensometriaAgudeza
                                     data={{
                                         lensometria_od: data.lensometria_od,
@@ -574,7 +583,7 @@ export default function PrescriptionForm({
                             </div>
 
                             {/* Middle - Examen Externo/Biomicroscopía */}
-                            <div className="flex flex-col lg:col-span-1">
+                            <div className="flex flex-col gap-2" >
                                 <BiomicroscopiaModal
                                     data={{
                                         biomicroscopia_od_cejas: data.biomicroscopia_od_cejas,
@@ -600,10 +609,6 @@ export default function PrescriptionForm({
                                     onChange={(field, value) => setData(field as any, value)}
                                     errors={errors}
                                 />
-                            </div>
-
-                            {/* Right Side - Oftalmoscopía */}
-                            <div className="flex flex-col lg:col-span-1">
                                 <OftalmoscopiaModal
                                     data={{
                                         pupilar_od_fotomotor_directo: data.pupilar_od_fotomotor_directo,
@@ -632,6 +637,7 @@ export default function PrescriptionForm({
                                     errors={errors}
                                 />
                             </div>
+
                         </div>
 
                         {/* Queratometría y Refracción - Bottom Row */}
