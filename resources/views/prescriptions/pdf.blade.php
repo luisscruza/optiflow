@@ -138,7 +138,7 @@
     <!-- Header -->
     <table style="width: 100%; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px;">
         <tr>
-            <td style="width: 65%; vertical-align: top;">
+            <td style="width: 50%; vertical-align: top;">
                 <div class="doctor-info">
                     {{ $company['company_name'] }}
                 </div>
@@ -148,13 +148,18 @@
                     @endif
                 </div>
                 <div class="contact-info">
-                    {{ $company['company_email'] ?? '' }}
+                    {{ $company['company_email'] ?? '-' }}
                 </div>
                 <div class="contact-info">
                     {{ $company['company_address'] ?? $prescription->workspace->address }} 
                 </div>
             </td>
-            <td style="width: 35%; vertical-align: top; text-align: right;">
+            <td style="width: 20%; vertical-align: middle; text-align: center;">
+                @if(isset($company['logo']) && !empty($company['logo']))
+                    <img src="{{ storage_path('app/public/' . $company['logo']) }}" alt="Logo" style="max-height: 80px; max-width: 150px;">
+                @endif
+            </td>
+            <td style="width: 30%; vertical-align: top; text-align: right;">
                 <div class="prescription-numbers">
                     Historia N° &nbsp;&nbsp; {{ str_pad($prescription->patient->id, 5, '0', STR_PAD_LEFT) }}
                 </div>
@@ -188,18 +193,13 @@
         <div class="patient-info-line">
             <strong>Paciente:</strong> {{ strtoupper($prescription->patient->name) }}
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <strong>Doc:</strong> {{ $prescription->patient->identification_number ?? 'N/A' }}
+            <strong>Identificación:</strong> {{ $prescription->patient->identification_number ?? 'N/A' }}
             &nbsp;&nbsp;&nbsp;&nbsp;
+            @if($prescription->patient->phone_primary)
             <strong>Celular:</strong> {{ $prescription->patient->phone_primary ?? 'N/A' }}
+            @endif
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <strong>Edad:</strong> {{ $prescription->patient->age }} años
-        </div>
-        <div class="patient-info-line">
-            <strong>Dirección:</strong> {{ $prescription->patient->address ?? 'N/A' }}
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <strong>Salud:</strong> PARTICULAR
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <strong>Correo:</strong> {{ $prescription->patient->email ?? 'N/A' }}
+            <strong>Edad:</strong> {{ $prescription->patient->age }} año(s)
         </div>
     </div>
 
@@ -221,14 +221,14 @@
         <tbody>
             <tr>
                 <td class="eye-label">Ojo derecho</td>
-                <td>{{ $prescription->subjetivo_od_esfera ?? '' }}</td>
-                <td>{{ $prescription->subjetivo_od_cilindro ?? '' }}</td>
-                <td>{{ $prescription->subjetivo_od_eje ?? '' }}</td>
-                <td>{{ $prescription->subjetivo_od_add ?? '' }}</td>
+                <td>{{ $prescription->subjetivo_od_esfera ?? '-' }}</td>
+                <td>{{ $prescription->subjetivo_od_cilindro ?? '-' }}</td>
+                <td>{{ $prescription->subjetivo_od_eje ?? '-' }}</td>
+                <td>{{ $prescription->subjetivo_od_add ?? '-' }}</td>
                 <td></td>
                 @php
-                    $dpOd = $prescription->subjetivo_od_dp ?? '';
-                    $dpOi = $prescription->subjetivo_oi_dp ?? '';
+                    $dpOd = $prescription->subjetivo_od_dp ?? '-';
+                    $dpOi = $prescription->subjetivo_oi_dp ?? '-';
                     
                     // Si ambos valores son iguales y no están vacíos, mostrar como DP junto
                     if ($dpOd && $dpOi && $dpOd === $dpOi) {
@@ -241,19 +241,19 @@
                     }
                 @endphp
                 <td>{{ $dpDisplay }}</td>
-                <td>{{ $prescription->subjetivo_od_av_lejos ? '20/' . $prescription->subjetivo_od_av_lejos : '' }}</td>
-                <td>{{ $prescription->subjetivo_od_av_cerca ? '20/' . $prescription->subjetivo_od_av_cerca : '' }}</td>
+                <td>{{ $prescription->subjetivo_od_av_lejos ? '20/' . $prescription->subjetivo_od_av_lejos : '-' }}</td>
+                <td>{{ $prescription->subjetivo_od_av_cerca ? '20/' . $prescription->subjetivo_od_av_cerca : '-' }}</td>
             </tr>
             <tr>
                 <td class="eye-label">Ojo izquierdo</td>
-                <td>{{ $prescription->subjetivo_oi_esfera ?? '' }}</td>
-                <td>{{ $prescription->subjetivo_oi_cilindro ?? '' }}</td>
-                <td>{{ $prescription->subjetivo_oi_eje ?? '' }}</td>
-                <td>{{ $prescription->subjetivo_oi_add ?? '' }}</td>
+                <td>{{ $prescription->subjetivo_oi_esfera ?? '-' }}</td>
+                <td>{{ $prescription->subjetivo_oi_cilindro ?? '-' }}</td>
+                <td>{{ $prescription->subjetivo_oi_eje ?? '-' }}</td>
+                <td>{{ $prescription->subjetivo_oi_add ?? '-' }}</td>
                 <td></td>
                 <td>{{ $dpDisplayOi }}</td>
-                <td>{{ $prescription->subjetivo_oi_av_lejos ? '20/' . $prescription->subjetivo_oi_av_lejos : '' }}</td>
-                <td>{{ $prescription->subjetivo_oi_av_cerca ? '20/' . $prescription->subjetivo_oi_av_cerca : '' }}</td>
+                <td>{{ $prescription->subjetivo_oi_av_lejos ? '20/' . $prescription->subjetivo_oi_av_lejos : '-' }}</td>
+                <td>{{ $prescription->subjetivo_oi_av_cerca ? '20/' . $prescription->subjetivo_oi_av_cerca : '-' }}</td>
             </tr>
         </tbody>
     </table>
@@ -268,7 +268,7 @@
             <div class="footer-line">
                 <strong>Diagnósticos:</strong>
                 @foreach($prescription->motivos as $motivo)
-                    {{ strtoupper($motivo->name) }}{{ !$loop->last ? ',' : '' }}
+                    {{ strtoupper($motivo->name) }}{{ !$loop->last ? ',' : '-' }}
                 @endforeach
             </div>
         @endif
@@ -276,7 +276,7 @@
             <div class="footer-line">
                 <strong>Recomendación:</strong>
                 @foreach($prescription->lentesRecomendados as $lente)
-                    {{ strtoupper($lente->name) }}{{ !$loop->last ? ',' : '' }}
+                    {{ strtoupper($lente->name) }}{{ !$loop->last ? ',' : '-' }}
                 @endforeach
             </div>
         @endif
