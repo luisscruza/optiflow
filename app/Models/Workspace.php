@@ -194,7 +194,7 @@ final class Workspace extends Model
     protected function membersCount(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->members()->count(),
+            get: fn () => $this->members()->count(),
         );
     }
 }

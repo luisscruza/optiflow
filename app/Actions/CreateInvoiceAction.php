@@ -40,7 +40,7 @@ final readonly class CreateInvoiceAction
 
             $this->updateNumerator($documentSubtype, $data['ncf']);
 
-            $items = array_filter($data['items'], fn(array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
+            $items = array_filter($data['items'], fn (array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
                 $item['quantity'] > 0);
 
             try {

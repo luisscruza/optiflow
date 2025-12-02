@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\StockTransferAction;
+use App\Enums\StockMovementType;
 use App\Http\Requests\StockTransferRequest;
 use App\Models\Product;
 use App\Models\StockMovement;
@@ -15,7 +16,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Enums\StockMovementType;
 
 final class StockTransferController extends Controller
 {
