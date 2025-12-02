@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import { EditNcfModal } from '@/components/invoices/edit-ncf-modal';
+import QuickProductModal from '@/components/products/quick-product-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -85,9 +86,12 @@ export default function CreateInvoice({
 }: Props) {
     const [itemId, setItemId] = useState(3);
     const [showContactModal, setShowContactModal] = useState(false);
+    const [showProductModal, setShowProductModal] = useState(false);
+    const [activeProductItemId, setActiveProductItemId] = useState<string | null>(null);
     const [showNcfModal, setShowNcfModal] = useState(false);
     const [contactsList, setContactsList] = useState<Contact[]>(customers);
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+    const [productsList, setProductsList] = useState<Product[]>(products);
 
     const { format: formatCurrency } = useCurrency();
 
@@ -273,7 +277,7 @@ export default function CreateInvoice({
     // Get selected product for an item
     const getSelectedProduct = (item: InvoiceItem): Product | null => {
         if (!item.product_id) return null;
-        return products.find((p) => p.id === item.product_id) || null;
+        return productsList.find((p) => p.id === item.product_id) || null;
     };
 
     // Get stock warning for a specific item
@@ -343,7 +347,7 @@ export default function CreateInvoice({
 
     // Handle product selection - Fixed to prevent clearing
     const handleProductSelect = (itemId: string, productId: string) => {
-        const product = products.find((p) => p.id === parseInt(productId));
+        const product = productsList.find((p) => p.id === parseInt(productId));
         if (product) {
             const updatedItems = data.items.map((item) => {
                 if (item.id === itemId) {
@@ -369,6 +373,39 @@ export default function CreateInvoice({
 
             setData('items', updatedItems);
             calculateTotals(updatedItems);
+        }
+    };
+
+    const handleProductCreated = (newProduct: Product) => {
+        // Add to local products list
+        setProductsList((prev) => [...prev, newProduct]);
+
+        // If there is an active item, auto-assign it
+        if (activeProductItemId) {
+            const updatedItems = data.items.map((item) => {
+                if (item.id === activeProductItemId) {
+                    const updatedItem = {
+                        ...item,
+                        product_id: newProduct.id,
+                        description: newProduct.name,
+                        unit_price: newProduct.price,
+                        tax_rate: newProduct.default_tax ? newProduct.default_tax.rate : item.tax_rate,
+                    };
+
+                    const lineSubtotal = updatedItem.quantity * updatedItem.unit_price;
+                    updatedItem.discount_amount = lineSubtotal * (updatedItem.discount_rate / 100);
+                    const discountedSubtotal = lineSubtotal - updatedItem.discount_amount;
+                    updatedItem.tax_amount = discountedSubtotal * (updatedItem.tax_rate / 100);
+                    updatedItem.total = discountedSubtotal;
+
+                    return updatedItem;
+                }
+                return item;
+            });
+
+            setData('items', updatedItems);
+            calculateTotals(updatedItems);
+            setActiveProductItemId(null);
         }
     };
 
@@ -426,7 +463,7 @@ export default function CreateInvoice({
 
     // Helper function to convert products to SearchableSelectOption format
     const getProductOptions = (): SearchableSelectOption[] =>
-        products.map((product) => ({
+        productsList.map((product) => ({
             value: product.id.toString(),
             label: `${product.name} - ${formatCurrency(product.price)}`,
             disabled: product.track_stock && product.stock_status === 'out_of_stock',
@@ -768,7 +805,23 @@ export default function CreateInvoice({
                                                                 placeholder="Seleccionar producto"
                                                                 searchPlaceholder="Buscar producto..."
                                                                 emptyText="No se encontró ningún producto."
-                                                                triggerClassName="h-10 mt-1"
+                                                                footerAction={
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        onClick={() => {
+                                                                            setActiveProductItemId(item.id);
+                                                                            setShowProductModal(true);
+                                                                        }}
+                                                                        className="w-full text-primary hover:bg-primary/10"
+                                                                    >
+                                                                        <Plus className="mr-1 h-4 w-4" />
+                                                                        Crear producto
+                                                                    </Button>
+                                                                }
+                                                                className="mt-1"
+                                                                triggerClassName="h-10"
                                                             />
                                                         </div>
 
@@ -921,6 +974,21 @@ export default function CreateInvoice({
                                                             placeholder="Seleccionar..."
                                                             searchPlaceholder="Buscar producto..."
                                                             emptyText="No se encontró ningún producto."
+                                                            footerAction={
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => {
+                                                                        setActiveProductItemId(item.id);
+                                                                        setShowProductModal(true);
+                                                                    }}
+                                                                    className="w-full text-primary hover:bg-primary/10"
+                                                                >
+                                                                    <Plus className="mr-1 h-4 w-4" />
+                                                                    Crear producto
+                                                                </Button>
+                                                            }
                                                             triggerClassName="h-9 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
                                                         />
                                                     </div>
@@ -1156,6 +1224,15 @@ export default function CreateInvoice({
                 prefix={documentSubtypes.find((d) => d.id === data.document_subtype_id)?.prefix || ''}
                 nextNumber={documentSubtypes.find((d) => d.id === data.document_subtype_id)?.next_number || 0}
                 onSave={(newNcf) => setData('ncf', newNcf)}
+            />
+
+            <QuickProductModal
+                open={showProductModal}
+                onOpenChange={setShowProductModal}
+                onSuccess={handleProductCreated}
+                onAdvancedForm={() => {
+                    router.visit('/products/create');
+                }}
             />
         </AppLayout>
     );

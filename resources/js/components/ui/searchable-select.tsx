@@ -33,6 +33,7 @@ interface SearchableSelectProps {
   searchPlaceholder?: string
   emptyText?: string
   noEmptyAction?: React.ReactNode
+  footerAction?: React.ReactNode
   disabled?: boolean
   className?: string
   triggerClassName?: string
@@ -49,6 +50,7 @@ function SearchableSelect({
   searchPlaceholder = "Search...",
   emptyText = "No option found.",
   noEmptyAction,
+  footerAction,
   disabled = false,
   className,
   triggerClassName,
@@ -122,6 +124,11 @@ function SearchableSelect({
                   </CommandItem>
                 ))}
               </CommandGroup>
+              {footerAction && (
+                <div className="border-t border-gray-200 p-2">
+                  {footerAction}
+                </div>
+              )}
             </CommandList>
           </Command>
         </PopoverContent>

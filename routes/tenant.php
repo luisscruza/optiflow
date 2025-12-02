@@ -20,6 +20,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImportController;
+use App\Http\Controllers\QuickProductCreate;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\SetDefaultDocumentSubtypeController;
 use App\Http\Controllers\StockAdjustmentController;
@@ -87,6 +88,7 @@ Route::middleware([
             Route::post('currencies/{currency}/rates', [CurrencyRateController::class, 'store'])->name('currencies.rates.store');
 
             Route::resource('products', ProductController::class);
+            Route::post('products/quick-create', QuickProductCreate::class)->name('products.quick-create');
 
             // Product Import routes
             Route::resource('product-imports', ProductImportController::class)->except(['edit']);

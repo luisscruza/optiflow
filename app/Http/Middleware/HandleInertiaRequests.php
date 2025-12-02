@@ -62,6 +62,7 @@ final class HandleInertiaRequests extends Middleware
             'defaultCurrency' => fn(): ?\App\Models\Currency => Currency::query()->default()->first(),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'newlyCreatedContact' => fn() => $request->session()->get('newly_created_contact') ?: null,
+            'newlyCreatedProduct' => fn() => $request->session()->get('newly_created_product') ?: null,
             'workspaceUsers' => fn(): array => $this->getWorkspaceUsers($request),
             'unreadNotifications' => fn() => $request->user()?->unreadNotifications()->count() ?? 0,
             'flash' => [
