@@ -36,7 +36,7 @@ export default function RefraccionSubjetivo({ data, onChange, errors }: Refracci
                     <TableHeader>
                         <TableRow>
                             <TableHead colSpan={8} className="py-3 text-center text-sm font-semibold text-gray-900">
-                                SUBJETIVO
+                                Rx Prescripción Final
                             </TableHead>
                         </TableRow>
                         <TableRow>
