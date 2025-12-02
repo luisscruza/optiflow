@@ -223,6 +223,31 @@ export default function CompanyDetailsEdit({ companyDetails }: Props) {
                                     </CardContent>
                                 </Card>
                             </div>
+                              <Card className="mt-6">
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Building2 className="h-5 w-5" />
+                                            Términos y Condiciones
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Términos y condiciones por defecto a mostrar en facturas.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-6">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="terms_conditions">Términos y Condiciones</Label>
+                                            <Textarea
+                                                id="terms_conditions"
+                                                name="terms_conditions"
+                                                defaultValue={companyDetails.terms_conditions}
+                                                placeholder="Por favor, lea nuestros términos y condiciones antes de realizar cualquier compra."
+                                                rows={3}
+                                                className={errors.terms_conditions ? 'border-red-500' : ''}
+                                            />
+                                            {errors.terms_conditions && <p className="text-sm text-red-600 dark:text-red-400">{errors.terms_conditions}</p>}
+                                        </div>
+                                    </CardContent>
+                                </Card>
 
                             {/* Success Message */}
                             {wasSuccessful && (

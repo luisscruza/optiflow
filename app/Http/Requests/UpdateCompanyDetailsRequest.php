@@ -31,6 +31,7 @@ final class UpdateCompanyDetailsRequest extends FormRequest
             'tax_id' => ['nullable', 'string', 'max:50'],
             'currency' => ['nullable', 'string', 'max:10'],
             'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
+            'terms_conditions' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
