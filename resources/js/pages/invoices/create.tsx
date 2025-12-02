@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { AlertTriangle, FileText, Plus, Save, ShoppingCart, Trash2 } from 'lucide-react';
+import { AlertTriangle, CreditCard, FileText, Plus, Save, ShoppingCart, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
@@ -7,13 +7,14 @@ import { EditNcfModal } from '@/components/invoices/edit-ncf-modal';
 import QuickProductModal from '@/components/products/quick-product-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/searchable-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Contact, type Product, type Workspace } from '@/types';
+import { type BankAccount, type BreadcrumbItem, type Contact, type Product, type Workspace } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -61,6 +62,11 @@ interface FormData {
     discount_total: number;
     tax_amount: number;
     total: number;
+    register_payment: boolean;
+    payment_bank_account_id: number | null;
+    payment_amount: number;
+    payment_method: string;
+    payment_notes: string;
 }
 
 interface Props {
@@ -72,6 +78,8 @@ interface Props {
     currentWorkspace?: Workspace | null;
     availableWorkspaces?: Workspace[];
     defaultNote?: string;
+    bankAccounts: BankAccount[];
+    paymentMethods: Record<string, string>;
 }
 
 export default function CreateInvoice({
@@ -83,6 +91,8 @@ export default function CreateInvoice({
     currentWorkspace,
     availableWorkspaces,
     defaultNote,
+    bankAccounts,
+    paymentMethods,
 }: Props) {
     const [itemId, setItemId] = useState(3);
     const [showContactModal, setShowContactModal] = useState(false);
@@ -158,6 +168,11 @@ export default function CreateInvoice({
         discount_total: 0,
         tax_amount: 0,
         total: 0,
+        register_payment: false,
+        payment_bank_account_id: null,
+        payment_amount: 0,
+        payment_method: '',
+        payment_notes: '',
     });
 
     // Handle workspace switching
@@ -1137,6 +1152,179 @@ export default function CreateInvoice({
                                     </div>
                                 </div>
                             </CardContent>
+                        </Card>
+
+                        {/* Immediate Payment Section */}
+                        <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
+                            <CardHeader className="bg-gray-50/50 px-6 py-5">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+                                                <CreditCard className="h-4 w-4" />
+                                            </div>
+                                            Registrar pago inmediato
+                                        </CardTitle>
+                                        <CardDescription className="mt-1 text-sm text-gray-600">
+                                            Si el cliente paga de inmediato, registra el pago junto con la factura.
+                                        </CardDescription>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id="register_payment"
+                                            checked={data.register_payment}
+                                            onCheckedChange={(checked) => {
+                                                setData((prev) => ({
+                                                    ...prev,
+                                                    register_payment: checked === true,
+                                                    payment_amount: checked === true ? prev.total : 0,
+                                                }));
+                                            }}
+                                        />
+                                        <Label htmlFor="register_payment" className="cursor-pointer text-sm font-medium text-gray-700">
+                                            Registrar pago
+                                        </Label>
+                                    </div>
+                                </div>
+                            </CardHeader>
+
+                            {data.register_payment && (
+                                <CardContent className="px-6 py-6">
+                                    <div className="space-y-6">
+                                        {/* Invoice Summary */}
+                                        <div className="rounded-lg border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-5 shadow-sm">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <p className="text-xs font-medium tracking-wide text-emerald-700 uppercase">
+                                                        Total de la factura
+                                                    </p>
+                                                    <p className="text-2xl font-bold text-emerald-600">{formatCurrency(data.total)}</p>
+                                                </div>
+                                                {data.payment_amount > 0 && data.payment_amount < data.total && (
+                                                    <div className="text-right">
+                                                        <p className="text-xs font-medium tracking-wide text-gray-600 uppercase">
+                                                            Pendiente después del pago
+                                                        </p>
+                                                        <p className="text-lg font-bold text-gray-700">
+                                                            {formatCurrency(data.total - data.payment_amount)}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                                            {/* Bank Account */}
+                                            <div className="space-y-2">
+                                                <Label className="flex items-center gap-1 text-sm font-semibold text-gray-900">
+                                                    Cuenta bancaria
+                                                    <span className="text-red-500">*</span>
+                                                </Label>
+                                                <Select
+                                                    value={data.payment_bank_account_id?.toString() || ''}
+                                                    onValueChange={(value) => setData('payment_bank_account_id', parseInt(value))}
+                                                >
+                                                    <SelectTrigger
+                                                        className={`h-11 ${
+                                                            data.payment_bank_account_id ? 'border-emerald-300 bg-emerald-50/30' : 'border-gray-300'
+                                                        }`}
+                                                    >
+                                                        <SelectValue placeholder="Selecciona una cuenta" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {bankAccounts.map((account) => (
+                                                            <SelectItem key={account.id} value={account.id.toString()}>
+                                                                {account.name} ({account.currency?.code || 'N/A'})
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                {errors.payment_bank_account_id && (
+                                                    <p className="text-sm text-red-600">{errors.payment_bank_account_id}</p>
+                                                )}
+                                            </div>
+
+                                            {/* Payment Method */}
+                                            <div className="space-y-2">
+                                                <Label className="flex items-center gap-1 text-sm font-semibold text-gray-900">
+                                                    Método de pago
+                                                    <span className="text-red-500">*</span>
+                                                </Label>
+                                                <Select value={data.payment_method} onValueChange={(value) => setData('payment_method', value)}>
+                                                    <SelectTrigger
+                                                        className={`h-11 ${
+                                                            data.payment_method ? 'border-emerald-300 bg-emerald-50/30' : 'border-gray-300'
+                                                        }`}
+                                                    >
+                                                        <SelectValue placeholder="Selecciona un método" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {Object.entries(paymentMethods).map(([value, label]) => (
+                                                            <SelectItem key={value} value={value}>
+                                                                {label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                {errors.payment_method && <p className="text-sm text-red-600">{errors.payment_method}</p>}
+                                            </div>
+
+                                            {/* Amount */}
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <Label className="flex items-center gap-1 text-sm font-semibold text-gray-900">
+                                                        Monto del pago
+                                                        <span className="text-red-500">*</span>
+                                                    </Label>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => setData('payment_amount', data.total)}
+                                                        className="h-7 border-emerald-300 px-3 py-1 text-xs text-emerald-700 hover:bg-emerald-50"
+                                                    >
+                                                        Monto completo
+                                                    </Button>
+                                                </div>
+                                                <div className="relative">
+                                                    <Input
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0.01"
+                                                        max={data.total}
+                                                        value={data.payment_amount || ''}
+                                                        onChange={(e) => setData('payment_amount', parseFloat(e.target.value) || 0)}
+                                                        placeholder="0.00"
+                                                        className={`h-12 pl-14 text-lg font-semibold ${
+                                                            data.payment_amount > 0
+                                                                ? 'border-emerald-300 bg-emerald-50/30 text-emerald-700'
+                                                                : 'border-gray-300'
+                                                        }`}
+                                                    />
+                                                    <span className="absolute top-1/2 left-4 -translate-y-1/2 text-lg font-semibold text-gray-500">
+                                                        RD$
+                                                    </span>
+                                                </div>
+                                                {errors.payment_amount && <p className="text-sm text-red-600">{errors.payment_amount}</p>}
+                                                {data.payment_amount > data.total && (
+                                                    <p className="text-sm text-amber-600">⚠️ El monto excede el total de la factura</p>
+                                                )}
+                                            </div>
+
+                                            {/* Payment Notes */}
+                                            <div className="space-y-2">
+                                                <Label className="text-sm font-semibold text-gray-900">Nota del pago (opcional)</Label>
+                                                <Input
+                                                    value={data.payment_notes}
+                                                    onChange={(e) => setData('payment_notes', e.target.value)}
+                                                    placeholder="Información adicional sobre el pago"
+                                                    className="h-11 border-gray-300 focus:border-emerald-500 focus:ring-emerald-500/20"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            )}
                         </Card>
 
                         {/* Notes - Enhanced */}

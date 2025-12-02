@@ -16,8 +16,10 @@ use Throwable;
 
 final readonly class CreateInvoiceAction
 {
-    public function __construct(private CreateInvoiceItemAction $createItems)
-    {
+    public function __construct(
+        private CreateInvoiceItemAction $createItems,
+        private CreatePaymentAction $createPayment,
+    ) {
         //
     }
 
@@ -38,7 +40,7 @@ final readonly class CreateInvoiceAction
 
             $this->updateNumerator($documentSubtype, $data['ncf']);
 
-            $items = array_filter($data['items'], fn (array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
+            $items = array_filter($data['items'], fn(array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
                 $item['quantity'] > 0);
 
             try {
@@ -51,8 +53,20 @@ final readonly class CreateInvoiceAction
                 );
             }
 
+            // Create payment if payment data is provided
+            if (! empty($data['register_payment']) && ! empty($data['payment_amount']) && $data['payment_amount'] > 0) {
+                $this->createPayment->handle($invoice, [
+                    'bank_account_id' => $data['payment_bank_account_id'],
+                    'amount' => $data['payment_amount'],
+                    'payment_date' => $data['payment_date'] ?? now()->toDateTimeString(),
+                    'payment_method' => $data['payment_method'],
+                    'notes' => $data['payment_notes'] ?? null,
+                ]);
+            }
+
             return new InvoiceResult(
-                invoice: $invoice->load(['contact', 'documentSubtype', 'items.product']));
+                invoice: $invoice->load(['contact', 'documentSubtype', 'items.product'])
+            );
         });
     }
 
