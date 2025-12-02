@@ -75,6 +75,7 @@ final readonly class CreateInvoiceAction
             'discount_amount' => $data['discount_total'],
             'tax_amount' => $data['tax_amount'],
             'payment_term' => $data['payment_term'] ?? null,
+            'notes' => $data['notes'] ?? null,
         ]);
     }
 

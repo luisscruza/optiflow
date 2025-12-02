@@ -9,6 +9,7 @@ use App\Actions\UpdateInvoiceAction;
 use App\Enums\PaymentMethod;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\BankAccount;
+use App\Models\CompanyDetail;
 use App\Models\Contact;
 use App\Models\DocumentSubtype;
 use App\Models\Invoice;
@@ -120,6 +121,7 @@ final class InvoiceController extends Controller
             'document_subtype_id' => $documentSubtype->id,
             'currentWorkspace' => $currentWorkspace,
             'availableWorkspaces' => $availableWorkspaces,
+            'defaultNote' => CompanyDetail::getByKey('terms_conditions'),
         ]);
     }
 
@@ -231,7 +233,7 @@ final class InvoiceController extends Controller
             'customers' => $customers,
             'products' => $products,
             'taxes' => $taxes,
-            'ncf' => $ncf, // Always send the NCF, not optional
+            'ncf' => $ncf, 
         ]);
     }
 

@@ -70,6 +70,7 @@ interface Props {
     document_subtype_id?: number | null;
     currentWorkspace?: Workspace | null;
     availableWorkspaces?: Workspace[];
+    defaultNote?: string;
 }
 
 export default function CreateInvoice({
@@ -80,6 +81,7 @@ export default function CreateInvoice({
     document_subtype_id,
     currentWorkspace,
     availableWorkspaces,
+    defaultNote,
 }: Props) {
     const [itemId, setItemId] = useState(3);
     const [showContactModal, setShowContactModal] = useState(false);
@@ -108,7 +110,7 @@ export default function CreateInvoice({
         issue_date: new Date().toISOString().split('T')[0],
         due_date: '',
         payment_term: 'manual',
-        notes: '',
+        notes: defaultNote || '',
         ncf: ncf || '',
         items: [
             {
