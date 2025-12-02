@@ -37,8 +37,8 @@ export default function QuickProductModal({ open, onOpenChange, onAdvancedForm, 
                     method="post"
                     resetOnSuccess
                     options={{
-                          preserveScroll: true,
-                         preserveState: true,
+                        preserveScroll: true,
+                        preserveState: true,
                     }}
                     onSuccess={(page: any) => {
                         onOpenChange(false);
@@ -95,44 +95,19 @@ export default function QuickProductModal({ open, onOpenChange, onAdvancedForm, 
                                 <div className="grid grid-cols-3 gap-4 rounded-lg border border-gray-200 bg-gray-50/50 p-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="initial_quantity">Cantidad inicial</Label>
-                                        <Input
-                                            id="initial_quantity"
-                                            name="initial_quantity"
-                                            type="number"
-                                            step="1"
-                                            min="0"
-                                            placeholder="0"
-                                        />
-                                        {errors.initial_quantity && (
-                                            <p className="text-sm text-red-600">{errors.initial_quantity}</p>
-                                        )}
+                                        <Input id="initial_quantity" name="initial_quantity" type="number" step="1" min="0" placeholder="0" />
+                                        {errors.initial_quantity && <p className="text-sm text-red-600">{errors.initial_quantity}</p>}
                                     </div>
 
                                     <div className="space-y-2">
                                         <Label htmlFor="minimum_quantity">Cantidad mínima</Label>
-                                        <Input
-                                            id="minimum_quantity"
-                                            name="minimum_quantity"
-                                            type="number"
-                                            step="1"
-                                            min="0"
-                                            placeholder="5"
-                                        />
-                                        {errors.minimum_quantity && (
-                                            <p className="text-sm text-red-600">{errors.minimum_quantity}</p>
-                                        )}
+                                        <Input id="minimum_quantity" name="minimum_quantity" type="number" step="1" min="0" placeholder="5" />
+                                        {errors.minimum_quantity && <p className="text-sm text-red-600">{errors.minimum_quantity}</p>}
                                     </div>
 
                                     <div className="space-y-2">
                                         <Label htmlFor="unit_cost">Costo unitario</Label>
-                                        <Input
-                                            id="unit_cost"
-                                            name="unit_cost"
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            placeholder="0.00"
-                                        />
+                                        <Input id="unit_cost" name="unit_cost" type="number" step="0.01" min="0" placeholder="0.00" />
                                         {errors.unit_cost && <p className="text-sm text-red-600">{errors.unit_cost}</p>}
                                     </div>
                                 </div>
