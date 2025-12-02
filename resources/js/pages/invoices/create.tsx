@@ -937,18 +937,38 @@ export default function CreateInvoice({
                                                         <div className="grid grid-cols-2 gap-3">
                                                             <div>
                                                                 <Label className="text-xs font-medium text-gray-700">Descuento (%)</Label>
-                                                                <Input
-                                                                    type="number"
-                                                                    min="0"
-                                                                    max="100"
-                                                                    step="0.01"
-                                                                    value={item.discount_rate}
-                                                                    onChange={(e) =>
-                                                                        updateItem(item.id, 'discount_rate', parseFloat(e.target.value) || 0)
-                                                                    }
-                                                                    className="mt-1 h-10"
-                                                                    disabled={!item.product_id}
-                                                                />
+                                                                <div className="group relative">
+                                                                    <Input
+                                                                        type="number"
+                                                                        min="0"
+                                                                        max="100"
+                                                                        step="0.01"
+                                                                        value={item.discount_rate}
+                                                                        onChange={(e) =>
+                                                                            updateItem(item.id, 'discount_rate', parseFloat(e.target.value) || 0)
+                                                                        }
+                                                                        className="mt-1 h-10"
+                                                                        disabled={!item.product_id}
+                                                                    />
+                                                                    {item.product_id && (
+                                                                        <div className="absolute -bottom-8 left-0 z-10 hidden gap-1 group-hover:flex">
+                                                                            {[5, 10, 15, 20].map((discount) => (
+                                                                                <button
+                                                                                    key={discount}
+                                                                                    type="button"
+                                                                                    onClick={() => updateItem(item.id, 'discount_rate', discount)}
+                                                                                    className={`rounded px-2 py-0.5 text-xs font-medium transition-colors ${
+                                                                                        item.discount_rate === discount
+                                                                                            ? 'bg-primary text-white'
+                                                                                            : 'bg-gray-100 text-gray-700 hover:bg-primary/10 hover:text-primary'
+                                                                                    }`}
+                                                                                >
+                                                                                    {discount}%
+                                                                                </button>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                             <div>
                                                                 <Label className="text-xs font-medium text-gray-700">Impuesto (%)</Label>
@@ -1070,7 +1090,7 @@ export default function CreateInvoice({
                                                     </div>
 
                                                     {/* Discount Rate */}
-                                                    <div className="col-span-1">
+                                                    <div className="group relative col-span-1">
                                                         <Input
                                                             type="number"
                                                             min="0"
@@ -1081,6 +1101,24 @@ export default function CreateInvoice({
                                                             className="h-9 border-gray-200 text-right focus:border-blue-500 focus:ring-blue-500/20"
                                                             disabled={!item.product_id}
                                                         />
+                                                        {item.product_id && (
+                                                            <div className="absolute -bottom-7 left-1/2 z-10 hidden -translate-x-1/2 gap-1 rounded-md bg-white p-1 shadow-lg ring-1 ring-gray-200 group-hover:flex">
+                                                                {[5, 10, 15, 20].map((discount) => (
+                                                                    <button
+                                                                        key={discount}
+                                                                        type="button"
+                                                                        onClick={() => updateItem(item.id, 'discount_rate', discount)}
+                                                                        className={`rounded px-2 py-0.5 text-xs font-medium transition-colors ${
+                                                                            item.discount_rate === discount
+                                                                                ? 'bg-primary text-white'
+                                                                                : 'bg-gray-100 text-gray-700 hover:bg-primary/10 hover:text-primary'
+                                                                        }`}
+                                                                    >
+                                                                        {discount}%
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                     </div>
 
                                                     {/* Tax Rate */}
