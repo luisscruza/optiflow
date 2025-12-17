@@ -1,6 +1,8 @@
 import { Head, Link } from '@inertiajs/react';
 import { Calendar, Edit, FileText, Printer, User } from 'lucide-react';
 
+import { usePermissions } from '@/hooks/use-permissions';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +16,8 @@ interface Props {
 }
 
 export default function PrescriptionShow({ prescription }: Props) {
+    const { can } = usePermissions();
+
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Recetas',
@@ -53,12 +57,14 @@ export default function PrescriptionShow({ prescription }: Props) {
                             </div>
                         </div>
                         <div className="flex gap-2">
-                            <Link href={prescriptions.edit(prescription).url}>
-                                <Button variant="outline">
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    Editar
-                                </Button>
-                            </Link>
+                            {can('edit prescriptions') && (
+                                <Link href={prescriptions.edit(prescription).url}>
+                                    <Button variant="outline">
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Editar
+                                    </Button>
+                                </Link>
+                            )}
                             <a target="blank" href={prescriptions.pdf(prescription).url}>
                                 <Button>
                                     <Printer className="mr-2 h-4 w-4" />

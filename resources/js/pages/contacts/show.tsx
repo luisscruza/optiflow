@@ -1,6 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Activity, Building2, Calendar, Edit, FileText, Mail, MapPin, Phone, Trash2, Users } from 'lucide-react';
 
+import { usePermissions } from '@/hooks/use-permissions';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,8 +15,9 @@ interface Props {
 }
 
 export default function ContactShow({ contact }: Props) {
-        const { auth } = usePage<SharedData>().props;
-    
+    const { auth } = usePage<SharedData>().props;
+    const { can } = usePermissions();
+
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Contactos',
@@ -103,16 +105,20 @@ export default function ContactShow({ contact }: Props) {
                         </div>
 
                         <div className="flex space-x-2">
-                            <Button variant="outline" asChild>
-                                <Link href={`/contacts/${contact.id}/edit`}>
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    Editar
-                                </Link>
-                            </Button>
-                            <Button variant="destructive" onClick={handleDelete}>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Eliminar
-                            </Button>
+                            {can('edit contacts') && (
+                                <Button variant="outline" asChild>
+                                    <Link href={`/contacts/${contact.id}/edit`}>
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Editar
+                                    </Link>
+                                </Button>
+                            )}
+                            {can('delete contacts') && (
+                                <Button variant="destructive" onClick={handleDelete}>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Eliminar
+                                </Button>
+                            )}
                         </div>
                     </div>
 

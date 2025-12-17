@@ -2,6 +2,8 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Building2, Edit, Eye, Filter, Plus, Search, Trash2, Users } from 'lucide-react';
 import { useState } from 'react';
 
+import { usePermissions } from '@/hooks/use-permissions';
+
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,6 +28,7 @@ interface Props {
 }
 
 export default function ContactsIndex({ contacts, filters }: Props) {
+    const { can } = usePermissions();
     const [search, setSearch] = useState(filters.search || '');
     const [contactType, setContactType] = useState(filters.type || 'all');
     const [showQuickModal, setShowQuickModal] = useState(false);
@@ -120,16 +123,18 @@ export default function ContactsIndex({ contacts, filters }: Props) {
                         </p>
                     </div>
 
-                    <div className="flex space-x-3">
-                        <Button
-                            variant="outline"
-                            onClick={() => setShowQuickModal(true)}
-                            className="border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900/20 dark:text-gray-300"
-                        >
-                            <Plus className="mr-2 h-4 w-4" />
-                            Nuevo contacto
-                        </Button>
-                    </div>
+                    {can('create contacts') && (
+                        <div className="flex space-x-3">
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowQuickModal(true)}
+                                className="border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900/20 dark:text-gray-300"
+                            >
+                                <Plus className="mr-2 h-4 w-4" />
+                                Nuevo contacto
+                            </Button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Search and Filters */}
@@ -190,12 +195,14 @@ export default function ContactsIndex({ contacts, filters }: Props) {
                         {contacts.data.length === 0 ? (
                             <div className="py-8 text-center">
                                 <div className="mb-4 text-gray-500 dark:text-gray-400">No se encontraron contactos</div>
-                                <Button asChild>
-                                    <Link href="/contacts/create">
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Crear primer contacto
-                                    </Link>
-                                </Button>
+                                {can('create contacts') && (
+                                    <Button asChild>
+                                        <Link href="/contacts/create">
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Crear primer contacto
+                                        </Link>
+                                    </Button>
+                                )}
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
@@ -256,25 +263,31 @@ export default function ContactsIndex({ contacts, filters }: Props) {
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem asChild>
-                                                                <Link href={`/contacts/${contact.id}`}>
-                                                                    <Eye className="mr-2 h-4 w-4" />
-                                                                    Ver detalles
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem asChild>
-                                                                <Link href={`/contacts/${contact.id}/edit`}>
-                                                                    <Edit className="mr-2 h-4 w-4" />
-                                                                    Editar
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem
-                                                                onClick={() => handleDelete(contact.id)}
-                                                                className="text-red-600 dark:text-red-400"
-                                                            >
-                                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                                Eliminar
-                                                            </DropdownMenuItem>
+                                                            {can('view contacts') && (
+                                                                <DropdownMenuItem asChild>
+                                                                    <Link href={`/contacts/${contact.id}`}>
+                                                                        <Eye className="mr-2 h-4 w-4" />
+                                                                        Ver detalles
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                            {can('edit contacts') && (
+                                                                <DropdownMenuItem asChild>
+                                                                    <Link href={`/contacts/${contact.id}/edit`}>
+                                                                        <Edit className="mr-2 h-4 w-4" />
+                                                                        Editar
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                            {can('delete contacts') && (
+                                                                <DropdownMenuItem
+                                                                    onClick={() => handleDelete(contact.id)}
+                                                                    className="text-red-600 dark:text-red-400"
+                                                                >
+                                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                                    Eliminar
+                                                                </DropdownMenuItem>
+                                                            )}
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 </TableCell>
