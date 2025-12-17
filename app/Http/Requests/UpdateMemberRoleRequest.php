@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Enums\UserRole;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
-use Illuminate\Validation\Rule;
 
 final class UpdateMemberRoleRequest extends FormRequest
 {
@@ -18,14 +16,10 @@ final class UpdateMemberRoleRequest extends FormRequest
     public function authorize(): bool
     {
         $user = Auth::user();
-
         $workspace = Context::get('workspace');
 
-        $userRole = $workspace->users()
-            ->where('user_id', $user->id)
-            ->first()?->pivot?->role;
-
-        return $userRole === UserRole::Admin->value;
+        // Only workspace owner can update roles
+        return $workspace->owner_id === $user?->id;
     }
 
     /**
@@ -38,7 +32,8 @@ final class UpdateMemberRoleRequest extends FormRequest
         return [
             'role' => [
                 'required',
-                Rule::enum(UserRole::class),
+                'integer',
+                'exists:roles,id',
             ],
         ];
     }
@@ -52,7 +47,7 @@ final class UpdateMemberRoleRequest extends FormRequest
     {
         return [
             'role.required' => 'El rol es obligatorio.',
-            'role.enum' => 'El rol seleccionado no es válido.',
+            'role.exists' => 'El rol seleccionado no es válido.',
         ];
     }
 }

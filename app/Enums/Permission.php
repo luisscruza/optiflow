@@ -1,0 +1,118 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Enums;
+
+enum Permission: string
+{
+    // Products
+    case ProductsView = 'products.view';
+    case ProductsCreate = 'products.create';
+    case ProductsEdit = 'products.edit';
+    case ProductsDelete = 'products.delete';
+
+    // Contacts
+    case ContactsView = 'contacts.view';
+    case ContactsCreate = 'contacts.create';
+    case ContactsEdit = 'contacts.edit';
+    case ContactsDelete = 'contacts.delete';
+
+    // Invoices
+    case InvoicesView = 'invoices.view';
+    case InvoicesCreate = 'invoices.create';
+    case InvoicesEdit = 'invoices.edit';
+    case InvoicesDelete = 'invoices.delete';
+
+    // Quotations
+    case QuotationsView = 'quotations.view';
+    case QuotationsCreate = 'quotations.create';
+    case QuotationsEdit = 'quotations.edit';
+    case QuotationsDelete = 'quotations.delete';
+
+    // Prescriptions
+    case PrescriptionsView = 'prescriptions.view';
+    case PrescriptionsCreate = 'prescriptions.create';
+    case PrescriptionsEdit = 'prescriptions.edit';
+    case PrescriptionsDelete = 'prescriptions.delete';
+
+    // Inventory
+    case InventoryView = 'inventory.view';
+    case InventoryAdjust = 'inventory.adjust';
+    case InventoryTransfer = 'inventory.transfer';
+
+    // Configuration
+    case ConfigurationView = 'configuration.view';
+    case ConfigurationEdit = 'configuration.edit';
+
+    // Reports
+    case ReportsView = 'reports.view';
+    case ReportsExport = 'reports.export';
+
+    public static function all(): array
+    {
+        return array_map(fn (self $permission) => $permission->value, self::cases());
+    }
+
+    public function label(): string
+    {
+        return match ($this) {
+            // Products
+            self::ProductsView => 'Ver productos',
+            self::ProductsCreate => 'Crear productos',
+            self::ProductsEdit => 'Editar productos',
+            self::ProductsDelete => 'Eliminar productos',
+
+            // Contacts
+            self::ContactsView => 'Ver contactos',
+            self::ContactsCreate => 'Crear contactos',
+            self::ContactsEdit => 'Editar contactos',
+            self::ContactsDelete => 'Eliminar contactos',
+
+            // Invoices
+            self::InvoicesView => 'Ver facturas',
+            self::InvoicesCreate => 'Crear facturas',
+            self::InvoicesEdit => 'Editar facturas',
+            self::InvoicesDelete => 'Eliminar facturas',
+
+            // Quotations
+            self::QuotationsView => 'Ver cotizaciones',
+            self::QuotationsCreate => 'Crear cotizaciones',
+            self::QuotationsEdit => 'Editar cotizaciones',
+            self::QuotationsDelete => 'Eliminar cotizaciones',
+
+            // Prescriptions
+            self::PrescriptionsView => 'Ver recetas',
+            self::PrescriptionsCreate => 'Crear recetas',
+            self::PrescriptionsEdit => 'Editar recetas',
+            self::PrescriptionsDelete => 'Eliminar recetas',
+
+            // Inventory
+            self::InventoryView => 'Ver inventario',
+            self::InventoryAdjust => 'Ajustar inventario',
+            self::InventoryTransfer => 'Transferir inventario',
+
+            // Configuration
+            self::ConfigurationView => 'Ver configuración',
+            self::ConfigurationEdit => 'Editar configuración',
+
+            // Reports
+            self::ReportsView => 'Ver reportes',
+            self::ReportsExport => 'Exportar reportes',
+        };
+    }
+
+    public function group(): string
+    {
+        return match ($this) {
+            self::ProductsView, self::ProductsCreate, self::ProductsEdit, self::ProductsDelete => 'Productos',
+            self::ContactsView, self::ContactsCreate, self::ContactsEdit, self::ContactsDelete => 'Contactos',
+            self::InvoicesView, self::InvoicesCreate, self::InvoicesEdit, self::InvoicesDelete => 'Facturas',
+            self::QuotationsView, self::QuotationsCreate, self::QuotationsEdit, self::QuotationsDelete => 'Cotizaciones',
+            self::PrescriptionsView, self::PrescriptionsCreate, self::PrescriptionsEdit, self::PrescriptionsDelete => 'Recetas',
+            self::InventoryView, self::InventoryAdjust, self::InventoryTransfer => 'Inventario',
+            self::ConfigurationView, self::ConfigurationEdit => 'Configuración',
+            self::ReportsView, self::ReportsExport => 'Reportes',
+        };
+    }
+}

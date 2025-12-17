@@ -15,7 +15,7 @@ return [
          * `Spatie\Permission\Contracts\Permission` contract.
          */
 
-        'permission' => Spatie\Permission\Models\Permission::class,
+        'permission' => App\Models\Permission::class,
 
         /*
          * When using the "HasRoles" trait from this package, we need to know which
@@ -138,7 +138,7 @@ return [
     /*
      * The class to use to resolve the permissions team id
      */
-    'team_resolver' => Spatie\Permission\DefaultTeamResolver::class,
+    'team_resolver' => App\Support\WorkspaceTeamResolver::class,
 
     /*
      * Passport Client Credentials Grant

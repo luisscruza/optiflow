@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
-import { router } from '@inertiajs/react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { router } from '@inertiajs/react';
 import { Settings } from 'lucide-react';
 import { useState } from 'react';
 
@@ -10,40 +10,45 @@ interface Member {
     name: string;
     email: string;
     role: string;
+    role_id: number | null;
     role_label: string;
     joined_at: string;
 }
 
 interface Props {
     member: Member;
-    roles: Record<string, string>;
+    roles: Record<number, string>;
 }
 
 export function MemberRoleSelect({ member, roles }: Props) {
     const [showDialog, setShowDialog] = useState(false);
-    const [selectedRole, setSelectedRole] = useState(member.role);
+    const [selectedRole, setSelectedRole] = useState<string>(member.role_id?.toString() ?? '');
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (selectedRole === member.role) return;
+        if (selectedRole === member.role_id?.toString()) return;
 
         setProcessing(true);
-        router.patch(`/workspace/members/${member.id}/role`, {
-            role: selectedRole,
-        }, {
-            onSuccess: () => {
-                setShowDialog(false);
-                setErrors({});
+        router.patch(
+            `/workspace/members/${member.id}/role`,
+            {
+                role: parseInt(selectedRole),
             },
-            onError: (errors) => {
-                setErrors(errors);
+            {
+                onSuccess: () => {
+                    setShowDialog(false);
+                    setErrors({});
+                },
+                onError: (errors) => {
+                    setErrors(errors);
+                },
+                onFinish: () => {
+                    setProcessing(false);
+                },
             },
-            onFinish: () => {
-                setProcessing(false);
-            }
-        });
+        );
     };
 
     return (
@@ -56,11 +61,9 @@ export function MemberRoleSelect({ member, roles }: Props) {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Cambiar rol de {member.name}</DialogTitle>
-                    <DialogDescription>
-                        Selecciona el nuevo rol para este miembro de la sucursal.
-                    </DialogDescription>
+                    <DialogDescription>Selecciona el nuevo rol para este miembro de la sucursal.</DialogDescription>
                 </DialogHeader>
-                
+
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <Select value={selectedRole} onValueChange={setSelectedRole}>
@@ -68,32 +71,21 @@ export function MemberRoleSelect({ member, roles }: Props) {
                                 <SelectValue placeholder="Seleccionar rol" />
                             </SelectTrigger>
                             <SelectContent>
-                                {Object.entries(roles).map(([value, label]) => (
-                                    <SelectItem key={value} value={value}>
-                                        {label}
+                                {Object.entries(roles).map(([id, name]) => (
+                                    <SelectItem key={id} value={id}>
+                                        {name}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
-                        {errors.role && (
-                            <p className="text-sm text-red-600 mt-1">{errors.role}</p>
-                        )}
+                        {errors.role && <p className="mt-1 text-sm text-red-600">{errors.role}</p>}
                     </div>
 
                     <div className="flex gap-2">
-                        <Button 
-                            type="button" 
-                            variant="outline" 
-                            onClick={() => setShowDialog(false)}
-                            className="flex-1"
-                        >
+                        <Button type="button" variant="outline" onClick={() => setShowDialog(false)} className="flex-1">
                             Cancelar
                         </Button>
-                        <Button 
-                            type="submit" 
-                            disabled={processing || selectedRole === member.role}
-                            className="flex-1"
-                        >
+                        <Button type="submit" disabled={processing || selectedRole === member.role} className="flex-1">
                             {processing ? 'Actualizando...' : 'Actualizar rol'}
                         </Button>
                     </div>

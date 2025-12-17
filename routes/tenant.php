@@ -3,6 +3,10 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\BankAccountController;
+use App\Http\Controllers\BusinessUserController;
+use App\Http\Controllers\BusinessUserInvitationController;
+use App\Http\Controllers\BusinessUserWorkspaceController;
+use App\Http\Controllers\BusinessUserWorkspaceRoleController;
 use App\Http\Controllers\CompanyDetailsController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\ContactController;
@@ -31,6 +35,7 @@ use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\WorkspaceInvitationController;
 use App\Http\Controllers\WorkspaceMemberController;
 use App\Http\Controllers\WorkspaceMemberRoleController;
+use App\Http\Controllers\WorkspaceRoleController;
 use App\Http\Middleware\HasWorkspace;
 use App\Http\Middleware\SetWorkspaceContext;
 use Illuminate\Support\Facades\Route;
@@ -74,6 +79,13 @@ Route::middleware([
         Route::post('comments', [App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');
         Route::patch('comments/{comment}', [App\Http\Controllers\CommentController::class, 'update'])->name('comments.update');
         Route::delete('comments/{comment}', [App\Http\Controllers\CommentController::class, 'destroy'])->name('comments.destroy');
+
+        // Business-wide user management (not scoped to workspace)
+        Route::get('business/users', [BusinessUserController::class, 'index'])->name('business.users.index');
+        Route::post('business/users/invite', [BusinessUserInvitationController::class, 'store'])->name('business.users.invite');
+        Route::patch('business/users/{user}/workspaces/{workspace}/roles', [BusinessUserWorkspaceRoleController::class, 'update'])->name('business.users.workspaces.roles.update');
+        Route::post('business/users/{user}/workspaces', [BusinessUserWorkspaceController::class, 'store'])->name('business.users.workspaces.store');
+        Route::delete('business/users/{user}/workspaces/{workspace}', [BusinessUserWorkspaceController::class, 'destroy'])->name('business.users.workspaces.destroy');
 
         Route::middleware(HasWorkspace::class)->group(function (): void {
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -126,6 +138,11 @@ Route::middleware([
             Route::get('workspace/members', [WorkspaceMemberController::class, 'index'])->name('workspace.members.index');
             Route::patch('workspace/members/{member}/role', [WorkspaceMemberRoleController::class, 'update'])->name('workspace.members.update-role');
             Route::delete('workspace/members/{member}', [WorkspaceMemberController::class, 'destroy'])->name('workspace.members.destroy');
+
+            Route::get('workspace/roles', [WorkspaceRoleController::class, 'index'])->name('workspace.roles.index');
+            Route::post('workspace/roles', [WorkspaceRoleController::class, 'store'])->name('workspace.roles.store');
+            Route::patch('workspace/roles/{role}', [WorkspaceRoleController::class, 'update'])->name('workspace.roles.update');
+            Route::delete('workspace/roles/{role}', [WorkspaceRoleController::class, 'destroy'])->name('workspace.roles.destroy');
 
             Route::post('workspace/invitations', [WorkspaceInvitationController::class, 'store'])->name('workspace.invitations.store');
 
