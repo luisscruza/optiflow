@@ -23,7 +23,7 @@ final class BusinessUserWorkspaceController extends Controller
         #[CurrentUser] User $currentUser
     ): RedirectResponse {
         // Check if user is business owner
-        if (in_array($currentUser->business_role, [UserRole::Owner, UserRole::Admin])) {
+        if (! in_array($currentUser->business_role, [UserRole::Owner, UserRole::Admin])) {
             abort(403, 'Solo el propietario del negocio puede agregar usuarios a workspaces.');
         }
 
@@ -54,7 +54,7 @@ final class BusinessUserWorkspaceController extends Controller
     public function destroy(User $user, Workspace $workspace, #[CurrentUser] User $currentUser): RedirectResponse
     {
         // Check if user is business owner
-        if (in_array($currentUser->business_role, [UserRole::Owner, UserRole::Admin])) {
+        if (! in_array($currentUser->business_role, [UserRole::Owner, UserRole::Admin])) {
             abort(403, 'Solo el propietario del negocio puede remover usuarios de workspaces.');
         }
 

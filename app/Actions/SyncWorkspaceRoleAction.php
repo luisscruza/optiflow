@@ -22,7 +22,7 @@ final readonly class SyncWorkspaceRoleAction
                 ->with('permissions')
                 ->get()
                 ->groupBy('name')
-                ->map(fn ($roleGroup) => $roleGroup->first());
+                ->map(fn($roleGroup) => $roleGroup->first());
 
             foreach ($roleTemplates as $templateRole) {
                 // Check if role already exists in this workspace
