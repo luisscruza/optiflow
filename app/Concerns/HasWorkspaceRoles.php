@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Spatie\Permission\Traits;
 
+use BackedEnum;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Arr;
@@ -11,6 +14,10 @@ use Spatie\Permission\Contracts\Role;
 use Spatie\Permission\Events\RoleAttached;
 use Spatie\Permission\Events\RoleDetached;
 use Spatie\Permission\PermissionRegistrar;
+use TypeError;
+
+use function array_column;
+use function get_class;
 
 trait HasWorkspaceRoles
 {
@@ -72,7 +79,7 @@ trait HasWorkspaceRoles
     /**
      * Scope the model query to certain roles only.
      *
-     * @param  string|int|array|Role|Collection|\BackedEnum  $roles
+     * @param  string|int|array|Role|Collection|BackedEnum  $roles
      * @param  string  $guard
      * @param  bool  $without
      */
@@ -87,7 +94,7 @@ trait HasWorkspaceRoles
                 return $role;
             }
 
-            if ($role instanceof \BackedEnum) {
+            if ($role instanceof BackedEnum) {
                 $role = $role->value;
             }
 
@@ -99,14 +106,14 @@ trait HasWorkspaceRoles
         $key = (new ($this->getRoleClass())())->getKeyName();
 
         return $query->{! $without ? 'whereHas' : 'whereDoesntHave'}('roles', fn (Builder $subQuery) => $subQuery
-            ->whereIn(config('permission.table_names.roles').".$key", \array_column($roles, $key))
+            ->whereIn(config('permission.table_names.roles').".$key", array_column($roles, $key))
         );
     }
 
     /**
      * Scope the model query to only those without certain roles.
      *
-     * @param  string|int|array|Role|Collection|\BackedEnum  $roles
+     * @param  string|int|array|Role|Collection|BackedEnum  $roles
      * @param  string  $guard
      */
     public function scopeWithoutRole(Builder $query, $roles, $guard = null): Builder
@@ -115,34 +122,9 @@ trait HasWorkspaceRoles
     }
 
     /**
-     * Returns array of role ids
-     *
-     * @param  string|int|array|Role|Collection|\BackedEnum  $roles
-     */
-    private function collectRoles(...$roles): array
-    {
-        return collect($roles)
-            ->flatten()
-            ->reduce(function ($array, $role) {
-                if (empty($role)) {
-                    return $array;
-                }
-
-                $role = $this->getStoredRole($role);
-
-                if (! in_array($role->getKey(), $array)) {
-                    $this->ensureModelSharesGuard($role);
-                    $array[] = $role->getKey();
-                }
-
-                return $array;
-            }, []);
-    }
-
-    /**
      * Assign the given role to the model.
      *
-     * @param  string|int|array|Role|Collection|\BackedEnum  ...$roles
+     * @param  string|int|array|Role|Collection|BackedEnum  ...$roles
      * @return $this
      */
     public function assignRole(...$roles)
@@ -164,12 +146,12 @@ trait HasWorkspaceRoles
             $this->roles()->attach(array_diff($roles, $currentRoles), $teamPivot);
             $model->unsetRelation('roles');
         } else {
-            $class = \get_class($model);
+            $class = get_class($model);
             $saved = false;
 
             $class::saved(
                 function ($object) use ($roles, $model, $teamPivot, &$saved) {
-                    if ($saved || $model->getKey() != $object->getKey()) {
+                    if ($saved || $model->getKey() !== $object->getKey()) {
                         return;
                     }
                     $model->roles()->attach($roles, $teamPivot);
@@ -193,7 +175,7 @@ trait HasWorkspaceRoles
     /**
      * Revoke the given role from the model.
      *
-     * @param  string|int|array|Role|Collection|\BackedEnum  ...$role
+     * @param  string|int|array|Role|Collection|BackedEnum  ...$role
      * @return $this
      */
     public function removeRole(...$role)
@@ -218,7 +200,7 @@ trait HasWorkspaceRoles
     /**
      * Remove all current roles and set the given ones.
      *
-     * @param  string|int|array|Role|Collection|\BackedEnum  ...$roles
+     * @param  string|int|array|Role|Collection|BackedEnum  ...$roles
      * @return $this
      */
     public function syncRoles(...$roles)
@@ -242,29 +224,29 @@ trait HasWorkspaceRoles
     /**
      * Determine if the model has (one of) the given role(s).
      *
-     * @param  string|int|array|Role|Collection|\BackedEnum  $roles
+     * @param  string|int|array|Role|Collection|BackedEnum  $roles
      */
     public function hasRole($roles, ?string $guard = null): bool
     {
         $this->loadMissing('roles');
 
-        if (is_string($roles) && strpos($roles, '|') !== false) {
+        if (is_string($roles) && mb_strpos($roles, '|') !== false) {
             $roles = $this->convertPipeToArray($roles);
         }
 
-        if ($roles instanceof \BackedEnum) {
+        if ($roles instanceof BackedEnum) {
             $roles = $roles->value;
 
             return $this->roles
                 ->when($guard, fn ($q) => $q->where('guard_name', $guard))
                 ->pluck('name')
                 ->contains(function ($name) use ($roles) {
-                    /** @var string|\BackedEnum $name */
-                    if ($name instanceof \BackedEnum) {
-                        return $name->value == $roles;
+                    /** @var string|BackedEnum $name */
+                    if ($name instanceof BackedEnum) {
+                        return $name->value === $roles;
                     }
 
-                    return $name == $roles;
+                    return $name === $roles;
                 });
         }
 
@@ -300,7 +282,7 @@ trait HasWorkspaceRoles
             return $roles->intersect($guard ? $this->roles->where('guard_name', $guard) : $this->roles)->isNotEmpty();
         }
 
-        throw new \TypeError('Unsupported type for $roles parameter to hasRole().');
+        throw new TypeError('Unsupported type for $roles parameter to hasRole().');
     }
 
     /**
@@ -308,7 +290,7 @@ trait HasWorkspaceRoles
      *
      * Alias to hasRole() but without Guard controls
      *
-     * @param  string|int|array|Role|Collection|\BackedEnum  $roles
+     * @param  string|int|array|Role|Collection|BackedEnum  $roles
      */
     public function hasAnyRole(...$roles): bool
     {
@@ -318,17 +300,17 @@ trait HasWorkspaceRoles
     /**
      * Determine if the model has all of the given role(s).
      *
-     * @param  string|array|Role|Collection|\BackedEnum  $roles
+     * @param  string|array|Role|Collection|BackedEnum  $roles
      */
     public function hasAllRoles($roles, ?string $guard = null): bool
     {
         $this->loadMissing('roles');
 
-        if ($roles instanceof \BackedEnum) {
+        if ($roles instanceof BackedEnum) {
             $roles = $roles->value;
         }
 
-        if (is_string($roles) && strpos($roles, '|') !== false) {
+        if (is_string($roles) && mb_strpos($roles, '|') !== false) {
             $roles = $this->convertPipeToArray($roles);
         }
 
@@ -341,7 +323,7 @@ trait HasWorkspaceRoles
         }
 
         $roles = collect()->make($roles)->map(function ($role) {
-            if ($role instanceof \BackedEnum) {
+            if ($role instanceof BackedEnum) {
                 return $role->value;
             }
 
@@ -353,26 +335,26 @@ trait HasWorkspaceRoles
             : $this->getRoleNames();
 
         $roleNames = $roleNames->transform(function ($roleName) {
-            if ($roleName instanceof \BackedEnum) {
+            if ($roleName instanceof BackedEnum) {
                 return $roleName->value;
             }
 
             return $roleName;
         });
 
-        return $roles->intersect($roleNames) == $roles;
+        return $roles->intersect($roleNames) === $roles;
     }
 
     /**
      * Determine if the model has exactly all of the given role(s).
      *
-     * @param  string|array|Role|Collection|\BackedEnum  $roles
+     * @param  string|array|Role|Collection|BackedEnum  $roles
      */
     public function hasExactRoles($roles, ?string $guard = null): bool
     {
         $this->loadMissing('roles');
 
-        if (is_string($roles) && strpos($roles, '|') !== false) {
+        if (is_string($roles) && mb_strpos($roles, '|') !== false) {
             $roles = $this->convertPipeToArray($roles);
         }
 
@@ -387,7 +369,7 @@ trait HasWorkspaceRoles
         $roles = collect()->make($roles)->map(fn ($role) => $role instanceof Role ? $role->name : $role
         );
 
-        return $this->roles->count() == $roles->count() && $this->hasAllRoles($roles, $guard);
+        return $this->roles->count() === $roles->count() && $this->hasAllRoles($roles, $guard);
     }
 
     /**
@@ -407,7 +389,7 @@ trait HasWorkspaceRoles
 
     protected function getStoredRole($role): Role
     {
-        if ($role instanceof \BackedEnum) {
+        if ($role instanceof BackedEnum) {
             $role = $role->value;
         }
 
@@ -424,14 +406,14 @@ trait HasWorkspaceRoles
 
     protected function convertPipeToArray(string $pipeString)
     {
-        $pipeString = trim($pipeString);
+        $pipeString = mb_trim($pipeString);
 
-        if (strlen($pipeString) <= 2) {
+        if (mb_strlen($pipeString) <= 2) {
             return [str_replace('|', '', $pipeString)];
         }
 
-        $quoteCharacter = substr($pipeString, 0, 1);
-        $endCharacter = substr($quoteCharacter, -1, 1);
+        $quoteCharacter = mb_substr($pipeString, 0, 1);
+        $endCharacter = mb_substr($quoteCharacter, -1, 1);
 
         if ($quoteCharacter !== $endCharacter) {
             return explode('|', $pipeString);
@@ -441,6 +423,31 @@ trait HasWorkspaceRoles
             return explode('|', $pipeString);
         }
 
-        return explode('|', trim($pipeString, $quoteCharacter));
+        return explode('|', mb_trim($pipeString, $quoteCharacter));
+    }
+
+    /**
+     * Returns array of role ids
+     *
+     * @param  string|int|array|Role|Collection|BackedEnum  $roles
+     */
+    private function collectRoles(...$roles): array
+    {
+        return collect($roles)
+            ->flatten()
+            ->reduce(function ($array, $role) {
+                if (empty($role)) {
+                    return $array;
+                }
+
+                $role = $this->getStoredRole($role);
+
+                if (! in_array($role->getKey(), $array)) {
+                    $this->ensureModelSharesGuard($role);
+                    $array[] = $role->getKey();
+                }
+
+                return $array;
+            }, []);
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Actions\AssignRoleAction;
 use App\Enums\UserRole;
 use App\Http\Requests\UpdateUserWorkspaceRolesRequest;
 use App\Models\User;

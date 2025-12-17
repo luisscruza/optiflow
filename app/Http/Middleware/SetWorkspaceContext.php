@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Enums\BusinessPermission;
+use App\Enums\Permission;
 use App\Enums\UserRole;
 use Closure;
 use Illuminate\Http\Request;
@@ -12,7 +13,6 @@ use Illuminate\Support\Facades\Context;
 use Inertia\Inertia;
 use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
-use App\Enums\Permission;
 
 final class SetWorkspaceContext
 {
@@ -47,7 +47,7 @@ final class SetWorkspaceContext
             if (in_array($user->business_role, [UserRole::Owner, UserRole::Admin])) {
                 $allPermissions = array_merge(
                     Permission::all(),
-                    array_map(fn(BusinessPermission $p) => $p->value, BusinessPermission::allPermissions())
+                    array_map(fn (BusinessPermission $p) => $p->value, BusinessPermission::allPermissions())
                 );
 
                 Inertia::share([
