@@ -101,7 +101,9 @@ final class ContactController extends Controller
     {
         abort_unless($user->can(Permission::ContactsView), 403);
 
-        $contact->load(['primaryAddress', 'addresses',
+        $contact->load([
+            'primaryAddress',
+            'addresses',
             'comments.commentator',
             'comments.comments.commentator',
             'comments.comments.comments.commentator',

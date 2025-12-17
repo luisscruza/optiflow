@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\CreateQuotationAction;
 use App\Actions\UpdateQuotationAction;
+use App\Enums\Permission;
 use App\Http\Requests\UpdateQuotationRequest;
 use App\Models\Contact;
 use App\Models\DocumentSubtype;
@@ -13,6 +14,7 @@ use App\Models\Product;
 use App\Models\Quotation;
 use App\Models\Tax;
 use App\Models\User;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,8 +29,10 @@ final class QuotationController extends Controller
     /**
      * Display a listing of quotations.
      */
-    public function index(Request $request): Response
+    public function index(Request $request, #[CurrentUser()] User $user): Response
     {
+        abort_unless($user->can(Permission::QuotationsView), 403);
+
         $query = Quotation::query()
             ->with(['contact', 'documentSubtype'])
             ->orderBy('created_at', 'desc');
@@ -61,8 +65,10 @@ final class QuotationController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request): Response
+    public function create(Request $request, #[CurrentUser] User $user): Response
     {
+        abort_unless($user->can(Permission::QuotationsCreate), 403);
+
         $currentWorkspace = Context::get('workspace');
 
         $documentSubtypes = DocumentSubtype::query()
@@ -101,8 +107,10 @@ final class QuotationController extends Controller
      *
      * @throws Throwable
      */
-    public function store(Request $request, User $user, CreateQuotationAction $action): RedirectResponse
+    public function store(Request $request, #[CurrentUser] User $user, CreateQuotationAction $action): RedirectResponse
     {
+        abort_unless($user->can(Permission::QuotationsCreate), 403);
+
         $workspace = Context::get('workspace');
 
         $result = $action->handle($workspace, $request->all());
@@ -120,9 +128,11 @@ final class QuotationController extends Controller
     /**
      * Display the specified quotation.
      */
-    public function show(Quotation $quotation): Response
+    public function show(Quotation $quotation, #[CurrentUser] User $user): Response
     {
-        $quotation->load(['contact', 'documentSubtype', 'items.product', 'items.tax']);
+        abort_unless($user->can(Permission::QuotationsView), 403);
+
+        $quotation->load('contact', 'document_subtype', 'items.product', 'items.taxes');
 
         return Inertia::render('quotations/show', [
             'quotation' => $quotation,
@@ -132,9 +142,11 @@ final class QuotationController extends Controller
     /**
      * Show the form for editing the specified quotation.
      */
-    public function edit(Quotation $quotation): Response
+    public function edit(Quotation $quotation, #[CurrentUser] User $user): Response
     {
-        Context::get('workspace');
+        abort_unless($user->can(Permission::QuotationsEdit), 403);
+
+        $workspace = Context::get('workspace');
 
         $quotation->load(['contact', 'documentSubtype', 'items.product', 'items.tax']);
 
@@ -164,8 +176,10 @@ final class QuotationController extends Controller
     /**
      * Update the specified quotation.
      */
-    public function update(UpdateQuotationRequest $request, Quotation $quotation, UpdateQuotationAction $action): RedirectResponse
+    public function update(UpdateQuotationRequest $request, Quotation $quotation, #[CurrentUser] User $user, UpdateQuotationAction $action): RedirectResponse
     {
+        abort_unless($user->can(Permission::QuotationsEdit), 403);
+
         $workspace = Context::get('workspace');
 
         $result = $action->handle($workspace, $quotation, $request->validated());
@@ -184,8 +198,10 @@ final class QuotationController extends Controller
     /**
      * Remove the specified quotation.
      */
-    public function destroy(Quotation $quotation): RedirectResponse
+    public function destroy(Quotation $quotation, #[CurrentUser] User $user): RedirectResponse
     {
+        abort_unless($user->can(Permission::QuotationsDelete), 403);
+
         // For now, we'll only allow deleting draft quotations
         if ($quotation->status !== 'draft') {
             return redirect()->back()->withErrors(['error' => 'Solo se pueden eliminar cotizaciones en borrador.']);

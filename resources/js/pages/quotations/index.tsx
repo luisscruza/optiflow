@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Document, type InvoiceFilters, type PaginatedInvoices } from '@/types';
 import { useCurrency } from '@/utils/currency';
@@ -29,6 +30,7 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || 'all');
     const { format: formatCurrency } = useCurrency();
+    const { can } = usePermissions();
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -121,12 +123,14 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
                     </div>
 
                     <div className="flex space-x-3">
-                        <Button asChild className="bg-primary hover:bg-primary/90">
-                            <Link href="/quotations/create">
-                                <Plus className="mr-2 h-4 w-4" />
-                                Nueva cotización
-                            </Link>
-                        </Button>
+                        {can('create quotations') && (
+                            <Button asChild className="bg-primary hover:bg-primary/90">
+                                <Link href="/quotations/create">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Nueva cotización
+                                </Link>
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -190,12 +194,14 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
                         {quotations.data.length === 0 ? (
                             <div className="py-8 text-center">
                                 <div className="mb-4 text-gray-500 dark:text-gray-400">No se encontraron cotizaciones</div>
-                                <Button asChild>
-                                    <Link href="/quotations/create">
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Crear primera cotización
-                                    </Link>
-                                </Button>
+                                {can('create quotations') && (
+                                    <Button asChild>
+                                        <Link href="/quotations/create">
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Crear primera cotización
+                                        </Link>
+                                    </Button>
+                                )}
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
@@ -252,18 +258,22 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem asChild>
-                                                                <Link href={`/quotations/${quotation.id}`}>
-                                                                    <Eye className="mr-2 h-4 w-4" />
-                                                                    Ver detalles
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem asChild>
-                                                                <Link href={`/quotations/${quotation.id}/edit`}>
-                                                                    <Edit className="mr-2 h-4 w-4" />
-                                                                    Editar
-                                                                </Link>
-                                                            </DropdownMenuItem>
+                                                            {can('view quotations') && (
+                                                                <DropdownMenuItem asChild>
+                                                                    <Link href={`/quotations/${quotation.id}`}>
+                                                                        <Eye className="mr-2 h-4 w-4" />
+                                                                        Ver detalles
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                            {can('edit quotations') && (
+                                                                <DropdownMenuItem asChild>
+                                                                    <Link href={`/quotations/${quotation.id}/edit`}>
+                                                                        <Edit className="mr-2 h-4 w-4" />
+                                                                        Editar
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                            )}
                                                             <DropdownMenuItem>
                                                                 <a
                                                                     href={`/quotations/${quotation.id}/pdf`}
@@ -275,22 +285,24 @@ export default function QuotationsIndex({ quotations, filters }: Props) {
                                                                     Ver PDF
                                                                 </a>
                                                             </DropdownMenuItem>
-                                                            { quotation.status !== 'converted' && (
-                                                            <DropdownMenuItem
-                                                                onClick={() => handleConvertToInvoice(quotation.id)}
-                                                                className="text-blue-600 dark:text-blue-400"
-                                                            >
-                                                                <FileText className="mr-2 h-4 w-4" />
-                                                                Convertir a factura
-                                                            </DropdownMenuItem>
+                                                            {quotation.status !== 'converted' && (
+                                                                <DropdownMenuItem
+                                                                    onClick={() => handleConvertToInvoice(quotation.id)}
+                                                                    className="text-blue-600 dark:text-blue-400"
+                                                                >
+                                                                    <FileText className="mr-2 h-4 w-4" />
+                                                                    Convertir a factura
+                                                                </DropdownMenuItem>
                                                             )}
-                                                            <DropdownMenuItem
-                                                                onClick={() => handleDelete(quotation.id)}
-                                                                className="text-red-600 dark:text-red-400"
-                                                            >
-                                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                                Eliminar
-                                                            </DropdownMenuItem>
+                                                            {can('delete quotations') && (
+                                                                <DropdownMenuItem
+                                                                    onClick={() => handleDelete(quotation.id)}
+                                                                    className="text-red-600 dark:text-red-400"
+                                                                >
+                                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                                    Eliminar
+                                                                </DropdownMenuItem>
+                                                            )}
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 </TableCell>

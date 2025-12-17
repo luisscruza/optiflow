@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Document } from '@/types';
 import { useCurrency } from '@/utils/currency';
@@ -26,6 +27,7 @@ interface Props {
 
 export default function QuotationShow({ quotation }: Props) {
     const { format: formatCurrency } = useCurrency();
+    const { can } = usePermissions();
 
     const handleConvertToInvoice = () => {
         if (confirm('¿Estás seguro de que deseas convertir esta cotización en una factura? Esta acción no se puede deshacer.')) {
@@ -87,12 +89,14 @@ export default function QuotationShow({ quotation }: Props) {
                                 Convertir a factura
                             </Button>
                         )}
-                        <Button variant="outline" asChild>
-                            <Link href={`/quotations/${quotation.id}/edit`}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Editar
-                            </Link>
-                        </Button>
+                        {can('edit quotations') && (
+                            <Button variant="outline" asChild>
+                                <Link href={`/quotations/${quotation.id}/edit`}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Editar
+                                </Link>
+                            </Button>
+                        )}
                         <Button variant="outline">
                             <a 
                                 href={`/quotations/${quotation.id}/pdf`} 
