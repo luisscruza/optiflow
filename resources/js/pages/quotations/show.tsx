@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, DollarSign, Edit, FileText, Printer, RefreshCw, User } from 'lucide-react';
+import { DollarSign, Edit, FileText, Printer, RefreshCw, User } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,9 +31,13 @@ export default function QuotationShow({ quotation }: Props) {
 
     const handleConvertToInvoice = () => {
         if (confirm('¿Estás seguro de que deseas convertir esta cotización en una factura? Esta acción no se puede deshacer.')) {
-            router.post(`/quotations/${quotation.id}/convert-to-invoice`, {}, {
-                preserveScroll: true,
-            });
+            router.post(
+                `/quotations/${quotation.id}/convert-to-invoice`,
+                {},
+                {
+                    preserveScroll: true,
+                },
+            );
         }
     };
 
@@ -47,12 +51,9 @@ export default function QuotationShow({ quotation }: Props) {
         };
 
         const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
-        
+
         return (
-            <Badge 
-                variant={config.variant} 
-                className={config.className || undefined}
-            >
+            <Badge variant={config.variant} className={config.className || undefined}>
                 {config.label}
             </Badge>
         );
@@ -63,7 +64,7 @@ export default function QuotationShow({ quotation }: Props) {
         return date.toLocaleDateString('es-DO', {
             day: '2-digit',
             month: '2-digit',
-            year: 'numeric'
+            year: 'numeric',
         });
     };
 
@@ -74,12 +75,8 @@ export default function QuotationShow({ quotation }: Props) {
             <div className="px-4 py-8 sm:px-6 lg:px-8">
                 <div className="mb-8 flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                            Cotización {quotation.document_number}
-                        </h1>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Creada el {formatDate(quotation.issue_date)}
-                        </p>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Cotización {quotation.document_number}</h1>
+                        <p className="text-gray-600 dark:text-gray-400">Creada el {formatDate(quotation.issue_date)}</p>
                     </div>
 
                     <div className="flex space-x-3">
@@ -98,12 +95,7 @@ export default function QuotationShow({ quotation }: Props) {
                             </Button>
                         )}
                         <Button variant="outline">
-                            <a 
-                                href={`/quotations/${quotation.id}/pdf`} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="flex items-center"
-                            >
+                            <a href={`/quotations/${quotation.id}/pdf`} target="_blank" rel="noopener noreferrer" className="flex items-center">
                                 <Printer className="mr-2 h-4 w-4" />
                                 Ver PDF
                             </a>
@@ -178,29 +170,18 @@ export default function QuotationShow({ quotation }: Props) {
                                                     <TableCell>
                                                         <div>
                                                             <div className="font-medium">{item.product?.name}</div>
-                                                            {item.description && (
-                                                                <div className="text-sm text-gray-500">{item.description}</div>
-                                                            )}
+                                                            {item.description && <div className="text-sm text-gray-500">{item.description}</div>}
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="text-center">
-                                                        {typeof item.quantity === 'string' ? 
-                                                            parseFloat(item.quantity).toLocaleString() : 
-                                                            item.quantity.toLocaleString()
-                                                        }
+                                                        {typeof item.quantity === 'string'
+                                                            ? parseFloat(item.quantity).toLocaleString()
+                                                            : item.quantity.toLocaleString()}
                                                     </TableCell>
-                                                    <TableCell className="text-right">
-                                                        {formatCurrency(item.unit_price)}
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        {item.discount_rate}%
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        {item.tax_rate}%
-                                                    </TableCell>
-                                                    <TableCell className="text-right font-medium">
-                                                        {formatCurrency(item.total)}
-                                                    </TableCell>
+                                                    <TableCell className="text-right">{formatCurrency(item.unit_price)}</TableCell>
+                                                    <TableCell className="text-center">{item.discount_rate}%</TableCell>
+                                                    <TableCell className="text-center">{item.tax_rate}%</TableCell>
+                                                    <TableCell className="text-right font-medium">{formatCurrency(item.total)}</TableCell>
                                                 </TableRow>
                                             ))}
                                         </TableBody>

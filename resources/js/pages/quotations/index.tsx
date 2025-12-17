@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Building2, Edit, Eye, FileText, Filter, Plus, Printer, Search, Trash2 } from 'lucide-react';
+import { Edit, Eye, FileText, Filter, Plus, Printer, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';

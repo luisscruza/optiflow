@@ -2,6 +2,7 @@ import { AlertTriangle, ArrowLeftRight, Calendar, DollarSign, Package, Plus, Rot
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import { Workspace, type BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
@@ -25,6 +26,7 @@ interface Props {
 
 export default function InventoryOverview({ stats }: Props) {
     const { workspace } = usePage().props as { workspace?: { current: Workspace } };
+    const { can } = usePermissions();
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-US', {
@@ -106,53 +108,61 @@ export default function InventoryOverview({ stats }: Props) {
                         </CardHeader>
                         <CardContent>
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                                <Button asChild className="h-auto p-6">
-                                    <Link href="/stock-adjustments">
-                                        <div className="flex flex-col items-center space-y-3">
-                                            <RotateCcw className="h-8 w-8" />
-                                            <div className="text-center">
-                                                <div className="font-medium">Ajuste de inventario</div>
-                                                <div className="text-sm text-muted-foreground">Ajustar cantidades</div>
+                                {can('adjust inventory') && (
+                                    <Button asChild className="h-auto p-6">
+                                        <Link href="/stock-adjustments">
+                                            <div className="flex flex-col items-center space-y-3">
+                                                <RotateCcw className="h-8 w-8" />
+                                                <div className="text-center">
+                                                    <div className="font-medium">Ajuste de inventario</div>
+                                                    <div className="text-sm text-muted-foreground">Ajustar cantidades</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </Link>
-                                </Button>
+                                        </Link>
+                                    </Button>
+                                )}
 
-                                <Button asChild className="h-auto p-6">
-                                    <Link href="/stock-transfers">
-                                        <div className="flex flex-col items-center space-y-3">
-                                            <ArrowLeftRight className="h-8 w-8" />
-                                            <div className="text-center">
-                                                <div className="font-medium">Transferencia de inventario</div>
-                                                <div className="text-sm text-muted-foreground">Mover entre sucursales</div>
+                                {can('transfer inventory') && (
+                                    <Button asChild className="h-auto p-6">
+                                        <Link href="/stock-transfers">
+                                            <div className="flex flex-col items-center space-y-3">
+                                                <ArrowLeftRight className="h-8 w-8" />
+                                                <div className="text-center">
+                                                    <div className="font-medium">Transferencia de inventario</div>
+                                                    <div className="text-sm text-muted-foreground">Mover entre sucursales</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </Link>
-                                </Button>
+                                        </Link>
+                                    </Button>
+                                )}
 
-                                <Button asChild className="h-auto p-6">
-                                    <Link href="/initial-stock">
-                                        <div className="flex flex-col items-center space-y-3">
-                                            <TrendingUp className="h-8 w-8" />
-                                            <div className="text-center">
-                                                <div className="font-medium">Inventario inicial</div>
-                                                <div className="text-sm text-muted-foreground">Configurar inventario inicial</div>
+                                {can('adjust inventory') && (
+                                    <Button asChild className="h-auto p-6">
+                                        <Link href="/initial-stock">
+                                            <div className="flex flex-col items-center space-y-3">
+                                                <TrendingUp className="h-8 w-8" />
+                                                <div className="text-center">
+                                                    <div className="font-medium">Inventario inicial</div>
+                                                    <div className="text-sm text-muted-foreground">Configurar inventario inicial</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </Link>
-                                </Button>
+                                        </Link>
+                                    </Button>
+                                )}
 
-                                <Button asChild className="h-auto p-6">
-                                    <Link href="/products">
-                                        <div className="flex flex-col items-center space-y-3">
-                                            <Package className="h-8 w-8" />
-                                            <div className="text-center">
-                                                <div className="font-medium">Gestionar productos</div>
-                                                <div className="text-sm text-muted-foreground">Ver todos los productos</div>
+                                {can('view products') && (
+                                    <Button asChild className="h-auto p-6">
+                                        <Link href="/products">
+                                            <div className="flex flex-col items-center space-y-3">
+                                                <Package className="h-8 w-8" />
+                                                <div className="text-center">
+                                                    <div className="font-medium">Gestionar productos</div>
+                                                    <div className="text-sm text-muted-foreground">Ver todos los productos</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </Link>
-                                </Button>
+                                        </Link>
+                                    </Button>
+                                )}
                             </div>
                         </CardContent>
                     </Card>
@@ -169,24 +179,30 @@ export default function InventoryOverview({ stats }: Props) {
                                 <CardDescription>Monitorear niveles de inventario actuales</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <Button asChild variant="outline" className="w-full justify-start">
-                                    <Link href="/stock-adjustments">
-                                        <RotateCcw className="mr-2 h-4 w-4" />
-                                        Ver inventario actual
-                                    </Link>
-                                </Button>
-                                <Button asChild variant="outline" className="w-full justify-start">
-                                    <Link href="/products?low_stock=true">
-                                        <AlertTriangle className="mr-2 h-4 w-4" />
-                                        Productos con inventario bajo
-                                    </Link>
-                                </Button>
-                                <Button asChild variant="outline" className="w-full justify-start">
-                                    <Link href="/stock-adjustments/create">
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Crear ajuste
-                                    </Link>
-                                </Button>
+                                {can('view inventory') && (
+                                    <>
+                                        <Button asChild variant="outline" className="w-full justify-start">
+                                            <Link href="/stock-adjustments">
+                                                <RotateCcw className="mr-2 h-4 w-4" />
+                                                Ver inventario actual
+                                            </Link>
+                                        </Button>
+                                        <Button asChild variant="outline" className="w-full justify-start">
+                                            <Link href="/products?low_stock=true">
+                                                <AlertTriangle className="mr-2 h-4 w-4" />
+                                                Productos con inventario bajo
+                                            </Link>
+                                        </Button>
+                                    </>
+                                )}
+                                {can('adjust inventory') && (
+                                    <Button asChild variant="outline" className="w-full justify-start">
+                                        <Link href="/stock-adjustments/create">
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Crear ajuste
+                                        </Link>
+                                    </Button>
+                                )}
                             </CardContent>
                         </Card>
 
@@ -200,24 +216,30 @@ export default function InventoryOverview({ stats }: Props) {
                                 <CardDescription>Seguir movimientos recientes de inventario</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <Button asChild variant="outline" className="w-full justify-start">
-                                    <Link href="/stock-transfers">
-                                        <ArrowLeftRight className="mr-2 h-4 w-4" />
-                                        Ver todas las transferencias
-                                    </Link>
-                                </Button>
-                                <Button asChild variant="outline" className="w-full justify-start">
-                                    <Link href="/stock-transfers/create">
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Crear transferencia
-                                    </Link>
-                                </Button>
-                                <Button asChild variant="outline" className="w-full justify-start">
-                                    <Link href="/initial-stock/create">
-                                        <TrendingUp className="mr-2 h-4 w-4" />
-                                        Establecer inventario inicial
-                                    </Link>
-                                </Button>
+                                {can('view inventory') && (
+                                    <Button asChild variant="outline" className="w-full justify-start">
+                                        <Link href="/stock-transfers">
+                                            <ArrowLeftRight className="mr-2 h-4 w-4" />
+                                            Ver todas las transferencias
+                                        </Link>
+                                    </Button>
+                                )}
+                                {can('transfer inventory') && (
+                                    <Button asChild variant="outline" className="w-full justify-start">
+                                        <Link href="/stock-transfers/create">
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Crear transferencia
+                                        </Link>
+                                    </Button>
+                                )}
+                                {can('adjust inventory') && (
+                                    <Button asChild variant="outline" className="w-full justify-start">
+                                        <Link href="/initial-stock/create">
+                                            <TrendingUp className="mr-2 h-4 w-4" />
+                                            Establecer inventario inicial
+                                        </Link>
+                                    </Button>
+                                )}
                             </CardContent>
                         </Card>
                     </div>
