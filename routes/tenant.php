@@ -18,6 +18,7 @@ use App\Http\Controllers\DocumentSubtypeController;
 use App\Http\Controllers\DownloadInvoicePdfController;
 use App\Http\Controllers\DownloadPrescriptionController;
 use App\Http\Controllers\DownloadQuotationPdfController;
+use App\Http\Controllers\GlobalRoleController;
 use App\Http\Controllers\InitialStockController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
@@ -86,6 +87,13 @@ Route::middleware([
         Route::patch('business/users/{user}/workspaces/{workspace}/roles', [BusinessUserWorkspaceRoleController::class, 'update'])->name('business.users.workspaces.roles.update');
         Route::post('business/users/{user}/workspaces', [BusinessUserWorkspaceController::class, 'store'])->name('business.users.workspaces.store');
         Route::delete('business/users/{user}/workspaces/{workspace}', [BusinessUserWorkspaceController::class, 'destroy'])->name('business.users.workspaces.destroy');
+
+        // Business-wide role management (global roles synced across all workspaces)
+        Route::get('business/roles', [GlobalRoleController::class, 'index'])->name('business.roles.index');
+        Route::post('business/roles', [GlobalRoleController::class, 'store'])->name('business.roles.store');
+        Route::patch('business/roles/{roleName}', [GlobalRoleController::class, 'update'])->name('business.roles.update');
+        Route::delete('business/roles/{roleName}', [GlobalRoleController::class, 'destroy'])->name('business.roles.destroy');
+        Route::post('business/roles/{roleName}/sync', [GlobalRoleController::class, 'sync'])->name('business.roles.sync');
 
         Route::middleware(HasWorkspace::class)->group(function (): void {
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

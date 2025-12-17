@@ -7,47 +7,47 @@ namespace App\Enums;
 enum Permission: string
 {
     // Products
-    case ProductsView = 'products.view';
-    case ProductsCreate = 'products.create';
-    case ProductsEdit = 'products.edit';
-    case ProductsDelete = 'products.delete';
+    case ProductsView = 'view products';
+    case ProductsCreate = 'create products';
+    case ProductsEdit = 'edit products';
+    case ProductsDelete = 'delete products';
 
     // Contacts
-    case ContactsView = 'contacts.view';
-    case ContactsCreate = 'contacts.create';
-    case ContactsEdit = 'contacts.edit';
-    case ContactsDelete = 'contacts.delete';
+    case ContactsView = 'view contacts';
+    case ContactsCreate = 'create contacts';
+    case ContactsEdit = 'edit contacts';
+    case ContactsDelete = 'delete contacts';
 
     // Invoices
-    case InvoicesView = 'invoices.view';
-    case InvoicesCreate = 'invoices.create';
-    case InvoicesEdit = 'invoices.edit';
-    case InvoicesDelete = 'invoices.delete';
+    case InvoicesView = 'view invoices';
+    case InvoicesCreate = 'create invoices';
+    case InvoicesEdit = 'edit invoices';
+    case InvoicesDelete = 'delete invoices';
 
     // Quotations
-    case QuotationsView = 'quotations.view';
-    case QuotationsCreate = 'quotations.create';
-    case QuotationsEdit = 'quotations.edit';
-    case QuotationsDelete = 'quotations.delete';
+    case QuotationsView = 'view quotations';
+    case QuotationsCreate = 'create quotations';
+    case QuotationsEdit = 'edit quotations';
+    case QuotationsDelete = 'delete quotations';
 
     // Prescriptions
-    case PrescriptionsView = 'prescriptions.view';
-    case PrescriptionsCreate = 'prescriptions.create';
-    case PrescriptionsEdit = 'prescriptions.edit';
-    case PrescriptionsDelete = 'prescriptions.delete';
+    case PrescriptionsView = 'view prescriptions';
+    case PrescriptionsCreate = 'create prescriptions';
+    case PrescriptionsEdit = 'edit prescriptions';
+    case PrescriptionsDelete = 'delete prescriptions';
 
     // Inventory
-    case InventoryView = 'inventory.view';
-    case InventoryAdjust = 'inventory.adjust';
-    case InventoryTransfer = 'inventory.transfer';
+    case InventoryView = 'view inventory';
+    case InventoryAdjust = 'adjust inventory';
+    case InventoryTransfer = 'transfer inventory';
 
     // Configuration
-    case ConfigurationView = 'configuration.view';
-    case ConfigurationEdit = 'configuration.edit';
+    case ConfigurationView = 'view configuration';
+    case ConfigurationEdit = 'edit configuration';
 
     // Reports
-    case ReportsView = 'reports.view';
-    case ReportsExport = 'reports.export';
+    case ReportsView = 'view reports';
+    case ReportsExport = 'export reports';
 
     public static function all(): array
     {

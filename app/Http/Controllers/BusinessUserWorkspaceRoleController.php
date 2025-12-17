@@ -12,6 +12,7 @@ use App\Models\Workspace;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 final class BusinessUserWorkspaceRoleController extends Controller
 {
@@ -37,19 +38,19 @@ final class BusinessUserWorkspaceRoleController extends Controller
             ]);
         }
 
-        $existingRoles = $user->roles()
-            ->where('roles.workspace_id', $workspace->id)
-            ->get();
+        app(PermissionRegistrar::class)->setPermissionsTeamId($workspace->id);
 
-        foreach ($existingRoles as $role) {
-            $user->removeRole($role);
-        }
+        $user->roles()
+            ->where('roles.workspace_id', $workspace->id)
+            ->each(function (Role $role) use ($user): void {
+                $user->removeRole($role);
+            });
 
         foreach ($request->validated('role_ids') as $roleId) {
             $role = Role::find($roleId);
 
             if ($role && $role->workspace_id === $workspace->id) {
-                app(AssignRoleAction::class)->handle($role, $user);
+                $user->assignRole($role);
             }
         }
 

@@ -16,8 +16,12 @@ final class PermissionSeeder extends Seeder
      */
     public function run(): void
     {
+
         // Reset cached roles and permissions
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        // Delete existing permissions
+        Permission::query()->delete();
 
         foreach (PermissionEnum::cases() as $permission) {
             Permission::firstOrCreate([

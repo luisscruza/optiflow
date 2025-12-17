@@ -27,7 +27,6 @@ final class WorkspaceTeamResolver implements PermissionsTeamResolver
 
     public function getPermissionsTeamId(): int|string|null
     {
-        return Context::get('workspace')->id ?? null;
-
+        return $this->teamId ?? Context::get('workspace')?->id;
     }
 }

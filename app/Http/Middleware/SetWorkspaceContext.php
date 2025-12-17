@@ -37,7 +37,7 @@ final class SetWorkspaceContext
             $workspace = $user->refresh()->currentWorkspace;
 
             Context::add('workspace', $workspace);
-
+            
             Inertia::share([
                 'workspace' => [
                     'current' => $workspace,
