@@ -24,7 +24,7 @@ final class BusinessUserInvitationController extends Controller
         #[CurrentUser] User $currentUser
     ): RedirectResponse {
         // Check if user is business owner
-        if ($currentUser->business_role !== UserRole::Owner) {
+        if (in_array($currentUser->business_role, [UserRole::Owner, UserRole::Admin])) {
             abort(403, 'Solo el propietario del negocio puede invitar usuarios.');
         }
 
