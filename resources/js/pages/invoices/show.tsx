@@ -1,4 +1,4 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, Building2, Calendar, CreditCard, Edit, FileText, Plus, Printer, ShoppingCart, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -344,7 +344,7 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
                                             Historial de pagos registrados para esta factura.
                                         </CardDescription>
                                     </div>
-                                    {invoice.amount_due > 0 && (
+                                    {invoice.amount_due > 0 && can('create payments') && (
                                         <Button onClick={() => setIsPaymentModalOpen(true)} size="sm" className="flex items-center gap-2">
                                             <Plus className="h-4 w-4" />
                                             Registrar pago
@@ -357,10 +357,11 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
                                     {/* Headers - Desktop */}
                                     <div className="hidden gap-3 rounded-lg border bg-gray-50 px-4 py-3 text-xs font-semibold tracking-wider text-gray-700 uppercase lg:grid lg:grid-cols-12">
                                         <div className="col-span-2">Fecha</div>
-                                        <div className="col-span-3">Cuenta bancaria</div>
+                                        <div className="col-span-2">Cuenta bancaria</div>
                                         <div className="col-span-2">Método</div>
                                         <div className="col-span-2 text-right">Monto</div>
-                                        <div className="col-span-3">Observaciones</div>
+                                        <div className="col-span-2">Observaciones</div>
+                                        <div className="col-span-2 text-center">Acciones</div>
                                     </div>
 
                                     {/* Payment Items */}
@@ -382,7 +383,7 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
                                                 </div>
 
                                                 {/* Bank Account */}
-                                                <div className="col-span-1 lg:col-span-3">
+                                                <div className="col-span-1 lg:col-span-2">
                                                     <div>
                                                         <span className="text-xs font-medium text-gray-500 lg:hidden">Cuenta: </span>
                                                         <span className="text-sm text-gray-900">
@@ -413,10 +414,45 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
                                                 </div>
 
                                                 {/* Note */}
-                                                <div className="col-span-1 lg:col-span-3">
+                                                <div className="col-span-1 lg:col-span-2">
                                                     <div>
                                                         <span className="text-xs font-medium text-gray-500 lg:hidden">Nota: </span>
                                                         <span className="text-sm text-gray-700">{payment.note || 'Sin observaciones'}</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Actions */}
+                                                <div className="col-span-1 lg:col-span-2">
+                                                    <div className="flex items-center justify-end gap-2 lg:justify-center">
+                                                        {can('edit payments') && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    // TODO: Open edit modal
+                                                                    console.log('Edit payment', payment.id);
+                                                                }}
+                                                                className="h-8 w-8 p-0"
+                                                            >
+                                                                <Edit className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
+                                                        {can('delete payments') && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    if (confirm('¿Estás seguro de que deseas eliminar este pago?')) {
+                                                                        router.delete(`/payments/${payment.id}`, {
+                                                                            preserveScroll: true,
+                                                                        });
+                                                                    }
+                                                                }}
+                                                                className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>

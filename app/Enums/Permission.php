@@ -12,46 +12,51 @@ enum Permission: string
     case ProductsEdit = 'edit products';
     case ProductsDelete = 'delete products';
 
-    // Contacts
+        // Contacts
     case ContactsView = 'view contacts';
     case ContactsCreate = 'create contacts';
     case ContactsEdit = 'edit contacts';
     case ContactsDelete = 'delete contacts';
 
-    // Invoices
+        // Invoices
     case InvoicesView = 'view invoices';
     case InvoicesCreate = 'create invoices';
     case InvoicesEdit = 'edit invoices';
     case InvoicesDelete = 'delete invoices';
 
-    // Quotations
+        // Payments
+    case PaymentsCreate = 'create payments';
+    case PaymentsEdit = 'edit payments';
+    case PaymentsDelete = 'delete payments';
+
+        // Quotations
     case QuotationsView = 'view quotations';
     case QuotationsCreate = 'create quotations';
     case QuotationsEdit = 'edit quotations';
     case QuotationsDelete = 'delete quotations';
 
-    // Prescriptions
+        // Prescriptions
     case PrescriptionsView = 'view prescriptions';
     case PrescriptionsCreate = 'create prescriptions';
     case PrescriptionsEdit = 'edit prescriptions';
     case PrescriptionsDelete = 'delete prescriptions';
 
-    // Inventory
+        // Inventory
     case InventoryView = 'view inventory';
     case InventoryAdjust = 'adjust inventory';
     case InventoryTransfer = 'transfer inventory';
 
-    // Configuration
+        // Configuration
     case ConfigurationView = 'view configuration';
     case ConfigurationEdit = 'edit configuration';
 
-    // Reports
+        // Reports
     case ReportsView = 'view reports';
     case ReportsExport = 'export reports';
 
     public static function all(): array
     {
-        return array_map(fn (self $permission) => $permission->value, self::cases());
+        return array_map(fn(self $permission) => $permission->value, self::cases());
     }
 
     public function label(): string
@@ -74,6 +79,11 @@ enum Permission: string
             self::InvoicesCreate => 'Crear facturas',
             self::InvoicesEdit => 'Editar facturas',
             self::InvoicesDelete => 'Eliminar facturas',
+
+            // Payments
+            self::PaymentsCreate => 'Registrar pagos',
+            self::PaymentsEdit => 'Editar pagos',
+            self::PaymentsDelete => 'Eliminar pagos',
 
             // Quotations
             self::QuotationsView => 'Ver cotizaciones',
@@ -108,6 +118,7 @@ enum Permission: string
             self::ProductsView, self::ProductsCreate, self::ProductsEdit, self::ProductsDelete => 'Productos',
             self::ContactsView, self::ContactsCreate, self::ContactsEdit, self::ContactsDelete => 'Contactos',
             self::InvoicesView, self::InvoicesCreate, self::InvoicesEdit, self::InvoicesDelete => 'Facturas',
+            self::PaymentsCreate, self::PaymentsEdit, self::PaymentsDelete => 'Pagos',
             self::QuotationsView, self::QuotationsCreate, self::QuotationsEdit, self::QuotationsDelete => 'Cotizaciones',
             self::PrescriptionsView, self::PrescriptionsCreate, self::PrescriptionsEdit, self::PrescriptionsDelete => 'Recetas',
             self::InventoryView, self::InventoryAdjust, self::InventoryTransfer => 'Inventario',

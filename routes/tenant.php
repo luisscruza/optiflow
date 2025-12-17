@@ -61,7 +61,7 @@ Route::middleware([
     InitializeTenancyBySubdomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function (): void {
-    Route::get('/', fn () => redirect()->route('dashboard'))->name('home');
+    Route::get('/', fn() => redirect()->route('dashboard'))->name('home');
 
     Route::prefix('invitations')->name('invitations.')->group(function (): void {
         Route::get('{token}', [WorkspaceInvitationController::class, 'show'])->name('show');
@@ -125,6 +125,8 @@ Route::middleware([
             Route::get('invoices/{invoice}/pdf', DownloadInvoicePdfController::class)->name('invoices.pdf');
 
             Route::post('payments', [PaymentController::class, 'store'])->name('payments.store');
+            Route::patch('payments/{payment}', [PaymentController::class, 'update'])->name('payments.update');
+            Route::delete('payments/{payment}', [PaymentController::class, 'destroy'])->name('payments.destroy');
 
             Route::resource('quotations', QuotationController::class);
             Route::get('quotations/{quotation}/pdf', DownloadQuotationPdfController::class)->name('quotations.pdf');
@@ -133,7 +135,7 @@ Route::middleware([
             Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
             Route::patch('document-subtypes/{documentSubtype}/set-default', SetDefaultDocumentSubtypeController::class)->name('document-subtypes.set-default');
 
-            Route::get('inventory', fn () => Inertia::render('inventory/index'))->name('inventory.index');
+            Route::get('inventory', fn() => Inertia::render('inventory/index'))->name('inventory.index');
 
             Route::resource('stock-adjustments', StockAdjustmentController::class)->only(['index', 'create', 'store', 'show'])->parameters([
                 'stock-adjustments' => 'product',
@@ -159,6 +161,6 @@ Route::middleware([
         });
     });
 
-    require __DIR__.'/settings.php';
-    require __DIR__.'/auth.php';
+    require __DIR__ . '/settings.php';
+    require __DIR__ . '/auth.php';
 });
