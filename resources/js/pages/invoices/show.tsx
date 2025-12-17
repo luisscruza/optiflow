@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
-import { BankAccount, Invoice, type BreadcrumbItem, type SharedData } from '@/types';
+import { BankAccount, Invoice, Payment, type BreadcrumbItem, type SharedData } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 interface Props {
@@ -25,6 +25,7 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
     const { auth } = usePage<SharedData>().props;
     const { can } = usePermissions();
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -345,7 +346,14 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
                                         </CardDescription>
                                     </div>
                                     {invoice.amount_due > 0 && can('create payments') && (
-                                        <Button onClick={() => setIsPaymentModalOpen(true)} size="sm" className="flex items-center gap-2">
+                                        <Button
+                                            onClick={() => {
+                                                setSelectedPayment(null);
+                                                setIsPaymentModalOpen(true);
+                                            }}
+                                            size="sm"
+                                            className="flex items-center gap-2"
+                                        >
                                             <Plus className="h-4 w-4" />
                                             Registrar pago
                                         </Button>
@@ -429,8 +437,8 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
                                                                 variant="ghost"
                                                                 size="sm"
                                                                 onClick={() => {
-                                                                    // TODO: Open edit modal
-                                                                    console.log('Edit payment', payment.id);
+                                                                    setSelectedPayment(payment);
+                                                                    setIsPaymentModalOpen(true);
                                                                 }}
                                                                 className="h-8 w-8 p-0"
                                                             >
@@ -505,7 +513,14 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
                                             Esta factura aún no tiene pagos registrados.
                                         </CardDescription>
                                     </div>
-                                    <Button onClick={() => setIsPaymentModalOpen(true)} size="sm" className="flex items-center gap-2">
+                                    <Button
+                                        onClick={() => {
+                                            setSelectedPayment(null);
+                                            setIsPaymentModalOpen(true);
+                                        }}
+                                        size="sm"
+                                        className="flex items-center gap-2"
+                                    >
                                         <Plus className="h-4 w-4" />
                                         Registrar primer pago
                                     </Button>
@@ -520,7 +535,13 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
                                     <p className="mb-4 text-gray-600">
                                         Monto pendiente: <span className="font-semibold text-orange-600">{formatCurrency(invoice.amount_due)}</span>
                                     </p>
-                                    <Button onClick={() => setIsPaymentModalOpen(true)} className="mx-auto flex items-center gap-2">
+                                    <Button
+                                        onClick={() => {
+                                            setSelectedPayment(null);
+                                            setIsPaymentModalOpen(true);
+                                        }}
+                                        className="mx-auto flex items-center gap-2"
+                                    >
                                         <Plus className="h-4 w-4" />
                                         Registrar pago
                                     </Button>
@@ -586,7 +607,10 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
                                 <Button
                                     variant="outline"
                                     size="lg"
-                                    onClick={() => setIsPaymentModalOpen(true)}
+                                    onClick={() => {
+                                        setSelectedPayment(null);
+                                        setIsPaymentModalOpen(true);
+                                    }}
                                     className="flex items-center justify-center gap-2 border-green-200 bg-green-50 text-green-700 hover:border-green-300 hover:bg-green-100"
                                 >
                                     <Plus className="h-4 w-4" />
@@ -620,10 +644,14 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
             {/* Payment Registration Modal */}
             <PaymentRegistrationModal
                 isOpen={isPaymentModalOpen}
-                onClose={() => setIsPaymentModalOpen(false)}
+                onClose={() => {
+                    setIsPaymentModalOpen(false);
+                    setSelectedPayment(null);
+                }}
                 invoice={invoice}
                 bankAccounts={bankAccounts}
                 paymentMethods={paymentMethods}
+                payment={selectedPayment}
             />
         </AppLayout>
     );
