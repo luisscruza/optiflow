@@ -25,6 +25,7 @@ final class BusinessUserWorkspaceRoleController extends Controller
         int $workspaceId,
         #[CurrentUser] User $currentUser,
     ): RedirectResponse {
+        dump(($currentUser->business_role));
         $user = User::findOrFail($userId);
         $workspace = Workspace::findOrFail($workspaceId);
 
