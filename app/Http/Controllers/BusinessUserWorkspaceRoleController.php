@@ -27,6 +27,7 @@ final class BusinessUserWorkspaceRoleController extends Controller
     ): RedirectResponse {
         $user = User::findOrFail($userId);
         $workspace = Workspace::findOrFail($workspaceId);
+        dd($currentUser->business_role);
 
         if ($currentUser->business_role !== UserRole::Owner) {
             abort(403, 'Solo el propietario del negocio puede modificar roles.');
