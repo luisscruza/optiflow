@@ -322,25 +322,7 @@ export default function BusinessRoles({ roles, permissions, workspaces }: Props)
                                                     <p className="font-medium">{role.name}</p>
                                                     <TooltipProvider>
                                                         <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                                {role.is_synced ? (
-                                                                    <Badge
-                                                                        variant="secondary"
-                                                                        className="gap-1 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                                                                    >
-                                                                        <CheckCircle2 className="h-3 w-3" />
-                                                                        Sincronizado
-                                                                    </Badge>
-                                                                ) : (
-                                                                    <Badge
-                                                                        variant="secondary"
-                                                                        className="gap-1 bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
-                                                                    >
-                                                                        <AlertCircle className="h-3 w-3" />
-                                                                        Parcial ({role.workspaces_count}/{role.total_workspaces})
-                                                                    </Badge>
-                                                                )}
-                                                            </TooltipTrigger>
+
                                                             <TooltipContent>
                                                                 {role.is_synced
                                                                     ? 'Este rol existe en todos los workspaces'

@@ -76,6 +76,7 @@ export interface SharedData {
     quote: { message: string; author: string };
     auth: Auth;
     workspace?: WorkspaceData;
+    userPermissions: string[];
     sidebarOpen: boolean;
     companyDetails: {
         company_name: string;

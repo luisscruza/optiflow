@@ -6,13 +6,13 @@ namespace App\Enums;
 
 enum BusinessPermission: string
 {
-    case ViewConfiguration = 'view_configuration';
-    case ManageMembers = 'manage_members';
-    case ManageTaxes = 'manage_taxes';
-    case ManageInvoiceDocuments = 'manage_invoice_documents';
-    case ManageBankAccounts = 'manage_bank_accounts';
-    case ManageCurrencies = 'manage_currencies';
-    case ManageBusinessDetails = 'manage_business_details';
+    case ViewConfiguration = 'view configuration';
+    case ManageMembers = 'manage members';
+    case ManageTaxes = 'manage taxes';
+    case ManageInvoiceDocuments = 'manage invoice documents';
+    case ManageBankAccounts = 'manage bank accounts';
+    case ManageCurrencies = 'manage currencies';
+    case ManageBusinessDetails = 'manage business details';
 
     /**
      * Todos los permisos.

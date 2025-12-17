@@ -25,6 +25,11 @@ const configurationSections = [
                 description: 'Nombre, dirección, contacto',
                 href: '/company-details',
             },
+                {
+                title: 'Permisos',
+                description: 'Gestiona los permisos de tu empresa',
+                href: '/business/roles',    
+            },
             {
                 title: 'Usuarios',
                 description: 'Gestiona los usuarios de tu empresa',

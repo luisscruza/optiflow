@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\CreatePrescriptionAction;
 use App\Actions\UpdatePrescriptionAction;
+use App\Enums\Permission;
 use App\Models\Contact;
 use App\Models\Mastertable;
 use App\Models\MastertableItem;
@@ -19,8 +20,10 @@ use Inertia\Response;
 
 final class PrescriptionController extends Controller
 {
-    public function create(): Response
+    public function create(#[CurrentUser] User $user): Response
     {
+        abort_unless($user->can(Permission::PrescriptionsCreate), 403);
+
         $customers = Contact::query()->orderBy('name')
             ->get();
 
@@ -61,8 +64,10 @@ final class PrescriptionController extends Controller
         ]);
     }
 
-    public function index(Request $request): Response
+    public function index(Request $request, #[CurrentUser] User $user): Response
     {
+        abort_unless($user->can(Permission::PrescriptionsView), 403);
+
         $workspace = Context::get('workspace');
 
         $query = Prescription::query()
@@ -89,15 +94,20 @@ final class PrescriptionController extends Controller
 
     public function store(Request $request, CreatePrescriptionAction $action, #[CurrentUser] User $user): RedirectResponse
     {
+        abort_unless($user->can(Permission::PrescriptionsCreate), 403);
 
         $action->handle($user, $request->all());
 
         return redirect()->back();
     }
 
-    public function show(Prescription $prescription): Response
+    public function show(Prescription $prescription, #[CurrentUser] User $user): Response
     {
-        // Load relationships with items
+        abort_unless($user->can(Permission::PrescriptionsView), 403);
+
+        $workspace = Context::get('workspace');
+        abort_unless($prescription->workspace_id === $workspace->id, 404);
+
         $prescription->load([
             'patient',
             'optometrist',
@@ -112,9 +122,10 @@ final class PrescriptionController extends Controller
         ]);
     }
 
-    public function edit(Prescription $prescription): Response
+    public function edit(Prescription $prescription, #[CurrentUser] User $user): Response
     {
-        // Load relationships
+        abort_unless($user->can(Permission::PrescriptionsEdit), 403);
+
         $prescription->load([
             'patient',
             'optometrist',
@@ -173,6 +184,8 @@ final class PrescriptionController extends Controller
 
     public function update(Request $request, Prescription $prescription, UpdatePrescriptionAction $action, #[CurrentUser] User $user): RedirectResponse
     {
+        abort_unless($user->can(Permission::PrescriptionsEdit), 403);
+
         $action->handle($prescription, $user, $request->all());
 
         return redirect()->route('prescriptions.show', $prescription);
