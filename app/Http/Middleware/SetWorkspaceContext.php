@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Context;
 use Inertia\Inertia;
 use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
+use App\Enums\Permission;
 
 final class SetWorkspaceContext
 {
@@ -43,10 +44,9 @@ final class SetWorkspaceContext
 
             app(PermissionRegistrar::class)->setPermissionsTeamId($workspace?->id);
 
-            // Owners get all permissions
-            if ($user->business_role === UserRole::Owner) {
+            if (in_array($user->business_role, [UserRole::Owner, UserRole::Admin])) {
                 $allPermissions = array_merge(
-                    \App\Enums\Permission::all(),
+                    Permission::all(),
                     array_map(fn(BusinessPermission $p) => $p->value, BusinessPermission::allPermissions())
                 );
 
@@ -58,14 +58,8 @@ final class SetWorkspaceContext
                     'userPermissions' => $allPermissions,
                 ]);
             } else {
-                // Get flat array of permission names for the current user in this workspace
                 $workspacePermissions = $workspace
                     ? $user->getAllPermissions()->pluck('name')->toArray()
-                    : [];
-
-                // Business permissions are granted to admins
-                $businessPermissions = $user->business_role === UserRole::Admin
-                    ? array_map(fn(BusinessPermission $p) => $p->value, BusinessPermission::allPermissions())
                     : [];
 
                 Inertia::share([
@@ -73,7 +67,7 @@ final class SetWorkspaceContext
                         'current' => $workspace,
                         'available' => $user->workspaces,
                     ],
-                    'userPermissions' => array_merge($workspacePermissions, $businessPermissions),
+                    'userPermissions' => $workspacePermissions,
                 ]);
             }
         }
