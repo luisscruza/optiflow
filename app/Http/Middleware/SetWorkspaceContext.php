@@ -43,23 +43,39 @@ final class SetWorkspaceContext
 
             app(PermissionRegistrar::class)->setPermissionsTeamId($workspace?->id);
 
-            // Get flat array of permission names for the current user in this workspace
-            $workspacePermissions = $workspace
-                ? $user->getAllPermissions()->pluck('name')->toArray()
-                : [];
+            // Owners get all permissions
+            if ($user->business_role === UserRole::Owner) {
+                $allPermissions = array_merge(
+                    \App\Enums\Permission::all(),
+                    array_map(fn(BusinessPermission $p) => $p->value, BusinessPermission::allPermissions())
+                );
 
-            // Business permissions are granted to owners and admins
-            $businessPermissions = in_array($user->business_role, [UserRole::Owner, UserRole::Admin])
-                ? array_map(fn(BusinessPermission $p) => $p->value, BusinessPermission::allPermissions())
-                : [];
+                Inertia::share([
+                    'workspace' => [
+                        'current' => $workspace,
+                        'available' => $user->workspaces,
+                    ],
+                    'userPermissions' => $allPermissions,
+                ]);
+            } else {
+                // Get flat array of permission names for the current user in this workspace
+                $workspacePermissions = $workspace
+                    ? $user->getAllPermissions()->pluck('name')->toArray()
+                    : [];
 
-            Inertia::share([
-                'workspace' => [
-                    'current' => $workspace,
-                    'available' => $user->workspaces,
-                ],
-                'userPermissions' => array_merge($workspacePermissions, $businessPermissions),
-            ]);
+                // Business permissions are granted to admins
+                $businessPermissions = $user->business_role === UserRole::Admin
+                    ? array_map(fn(BusinessPermission $p) => $p->value, BusinessPermission::allPermissions())
+                    : [];
+
+                Inertia::share([
+                    'workspace' => [
+                        'current' => $workspace,
+                        'available' => $user->workspaces,
+                    ],
+                    'userPermissions' => array_merge($workspacePermissions, $businessPermissions),
+                ]);
+            }
         }
 
         return $next($request);

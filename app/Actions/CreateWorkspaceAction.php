@@ -8,8 +8,12 @@ use App\Models\User;
 use App\Models\Workspace;
 use App\Support\Slug;
 
-final class CreateWorkspaceAction
+final readonly class CreateWorkspaceAction
 {
+    public function __construct(
+        private SyncWorkspaceRoleAction $syncWorkspaceRoleAction
+    ) {}
+
     /**
      * @param  array<string, mixed>  $validated
      */
@@ -30,6 +34,9 @@ final class CreateWorkspaceAction
         $workspace->addUser($user, 'owner');
 
         $user->switchToWorkspace($workspace);
+
+        // Sync all global roles to this new workspace
+        $this->syncWorkspaceRoleAction->handle($workspace);
 
         return $workspace;
     }
