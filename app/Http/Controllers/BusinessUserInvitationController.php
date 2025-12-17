@@ -23,6 +23,7 @@ final class BusinessUserInvitationController extends Controller
         AssignUserToWorkspaceAction $assignUserAction,
         #[CurrentUser] User $currentUser
     ): RedirectResponse {
+        dd($currentUser->business_role);
         // Check if user is business owner
         if ($currentUser->business_role !== UserRole::Owner) {
             abort(403, 'Solo el propietario del negocio puede invitar usuarios.');
