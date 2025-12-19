@@ -1,21 +1,23 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Activity, Building2, Calendar, Edit, FileText, Mail, MapPin, Phone, Trash2, Users } from 'lucide-react';
 
+import { CommentList } from '@/components/CommentList';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import { Address, SharedData, type BreadcrumbItem, type Contact } from '@/types';
-import { CommentList } from '@/components/CommentList';
 
 interface Props {
     contact: Contact;
 }
 
 export default function ContactShow({ contact }: Props) {
-        const { auth } = usePage<SharedData>().props;
-    
+    const { auth } = usePage<SharedData>().props;
+    const { can } = usePermissions();
+
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Contactos',
@@ -103,16 +105,20 @@ export default function ContactShow({ contact }: Props) {
                         </div>
 
                         <div className="flex space-x-2">
-                            <Button variant="outline" asChild>
-                                <Link href={`/contacts/${contact.id}/edit`}>
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    Editar
-                                </Link>
-                            </Button>
-                            <Button variant="destructive" onClick={handleDelete}>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Eliminar
-                            </Button>
+                            {can('edit contacts') && (
+                                <Button variant="outline" asChild>
+                                    <Link href={`/contacts/${contact.id}/edit`}>
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Editar
+                                    </Link>
+                                </Button>
+                            )}
+                            {can('delete contacts') && (
+                                <Button variant="destructive" onClick={handleDelete}>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Eliminar
+                                </Button>
+                            )}
                         </div>
                     </div>
 
@@ -208,15 +214,15 @@ export default function ContactShow({ contact }: Props) {
                                     )}
                                 </CardContent>
                             </Card>
-                                 {/* Comments Section */}
-                                                <CommentList
-                                                    comments={contact.comments || []}
-                                                    commentableType="Contact"
-                                                    commentableId={contact.id}
-                                                    currentUser={auth.user}
-                                                    title="Comentarios del contacto"
-                                                    className="mb-8"
-                                                />
+                            {/* Comments Section */}
+                            <CommentList
+                                comments={contact.comments || []}
+                                commentableType="Contact"
+                                commentableId={contact.id}
+                                currentUser={auth.user}
+                                title="Comentarios del contacto"
+                                className="mb-8"
+                            />
 
                             {/* Address Information */}
                             {contact.primary_address && (

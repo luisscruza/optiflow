@@ -25,6 +25,16 @@ const configurationSections = [
                 description: 'Nombre, dirección, contacto',
                 href: '/company-details',
             },
+                {
+                title: 'Permisos',
+                description: 'Gestiona los permisos de tu empresa',
+                href: '/business/roles',    
+            },
+            {
+                title: 'Usuarios',
+                description: 'Gestiona los usuarios de tu empresa',
+                href: '/business/users',    
+            },
             {
                 title: 'Sucursales',
                 description: 'Gestiona las sucursales de tu empresa',
@@ -39,20 +49,6 @@ const configurationSections = [
                 title: 'Cuentas bancarias',
                 description: 'Administra tus cuentas y transacciones',
                 href: '/bank-accounts',
-            },
-        ],
-    },
-    {
-        title: 'Usuarios',
-        description: 'Gestiona los usuarios y sus permisos en el workspace.',
-        icon: Users,
-        color: 'text-primary',
-        bgColor: 'bg-background',
-        items: [
-            {
-                title: 'Miembros de la sucursal',
-                description: 'Invita usuarios y gestiona sus roles',
-                href: '/workspace/members',
             },
         ],
     },

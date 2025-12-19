@@ -1,13 +1,13 @@
 import { Form } from '@inertiajs/react';
 import { DollarSignIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { type BankAccount, type Invoice } from '@/types';
+import { type BankAccount, type Invoice, type Payment } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 interface PaymentRegistrationModalProps {
@@ -16,29 +16,52 @@ interface PaymentRegistrationModalProps {
     invoice: Invoice;
     bankAccounts: BankAccount[];
     paymentMethods: Record<string, string>;
+    payment?: Payment | null;
 }
 
-export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccounts, paymentMethods }: PaymentRegistrationModalProps) {
+export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccounts, paymentMethods, payment = null }: PaymentRegistrationModalProps) {
     const [selectedBankAccount, setSelectedBankAccount] = useState<string>('');
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
     const [amount, setAmount] = useState<string>('');
+    const [note, setNote] = useState<string>('');
     const { format: formatCurrency } = useCurrency();
+    const isEditing = payment !== null;
+
+    // Initialize form with payment data when editing
+    useEffect(() => {
+        if (payment && isOpen) {
+            setSelectedBankAccount(payment.bank_account_id.toString());
+            setSelectedPaymentMethod(payment.payment_method);
+            setAmount(payment.amount.toString());
+            setNote(payment.note || '');
+        } else if (!isOpen) {
+            // Reset form when modal closes
+            setSelectedBankAccount('');
+            setSelectedPaymentMethod('');
+            setAmount('');
+            setNote('');
+        }
+    }, [payment, isOpen]);
 
     // Format today's datetime for the input default value (datetime-local format)
     const now = new Date();
     const today = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 
+    // Calculate available amount (add back original payment when editing)
+    const availableAmount = isEditing ? invoice.amount_due + (payment?.amount || 0) : invoice.amount_due;
+
     const handleFillFullAmount = () => {
-        setAmount(invoice.amount_due.toString());
+        setAmount(availableAmount.toString());
     };
 
     // Validation: Check if all required fields are filled
     const isFormValid = selectedBankAccount !== '' && selectedPaymentMethod !== '' && amount !== '' && parseFloat(amount) > 0;
 
     // Calculate remaining balance for partial payments
+    // When editing, availableAmount already includes the original payment added back
     const paymentAmount = amount !== '' ? parseFloat(amount) : 0;
-    const remainingBalance = invoice.amount_due - paymentAmount;
-    const isPartialPayment = paymentAmount > 0 && paymentAmount < invoice.amount_due;
+    const remainingBalance = availableAmount - paymentAmount;
+    const isPartialPayment = paymentAmount > 0 && paymentAmount < availableAmount;
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -48,7 +71,7 @@ export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccount
                         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
                             <DollarSignIcon className="h-5 w-5" />
                         </div>
-                        <span>Registrar pago</span>
+                        <span>{isEditing ? 'Editar pago' : 'Registrar pago'}</span>
                     </DialogTitle>
                 </DialogHeader>
 
@@ -69,17 +92,22 @@ export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccount
                             <div className="text-right">
                                 <p className="mb-1 text-xs font-medium tracking-wide text-emerald-700 uppercase">Valor por cobrar</p>
                                 <div className="rounded-lg border border-emerald-200 bg-white px-4 py-3 shadow-sm">
-                                    <p className="text-2xl font-bold text-emerald-600">{formatCurrency(invoice.amount_due)}</p>
+                                    <p className="text-2xl font-bold text-emerald-600">{formatCurrency(availableAmount)}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <Form action="/payments" method="post" resetOnSuccess onSuccess={onClose}>
+                <Form
+                    action={isEditing ? `/payments/${payment!.id}` : '/payments'}
+                    method={isEditing ? 'patch' : 'post'}
+                    resetOnSuccess
+                    onSuccess={onClose}
+                >
                     {({ processing, wasSuccessful, errors }) => (
                         <div className="space-y-5">
-                            <input type="hidden" name="invoice_id" value={invoice.id} />
+                            {!isEditing && <input type="hidden" name="invoice_id" value={invoice.id} />}
                             {/* Use current system date/time automatically */}
                             <input type="hidden" name="payment_date" value={today} />
 
@@ -132,7 +160,7 @@ export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccount
                                             type="number"
                                             step="0.01"
                                             min="0.01"
-                                            max={invoice.amount_due}
+                                            max={availableAmount}
                                             value={amount}
                                             onChange={(e) => setAmount(e.target.value)}
                                             placeholder="0.00"
@@ -144,7 +172,7 @@ export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccount
                                         <span className="absolute top-1/2 left-4 -translate-y-1/2 text-lg font-semibold text-gray-500">RD$</span>
                                     </div>
                                     {errors.amount && <p className="text-sm text-red-600">{errors.amount}</p>}
-                                    {amount !== '' && parseFloat(amount) > invoice.amount_due && (
+                                    {amount !== '' && parseFloat(amount) > availableAmount && (
                                         <p className="text-sm text-amber-600">⚠️ El monto excede el valor por cobrar</p>
                                     )}
                                     {isPartialPayment && (
@@ -188,6 +216,8 @@ export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccount
                                     <Input
                                         id="note"
                                         name="note"
+                                        value={note}
+                                        onChange={(e) => setNote(e.target.value)}
                                         placeholder="Información adicional sobre el pago"
                                         className="h-11 w-full border-gray-300 focus:border-emerald-500 focus:ring-emerald-500/20"
                                     />
@@ -214,14 +244,16 @@ export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccount
                                     ) : (
                                         <>
                                             <DollarSignIcon className="mr-2 h-4 w-4" />
-                                            Agregar pago
+                                            {isEditing ? 'Actualizar pago' : 'Agregar pago'}
                                         </>
                                     )}
                                 </Button>
                             </DialogFooter>
 
                             {wasSuccessful && (
-                                <div className="mt-2 rounded-md bg-green-50 p-3 text-sm text-green-700">¡Pago registrado exitosamente!</div>
+                                <div className="mt-2 rounded-md bg-green-50 p-3 text-sm text-green-700">
+                                    {isEditing ? '¡Pago actualizado exitosamente!' : '¡Pago registrado exitosamente!'}
+                                </div>
                             )}
                         </div>
                     )}

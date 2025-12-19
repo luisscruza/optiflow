@@ -1,75 +1,108 @@
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { WorkspaceSwitcher } from '@/components/workspace-switcher';
+import { usePermissions } from '@/hooks/use-permissions';
 import { dashboard } from '@/routes';
 import contacts from '@/routes/contacts';
 import inventory from '@/routes/inventory';
-import products from '@/routes/products';
+import prescriptions from '@/routes/prescriptions';
 import productImports from '@/routes/product-imports';
-import workspaces from '@/routes/workspaces';
+import products from '@/routes/products';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Package, RotateCcw, Settings, Users2, Receipt, Eye, Upload } from 'lucide-react';
+import { BookOpen, Eye, Folder, LayoutGrid, Package, Receipt, RotateCcw, Settings, Upload, Users2 } from 'lucide-react';
 import AppLogo from './app-logo';
-import prescriptions from '@/routes/prescriptions';
-
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Tablero',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Facturación',
-        icon: Receipt,
-        items: [
-            {
-                title: 'Facturas',
-                href: '/invoices',
-                icon: Folder,
-            },
-                {
-                title: 'Cotizaciones',
-                href: '/quotations',
-                icon: BookOpen,
-            },
-            {
-                title: 'Productos',
-                href: products.index(),
-                icon: Package,
-            },
-            {
-                title: 'Importar Productos',
-                href: productImports.index(),
-                icon: Upload,
-            },
-            {
-                title: 'Inventario',
-                href: inventory.index(),
-                icon: RotateCcw,
-            },
-        ],
-    },
-    {
-        title: 'Contactos',
-        href: contacts.index(),
-        icon: Users2,
-    },
-        {
-        title: 'Recetas',
-        href: prescriptions.index(),
-        icon: Eye,
-    },
-    {
-        title: 'Configuración',
-        href: '/configuration',
-        icon: Settings,
-    },
-];
 
 export function AppSidebar() {
+    const { can } = usePermissions();
+
+    const mainNavItems: NavItem[] = [
+        {
+            title: 'Tablero',
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+        ...(can('view invoices') || can('view quotations') || can('view products') || can('view inventory')
+            ? [
+                  {
+                      title: 'Facturación',
+                      icon: Receipt,
+                      items: [
+                          ...(can('view invoices')
+                              ? [
+                                    {
+                                        title: 'Facturas',
+                                        href: '/invoices',
+                                        icon: Folder,
+                                    },
+                                ]
+                              : []),
+                          ...(can('view quotations')
+                              ? [
+                                    {
+                                        title: 'Cotizaciones',
+                                        href: '/quotations',
+                                        icon: BookOpen,
+                                    },
+                                ]
+                              : []),
+                          ...(can('view products')
+                              ? [
+                                    {
+                                        title: 'Productos',
+                                        href: products.index(),
+                                        icon: Package,
+                                    },
+                                    {
+                                        title: 'Importar Productos',
+                                        href: productImports.index(),
+                                        icon: Upload,
+                                    },
+                                ]
+                              : []),
+                          ...(can('view inventory')
+                              ? [
+                                    {
+                                        title: 'Inventario',
+                                        href: inventory.index(),
+                                        icon: RotateCcw,
+                                    },
+                                ]
+                              : []),
+                      ],
+                  } as NavItem,
+              ]
+            : []),
+        ...(can('view contacts')
+            ? [
+                  {
+                      title: 'Contactos',
+                      href: contacts.index(),
+                      icon: Users2,
+                  },
+              ]
+            : []),
+        ...(can('view prescriptions')
+            ? [
+                  {
+                      title: 'Recetas',
+                      href: prescriptions.index(),
+                      icon: Eye,
+                  },
+              ]
+            : []),
+        ...(can('view configuration')
+            ? [
+                  {
+                      title: 'Configuración',
+                      href: '/configuration',
+                      icon: Settings,
+                  },
+              ]
+            : []),
+    ];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>

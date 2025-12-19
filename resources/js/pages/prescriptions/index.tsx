@@ -1,17 +1,17 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { Edit, Eye, Filter, Plus, Search, Trash2 } from 'lucide-react';
+
+import { usePermissions } from '@/hooks/use-permissions';
 import { useState } from 'react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Paginator } from '@/components/ui/paginator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { Address, Prescription, type BreadcrumbItem, type PrescriptionFilters, type PaginatedPrescriptions } from '@/types';
-import { Paginator } from '@/components/ui/paginator';
+import { type BreadcrumbItem, type PaginatedPrescriptions, type PrescriptionFilters } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -26,6 +26,7 @@ interface Props {
 }
 
 export default function PrescriptionsIndex({ prescriptions, filters = {} }: Props) {
+    const { can } = usePermissions();
     const [search, setSearch] = useState(filters?.search || '');
     const [showQuickModal, setShowQuickModal] = useState(false);
 
@@ -59,9 +60,6 @@ export default function PrescriptionsIndex({ prescriptions, filters = {} }: Prop
         }
     };
 
-   
-   
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Recetas" />
@@ -70,22 +68,22 @@ export default function PrescriptionsIndex({ prescriptions, filters = {} }: Prop
                 <div className="mb-8 flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Recetas</h1>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Gestiona las recetas médicas de tus pacientes y su información óptica.
-                        </p>
+                        <p className="text-gray-600 dark:text-gray-400">Gestiona las recetas médicas de tus pacientes y su información óptica.</p>
                     </div>
 
-                    <div className="flex space-x-3">
-                        <Link href="/prescriptions/create">
-                        <Button
-                            variant="outline"
-                            className="border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900/20 dark:text-gray-300"
-                        >
-                            <Plus className="mr-2 h-4 w-4" />
-                            Nueva receta
-                        </Button>
-                        </Link>
-                    </div>
+                    {can('create prescriptions') && (
+                        <div className="flex space-x-3">
+                            <Link href="/prescriptions/create">
+                                <Button
+                                    variant="outline"
+                                    className="border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900/20 dark:text-gray-300"
+                                >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Nueva receta
+                                </Button>
+                            </Link>
+                        </div>
+                    )}
                 </div>
 
                 {/* Search and Filters */}
@@ -108,7 +106,7 @@ export default function PrescriptionsIndex({ prescriptions, filters = {} }: Prop
                                     className="w-full"
                                 />
                             </div>
-                          
+
                             <Button type="submit">
                                 <Search className="mr-2 h-4 w-4" />
                                 Buscar
@@ -134,12 +132,14 @@ export default function PrescriptionsIndex({ prescriptions, filters = {} }: Prop
                         {prescriptions.data.length === 0 ? (
                             <div className="py-8 text-center">
                                 <div className="mb-4 text-gray-500 dark:text-gray-400">No se encontraron recetas</div>
-                                <Button asChild>
-                                    <Link href="/prescriptions/create">
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Crear primera receta
-                                    </Link>
-                                </Button>
+                                {can('create prescriptions') && (
+                                    <Button asChild>
+                                        <Link href="/prescriptions/create">
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Crear primera receta
+                                        </Link>
+                                    </Button>
+                                )}
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
@@ -160,9 +160,7 @@ export default function PrescriptionsIndex({ prescriptions, filters = {} }: Prop
                                                     <div className="font-medium">{prescription.id}</div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="font-medium">
-                                                        {prescription.patient?.name || 'Sin paciente'}
-                                                    </div>
+                                                    <div className="font-medium">{prescription.patient?.name || 'Sin paciente'}</div>
                                                     <div className="text-sm text-gray-600 dark:text-gray-400">
                                                         {prescription.patient?.identification_number || ''}
                                                     </div>
@@ -170,13 +168,11 @@ export default function PrescriptionsIndex({ prescriptions, filters = {} }: Prop
                                                 <TableCell>
                                                     <div className="text-sm text-gray-600 dark:text-gray-400">
                                                         {new Date(prescription.created_at).toLocaleDateString()}
-                                                        <span className='text-xs font-semibold italic'> ({prescription.human_readable_date})</span>
+                                                        <span className="text-xs font-semibold italic"> ({prescription.human_readable_date})</span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="text-sm">
-                                                        {prescription.workspace?.name || 'No asignada'}
-                                                    </div>
+                                                    <div className="text-sm">{prescription.workspace?.name || 'No asignada'}</div>
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <DropdownMenu>
@@ -186,25 +182,31 @@ export default function PrescriptionsIndex({ prescriptions, filters = {} }: Prop
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem asChild>
-                                                                <Link href={`/prescriptions/${prescription.id}`}>
-                                                                    <Eye className="mr-2 h-4 w-4" />
-                                                                    Ver detalles
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem asChild>
-                                                                <Link href={`/prescriptions/${prescription.id}/edit`}>
-                                                                    <Edit className="mr-2 h-4 w-4" />
-                                                                    Editar
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem
-                                                                onClick={() => handleDelete(prescription.id)}
-                                                                className="text-red-600 dark:text-red-400"
-                                                            >
-                                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                                Eliminar
-                                                            </DropdownMenuItem>
+                                                            {can('view prescriptions') && (
+                                                                <DropdownMenuItem asChild>
+                                                                    <Link href={`/prescriptions/${prescription.id}`}>
+                                                                        <Eye className="mr-2 h-4 w-4" />
+                                                                        Ver detalles
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                            {can('edit prescriptions') && (
+                                                                <DropdownMenuItem asChild>
+                                                                    <Link href={`/prescriptions/${prescription.id}/edit`}>
+                                                                        <Edit className="mr-2 h-4 w-4" />
+                                                                        Editar
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                            {can('delete prescriptions') && (
+                                                                <DropdownMenuItem
+                                                                    onClick={() => handleDelete(prescription.id)}
+                                                                    className="text-red-600 dark:text-red-400"
+                                                                >
+                                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                                    Eliminar
+                                                                </DropdownMenuItem>
+                                                            )}
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 </TableCell>
@@ -215,10 +217,9 @@ export default function PrescriptionsIndex({ prescriptions, filters = {} }: Prop
                             </div>
                         )}
 
-                       <Paginator data={prescriptions} />
+                        <Paginator data={prescriptions} />
                     </CardContent>
                 </Card>
-
             </div>
         </AppLayout>
     );

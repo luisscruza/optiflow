@@ -76,6 +76,7 @@ export interface SharedData {
     quote: { message: string; author: string };
     auth: Auth;
     workspace?: WorkspaceData;
+    userPermissions: string[];
     sidebarOpen: boolean;
     companyDetails: {
         company_name: string;
@@ -90,6 +91,7 @@ export interface SharedData {
     newlyCreatedContact?: Contact | null;
     workspaceUsers: User[];
     unreadNotifications: number;
+    impersonating: boolean;
     flash?: {
         success?: string;
         error?: string;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Facades\Impersonator;
 use App\Models\CompanyDetail;
 use App\Models\Currency;
 use App\Models\User;
@@ -69,6 +70,7 @@ final class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
+            'impersonating' => Impersonator::isImpersonating(),
         ];
     }
 

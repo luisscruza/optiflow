@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Actions\CreateInvoiceAction;
 use App\Actions\UpdateInvoiceAction;
 use App\Enums\PaymentMethod;
+use App\Enums\Permission;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\BankAccount;
 use App\Models\CompanyDetail;
@@ -17,6 +18,7 @@ use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\Tax;
 use App\Models\User;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,8 +33,10 @@ final class InvoiceController extends Controller
     /**
      * Display a listing of invoices.
      */
-    public function index(Request $request): Response
+    public function index(Request $request, #[CurrentUser] User $user): Response
     {
+        abort_unless($user->can(Permission::InvoicesView), 403);
+
         $query = Invoice::query()
             ->with(['contact', 'documentSubtype'])
             ->orderBy('issue_date', 'desc')
@@ -68,8 +72,10 @@ final class InvoiceController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request): Response
+    public function create(Request $request, #[CurrentUser] User $user): Response
     {
+        abort_unless($user->can(Permission::InvoicesCreate), 403);
+
         $currentWorkspace = Context::get('workspace');
 
         $documentSubtypes = DocumentSubtype::active()
@@ -132,8 +138,10 @@ final class InvoiceController extends Controller
      *
      * @throws Throwable
      */
-    public function store(Request $request, User $user, CreateInvoiceAction $action): RedirectResponse
+    public function store(Request $request, #[CurrentUser] User $user, CreateInvoiceAction $action): RedirectResponse
     {
+        abort_unless($user->can(Permission::InvoicesCreate), 403);
+
         $workspace = Context::get('workspace');
 
         $result = $action->handle($workspace, $request->all());
@@ -151,8 +159,10 @@ final class InvoiceController extends Controller
     /**
      * Display the specified invoice.
      */
-    public function show(Invoice $invoice): Response
+    public function show(Invoice $invoice, #[CurrentUser] User $user): Response
     {
+        abort_unless($user->can(Permission::InvoicesView), 403);
+
         $invoice->load([
             'contact',
             'documentSubtype',
@@ -186,8 +196,10 @@ final class InvoiceController extends Controller
     /**
      * Show the form for editing the specified invoice.
      */
-    public function edit(Request $request, Invoice $invoice): Response
+    public function edit(Request $request, Invoice $invoice, #[CurrentUser] User $user): Response
     {
+        abort_unless($user->can(Permission::InvoicesEdit), 403);
+
         $currentWorkspace = Context::get('workspace');
 
         $invoice->load(['contact', 'documentSubtype', 'items.product', 'items.tax']);
@@ -242,8 +254,10 @@ final class InvoiceController extends Controller
     /**
      * Update the specified invoice.
      */
-    public function update(UpdateInvoiceRequest $request, Invoice $invoice, UpdateInvoiceAction $action): RedirectResponse
+    public function update(UpdateInvoiceRequest $request, Invoice $invoice, UpdateInvoiceAction $action, #[CurrentUser] User $user): RedirectResponse
     {
+        abort_unless($user->can(Permission::InvoicesEdit), 403);
+
         $workspace = Context::get('workspace');
 
         $result = $action->handle($workspace, $invoice, $request->validated());
@@ -262,8 +276,10 @@ final class InvoiceController extends Controller
     /**
      * Remove the specified invoice.
      */
-    public function destroy(Invoice $invoice): RedirectResponse
+    public function destroy(Invoice $invoice, #[CurrentUser] User $user): RedirectResponse
     {
+        abort_unless($user->can(Permission::InvoicesDelete), 403);
+
         // For now, we'll only allow deleting draft invoices
         if ($invoice->status !== 'draft') {
             return redirect()->back()->withErrors(['error' => 'Solo se pueden eliminar facturas en borrador.']);

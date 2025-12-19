@@ -1,19 +1,21 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, DollarSign, Edit, Eye, Filter, Plus, Printer, Search, Trash2, User } from 'lucide-react';
+import { DollarSign, Edit, Eye, Filter, Plus, Printer, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
+import { usePermissions } from '@/hooks/use-permissions';
+
+import { PaymentRegistrationModal } from '@/components/payment-registration-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Paginator } from '@/components/ui/paginator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PaymentRegistrationModal } from '@/components/payment-registration-modal';
 import AppLayout from '@/layouts/app-layout';
-import { type BankAccount, type BreadcrumbItem, type Contact, type Invoice, type InvoiceFilters, type PaginatedInvoices } from '@/types';
+import { type BankAccount, type BreadcrumbItem, type Invoice, type InvoiceFilters, type PaginatedInvoices } from '@/types';
 import { useCurrency } from '@/utils/currency';
-import { Paginator } from '@/components/ui/paginator';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -30,6 +32,7 @@ interface Props {
 }
 
 export default function InvoicesIndex({ invoices, filters, bankAccounts = [], paymentMethods = {} }: Props) {
+    const { can } = usePermissions();
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || 'all');
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -71,7 +74,7 @@ export default function InvoicesIndex({ invoices, filters, bankAccounts = [], pa
     const handleOpenPaymentModal = (invoice: Invoice) => {
         setSelectedInvoice(invoice);
         setPaymentModalOpen(true);
-        
+
         // Ensure we have the optional data loaded by making a partial reload
         if (!bankAccounts.length || !Object.keys(paymentMethods).length) {
             router.reload({ only: ['bankAccounts', 'paymentMethods'] });
@@ -89,10 +92,9 @@ export default function InvoicesIndex({ invoices, filters, bankAccounts = [], pa
         return date.toLocaleDateString('es-DO', {
             day: '2-digit',
             month: '2-digit',
-            year: 'numeric'
+            year: 'numeric',
         });
     };
-
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -102,19 +104,19 @@ export default function InvoicesIndex({ invoices, filters, bankAccounts = [], pa
                 <div className="mb-8 flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Facturas</h1>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Gestiona tus facturas y realiza un seguimiento de los pagos.
-                        </p>
+                        <p className="text-gray-600 dark:text-gray-400">Gestiona tus facturas y realiza un seguimiento de los pagos.</p>
                     </div>
 
-                    <div className="flex space-x-3">
-                        <Button asChild className="bg-primary hover:bg-primary/90">
-                            <Link href="/invoices/create">
-                                <Plus className="mr-2 h-4 w-4" />
-                                Nueva factura
-                            </Link>
-                        </Button>
-                    </div>
+                    {can('create invoices') && (
+                        <div className="flex space-x-3">
+                            <Button asChild className="bg-primary hover:bg-primary/90">
+                                <Link href="/invoices/create">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Nueva factura
+                                </Link>
+                            </Button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Search and Filters */}
@@ -177,12 +179,14 @@ export default function InvoicesIndex({ invoices, filters, bankAccounts = [], pa
                         {invoices.data.length === 0 ? (
                             <div className="py-8 text-center">
                                 <div className="mb-4 text-gray-500 dark:text-gray-400">No se encontraron facturas</div>
-                                <Button asChild>
-                                    <Link href="/invoices/create">
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Crear primera factura
-                                    </Link>
-                                </Button>
+                                {can('create invoices') && (
+                                    <Button asChild>
+                                        <Link href="/invoices/create">
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Crear primera factura
+                                        </Link>
+                                    </Button>
+                                )}
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
@@ -203,31 +207,23 @@ export default function InvoicesIndex({ invoices, filters, bankAccounts = [], pa
                                     <TableBody>
                                         {invoices.data.map((invoice) => (
                                             <TableRow key={invoice.id}>
-                                                <TableCell className="font-medium text-gray-500">
-                                                    {invoice.id}
-                                                </TableCell>
+                                                <TableCell className="font-medium text-gray-500">{invoice.id}</TableCell>
                                                 <TableCell>
-                                                    <div className="font-medium">
-                                                        {invoice.document_number}
-                                                    </div>
+                                                    <div className="font-medium">{invoice.document_number}</div>
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="font-medium">{invoice.contact.name}</div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="text-sm">
-                                                        {formatDate(invoice.issue_date)}
-                                                    </div>
+                                                    <div className="text-sm">{formatDate(invoice.issue_date)}</div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className={`text-sm`}>
-                                                        {formatDate(invoice.due_date)}
-                                                    </div>
+                                                    <div className={`text-sm`}>{formatDate(invoice.due_date)}</div>
                                                 </TableCell>
-                                                <TableCell className="text-right font-medium">
-                                                    {formatCurrency(invoice.total_amount)}
-                                                </TableCell>
-                                                <TableCell className={`text-right font-medium ${invoice.amount_due > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                                                <TableCell className="text-right font-medium">{formatCurrency(invoice.total_amount)}</TableCell>
+                                                <TableCell
+                                                    className={`text-right font-medium ${invoice.amount_due > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}
+                                                >
                                                     {formatCurrency(invoice.amount_due)}
                                                 </TableCell>
                                                 <TableCell>
@@ -239,12 +235,8 @@ export default function InvoicesIndex({ invoices, filters, bankAccounts = [], pa
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    { invoice.status !== 'paid' && (
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            size="sm"
-                                                            onClick={() => handleOpenPaymentModal(invoice)}
-                                                        >
+                                                    {invoice.status !== 'paid' && (
+                                                        <Button variant="ghost" size="sm" onClick={() => handleOpenPaymentModal(invoice)}>
                                                             <DollarSign className="mr-2 h-4 w-4" />
                                                         </Button>
                                                     )}
@@ -255,30 +247,34 @@ export default function InvoicesIndex({ invoices, filters, bankAccounts = [], pa
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem asChild>
-                                                                <Link href={`/invoices/${invoice.id}`}>
-                                                                    <Eye className="mr-2 h-4 w-4" />
-                                                                    Ver detalles
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem asChild>
-                                                                <Link href={`/invoices/${invoice.id}/edit`}>
-                                                                    <Edit className="mr-2 h-4 w-4" />
-                                                                    Editar
-                                                                </Link>
-                                                            </DropdownMenuItem>
+                                                            {can('view invoices') && (
+                                                                <DropdownMenuItem asChild>
+                                                                    <Link href={`/invoices/${invoice.id}`}>
+                                                                        <Eye className="mr-2 h-4 w-4" />
+                                                                        Ver detalles
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                            {can('edit invoices') && (
+                                                                <DropdownMenuItem asChild>
+                                                                    <Link href={`/invoices/${invoice.id}/edit`}>
+                                                                        <Edit className="mr-2 h-4 w-4" />
+                                                                        Editar
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                            )}
                                                             <DropdownMenuItem>
-                                                                <a 
-                                                                    href={`/invoices/${invoice.id}/pdf`} 
-                                                                    target="_blank" 
+                                                                <a
+                                                                    href={`/invoices/${invoice.id}/pdf`}
+                                                                    target="_blank"
                                                                     rel="noopener noreferrer"
-                                                                    className="flex items-center w-full"
+                                                                    className="flex w-full items-center"
                                                                 >
                                                                     <Printer className="mr-2 h-4 w-4" />
                                                                     Ver PDF
                                                                 </a>
                                                             </DropdownMenuItem>
-                                                            {invoice.status === 'draft' && (
+                                                            {can('delete invoices') && invoice.status === 'draft' && (
                                                                 <DropdownMenuItem
                                                                     onClick={() => handleDelete(invoice.id)}
                                                                     className="text-red-600 dark:text-red-400"
@@ -298,7 +294,6 @@ export default function InvoicesIndex({ invoices, filters, bankAccounts = [], pa
                         )}
 
                         <Paginator data={invoices} className="mt-6" />
-                    
                     </CardContent>
                 </Card>
             </div>

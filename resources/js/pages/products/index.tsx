@@ -10,10 +10,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Input } from '@/components/ui/input';
 import { Paginator } from '@/components/ui/paginator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type PaginatedProducts, type ProductFilters } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
 import { useCurrency } from '@/utils/currency';
+import { Head, Link, router } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -33,6 +34,7 @@ export default function ProductsIndex({ products, filters }: Props) {
     const [lowStock, setLowStock] = useState(filters.low_stock || false);
     const [deletingProduct, setDeletingProduct] = useState<number | null>(null);
     const { format: formatCurrency } = useCurrency();
+    const { can } = usePermissions();
 
     const handleSearch = (value: string) => {
         setSearch(value);
@@ -71,18 +73,22 @@ export default function ProductsIndex({ products, filters }: Props) {
                         <p className="mt-2 text-gray-600 dark:text-gray-400">Gestiona tu catálogo de productos e inventario.</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" asChild>
-                            <Link href="/stock-adjustments">
-                                <Package className="mr-2 h-4 w-4" />
-                                Gestión de inventario
-                            </Link>
-                        </Button>
-                        <Button asChild>
-                            <Link href={create().url}>
-                                <Plus className="mr-2 h-4 w-4" />
-                                Agregar producto
-                            </Link>
-                        </Button>
+                        {can('view inventory') && (
+                            <Button variant="outline" asChild>
+                                <Link href="/stock-adjustments">
+                                    <Package className="mr-2 h-4 w-4" />
+                                    Gestión de inventario
+                                </Link>
+                            </Button>
+                        )}
+                        {can('create products') && (
+                            <Button asChild>
+                                <Link href={create().url}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Agregar producto
+                                </Link>
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -238,19 +244,23 @@ export default function ProductsIndex({ products, filters }: Props) {
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={show(product.id).url}>
-                                                                <Eye className="mr-2 h-4 w-4" />
-                                                                Ver
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={edit(product.id).url}>
-                                                                <Edit className="mr-2 h-4 w-4" />
-                                                                Editar
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        {product.track_stock && (
+                                                        {can('view products') && (
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={show(product.id).url}>
+                                                                    <Eye className="mr-2 h-4 w-4" />
+                                                                    Ver
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                        {can('edit products') && (
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={edit(product.id).url}>
+                                                                    <Edit className="mr-2 h-4 w-4" />
+                                                                    Editar
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                        {product.track_stock && can('view inventory') && (
                                                             <>
                                                                 <DropdownMenuSeparator />
                                                                 <DropdownMenuItem asChild>
@@ -259,37 +269,47 @@ export default function ProductsIndex({ products, filters }: Props) {
                                                                         Historial de inventario
                                                                     </Link>
                                                                 </DropdownMenuItem>
-                                                                <DropdownMenuItem asChild>
-                                                                    <Link href="/stock-adjustments/create" preserveState={false}>
-                                                                        <TrendingUp className="mr-2 h-4 w-4" />
-                                                                        Ajustar inventario
-                                                                    </Link>
-                                                                </DropdownMenuItem>
-                                                                {!product.stock_in_current_workspace && (
+                                                                {can('adjust inventory') && (
+                                                                    <>
+                                                                        <DropdownMenuItem asChild>
+                                                                            <Link href="/stock-adjustments/create" preserveState={false}>
+                                                                                <TrendingUp className="mr-2 h-4 w-4" />
+                                                                                Ajustar inventario
+                                                                            </Link>
+                                                                        </DropdownMenuItem>
+                                                                        {!product.stock_in_current_workspace && (
+                                                                            <DropdownMenuItem asChild>
+                                                                                <Link href="/initial-stock/create" preserveState={false}>
+                                                                                    <Package className="mr-2 h-4 w-4" />
+                                                                                    Establecer inventario inicial
+                                                                                </Link>
+                                                                            </DropdownMenuItem>
+                                                                        )}
+                                                                    </>
+                                                                )}
+                                                                {can('transfer inventory') && (
                                                                     <DropdownMenuItem asChild>
-                                                                        <Link href="/initial-stock/create" preserveState={false}>
-                                                                            <Package className="mr-2 h-4 w-4" />
-                                                                            Establecer inventario inicial
+                                                                        <Link href="/stock-transfers/create" preserveState={false}>
+                                                                            <ArrowLeftRight className="mr-2 h-4 w-4" />
+                                                                            Transferir inventario
                                                                         </Link>
                                                                     </DropdownMenuItem>
                                                                 )}
-                                                                <DropdownMenuItem asChild>
-                                                                    <Link href="/stock-transfers/create" preserveState={false}>
-                                                                        <ArrowLeftRight className="mr-2 h-4 w-4" />
-                                                                        Transferir inventario
-                                                                    </Link>
+                                                            </>
+                                                        )}
+                                                        {can('delete products') && (
+                                                            <>
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem
+                                                                    onClick={() => handleDeleteProduct(product.id)}
+                                                                    className="text-red-600 dark:text-red-400"
+                                                                    disabled={deletingProduct === product.id}
+                                                                >
+                                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                                    {deletingProduct === product.id ? 'Eliminando...' : 'Eliminar'}
                                                                 </DropdownMenuItem>
                                                             </>
                                                         )}
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem
-                                                            onClick={() => handleDeleteProduct(product.id)}
-                                                            className="text-red-600 dark:text-red-400"
-                                                            disabled={deletingProduct === product.id}
-                                                        >
-                                                            <Trash2 className="mr-2 h-4 w-4" />
-                                                            {deletingProduct === product.id ? 'Eliminando...' : 'Eliminar'}
-                                                        </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>

@@ -4,17 +4,27 @@ import { UserInfo } from '@/components/user-info';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { type SharedData } from '@/types';
-import { usePage } from '@inertiajs/react';
-import { ChevronsUpDown } from 'lucide-react';
+import { router, usePage } from '@inertiajs/react';
+import { ChevronsUpDown, XIcon } from 'lucide-react';
 
 export function NavUser() {
-    const { auth } = usePage<SharedData>().props;
+    const { auth, impersonating } = usePage<SharedData>().props;
     const { state } = useSidebar();
     const isMobile = useIsMobile();
+
+
+    const stopImpersonating = () => {
+        router.delete('/impersonate');
+    }
 
     return (
         <SidebarMenu>
             <SidebarMenuItem>
+                { impersonating ? <>
+                    <SidebarMenuButton onClick={stopImpersonating} size="lg" className="font-bold text-red-500 hover:cursor-pointer hover:text-red-600 justify-center border border-red-400">
+                        Dejar de suplantar <XIcon />
+                    </SidebarMenuButton>
+                </> : <></> }
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton size="lg" className="group text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent">

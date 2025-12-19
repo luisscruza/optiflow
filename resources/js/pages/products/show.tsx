@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Product, type StockMovement } from '@/types';
 import { useCurrency } from '@/utils/currency';
@@ -30,7 +31,7 @@ interface Props {
 
 export default function ProductsShow({ product }: Props) {
     const { format: formatCurrency } = useCurrency();
-
+    const { can } = usePermissions();
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('es-DO', {
@@ -76,12 +77,12 @@ export default function ProductsShow({ product }: Props) {
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{product.name}</h1>
                             <p className="text-gray-600 dark:text-gray-400">
-                                    SKU: <code className="rounded bg-gray-100 px-2 py-1 text-sm dark:bg-gray-800">{product.sku}</code>
-                                </p>
+                                SKU: <code className="rounded bg-gray-100 px-2 py-1 text-sm dark:bg-gray-800">{product.sku}</code>
+                            </p>
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        {product.track_stock && (
+                        {product.track_stock && can('view inventory') && (
                             <>
                                 <Button variant="outline" asChild>
                                     <Link href={`/stock-adjustments/${product.id}`}>
@@ -89,45 +90,55 @@ export default function ProductsShow({ product }: Props) {
                                         Historial de stock
                                     </Link>
                                 </Button>
-                                <Button variant="outline" asChild>
-                                    <Link href="/stock-adjustments/create">
-                                        <TrendingUp className="mr-2 h-4 w-4" />
-                                        Ajustar stock
-                                    </Link>
-                                </Button>
-                                {!product.stock_in_current_workspace && (
+                                {can('adjust inventory') && (
+                                    <>
+                                        <Button variant="outline" asChild>
+                                            <Link href="/stock-adjustments/create">
+                                                <TrendingUp className="mr-2 h-4 w-4" />
+                                                Ajustar stock
+                                            </Link>
+                                        </Button>
+                                        {!product.stock_in_current_workspace && (
+                                            <Button variant="outline" asChild>
+                                                <Link href="/initial-stock/create">
+                                                    <Package className="mr-2 h-4 w-4" />
+                                                    Establecer inventario inicial
+                                                </Link>
+                                            </Button>
+                                        )}
+                                    </>
+                                )}
+                                {can('transfer inventory') && (
                                     <Button variant="outline" asChild>
-                                        <Link href="/initial-stock/create">
-                                            <Package className="mr-2 h-4 w-4" />
-                                                Establecer inventario inicial
+                                        <Link href="/stock-transfers/create">
+                                            <ArrowLeftRight className="mr-2 h-4 w-4" />
+                                            Transferir stock
                                         </Link>
                                     </Button>
                                 )}
-                                <Button variant="outline" asChild>
-                                    <Link href="/stock-transfers/create">
-                                        <ArrowLeftRight className="mr-2 h-4 w-4" />
-                                        Transferir stock
-                                    </Link>
-                                </Button>
                             </>
                         )}
-                        <Button asChild>
-                            <Link href={edit(product.id).url}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Editar producto
-                            </Link>
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={() => {
-                                if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
-                                    // Handle delete
-                                }
-                            }}
-                        >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Eliminar
-                        </Button>
+                        {can('edit products') && (
+                            <Button asChild>
+                                <Link href={edit(product.id).url}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Editar producto
+                                </Link>
+                            </Button>
+                        )}
+                        {can('delete products') && (
+                            <Button
+                                variant="destructive"
+                                onClick={() => {
+                                    if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+                                        // Handle delete
+                                    }
+                                }}
+                            >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Eliminar
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -254,7 +265,7 @@ export default function ProductsShow({ product }: Props) {
                         {/* Stock Information */}
                         <Card>
                             <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
+                                <CardTitle className="flex items-center gap-2">
                                     <TrendingUp className="h-5 w-5" />
                                     Estado de inventario
                                 </CardTitle>
@@ -305,7 +316,7 @@ export default function ProductsShow({ product }: Props) {
                         {/* Quick Stats */}
                         <Card>
                             <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
+                                <CardTitle className="flex items-center gap-2">
                                     <DollarSign className="h-5 w-5" />
                                     Estadísticas rápidas
                                 </CardTitle>

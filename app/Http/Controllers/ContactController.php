@@ -9,10 +9,12 @@ use App\Actions\DeleteContactAction;
 use App\Actions\UpdateContactAction;
 use App\Enums\ContactType;
 use App\Enums\IdentificationType;
+use App\Enums\Permission;
 use App\Http\Requests\CreateContactRequest;
 use App\Http\Requests\UpdateContactRequest;
 use App\Models\Contact;
 use App\Models\User;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -23,8 +25,9 @@ final class ContactController extends Controller
     /**
      * Display a listing of contacts.
      */
-    public function index(Request $request): Response
+    public function index(Request $request, #[CurrentUser] User $user): Response
     {
+        abort_unless($user->can(Permission::ContactsView), 403);
 
         $query = Contact::query()
             ->with(['primaryAddress'])
@@ -57,8 +60,10 @@ final class ContactController extends Controller
     /**
      * Show the form for creating a new contact.
      */
-    public function create(): Response
+    public function create(#[CurrentUser] User $user): Response
     {
+        abort_unless($user->can(Permission::ContactsCreate), 403);
+
         return Inertia::render('contacts/create', [
             'identification_types' => collect(IdentificationType::cases())
                 ->map(fn ($type): array => [
@@ -80,8 +85,10 @@ final class ContactController extends Controller
     /**
      * Store a newly created contact in storage.
      */
-    public function store(CreateContactRequest $request, CreateContactAction $action, User $user): RedirectResponse
+    public function store(CreateContactRequest $request, CreateContactAction $action, #[CurrentUser] User $user): RedirectResponse
     {
+        abort_unless($user->can(Permission::ContactsCreate), 403);
+
         $contact = $action->handle($user, $request->validated());
 
         return redirect()->back()->with('newly_created_contact', $contact);
@@ -90,9 +97,13 @@ final class ContactController extends Controller
     /**
      * Display the specified contact.
      */
-    public function show(Contact $contact): Response
+    public function show(Contact $contact, #[CurrentUser] User $user): Response
     {
-        $contact->load(['primaryAddress', 'addresses',
+        abort_unless($user->can(Permission::ContactsView), 403);
+
+        $contact->load([
+            'primaryAddress',
+            'addresses',
             'comments.commentator',
             'comments.comments.commentator',
             'comments.comments.comments.commentator',
@@ -106,8 +117,10 @@ final class ContactController extends Controller
     /**
      * Show the form for editing the specified contact.
      */
-    public function edit(Contact $contact): Response
+    public function edit(Contact $contact, #[CurrentUser] User $user): Response
     {
+        abort_unless($user->can(Permission::ContactsEdit), 403);
+
         $contact->load(['primaryAddress']);
 
         return Inertia::render('contacts/edit', [
@@ -132,8 +145,10 @@ final class ContactController extends Controller
     /**
      * Update the specified contact in storage.
      */
-    public function update(UpdateContactRequest $request, Contact $contact, UpdateContactAction $action, User $user): RedirectResponse
+    public function update(UpdateContactRequest $request, Contact $contact, UpdateContactAction $action, #[CurrentUser] User $user): RedirectResponse
     {
+        abort_unless($user->can(Permission::ContactsEdit), 403);
+
         $action->handle($user, $contact, $request->validated());
 
         $contactTypeLabel = ContactType::from($contact->contact_type)->label();
@@ -145,8 +160,10 @@ final class ContactController extends Controller
     /**
      * Remove the specified contact from storage.
      */
-    public function destroy(Contact $contact, DeleteContactAction $action, User $user): RedirectResponse
+    public function destroy(Contact $contact, DeleteContactAction $action, #[CurrentUser] User $user): RedirectResponse
     {
+        abort_unless($user->can(Permission::ContactsDelete), 403);
+
         $contactTypeLabel = ContactType::from($contact->contact_type)->label();
 
         $action->handle($user, $contact);
