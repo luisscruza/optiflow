@@ -21,7 +21,7 @@
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.6",
-        "driftingly/rector-laravel": "^2.0",
+        "driftingly/rector-laravel": "^2.0.7",
         "fakerphp/faker": "^1.24.1",
         "larastan/larastan": "^3.7.2",
         "laravel/boost": "^1.2",
@@ -33,7 +33,7 @@
         "pestphp/pest": "^4.1",
         "pestphp/pest-plugin-browser": "^4.1",
         "pestphp/pest-plugin-laravel": "^4.0",
-        "rector/rector": "^2.1.7"
+        "rector/rector": "^2.2.1"
     },
     "autoload": {
         "psr-4": {
