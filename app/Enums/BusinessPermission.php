@@ -13,21 +13,14 @@ enum BusinessPermission: string
     case ManageBankAccounts = 'manage bank accounts';
     case ManageCurrencies = 'manage currencies';
     case ManageBusinessDetails = 'manage business details';
+    case Impersonate = 'impersonate';
 
     /**
      * Todos los permisos.
      */
     public static function allPermissions(): array
     {
-        return [
-            self::ViewConfiguration,
-            self::ManageMembers,
-            self::ManageTaxes,
-            self::ManageInvoiceDocuments,
-            self::ManageBankAccounts,
-            self::ManageCurrencies,
-            self::ManageBusinessDetails,
-        ];
+        return self::cases();
     }
 
     /**
@@ -43,6 +36,7 @@ enum BusinessPermission: string
             self::ManageBankAccounts => 'Gestionar cuentas bancarias',
             self::ManageCurrencies => 'Gestionar monedas',
             self::ManageBusinessDetails => 'Gestionar detalles del negocio',
+            self::Impersonate => 'Suplantar',
         };
     }
 }

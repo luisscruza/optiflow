@@ -44,7 +44,8 @@ export type BusinessPermission =
     | 'manage_invoice_documents'
     | 'manage_bank_accounts'
     | 'manage_currencies'
-    | 'manage_business_details';
+    | 'manage_business_details'
+    | 'impersonate';
 
 // Combined permission type
 export type Permission = WorkspacePermission | BusinessPermission;

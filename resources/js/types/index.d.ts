@@ -91,6 +91,7 @@ export interface SharedData {
     newlyCreatedContact?: Contact | null;
     workspaceUsers: User[];
     unreadNotifications: number;
+    impersonating: boolean;
     flash?: {
         success?: string;
         error?: string;

@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Enums\BusinessPermission;
 use App\Enums\UserRole;
 use App\Http\Middleware\SetWorkspaceContext;
+use App\Models\User;
+use App\Support\Impersonator;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -30,6 +33,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->enforceMorphMaps();
         $this->ensureContextPriority();
         $this->allowSuperAdmin();
+        $this->setupImpersonator();
     }
 
     private function enforceMorphMaps(): void
@@ -38,7 +42,7 @@ final class AppServiceProvider extends ServiceProvider
             'invoice' => \App\Models\Invoice::class,
             'comment' => \App\Models\Comment::class,
             'contact' => \App\Models\Contact::class,
-            'user' => \App\Models\User::class,
+            'user' => User::class,
         ]);
     }
 
@@ -58,5 +62,14 @@ final class AppServiceProvider extends ServiceProvider
         Gate::before(function ($user) {
             return in_array($user->business_role, [UserRole::Owner, UserRole::Admin]) ? true : null;
         });
+    }
+
+    private function setupImpersonator(): void
+    {
+        Gate::define(BusinessPermission::Impersonate->value, function (User $user) {
+            return in_array($user->business_role, [UserRole::Owner, UserRole::Admin]);
+        });
+
+        app()->bind('impersonator', Impersonator::class);
     }
 }

@@ -19,6 +19,7 @@ use App\Http\Controllers\DownloadInvoicePdfController;
 use App\Http\Controllers\DownloadPrescriptionController;
 use App\Http\Controllers\DownloadQuotationPdfController;
 use App\Http\Controllers\GlobalRoleController;
+use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\InitialStockController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
@@ -158,6 +159,9 @@ Route::middleware([
 
             Route::resource('prescriptions', PrescriptionController::class);
             Route::get('prescriptions/{prescription}/pdf', DownloadPrescriptionController::class)->name('prescriptions.pdf');
+
+            Route::post('impersonate/{user}', [ImpersonationController::class, 'store']);
+            Route::delete('impersonate', [ImpersonationController::class, 'destroy']);
         });
     });
 
