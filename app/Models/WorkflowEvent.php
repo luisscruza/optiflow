@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\EventType;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class WorkflowEvent extends Model
 {
+    use HasUuids;
+
     /**
      * @return BelongsTo<WorkflowJob, $this>
      */
@@ -48,10 +51,6 @@ final class WorkflowEvent extends Model
     protected function casts(): array
     {
         return [
-            'id' => 'integer',
-            'workflow_job_id' => 'integer',
-            'from_stage_id' => 'integer',
-            'to_stage_id' => 'integer',
             'event_type' => EventType::class,
             'user_id' => 'integer',
             'is_active' => 'boolean',

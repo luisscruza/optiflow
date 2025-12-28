@@ -6,12 +6,14 @@ namespace App\Models;
 
 use App\Concerns\HasComments;
 use App\Contracts\Commentable;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class WorkflowJob extends Model implements Commentable
 {
     use HasComments;
+    use HasUuids;
 
     /**
      * @return BelongsTo<Workflow, $this>
@@ -51,11 +53,9 @@ final class WorkflowJob extends Model implements Commentable
     protected function casts(): array
     {
         return [
-            'id' => 'integer',
-            'workflow_id' => 'integer',
-            'workflow_stage_id' => 'integer',
             'invoice_id' => 'integer',
             'contact_id' => 'integer',
+            'notes' => 'string',
             'priority' => 'string',
             'due_date' => 'datetime',
             'started_at' => 'datetime',

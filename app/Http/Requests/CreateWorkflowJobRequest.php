@@ -24,7 +24,7 @@ final class CreateWorkflowJobRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'workflow_stage_id' => ['required', 'integer', 'exists:workflow_stages,id'],
+            'workflow_stage_id' => ['required', 'uuid', 'exists:workflow_stages,id'],
             'invoice_id' => ['nullable', 'integer', 'exists:invoices,id'],
             'contact_id' => ['nullable', 'integer', 'exists:contacts,id'],
             'priority' => ['nullable', 'string', 'in:low,medium,high,urgent'],

@@ -715,7 +715,7 @@ export interface ProductImport {
 export type WorkflowJobPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export interface Workflow {
-    id: number;
+    id: string;
     name: string;
     is_active: boolean;
     created_at: string;
@@ -725,8 +725,8 @@ export interface Workflow {
 }
 
 export interface WorkflowStage {
-    id: number;
-    workflow_id: number;
+    id: string;
+    workflow_id: string;
     name: string;
     description?: string | null;
     color: string;
@@ -742,11 +742,12 @@ export interface WorkflowStage {
 }
 
 export interface WorkflowJob {
-    id: number;
-    workflow_id: number;
-    workflow_stage_id: number;
+    id: string;
+    workflow_id: string;
+    workflow_stage_id: string;
     invoice_id?: number | null;
     contact_id?: number | null;
+    notes?: string | null;
     priority?: WorkflowJobPriority | null;
     due_date?: string | null;
     started_at?: string | null;

@@ -20,10 +20,10 @@ interface KanbanColumnProps {
     stage: WorkflowStage;
     totalStages: number;
     onDragOver: (e: React.DragEvent) => void;
-    onDrop: (e: React.DragEvent, stageId: number) => void;
+    onDrop: (e: React.DragEvent, stageId: string) => void;
     onDragStart: (e: React.DragEvent, job: WorkflowJob) => void;
     onDragEnd: (e: React.DragEvent) => void;
-    onCreateJob: (stageId: number) => void;
+    onCreateJob: (stageId: string) => void;
 }
 
 export function KanbanColumn({ workflow, stage, totalStages, onDragOver, onDrop, onDragStart, onDragEnd, onCreateJob }: KanbanColumnProps) {

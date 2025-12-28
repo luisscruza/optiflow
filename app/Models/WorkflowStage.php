@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class WorkflowStage extends Model
 {
+    use HasUuids;
+
     /**
      * @return BelongsTo<Workflow, $this>
      */
@@ -32,8 +35,6 @@ final class WorkflowStage extends Model
     protected function casts(): array
     {
         return [
-            'id' => 'integer',
-            'workflow_id' => 'integer',
             'name' => 'string',
             'description' => 'string',
             'color' => 'string',

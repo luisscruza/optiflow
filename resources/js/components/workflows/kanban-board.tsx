@@ -21,7 +21,7 @@ interface KanbanBoardProps {
 export function KanbanBoard({ workflow, invoices = [], contacts = [] }: KanbanBoardProps) {
     const [draggedJob, setDraggedJob] = useState<WorkflowJob | null>(null);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-    const [selectedStageId, setSelectedStageId] = useState<number | null>(null);
+    const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
     const [isAddStageDialogOpen, setIsAddStageDialogOpen] = useState(false);
 
     // New job form state
@@ -59,7 +59,7 @@ export function KanbanBoard({ workflow, invoices = [], contacts = [] }: KanbanBo
         e.dataTransfer.dropEffect = 'move';
     };
 
-    const handleDrop = (e: React.DragEvent, targetStageId: number) => {
+    const handleDrop = (e: React.DragEvent, targetStageId: string) => {
         e.preventDefault();
 
         if (draggedJob && draggedJob.workflow_stage_id !== targetStageId) {
@@ -71,7 +71,7 @@ export function KanbanBoard({ workflow, invoices = [], contacts = [] }: KanbanBo
         setDraggedJob(null);
     };
 
-    const handleCreateJob = (stageId: number) => {
+    const handleCreateJob = (stageId: string) => {
         setSelectedStageId(stageId);
         setIsCreateDialogOpen(true);
     };

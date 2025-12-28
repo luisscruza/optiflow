@@ -24,7 +24,7 @@ final class MoveWorkflowJobRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'workflow_stage_id' => ['required', 'integer', 'exists:workflow_stages,id'],
+            'workflow_stage_id' => ['required', 'uuid', 'exists:workflow_stages,id'],
         ];
     }
 
