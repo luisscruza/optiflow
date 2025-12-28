@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class WorkflowStage extends Model
 {
@@ -15,6 +16,14 @@ final class WorkflowStage extends Model
     public function workflow(): BelongsTo
     {
         return $this->belongsTo(Workflow::class);
+    }
+
+    /**
+     * @return HasMany<WorkflowJob, $this>
+     */
+    public function jobs(): HasMany
+    {
+        return $this->hasMany(WorkflowJob::class);
     }
 
     /**

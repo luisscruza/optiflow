@@ -28,7 +28,6 @@ return new class extends Migration
             $table->dateTime('started_at')->nullable();
             $table->dateTime('completed_at')->nullable();
             $table->dateTime('canceled_at')->nullable();
-            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }

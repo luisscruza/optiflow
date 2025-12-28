@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\HasComments;
+use App\Contracts\Commentable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class WorkflowJob extends Model
+final class WorkflowJob extends Model implements Commentable
 {
+    use HasComments;
+
     /**
      * @return BelongsTo<Workflow, $this>
      */
@@ -57,7 +61,6 @@ final class WorkflowJob extends Model
             'started_at' => 'datetime',
             'completed_at' => 'datetime',
             'canceled_at' => 'datetime',
-            'notes' => 'string',
             'is_active' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
