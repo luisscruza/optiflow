@@ -16,6 +16,7 @@ interface KanbanCardProps {
     job: WorkflowJob;
     workflow: Workflow;
     onDragStart: (e: React.DragEvent, job: WorkflowJob) => void;
+    onDragEnd: (e: React.DragEvent) => void;
 }
 
 const priorityColors: Record<WorkflowJobPriority, string> = {
@@ -32,7 +33,7 @@ const priorityLabels: Record<WorkflowJobPriority, string> = {
     urgent: 'Urgente',
 };
 
-export function KanbanCard({ job, workflow, onDragStart }: KanbanCardProps) {
+export function KanbanCard({ job, workflow, onDragStart, onDragEnd }: KanbanCardProps) {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [editPriority, setEditPriority] = useState<WorkflowJobPriority | ''>(job.priority || '');
     const [editDueDate, setEditDueDate] = useState(job.due_date?.split('T')[0] || '');
@@ -72,6 +73,7 @@ export function KanbanCard({ job, workflow, onDragStart }: KanbanCardProps) {
             <Card
                 draggable
                 onDragStart={(e) => onDragStart(e, job)}
+                onDragEnd={onDragEnd}
                 className="cursor-grab transition-shadow hover:shadow-md active:cursor-grabbing"
             >
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 p-3 pb-2">

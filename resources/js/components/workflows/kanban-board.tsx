@@ -39,10 +39,23 @@ export function KanbanBoard({ workflow, invoices = [], contacts = [] }: KanbanBo
     const handleDragStart = (e: React.DragEvent, job: WorkflowJob) => {
         setDraggedJob(job);
         e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', String(job.id));
+        // Add a custom drag image effect
+        if (e.currentTarget instanceof HTMLElement) {
+            e.currentTarget.style.opacity = '0.5';
+        }
+    };
+
+    const handleDragEnd = (e: React.DragEvent) => {
+        if (e.currentTarget instanceof HTMLElement) {
+            e.currentTarget.style.opacity = '1';
+        }
+        setDraggedJob(null);
     };
 
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
+        e.stopPropagation();
         e.dataTransfer.dropEffect = 'move';
     };
 
@@ -118,6 +131,8 @@ export function KanbanBoard({ workflow, invoices = [], contacts = [] }: KanbanBo
         setNewStageColor('#3B82F6');
     };
 
+    const totalStages = workflow.stages?.length || 0;
+
     return (
         <>
             <div className="flex h-full gap-4 overflow-x-auto pb-4">
@@ -126,9 +141,11 @@ export function KanbanBoard({ workflow, invoices = [], contacts = [] }: KanbanBo
                         key={stage.id}
                         workflow={workflow}
                         stage={stage}
+                        totalStages={totalStages}
                         onDragOver={handleDragOver}
                         onDrop={handleDrop}
                         onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
                         onCreateJob={handleCreateJob}
                     />
                 ))}
@@ -137,7 +154,7 @@ export function KanbanBoard({ workflow, invoices = [], contacts = [] }: KanbanBo
                 <div className="flex w-80 flex-shrink-0 items-start">
                     <Button variant="outline" className="w-full justify-start" onClick={() => setIsAddStageDialogOpen(true)}>
                         <Plus className="mr-2 h-4 w-4" />
-                        Agregar Etapa
+                        Agregar etapa
                     </Button>
                 </div>
             </div>
@@ -146,12 +163,12 @@ export function KanbanBoard({ workflow, invoices = [], contacts = [] }: KanbanBo
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Nueva Tarea</DialogTitle>
+                        <DialogTitle>Nueva tarea</DialogTitle>
                         <DialogDescription>Agrega una nueva tarea al flujo de trabajo.</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="job-invoice">Factura (Opcional)</Label>
+                            <Label htmlFor="job-invoice">Factura (opcional)</Label>
                             <Select value={newJobInvoiceId} onValueChange={setNewJobInvoiceId}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Seleccionar factura" />
@@ -167,7 +184,7 @@ export function KanbanBoard({ workflow, invoices = [], contacts = [] }: KanbanBo
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="job-contact">Contacto (Opcional)</Label>
+                            <Label htmlFor="job-contact">Contacto (opcional)</Label>
                             <Select value={newJobContactId} onValueChange={setNewJobContactId}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Seleccionar contacto" />
@@ -198,7 +215,7 @@ export function KanbanBoard({ workflow, invoices = [], contacts = [] }: KanbanBo
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="job-due-date">Fecha de Vencimiento</Label>
+                            <Label htmlFor="job-due-date">Fecha de vencimiento</Label>
                             <Input id="job-due-date" type="date" value={newJobDueDate} onChange={(e) => setNewJobDueDate(e.target.value)} />
                         </div>
 
@@ -216,7 +233,7 @@ export function KanbanBoard({ workflow, invoices = [], contacts = [] }: KanbanBo
                         <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                             Cancelar
                         </Button>
-                        <Button onClick={handleSubmitNewJob}>Crear Tarea</Button>
+                        <Button onClick={handleSubmitNewJob}>Crear tarea</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -225,7 +242,7 @@ export function KanbanBoard({ workflow, invoices = [], contacts = [] }: KanbanBo
             <Dialog open={isAddStageDialogOpen} onOpenChange={setIsAddStageDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Nueva Etapa</DialogTitle>
+                        <DialogTitle>Nueva etapa</DialogTitle>
                         <DialogDescription>Agrega una nueva etapa al flujo de trabajo.</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
@@ -235,7 +252,7 @@ export function KanbanBoard({ workflow, invoices = [], contacts = [] }: KanbanBo
                                 id="stage-name"
                                 value={newStageName}
                                 onChange={(e) => setNewStageName(e.target.value)}
-                                placeholder="Ej: En Proceso"
+                                placeholder="Ej: En proceso"
                             />
                         </div>
                         <div className="space-y-2">
@@ -271,7 +288,7 @@ export function KanbanBoard({ workflow, invoices = [], contacts = [] }: KanbanBo
                             Cancelar
                         </Button>
                         <Button onClick={handleSubmitNewStage} disabled={!newStageName}>
-                            Crear Etapa
+                            Crear etapa
                         </Button>
                     </DialogFooter>
                 </DialogContent>

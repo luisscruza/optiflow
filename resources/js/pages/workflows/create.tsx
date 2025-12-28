@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, LayoutGrid } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/workflows',
     },
     {
-        title: 'Crear Flujo',
+        title: 'Crear flujo',
         href: '/workflows/create',
     },
 ];
@@ -23,7 +23,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function WorkflowCreate() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Crear Flujo de Trabajo" />
+            <Head title="Crear flujo de trabajo" />
 
             <div className="max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="mb-6">
@@ -39,7 +39,7 @@ export default function WorkflowCreate() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <LayoutGrid className="h-5 w-5" />
-                            Nuevo Flujo de Trabajo
+                            Nuevo flujo de trabajo
                         </CardTitle>
                         <CardDescription>
                             Crea un nuevo flujo de trabajo para gestionar tus procesos. Se crearán etapas iniciales automáticamente.
@@ -51,13 +51,8 @@ export default function WorkflowCreate() {
                             {({ errors, processing }) => (
                                 <div className="space-y-6">
                                     <div className="space-y-2">
-                                        <Label htmlFor="name">Nombre del Flujo</Label>
-                                        <Input
-                                            id="name"
-                                            name="name"
-                                            placeholder="Ej: Proceso de Lentes"
-                                            required
-                                        />
+                                        <Label htmlFor="name">Nombre del flujo</Label>
+                                        <Input id="name" name="name" placeholder="Ej: Proceso de lentes" required />
                                         {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
                                     </div>
 
@@ -68,7 +63,7 @@ export default function WorkflowCreate() {
                                             </Button>
                                         </Link>
                                         <Button type="submit" disabled={processing}>
-                                            {processing ? 'Creando...' : 'Crear Flujo de Trabajo'}
+                                            {processing ? 'Creando...' : 'Crear flujo de trabajo'}
                                         </Button>
                                     </div>
                                 </div>

@@ -37,14 +37,14 @@ export default function WorkflowsIndex({ workflows }: Props) {
                         <div>
                             <CardTitle className="flex items-center gap-2">
                                 <LayoutGrid className="h-5 w-5" />
-                                Flujos de Trabajo
+                                Flujos de trabajo
                             </CardTitle>
                             <CardDescription>Gestiona los procesos de trabajo para el seguimiento de lentes</CardDescription>
                         </div>
                         <Link href="/workflows/create">
                             <Button>
                                 <Plus className="mr-2 h-4 w-4" />
-                                Nuevo Flujo
+                                Nuevo flujo
                             </Button>
                         </Link>
                     </CardHeader>
@@ -58,7 +58,7 @@ export default function WorkflowsIndex({ workflows }: Props) {
                                 <Link href="/workflows/create">
                                     <Button>
                                         <Plus className="mr-2 h-4 w-4" />
-                                        Crear Flujo de Trabajo
+                                        Crear flujo de trabajo
                                     </Button>
                                 </Link>
                             </div>
@@ -93,7 +93,7 @@ export default function WorkflowsIndex({ workflows }: Props) {
                                                         <DropdownMenuItem asChild>
                                                             <Link href={`/workflows/${workflow.id}`} className="flex items-center">
                                                                 <Eye className="mr-2 h-4 w-4" />
-                                                                Ver Tablero
+                                                                Ver tablero
                                                             </Link>
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem asChild>

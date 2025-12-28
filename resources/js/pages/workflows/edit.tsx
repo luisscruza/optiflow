@@ -1,11 +1,10 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, LayoutGrid } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/toggle';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Workflow } from '@/types';
 import { Form } from '@inertiajs/react';
@@ -42,7 +41,7 @@ export default function WorkflowEdit({ workflow }: Props) {
                     <Link href={`/workflows/${workflow.id}`}>
                         <Button variant="ghost" size="sm">
                             <ArrowLeft className="mr-2 h-4 w-4" />
-                            Volver al Tablero
+                            Volver al tablero
                         </Button>
                     </Link>
                 </div>
@@ -51,7 +50,7 @@ export default function WorkflowEdit({ workflow }: Props) {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <LayoutGrid className="h-5 w-5" />
-                            Editar Flujo de Trabajo
+                            Editar flujo de trabajo
                         </CardTitle>
                         <CardDescription>Modifica la configuración del flujo de trabajo.</CardDescription>
                     </CardHeader>
@@ -61,14 +60,14 @@ export default function WorkflowEdit({ workflow }: Props) {
                             {({ errors, processing }) => (
                                 <div className="space-y-6">
                                     <div className="space-y-2">
-                                        <Label htmlFor="name">Nombre del Flujo</Label>
+                                        <Label htmlFor="name">Nombre del flujo</Label>
                                         <Input id="name" name="name" defaultValue={workflow.name} required />
                                         {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
                                     </div>
 
                                     <div className="flex items-center justify-between rounded-lg border p-4">
                                         <div className="space-y-0.5">
-                                            <Label htmlFor="is_active">Estado del Flujo</Label>
+                                            <Label htmlFor="is_active">Estado del flujo</Label>
                                             <p className="text-sm text-muted-foreground">
                                                 {isActive ? 'El flujo está activo y visible' : 'El flujo está inactivo'}
                                             </p>
@@ -98,7 +97,7 @@ export default function WorkflowEdit({ workflow }: Props) {
                                             </Button>
                                         </Link>
                                         <Button type="submit" disabled={processing}>
-                                            {processing ? 'Guardando...' : 'Guardar Cambios'}
+                                            {processing ? 'Guardando...' : 'Guardar cambios'}
                                         </Button>
                                     </div>
                                 </div>

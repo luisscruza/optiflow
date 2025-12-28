@@ -1,9 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, Edit, LayoutGrid } from 'lucide-react';
 
-import { KanbanBoard } from '@/components/workflows/kanban-board';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { KanbanBoard } from '@/components/workflows/kanban-board';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Contact, type Invoice, type Workflow } from '@/types';
 
@@ -42,9 +42,7 @@ export default function WorkflowShow({ workflow, invoices = [], contacts = [] }:
                         <div className="flex items-center gap-2">
                             <LayoutGrid className="h-5 w-5" />
                             <h1 className="text-2xl font-bold">{workflow.name}</h1>
-                            <Badge variant={workflow.is_active ? 'default' : 'secondary'}>
-                                {workflow.is_active ? 'Activo' : 'Inactivo'}
-                            </Badge>
+                            <Badge variant={workflow.is_active ? 'default' : 'secondary'}>{workflow.is_active ? 'Activo' : 'Inactivo'}</Badge>
                         </div>
                     </div>
                     <Link href={`/workflows/${workflow.id}/edit`}>
