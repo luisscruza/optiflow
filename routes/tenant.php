@@ -32,6 +32,9 @@ use App\Http\Controllers\SetDefaultDocumentSubtypeController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\TaxController;
+use App\Http\Controllers\WorkflowController;
+use App\Http\Controllers\WorkflowJobController;
+use App\Http\Controllers\WorkflowStageController;
 use App\Http\Controllers\WorkspaceContextController;
 use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\WorkspaceInvitationController;
@@ -159,6 +162,16 @@ Route::middleware([
 
             Route::resource('prescriptions', PrescriptionController::class);
             Route::get('prescriptions/{prescription}/pdf', DownloadPrescriptionController::class)->name('prescriptions.pdf');
+
+            // Workflow routes (Kanban for lens processing)
+            Route::resource('workflows', WorkflowController::class);
+            Route::post('workflows/{workflow}/stages', [WorkflowStageController::class, 'store'])->name('workflows.stages.store');
+            Route::patch('workflows/{workflow}/stages/{stage}', [WorkflowStageController::class, 'update'])->name('workflows.stages.update');
+            Route::delete('workflows/{workflow}/stages/{stage}', [WorkflowStageController::class, 'destroy'])->name('workflows.stages.destroy');
+            Route::post('workflows/{workflow}/jobs', [WorkflowJobController::class, 'store'])->name('workflows.jobs.store');
+            Route::patch('workflows/{workflow}/jobs/{job}', [WorkflowJobController::class, 'update'])->name('workflows.jobs.update');
+            Route::patch('workflows/{workflow}/jobs/{job}/move', [WorkflowJobController::class, 'move'])->name('workflows.jobs.move');
+            Route::delete('workflows/{workflow}/jobs/{job}', [WorkflowJobController::class, 'destroy'])->name('workflows.jobs.destroy');
 
             Route::post('impersonate/{user}', [ImpersonationController::class, 'store']);
             Route::delete('impersonate', [ImpersonationController::class, 'destroy']);

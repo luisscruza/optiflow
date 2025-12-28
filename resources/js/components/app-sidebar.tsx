@@ -11,7 +11,7 @@ import productImports from '@/routes/product-imports';
 import products from '@/routes/products';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Eye, Folder, LayoutGrid, Package, Receipt, RotateCcw, Settings, Upload, Users2 } from 'lucide-react';
+import { BookOpen, Eye, Folder, Kanban, LayoutGrid, Package, Receipt, RotateCcw, Settings, Upload, Users2 } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
@@ -22,6 +22,11 @@ export function AppSidebar() {
             title: 'Tablero',
             href: dashboard(),
             icon: LayoutGrid,
+        },
+        {
+            title: 'Procesos',
+            href: '/workflows',
+            icon: Kanban,
         },
         ...(can('view invoices') || can('view quotations') || can('view products') || can('view inventory')
             ? [

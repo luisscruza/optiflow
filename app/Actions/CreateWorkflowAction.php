@@ -22,7 +22,7 @@ final readonly class CreateWorkflowAction
         return DB::transaction(function () use ($data): Workflow {
             $workflow = Workflow::query()->create([
                 'name' => $data['name'],
-                'is_active' => $data['is_active'] ?: true,
+                'is_active' => $data['is_active'] ?? true,
             ]);
 
             $this->createInitialStages($workflow);

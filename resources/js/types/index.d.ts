@@ -710,3 +710,54 @@ export interface ProductImport {
     created_at: string;
     updated_at: string;
 }
+
+// Workflow Types (Kanban for lens processing)
+export type WorkflowJobPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+export interface Workflow {
+    id: number;
+    name: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+    stages?: WorkflowStage[];
+    stages_count?: number;
+}
+
+export interface WorkflowStage {
+    id: number;
+    workflow_id: number;
+    name: string;
+    description?: string | null;
+    color: string;
+    position: number;
+    is_active: boolean;
+    is_initial: boolean;
+    is_final: boolean;
+    created_at: string;
+    updated_at: string;
+    workflow?: Workflow;
+    jobs?: WorkflowJob[];
+    jobs_count?: number;
+}
+
+export interface WorkflowJob {
+    id: number;
+    workflow_id: number;
+    workflow_stage_id: number;
+    invoice_id?: number | null;
+    contact_id?: number | null;
+    priority?: WorkflowJobPriority | null;
+    due_date?: string | null;
+    started_at?: string | null;
+    completed_at?: string | null;
+    canceled_at?: string | null;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+    workflow?: Workflow;
+    workflow_stage?: WorkflowStage;
+    invoice?: Invoice;
+    contact?: Contact;
+    comments?: CommentData[];
+}

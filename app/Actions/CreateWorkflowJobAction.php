@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Models\WorkflowJob;
 use App\Models\WorkflowStage;
 use Illuminate\Support\Facades\DB;
 
@@ -14,9 +15,9 @@ final readonly class CreateWorkflowJobAction
      *
      * @param  array{invoice_id?: int, contact_id?: int, priority?: string, due_date?: string, started_at?: string, completed_at?: string, canceled_at?: string, notes?: string}  $data
      */
-    public function handle(): void
+    public function handle(WorkflowStage $stage, array $data): WorkflowJob
     {
-        DB::transaction(function (WorkflowStage $stage, array $data): void {
+        return DB::transaction(function () use ($stage, $data): WorkflowJob {
             $job = $stage->jobs()->create([
                 'workflow_id' => $stage->workflow->id,
                 'invoice_id' => $data['invoice_id'] ?? null,
@@ -31,6 +32,8 @@ final readonly class CreateWorkflowJobAction
             if (isset($data['notes'])) {
                 $job->comment($data['notes']);
             }
+
+            return $job;
         });
     }
 }
