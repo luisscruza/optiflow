@@ -11,6 +11,10 @@ use InvalidArgumentException;
 
 final readonly class MoveWorkflowJobAction
 {
+    public function __construct(
+        private RecordWorkflowEventAction $recordEvent,
+    ) {}
+
     /**
      * Move a job to a different stage within the same workflow.
      */
@@ -20,6 +24,8 @@ final readonly class MoveWorkflowJobAction
             if ($job->workflow_id !== $targetStage->workflow_id) {
                 throw new InvalidArgumentException('Target stage must belong to the same workflow.');
             }
+
+            $fromStage = $job->workflowStage;
 
             $job->update([
                 'workflow_stage_id' => $targetStage->id,
@@ -37,6 +43,9 @@ final readonly class MoveWorkflowJobAction
                     'completed_at' => null,
                 ]);
             }
+
+            // Record the stage change event
+            $this->recordEvent->stageChanged($job, $fromStage, $targetStage);
 
             return $job->fresh();
         });

@@ -53,6 +53,7 @@ final class WorkflowEvent extends Model
         return [
             'event_type' => EventType::class,
             'user_id' => 'integer',
+            'metadata' => 'array',
             'is_active' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',

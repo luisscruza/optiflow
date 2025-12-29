@@ -34,6 +34,7 @@ use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\WorkflowController;
 use App\Http\Controllers\WorkflowJobController;
+use App\Http\Controllers\WorkflowJobStageController;
 use App\Http\Controllers\WorkflowStageController;
 use App\Http\Controllers\WorkspaceContextController;
 use App\Http\Controllers\WorkspaceController;
@@ -65,7 +66,7 @@ Route::middleware([
     InitializeTenancyBySubdomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function (): void {
-    Route::get('/', fn () => redirect()->route('dashboard'))->name('home');
+    Route::get('/', fn() => redirect()->route('dashboard'))->name('home');
 
     Route::prefix('invitations')->name('invitations.')->group(function (): void {
         Route::get('{token}', [WorkspaceInvitationController::class, 'show'])->name('show');
@@ -139,7 +140,7 @@ Route::middleware([
             Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
             Route::patch('document-subtypes/{documentSubtype}/set-default', SetDefaultDocumentSubtypeController::class)->name('document-subtypes.set-default');
 
-            Route::get('inventory', fn () => Inertia::render('inventory/index'))->name('inventory.index');
+            Route::get('inventory', fn() => Inertia::render('inventory/index'))->name('inventory.index');
 
             Route::resource('stock-adjustments', StockAdjustmentController::class)->only(['index', 'create', 'store', 'show'])->parameters([
                 'stock-adjustments' => 'product',
@@ -168,9 +169,10 @@ Route::middleware([
             Route::post('workflows/{workflow}/stages', [WorkflowStageController::class, 'store'])->name('workflows.stages.store');
             Route::patch('workflows/{workflow}/stages/{stage}', [WorkflowStageController::class, 'update'])->name('workflows.stages.update');
             Route::delete('workflows/{workflow}/stages/{stage}', [WorkflowStageController::class, 'destroy'])->name('workflows.stages.destroy');
+            Route::get('workflows/{workflow}/jobs/{job}', [WorkflowJobController::class, 'show'])->name('workflows.jobs.show');
             Route::post('workflows/{workflow}/jobs', [WorkflowJobController::class, 'store'])->name('workflows.jobs.store');
             Route::patch('workflows/{workflow}/jobs/{job}', [WorkflowJobController::class, 'update'])->name('workflows.jobs.update');
-            Route::patch('workflows/{workflow}/jobs/{job}/move', [WorkflowJobController::class, 'move'])->name('workflows.jobs.move');
+            Route::patch('workflows/{workflow}/jobs/{job}/move', [WorkflowJobStageController::class, 'update'])->name('workflows.jobs.move');
             Route::delete('workflows/{workflow}/jobs/{job}', [WorkflowJobController::class, 'destroy'])->name('workflows.jobs.destroy');
 
             Route::post('impersonate/{user}', [ImpersonationController::class, 'store']);
@@ -178,6 +180,6 @@ Route::middleware([
         });
     });
 
-    require __DIR__.'/settings.php';
-    require __DIR__.'/auth.php';
+    require __DIR__ . '/settings.php';
+    require __DIR__ . '/auth.php';
 });

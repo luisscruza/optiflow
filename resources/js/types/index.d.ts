@@ -763,4 +763,28 @@ export interface WorkflowJob {
     invoice?: Invoice;
     prescription?: Prescription;
     comments?: CommentData[];
+    events?: WorkflowEvent[];
+}
+
+export type WorkflowEventType = 'stage_changed' | 'note_added' | 'priority_updated';
+
+export interface WorkflowEventMetadata {
+    from_priority?: string | null;
+    to_priority?: string | null;
+}
+
+export interface WorkflowEvent {
+    id: string;
+    workflow_job_id: string;
+    from_stage_id?: string | null;
+    to_stage_id?: string | null;
+    event_type: WorkflowEventType;
+    user_id?: number | null;
+    metadata?: WorkflowEventMetadata | null;
+    created_at: string;
+    updated_at: string;
+    workflow_job?: WorkflowJob;
+    from_stage?: WorkflowStage | null;
+    to_stage?: WorkflowStage | null;
+    user?: User | null;
 }

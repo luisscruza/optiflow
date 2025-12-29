@@ -68,12 +68,21 @@ export function KanbanCard({ job, workflow, onDragStart, onDragEnd }: KanbanCard
 
     const isOverdue = job.due_date && new Date(job.due_date) < new Date() && !job.completed_at;
 
+    const handleCardClick = (e: React.MouseEvent) => {
+        // Don't navigate if clicking on dropdown or dragging
+        if ((e.target as HTMLElement).closest('[data-no-navigate]')) {
+            return;
+        }
+        router.visit(`/workflows/${workflow.id}/jobs/${job.id}`);
+    };
+
     return (
         <>
             <Card
                 draggable
                 onDragStart={(e) => onDragStart(e, job)}
                 onDragEnd={onDragEnd}
+                onClick={handleCardClick}
                 className="cursor-grab transition-shadow hover:shadow-md active:cursor-grabbing"
             >
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 p-3 pb-2">
@@ -94,11 +103,11 @@ export function KanbanCard({ job, workflow, onDragStart, onDragEnd }: KanbanCard
                     </div>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" data-no-navigate>
                                 <MoreHorizontal className="h-3 w-3" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" data-no-navigate>
                             <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Editar

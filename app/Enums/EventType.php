@@ -8,4 +8,5 @@ enum EventType: string
 {
     case StageChanged = 'stage_changed';
     case NoteAdded = 'note_added';
+    case PriorityUpdated = 'priority_updated';
 }

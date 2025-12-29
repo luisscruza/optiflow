@@ -15,10 +15,46 @@ use App\Models\Workflow;
 use App\Models\WorkflowJob;
 use App\Models\WorkflowStage;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 use InvalidArgumentException;
 
 final class WorkflowJobController extends Controller
 {
+    /**
+     * Display the specified job.
+     */
+    public function show(Workflow $workflow, WorkflowJob $job): Response
+    {
+        $workflow->load([
+            'stages' => fn($query) => $query->orderBy('position'),
+        ]);
+
+        $job->load([
+            'workflow',
+            'workflowStage',
+            'contact',
+            'invoice.contact',
+            'invoice.items.product',
+            'invoice.documentSubtype',
+            'invoice.payments',
+            'prescription.patient',
+            'prescription.optometrist',
+            'comments.commentator',
+        ]);
+
+        $events = $job->events()
+            ->with(['user', 'fromStage', 'toStage'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Inertia::render('workflow-jobs/show', [
+            'workflow' => $workflow,
+            'job' => $job,
+            'events' => $events,
+        ]);
+    }
+
     /**
      * Store a newly created job in storage.
      */
@@ -40,27 +76,8 @@ final class WorkflowJobController extends Controller
     {
         $action->handle($job, $request->validated());
 
-        return redirect()->route('workflows.show', $workflow)
+        return redirect()->back()
             ->with('success', 'Tarea actualizada exitosamente.');
-    }
-
-    /**
-     * Move a job to a different stage.
-     */
-    public function move(MoveWorkflowJobRequest $request, Workflow $workflow, WorkflowJob $job, MoveWorkflowJobAction $action): RedirectResponse
-    {
-        $validated = $request->validated();
-        $targetStage = WorkflowStage::findOrFail($validated['workflow_stage_id']);
-
-        try {
-            $action->handle($job, $targetStage);
-
-            return redirect()->route('workflows.show', $workflow)
-                ->with('success', 'Tarea movida exitosamente.');
-        } catch (InvalidArgumentException $e) {
-            return redirect()->route('workflows.show', $workflow)
-                ->with('error', $e->getMessage());
-        }
     }
 
     /**

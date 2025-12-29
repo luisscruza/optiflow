@@ -1,14 +1,14 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { MessageCircle } from 'lucide-react';
 import React, { useState } from 'react';
 import { Comment, type CommentData } from './Comment';
 import { CommentForm } from './CommentForm';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface CommentListProps extends React.HTMLAttributes<HTMLDivElement> {
     comments: CommentData[];
     commentableType: string;
-    commentableId: number;
+    commentableId: number | string;
     currentUser?: {
         id: number;
         name: string;
@@ -23,7 +23,7 @@ export const CommentList: React.FC<CommentListProps> = ({
     commentableType,
     commentableId,
     currentUser,
-    title = "Comentarios",
+    title = 'Comentarios',
     showTitle = true,
     className,
     ...props
@@ -45,9 +45,7 @@ export const CommentList: React.FC<CommentListProps> = ({
     };
 
     // Sort comments to show newest first for top-level comments
-    const sortedComments = [...comments].sort((a, b) => 
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
+    const sortedComments = [...comments].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return (
         <Card className={cn(className)} {...props}>
@@ -56,15 +54,11 @@ export const CommentList: React.FC<CommentListProps> = ({
                     <CardTitle className="flex items-center gap-2">
                         <MessageCircle className="h-5 w-5" />
                         {title}
-                        {comments.length > 0 && (
-                            <span className="text-sm font-normal text-gray-500">
-                                ({comments.length})
-                            </span>
-                        )}
+                        {comments.length > 0 && <span className="text-sm font-normal text-gray-500">({comments.length})</span>}
                     </CardTitle>
                 </CardHeader>
             )}
-            
+
             <CardContent className="space-y-6">
                 {/* Main comment form */}
                 <CommentForm
@@ -93,8 +87,8 @@ export const CommentList: React.FC<CommentListProps> = ({
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-8 text-gray-500 border-t">
-                        <MessageCircle className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                    <div className="border-t py-8 text-center text-gray-500">
+                        <MessageCircle className="mx-auto mb-3 h-12 w-12 text-gray-300" />
                         <p>No hay comentarios aún.</p>
                         <p className="text-sm">Sé el primero en comentar.</p>
                     </div>

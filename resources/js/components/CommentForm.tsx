@@ -1,14 +1,14 @@
-import React from 'react';
-import { useForm } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2 } from 'lucide-react';
-import { MentionTextarea } from './MentionTextarea';
+import { Button } from '@/components/ui/button';
 import comments from '@/routes/comments';
+import { useForm } from '@inertiajs/react';
+import { Loader2 } from 'lucide-react';
+import React from 'react';
+import { MentionTextarea } from './MentionTextarea';
 
 interface CommentFormProps {
     commentableType: string;
-    commentableId: number;
+    commentableId: number | string;
     parentId?: number;
     parentCommentId?: number; // When replying to a comment, this is the comment ID
     onSuccess?: () => void;
@@ -29,7 +29,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
     parentCommentId,
     onSuccess,
     onCancel,
-    placeholder = "Escribe un comentario...",
+    placeholder = 'Escribe un comentario...',
     showCancel = false,
     currentUser,
 }) => {
@@ -47,7 +47,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
     const getInitials = (name: string) => {
         return name
             .split(' ')
-            .map(word => word[0])
+            .map((word) => word[0])
             .join('')
             .toUpperCase()
             .slice(0, 2);
@@ -78,13 +78,11 @@ export const CommentForm: React.FC<CommentFormProps> = ({
                 {currentUser && (
                     <div className="flex-shrink-0">
                         <Avatar className="h-8 w-8">
-                            <AvatarFallback className="bg-gray-100 text-gray-600 text-xs">
-                                {getInitials(currentUser.name)}
-                            </AvatarFallback>
+                            <AvatarFallback className="bg-gray-100 text-xs text-gray-600">{getInitials(currentUser.name)}</AvatarFallback>
                         </Avatar>
                     </div>
                 )}
-                
+
                 <div className="flex-1">
                     <MentionTextarea
                         value={data.comment}
@@ -93,32 +91,20 @@ export const CommentForm: React.FC<CommentFormProps> = ({
                         rows={3}
                         disabled={processing}
                     />
-                    
-                    {errors.comment && (
-                        <p className="text-red-500 text-xs mt-1">{errors.comment}</p>
-                    )}
+
+                    {errors.comment && <p className="mt-1 text-xs text-red-500">{errors.comment}</p>}
                 </div>
             </div>
 
             <div className="flex justify-end gap-2">
                 {showCancel && (
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleCancel}
-                        disabled={processing}
-                    >
+                    <Button type="button" variant="outline" size="sm" onClick={handleCancel} disabled={processing}>
                         Cancelar
                     </Button>
                 )}
-                
-                <Button
-                    type="submit"
-                    size="sm"
-                    disabled={processing || !data.comment.trim()}
-                >
-                    {processing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+
+                <Button type="submit" size="sm" disabled={processing || !data.comment.trim()}>
+                    {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {parentId ? 'Responder' : 'Comentar'}
                 </Button>
             </div>

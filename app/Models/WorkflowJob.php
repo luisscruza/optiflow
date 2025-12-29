@@ -9,6 +9,7 @@ use App\Contracts\Commentable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class WorkflowJob extends Model implements Commentable
 {
@@ -53,6 +54,14 @@ final class WorkflowJob extends Model implements Commentable
     public function prescription(): BelongsTo
     {
         return $this->belongsTo(Prescription::class);
+    }
+
+    /**
+     * @return HasMany<WorkflowEvent, $this>
+     */
+    public function events(): HasMany
+    {
+        return $this->hasMany(WorkflowEvent::class);
     }
 
     /**
