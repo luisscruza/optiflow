@@ -228,7 +228,7 @@ export function KanbanBoard({ workflow, contacts = [], invoices = [], prescripti
                                     ) : (
                                         invoices.map((invoice) => (
                                             <SelectItem key={invoice.id} value={invoice.id.toString()}>
-                                                #{invoice.document_number} - ${Number(invoice.total).toLocaleString('es-DO')}
+                                                #{invoice.document_number} - ${Number(invoice.total_amount).toLocaleString('es-DO')}
                                             </SelectItem>
                                         ))
                                     )}

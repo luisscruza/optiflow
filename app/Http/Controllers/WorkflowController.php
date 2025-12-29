@@ -79,16 +79,14 @@ final class WorkflowController extends Controller
                 ->get(),
             'invoices' => Inertia::lazy(fn() => $contactId
                 ? Invoice::query()
-                ->with('contact:id,name')
-                ->where('contact_id', $contactId)
-                ->whereNull('canceled_at')
+                ->with('contact')
                 ->orderBy('created_at', 'desc')
                 ->limit(50)
                 ->get()
                 : []),
             'prescriptions' => Inertia::lazy(fn() => $contactId
                 ? Prescription::query()
-                ->with('patient:id,name')
+                ->with('patient')
                 ->where('patient_id', $contactId)
                 ->orderBy('created_at', 'desc')
                 ->limit(50)

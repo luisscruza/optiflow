@@ -40,6 +40,7 @@ final class AppServiceProvider extends ServiceProvider
     {
         Relation::enforceMorphMap([
             'invoice' => \App\Models\Invoice::class,
+            'workflowjob' => \App\Models\WorkflowJob::class,
             'comment' => \App\Models\Comment::class,
             'contact' => \App\Models\Contact::class,
             'user' => User::class,
