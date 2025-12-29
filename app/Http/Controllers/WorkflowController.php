@@ -11,6 +11,7 @@ use App\Http\Requests\CreateWorkflowRequest;
 use App\Http\Requests\UpdateWorkflowRequest;
 use App\Models\Contact;
 use App\Models\Invoice;
+use App\Models\Prescription;
 use App\Models\Workflow;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -56,28 +57,43 @@ final class WorkflowController extends Controller
     /**
      * Display the specified workflow (Kanban board view).
      */
-    public function show(Workflow $workflow): Response
+    public function show(Request $request, Workflow $workflow): Response
     {
         $workflow->load([
-            'stages' => fn ($query) => $query->orderBy('position'),
-            'stages.jobs' => fn ($query) => $query->orderBy('created_at', 'desc'),
+            'stages' => fn($query) => $query->orderBy('position'),
+            'stages.jobs' => fn($query) => $query->orderBy('created_at', 'desc'),
             'stages.jobs.invoice.contact',
             'stages.jobs.contact',
+            'stages.jobs.prescription.patient',
             'stages.jobs.comments.commentator',
         ]);
 
+        $contactId = $request->query('contact_id');
+
         return Inertia::render('workflows/show', [
             'workflow' => $workflow,
-            'invoices' => Inertia::optional(fn () => Invoice::query()
-                ->with('contact')
-                ->whereNull('canceled_at')
-                ->orderBy('created_at', 'desc')
-                ->limit(100)
-                ->get()),
-            'contacts' => Inertia::optional(fn () => Contact::query()
+            'contacts' => fn() => Contact::query()
+                ->customers()
                 ->where('status', 'active')
                 ->orderBy('name')
-                ->get()),
+                ->get(),
+            'invoices' => Inertia::lazy(fn() => $contactId
+                ? Invoice::query()
+                ->with('contact:id,name')
+                ->where('contact_id', $contactId)
+                ->whereNull('canceled_at')
+                ->orderBy('created_at', 'desc')
+                ->limit(50)
+                ->get()
+                : []),
+            'prescriptions' => Inertia::lazy(fn() => $contactId
+                ? Prescription::query()
+                ->with('patient:id,name')
+                ->where('patient_id', $contactId)
+                ->orderBy('created_at', 'desc')
+                ->limit(50)
+                ->get()
+                : []),
         ]);
     }
 

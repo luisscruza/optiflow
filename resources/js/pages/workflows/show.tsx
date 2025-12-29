@@ -5,15 +5,16 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { KanbanBoard } from '@/components/workflows/kanban-board';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Contact, type Invoice, type Workflow } from '@/types';
+import { type BreadcrumbItem, type Contact, type Invoice, type Prescription, type Workflow } from '@/types';
 
 interface Props {
     workflow: Workflow;
     invoices?: Invoice[];
     contacts?: Contact[];
+    prescriptions?: Prescription[];
 }
 
-export default function WorkflowShow({ workflow, invoices = [], contacts = [] }: Props) {
+export default function WorkflowShow({ workflow, invoices = [], contacts = [], prescriptions = [] }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Procesos',
@@ -55,7 +56,7 @@ export default function WorkflowShow({ workflow, invoices = [], contacts = [] }:
 
                 {/* Kanban Board */}
                 <div className="flex-1 overflow-hidden">
-                    <KanbanBoard workflow={workflow} invoices={invoices} contacts={contacts} />
+                    <KanbanBoard workflow={workflow} invoices={invoices} contacts={contacts} prescriptions={prescriptions} />
                 </div>
             </div>
         </AppLayout>

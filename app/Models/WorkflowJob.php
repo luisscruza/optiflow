@@ -48,13 +48,22 @@ final class WorkflowJob extends Model implements Commentable
     }
 
     /**
+     * @return BelongsTo<Prescription, $this>
+     */
+    public function prescription(): BelongsTo
+    {
+        return $this->belongsTo(Prescription::class);
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
-            'invoice_id' => 'integer',
             'contact_id' => 'integer',
+            'invoice_id' => 'integer',
+            'prescription_id' => 'integer',
             'notes' => 'string',
             'priority' => 'string',
             'due_date' => 'datetime',

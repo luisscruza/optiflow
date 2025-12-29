@@ -745,8 +745,9 @@ export interface WorkflowJob {
     id: string;
     workflow_id: string;
     workflow_stage_id: string;
-    invoice_id?: number | null;
     contact_id?: number | null;
+    invoice_id?: number | null;
+    prescription_id?: number | null;
     notes?: string | null;
     priority?: WorkflowJobPriority | null;
     due_date?: string | null;
@@ -758,7 +759,8 @@ export interface WorkflowJob {
     updated_at: string;
     workflow?: Workflow;
     workflow_stage?: WorkflowStage;
-    invoice?: Invoice;
     contact?: Contact;
+    invoice?: Invoice;
+    prescription?: Prescription;
     comments?: CommentData[];
 }
