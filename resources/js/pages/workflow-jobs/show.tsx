@@ -13,6 +13,7 @@ import {
     History,
     LayoutGrid,
     Receipt,
+    Settings2,
     User,
     X,
 } from 'lucide-react';
@@ -25,13 +26,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import {
     type BreadcrumbItem,
     type SharedData,
     type Workflow,
     type WorkflowEvent,
+    type WorkflowField,
     type WorkflowJob,
     type WorkflowJobPriority,
     type WorkflowStage,
@@ -65,9 +69,14 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
     const [invoiceOpen, setInvoiceOpen] = useState(false);
     const [prescriptionOpen, setPrescriptionOpen] = useState(false);
     const [notesOpen, setNotesOpen] = useState(false);
+    const [customFieldsOpen, setCustomFieldsOpen] = useState(true);
     const [historyOpen, setHistoryOpen] = useState(true);
     const [datesOpen, setDatesOpen] = useState(true);
     const [dueDateInput, setDueDateInput] = useState<string>('');
+
+    // Metadata editing state
+    const [editableMetadata, setEditableMetadata] = useState<Record<string, string | number | boolean | null>>(job.metadata || {});
+    const [isSavingMetadata, setIsSavingMetadata] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -115,6 +124,7 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
             stage_changed: 'Cambio de etapa',
             note_added: 'Nota agregada',
             priority_updated: 'Cambio de prioridad',
+            metadata_updated: 'Datos actualizados',
         };
         return labels[eventType] || eventType;
     };
@@ -394,7 +404,7 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
                                                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100 text-green-600">
                                                                 <Receipt className="h-4 w-4" />
                                                             </div>
-                                                            Factura Asociada
+                                                            Factura asociada
                                                         </CardTitle>
                                                         <CardDescription>Factura #{job.invoice.document_number}</CardDescription>
                                                     </div>
@@ -521,7 +531,7 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
                                                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 text-purple-600">
                                                                 <FileText className="h-4 w-4" />
                                                             </div>
-                                                            Receta Asociada
+                                                            Receta asociada
                                                         </CardTitle>
                                                         <CardDescription>Receta #{job.prescription.id}</CardDescription>
                                                     </div>
@@ -647,6 +657,126 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
                                             <CardContent className="px-6 py-6">
                                                 <div className="rounded-lg bg-gray-50 p-4">
                                                     <p className="text-sm whitespace-pre-wrap text-gray-700">{job.notes}</p>
+                                                </div>
+                                            </CardContent>
+                                        </CollapsibleContent>
+                                    </Card>
+                                </Collapsible>
+                            )}
+
+                            {/* Custom Fields / Metadata */}
+                            {workflow.fields && workflow.fields.length > 0 && (
+                                <Collapsible open={customFieldsOpen} onOpenChange={setCustomFieldsOpen}>
+                                    <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
+                                        <CollapsibleTrigger asChild>
+                                            <CardHeader className="cursor-pointer bg-gray-50/50 px-6 py-5 transition-colors hover:bg-gray-100/50">
+                                                <div className="flex items-center justify-between">
+                                                    <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
+                                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 text-purple-600">
+                                                            <Settings2 className="h-4 w-4" />
+                                                        </div>
+                                                        Datos del trabajo
+                                                    </CardTitle>
+                                                    <ChevronDown
+                                                        className={`h-5 w-5 text-gray-500 transition-transform duration-200 ${customFieldsOpen ? 'rotate-180' : ''}`}
+                                                    />
+                                                </div>
+                                            </CardHeader>
+                                        </CollapsibleTrigger>
+                                        <CollapsibleContent>
+                                            <CardContent className="px-6 py-6">
+                                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                                    {workflow.fields.map((field: WorkflowField) => {
+                                                        const currentValue = editableMetadata[field.key] ?? '';
+
+                                                        const handleFieldChange = (value: string | number | null) => {
+                                                            setEditableMetadata((prev) => ({
+                                                                ...prev,
+                                                                [field.key]: value,
+                                                            }));
+                                                        };
+
+                                                        return (
+                                                            <div key={field.id} className="space-y-2">
+                                                                <Label className="text-sm font-medium text-gray-700">
+                                                                    {field.name}
+                                                                    {field.is_required && <span className="ml-1 text-red-500">*</span>}
+                                                                </Label>
+
+                                                                {field.type === 'text' && (
+                                                                    <Input
+                                                                        value={String(currentValue)}
+                                                                        onChange={(e) => handleFieldChange(e.target.value)}
+                                                                        placeholder={field.placeholder || ''}
+                                                                    />
+                                                                )}
+
+                                                                {field.type === 'textarea' && (
+                                                                    <Textarea
+                                                                        value={String(currentValue)}
+                                                                        onChange={(e) => handleFieldChange(e.target.value)}
+                                                                        placeholder={field.placeholder || ''}
+                                                                        rows={3}
+                                                                    />
+                                                                )}
+
+                                                                {field.type === 'number' && (
+                                                                    <Input
+                                                                        type="number"
+                                                                        value={String(currentValue)}
+                                                                        onChange={(e) =>
+                                                                            handleFieldChange(e.target.value ? Number(e.target.value) : null)
+                                                                        }
+                                                                        placeholder={field.placeholder || ''}
+                                                                    />
+                                                                )}
+
+                                                                {field.type === 'date' && (
+                                                                    <Input
+                                                                        type="date"
+                                                                        value={String(currentValue)}
+                                                                        onChange={(e) => handleFieldChange(e.target.value)}
+                                                                    />
+                                                                )}
+
+                                                                {field.type === 'select' && field.mastertable?.items && (
+                                                                    <Select value={String(currentValue)} onValueChange={(v) => handleFieldChange(v)}>
+                                                                        <SelectTrigger>
+                                                                            <SelectValue placeholder={field.placeholder || 'Seleccionar...'} />
+                                                                        </SelectTrigger>
+                                                                        <SelectContent>
+                                                                            {field.mastertable.items.map((item) => (
+                                                                                <SelectItem key={item.id} value={String(item.id)}>
+                                                                                    {item.name}
+                                                                                </SelectItem>
+                                                                            ))}
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+
+                                                <div className="mt-4 flex justify-end">
+                                                    <Button
+                                                        size="sm"
+                                                        disabled={isSavingMetadata}
+                                                        onClick={() => {
+                                                            setIsSavingMetadata(true);
+                                                            router.patch(
+                                                                `/workflows/${workflow.id}/jobs/${job.id}`,
+                                                                { metadata: editableMetadata },
+                                                                {
+                                                                    preserveScroll: true,
+                                                                    onSuccess: () => setIsSavingMetadata(false),
+                                                                    onError: () => setIsSavingMetadata(false),
+                                                                },
+                                                            );
+                                                        }}
+                                                    >
+                                                        {isSavingMetadata ? 'Guardando...' : 'Guardar campos'}
+                                                    </Button>
                                                 </div>
                                             </CardContent>
                                         </CollapsibleContent>

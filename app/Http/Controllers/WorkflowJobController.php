@@ -6,10 +6,8 @@ namespace App\Http\Controllers;
 
 use App\Actions\CreateWorkflowJobAction;
 use App\Actions\DeleteWorkflowJobAction;
-use App\Actions\MoveWorkflowJobAction;
 use App\Actions\UpdateWorkflowJobAction;
 use App\Http\Requests\CreateWorkflowJobRequest;
-use App\Http\Requests\MoveWorkflowJobRequest;
 use App\Http\Requests\UpdateWorkflowJobRequest;
 use App\Models\Workflow;
 use App\Models\WorkflowJob;
@@ -17,7 +15,6 @@ use App\Models\WorkflowStage;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
-use InvalidArgumentException;
 
 final class WorkflowJobController extends Controller
 {
@@ -27,7 +24,9 @@ final class WorkflowJobController extends Controller
     public function show(Workflow $workflow, WorkflowJob $job): Response
     {
         $workflow->load([
-            'stages' => fn($query) => $query->orderBy('position'),
+            'stages' => fn ($query) => $query->orderBy('position'),
+            'fields' => fn ($query) => $query->where('is_active', true)->orderBy('position'),
+            'fields.mastertable.items',
         ]);
 
         $job->load([

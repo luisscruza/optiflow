@@ -53,4 +53,21 @@ final readonly class RecordWorkflowEventAction
             'user_id' => Auth::id(),
         ]);
     }
+
+    /**
+     * Record a metadata update event.
+     *
+     * @param  array<string, mixed>  $changedFields
+     */
+    public function metadataUpdated(WorkflowJob $job, array $changedFields): WorkflowEvent
+    {
+        return WorkflowEvent::create([
+            'workflow_job_id' => $job->id,
+            'event_type' => EventType::MetadataUpdated,
+            'user_id' => Auth::id(),
+            'metadata' => [
+                'changed_fields' => $changedFields,
+            ],
+        ]);
+    }
 }

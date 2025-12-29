@@ -5,17 +5,22 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { WorkflowFieldsEditor } from '@/components/workflows/workflow-fields-editor';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Workflow } from '@/types';
+import { type BreadcrumbItem, type Mastertable, type Workflow } from '@/types';
 import { Form } from '@inertiajs/react';
 import { useState } from 'react';
 
 interface Props {
     workflow: Workflow;
+    mastertables: Mastertable[];
 }
 
-export default function WorkflowEdit({ workflow }: Props) {
+export default function WorkflowEdit({ workflow, mastertables }: Props) {
     const [isActive, setIsActive] = useState(workflow.is_active);
+    const [invoiceRequirement, setInvoiceRequirement] = useState<string>(workflow.invoice_requirement || 'none');
+    const [prescriptionRequirement, setPrescriptionRequirement] = useState<string>(workflow.prescription_requirement || 'none');
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -89,6 +94,54 @@ export default function WorkflowEdit({ workflow }: Props) {
                                             />
                                         </button>
                                     </div>
+
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="invoice_requirement">Factura</Label>
+                                            <input
+                                                type="hidden"
+                                                name="invoice_requirement"
+                                                value={invoiceRequirement === 'none' ? '' : invoiceRequirement}
+                                            />
+                                            <Select value={invoiceRequirement} onValueChange={setInvoiceRequirement}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="No requiere factura" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="none">No requiere factura</SelectItem>
+                                                    <SelectItem value="optional">Opcional</SelectItem>
+                                                    <SelectItem value="required">Requerido</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <p className="text-xs text-muted-foreground">
+                                                Define si las tareas de este flujo requieren una factura asociada.
+                                            </p>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="prescription_requirement">Receta</Label>
+                                            <input
+                                                type="hidden"
+                                                name="prescription_requirement"
+                                                value={prescriptionRequirement === 'none' ? '' : prescriptionRequirement}
+                                            />
+                                            <Select value={prescriptionRequirement} onValueChange={setPrescriptionRequirement}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="No requiere receta" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="none">No requiere receta</SelectItem>
+                                                    <SelectItem value="optional">Opcional</SelectItem>
+                                                    <SelectItem value="required">Requerido</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <p className="text-xs text-muted-foreground">
+                                                Define si las tareas de este flujo requieren una receta asociada.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <WorkflowFieldsEditor fields={workflow.fields ?? []} mastertables={mastertables} onChange={() => {}} />
 
                                     <div className="flex justify-end gap-4">
                                         <Link href={`/workflows/${workflow.id}`}>

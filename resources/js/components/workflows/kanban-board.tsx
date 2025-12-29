@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { type Contact, type Invoice, type Prescription, type Workflow, type WorkflowJob, type WorkflowJobPriority } from '@/types';
 
+import { DynamicFields } from './dynamic-fields';
 import { KanbanColumn } from './kanban-column';
 
 interface KanbanBoardProps {
@@ -33,6 +34,7 @@ export function KanbanBoard({ workflow, contacts = [], invoices = [], prescripti
     const [newJobPriority, setNewJobPriority] = useState<WorkflowJobPriority | ''>('');
     const [newJobDueDate, setNewJobDueDate] = useState('');
     const [newJobNotes, setNewJobNotes] = useState('');
+    const [newJobMetadata, setNewJobMetadata] = useState<Record<string, string | number | null>>({});
 
     // New stage form state
     const [newStageName, setNewStageName] = useState('');
@@ -96,6 +98,26 @@ export function KanbanBoard({ workflow, contacts = [], invoices = [], prescripti
     const handleSubmitNewJob = () => {
         if (!selectedStageId || !newJobContactId) return;
 
+        // Validate required invoice
+        if (workflow.invoice_requirement === 'required' && !newJobInvoiceId) {
+            // TODO: Show validation error
+            return;
+        }
+
+        // Validate required prescription
+        if (workflow.prescription_requirement === 'required' && !newJobPrescriptionId) {
+            // TODO: Show validation error
+            return;
+        }
+
+        // Validate required metadata fields
+        const requiredFields = workflow.fields?.filter((f) => f.is_required) ?? [];
+        const missingRequired = requiredFields.some((f) => !newJobMetadata[f.key]);
+        if (missingRequired) {
+            // TODO: Show validation error
+            return;
+        }
+
         router.post(
             `/workflows/${workflow.id}/jobs`,
             {
@@ -106,6 +128,7 @@ export function KanbanBoard({ workflow, contacts = [], invoices = [], prescripti
                 priority: newJobPriority || null,
                 due_date: newJobDueDate || null,
                 notes: newJobNotes || null,
+                metadata: Object.keys(newJobMetadata).length > 0 ? newJobMetadata : null,
             },
             {
                 onSuccess: () => {
@@ -141,6 +164,7 @@ export function KanbanBoard({ workflow, contacts = [], invoices = [], prescripti
         setNewJobPriority('');
         setNewJobDueDate('');
         setNewJobNotes('');
+        setNewJobMetadata({});
         setSelectedStageId(null);
     };
 
@@ -209,64 +233,90 @@ export function KanbanBoard({ workflow, contacts = [], invoices = [], prescripti
                         </div>
 
                         {/* Invoice Selection - Filtered by Contact */}
-                        <div className="space-y-2">
-                            <Label htmlFor="job-invoice">Factura (opcional)</Label>
-                            <Select value={newJobInvoiceId} onValueChange={setNewJobInvoiceId} disabled={!newJobContactId || isLoadingContactData}>
-                                <SelectTrigger>
-                                    {isLoadingContactData ? (
-                                        <div className="flex items-center gap-2">
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                            <span>Cargando...</span>
-                                        </div>
+                        {workflow.invoice_requirement && (
+                            <div className="space-y-2">
+                                <Label htmlFor="job-invoice">
+                                    Factura{' '}
+                                    {workflow.invoice_requirement === 'required' ? (
+                                        <span className="text-destructive">*</span>
                                     ) : (
-                                        <SelectValue placeholder={newJobContactId ? 'Seleccionar factura' : 'Primero seleccione un cliente'} />
+                                        <span className="text-muted-foreground">(opcional)</span>
                                     )}
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {invoices.length === 0 ? (
-                                        <div className="px-2 py-4 text-center text-sm text-muted-foreground">No hay facturas para este cliente</div>
-                                    ) : (
-                                        invoices.map((invoice) => (
-                                            <SelectItem key={invoice.id} value={invoice.id.toString()}>
-                                                #{invoice.document_number} - ${Number(invoice.total_amount).toLocaleString('es-DO')}
-                                            </SelectItem>
-                                        ))
-                                    )}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                                </Label>
+                                <Select
+                                    value={newJobInvoiceId}
+                                    onValueChange={setNewJobInvoiceId}
+                                    disabled={!newJobContactId || isLoadingContactData}
+                                >
+                                    <SelectTrigger>
+                                        {isLoadingContactData ? (
+                                            <div className="flex items-center gap-2">
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                <span>Cargando...</span>
+                                            </div>
+                                        ) : (
+                                            <SelectValue placeholder={newJobContactId ? 'Seleccionar factura' : 'Primero seleccione un cliente'} />
+                                        )}
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {invoices.length === 0 ? (
+                                            <div className="px-2 py-4 text-center text-sm text-muted-foreground">
+                                                No hay facturas para este cliente
+                                            </div>
+                                        ) : (
+                                            invoices.map((invoice) => (
+                                                <SelectItem key={invoice.id} value={invoice.id.toString()}>
+                                                    #{invoice.document_number} - ${Number(invoice.total_amount).toLocaleString('es-DO')}
+                                                </SelectItem>
+                                            ))
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
 
                         {/* Prescription Selection - Filtered by Contact */}
-                        <div className="space-y-2">
-                            <Label htmlFor="job-prescription">Receta (opcional)</Label>
-                            <Select
-                                value={newJobPrescriptionId}
-                                onValueChange={setNewJobPrescriptionId}
-                                disabled={!newJobContactId || isLoadingContactData}
-                            >
-                                <SelectTrigger>
-                                    {isLoadingContactData ? (
-                                        <div className="flex items-center gap-2">
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                            <span>Cargando...</span>
-                                        </div>
+                        {workflow.prescription_requirement && (
+                            <div className="space-y-2">
+                                <Label htmlFor="job-prescription">
+                                    Receta{' '}
+                                    {workflow.prescription_requirement === 'required' ? (
+                                        <span className="text-destructive">*</span>
                                     ) : (
-                                        <SelectValue placeholder={newJobContactId ? 'Seleccionar receta' : 'Primero seleccione un cliente'} />
+                                        <span className="text-muted-foreground">(opcional)</span>
                                     )}
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {prescriptions.length === 0 ? (
-                                        <div className="px-2 py-4 text-center text-sm text-muted-foreground">No hay recetas para este cliente</div>
-                                    ) : (
-                                        prescriptions.map((prescription) => (
-                                            <SelectItem key={prescription.id} value={prescription.id.toString()}>
-                                                Receta #{prescription.id} - {prescription.human_readable_date}
-                                            </SelectItem>
-                                        ))
-                                    )}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                                </Label>
+                                <Select
+                                    value={newJobPrescriptionId}
+                                    onValueChange={setNewJobPrescriptionId}
+                                    disabled={!newJobContactId || isLoadingContactData}
+                                >
+                                    <SelectTrigger>
+                                        {isLoadingContactData ? (
+                                            <div className="flex items-center gap-2">
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                <span>Cargando...</span>
+                                            </div>
+                                        ) : (
+                                            <SelectValue placeholder={newJobContactId ? 'Seleccionar receta' : 'Primero seleccione un cliente'} />
+                                        )}
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {prescriptions.length === 0 ? (
+                                            <div className="px-2 py-4 text-center text-sm text-muted-foreground">
+                                                No hay recetas para este cliente
+                                            </div>
+                                        ) : (
+                                            prescriptions.map((prescription) => (
+                                                <SelectItem key={prescription.id} value={prescription.id.toString()}>
+                                                    Receta #{prescription.id} - {prescription.human_readable_date}
+                                                </SelectItem>
+                                            ))
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
 
                         <div className="space-y-2">
                             <Label htmlFor="job-priority">Prioridad</Label>
@@ -297,6 +347,14 @@ export function KanbanBoard({ workflow, contacts = [], invoices = [], prescripti
                                 placeholder="Agregar notas o comentarios..."
                             />
                         </div>
+
+                        {workflow.fields && workflow.fields.length > 0 && (
+                            <DynamicFields
+                                fields={workflow.fields}
+                                values={newJobMetadata}
+                                onChange={(key, value) => setNewJobMetadata((prev) => ({ ...prev, [key]: value }))}
+                            />
+                        )}
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>

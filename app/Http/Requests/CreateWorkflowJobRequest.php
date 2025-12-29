@@ -31,6 +31,8 @@ final class CreateWorkflowJobRequest extends FormRequest
             'priority' => ['nullable', 'string', 'in:low,medium,high,urgent'],
             'due_date' => ['nullable', 'date'],
             'notes' => ['nullable', 'string', 'max:5000'],
+            'metadata' => ['nullable', 'array'],
+            'metadata.*' => ['nullable'],
         ];
     }
 

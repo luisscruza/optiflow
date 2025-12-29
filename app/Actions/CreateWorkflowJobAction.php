@@ -17,7 +17,7 @@ final readonly class CreateWorkflowJobAction
     /**
      * Execute the action.
      *
-     * @param  array{invoice_id?: int, contact_id?: int, prescription_id?: int, priority?: string, due_date?: string, started_at?: string, completed_at?: string, canceled_at?: string, notes?: string}  $data
+     * @param  array{invoice_id?: int, contact_id?: int, prescription_id?: int, priority?: string, due_date?: string, started_at?: string, completed_at?: string, canceled_at?: string, notes?: string, metadata?: array<string, mixed>}  $data
      */
     public function handle(WorkflowStage $stage, array $data): WorkflowJob
     {
@@ -32,6 +32,7 @@ final readonly class CreateWorkflowJobAction
                 'started_at' => $data['started_at'] ?? null,
                 'completed_at' => $data['completed_at'] ?? null,
                 'canceled_at' => $data['canceled_at'] ?? null,
+                'metadata' => $data['metadata'] ?? null,
             ]);
 
             // Record the initial stage assignment event

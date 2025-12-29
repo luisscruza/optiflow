@@ -368,6 +368,18 @@ export interface MasterTableData {
     }>;
 }
 
+// Alias for consistency
+export type Mastertable = MasterTableData;
+
+export interface MastertableItem {
+    id: number;
+    mastertable_id: number;
+    name: string;
+    description?: string | null;
+    position?: number;
+    is_active?: boolean;
+}
+
 export interface PaginatedContacts {
     data: Contact[];
     current_page: number;
@@ -713,15 +725,38 @@ export interface ProductImport {
 
 // Workflow Types (Kanban for lens processing)
 export type WorkflowJobPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type WorkflowFieldType = 'text' | 'textarea' | 'number' | 'date' | 'select';
+
+export interface WorkflowField {
+    id: string;
+    workflow_id: string;
+    name: string;
+    key: string;
+    type: WorkflowFieldType;
+    mastertable_id?: number | null;
+    is_required: boolean;
+    placeholder?: string | null;
+    default_value?: string | null;
+    position: number;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+    workflow?: Workflow;
+    mastertable?: Mastertable;
+}
 
 export interface Workflow {
     id: string;
     name: string;
     is_active: boolean;
+    invoice_requirement: 'optional' | 'required' | null;
+    prescription_requirement: 'optional' | 'required' | null;
     created_at: string;
     updated_at: string;
     stages?: WorkflowStage[];
     stages_count?: number;
+    fields?: WorkflowField[];
+    fields_count?: number;
 }
 
 export interface WorkflowStage {
@@ -749,6 +784,7 @@ export interface WorkflowJob {
     invoice_id?: number | null;
     prescription_id?: number | null;
     notes?: string | null;
+    metadata?: Record<string, string | number | boolean | null> | null;
     priority?: WorkflowJobPriority | null;
     due_date?: string | null;
     started_at?: string | null;

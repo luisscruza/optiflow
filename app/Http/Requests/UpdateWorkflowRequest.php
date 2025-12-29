@@ -26,6 +26,19 @@ final class UpdateWorkflowRequest extends FormRequest
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'is_active' => ['sometimes', 'boolean'],
+            'invoice_requirement' => ['sometimes', 'nullable', 'string', 'in:optional,required'],
+            'prescription_requirement' => ['sometimes', 'nullable', 'string', 'in:optional,required'],
+            'fields' => ['sometimes', 'array'],
+            'fields.*.id' => ['sometimes', 'nullable', 'uuid'],
+            'fields.*.name' => ['required_with:fields', 'string', 'max:255'],
+            'fields.*.key' => ['required_with:fields', 'string', 'max:255', 'regex:/^[a-z0-9_]+$/'],
+            'fields.*.type' => ['required_with:fields', 'string', 'in:text,textarea,number,date,select'],
+            'fields.*.mastertable_id' => ['nullable', 'integer', 'exists:mastertables,id'],
+            'fields.*.is_required' => ['sometimes', 'boolean'],
+            'fields.*.placeholder' => ['nullable', 'string', 'max:255'],
+            'fields.*.default_value' => ['nullable', 'string', 'max:255'],
+            'fields.*.position' => ['sometimes', 'integer', 'min:0'],
+            'fields.*._destroy' => ['sometimes', 'boolean'],
         ];
     }
 

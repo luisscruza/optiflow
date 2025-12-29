@@ -74,6 +74,7 @@ final class WorkflowJob extends Model implements Commentable
             'invoice_id' => 'integer',
             'prescription_id' => 'integer',
             'notes' => 'string',
+            'metadata' => 'array',
             'priority' => 'string',
             'due_date' => 'datetime',
             'started_at' => 'datetime',

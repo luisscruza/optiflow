@@ -11,6 +11,7 @@ use App\Http\Requests\CreateWorkflowRequest;
 use App\Http\Requests\UpdateWorkflowRequest;
 use App\Models\Contact;
 use App\Models\Invoice;
+use App\Models\Mastertable;
 use App\Models\Prescription;
 use App\Models\Workflow;
 use Illuminate\Http\RedirectResponse;
@@ -60,37 +61,39 @@ final class WorkflowController extends Controller
     public function show(Request $request, Workflow $workflow): Response
     {
         $workflow->load([
-            'stages' => fn($query) => $query->orderBy('position'),
-            'stages.jobs' => fn($query) => $query->orderBy('created_at', 'desc'),
+            'stages' => fn ($query) => $query->orderBy('position'),
+            'stages.jobs' => fn ($query) => $query->orderBy('created_at', 'desc'),
             'stages.jobs.invoice.contact',
             'stages.jobs.contact',
             'stages.jobs.prescription.patient',
             'stages.jobs.comments.commentator',
+            'fields' => fn ($query) => $query->where('is_active', true)->orderBy('position'),
+            'fields.mastertable.items',
         ]);
 
         $contactId = $request->query('contact_id');
 
         return Inertia::render('workflows/show', [
             'workflow' => $workflow,
-            'contacts' => fn() => Contact::query()
+            'contacts' => fn () => Contact::query()
                 ->customers()
                 ->where('status', 'active')
                 ->orderBy('name')
                 ->get(),
-            'invoices' => Inertia::lazy(fn() => $contactId
+            'invoices' => Inertia::lazy(fn () => $contactId
                 ? Invoice::query()
-                ->with('contact')
-                ->orderBy('created_at', 'desc')
-                ->limit(50)
-                ->get()
+                    ->with('contact')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(50)
+                    ->get()
                 : []),
-            'prescriptions' => Inertia::lazy(fn() => $contactId
+            'prescriptions' => Inertia::lazy(fn () => $contactId
                 ? Prescription::query()
-                ->with('patient')
-                ->where('patient_id', $contactId)
-                ->orderBy('created_at', 'desc')
-                ->limit(50)
-                ->get()
+                    ->with('patient')
+                    ->where('patient_id', $contactId)
+                    ->orderBy('created_at', 'desc')
+                    ->limit(50)
+                    ->get()
                 : []),
         ]);
     }
@@ -100,8 +103,11 @@ final class WorkflowController extends Controller
      */
     public function edit(Workflow $workflow): Response
     {
+        $workflow->load(['fields' => fn ($query) => $query->orderBy('position')]);
+
         return Inertia::render('workflows/edit', [
             'workflow' => $workflow,
+            'mastertables' => Mastertable::query()->orderBy('name')->get(),
         ]);
     }
 

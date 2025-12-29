@@ -31,6 +31,8 @@ final class UpdateWorkflowJobRequest extends FormRequest
             'started_at' => ['nullable', 'date'],
             'completed_at' => ['nullable', 'date'],
             'canceled_at' => ['nullable', 'date'],
+            'metadata' => ['nullable', 'array'],
+            'metadata.*' => ['nullable'],
         ];
     }
 

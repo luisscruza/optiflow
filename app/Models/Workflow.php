@@ -21,6 +21,14 @@ final class Workflow extends Model
     }
 
     /**
+     * @return HasMany<WorkflowField, $this>
+     */
+    public function fields(): HasMany
+    {
+        return $this->hasMany(WorkflowField::class)->orderBy('position');
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -28,6 +36,8 @@ final class Workflow extends Model
         return [
             'name' => 'string',
             'is_active' => 'boolean',
+            'invoice_requirement' => 'string',
+            'prescription_requirement' => 'string',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
