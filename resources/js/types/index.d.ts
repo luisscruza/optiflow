@@ -757,6 +757,10 @@ export interface Workflow {
     stages_count?: number;
     fields?: WorkflowField[];
     fields_count?: number;
+    jobs_count?: number;
+    pending_jobs_count?: number;
+    completed_jobs_count?: number;
+    overdue_jobs_count?: number;
 }
 
 export interface WorkflowStage {
