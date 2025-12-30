@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { AlertCircle, Calendar, FileText, MoreHorizontal, Pencil, Trash2, User } from 'lucide-react';
+import { AlertCircle, Building, Calendar, FileText, MoreHorizontal, Pencil, Trash2, User } from 'lucide-react';
 import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -83,7 +83,7 @@ export function KanbanCard({ job, workflow, onDragStart, onDragEnd }: KanbanCard
                 onDragStart={(e) => onDragStart(e, job)}
                 onDragEnd={onDragEnd}
                 onClick={handleCardClick}
-                className="cursor-grab transition-shadow hover:shadow-md active:cursor-grabbing"
+                className="cursor-grab transition-shadow hover:shadow-md active:cursor-grabbing mb-2"
             >
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 p-3 pb-2">
                     <div className="flex-1 space-y-1">
@@ -93,7 +93,10 @@ export function KanbanCard({ job, workflow, onDragStart, onDragEnd }: KanbanCard
                                 <span>Factura #{job.invoice.document_number}</span>
                             </div>
                         )}
-                        {job.contact && (
+                    <div className="flex items-center gap-1 text-sm font-medium">
+                                <Building className="h-3 w-3" />
+                                <span className='text-xs'>{job.workspace.name}</span>
+                            </div>                        {job.contact && (
                             <div className="flex items-center gap-1 text-sm font-medium">
                                 <User className="h-3 w-3" />
                                 <span>{job.contact.name}</span>
@@ -144,7 +147,7 @@ export function KanbanCard({ job, workflow, onDragStart, onDragEnd }: KanbanCard
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Editar Tarea</DialogTitle>
+                        <DialogTitle>Editar tarea</DialogTitle>
                         <DialogDescription>Modifica los detalles de la tarea.</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">

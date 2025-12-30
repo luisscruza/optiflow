@@ -5,16 +5,36 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { KanbanBoard } from '@/components/workflows/kanban-board';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Contact, type Invoice, type Prescription, type Workflow } from '@/types';
+import {
+    type BreadcrumbItem,
+    type Contact,
+    type CursorPaginatedData,
+    type Invoice,
+    type Prescription,
+    type Workflow,
+    type WorkflowJob,
+} from '@/types';
 
 interface Props {
     workflow: Workflow;
     invoices?: Invoice[];
     contacts?: Contact[];
     prescriptions?: Prescription[];
+    // Stage jobs are passed as flat props like stage_{uuid}_jobs
+    [key: `stage_${string}_jobs`]: CursorPaginatedData<WorkflowJob>;
 }
 
-export default function WorkflowShow({ workflow, invoices = [], contacts = [], prescriptions = [] }: Props) {
+export default function WorkflowShow({ workflow, invoices = [], contacts = [], prescriptions = [], ...rest }: Props) {
+    // Extract stage jobs from the flat props
+    const stageJobs: Record<string, CursorPaginatedData<WorkflowJob>> = {};
+    for (const [key, value] of Object.entries(rest)) {
+        if (key.startsWith('stage_') && key.endsWith('_jobs')) {
+            // Convert prop name back to stage ID: stage_{uuid}_jobs -> uuid (with dashes restored)
+            const stageId = key.slice(6, -5).replace(/_/g, '-');
+            stageJobs[stageId] = value as CursorPaginatedData<WorkflowJob>;
+        }
+    }
+
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Procesos',
@@ -56,7 +76,7 @@ export default function WorkflowShow({ workflow, invoices = [], contacts = [], p
 
                 {/* Kanban Board */}
                 <div className="flex-1 overflow-hidden">
-                    <KanbanBoard workflow={workflow} invoices={invoices} contacts={contacts} prescriptions={prescriptions} />
+                    <KanbanBoard workflow={workflow} stageJobs={stageJobs} invoices={invoices} contacts={contacts} prescriptions={prescriptions} />
                 </div>
             </div>
         </AppLayout>

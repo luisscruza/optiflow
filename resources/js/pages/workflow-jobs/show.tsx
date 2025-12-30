@@ -1,4 +1,4 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Deferred, Head, Link, router, usePage } from '@inertiajs/react';
 import {
     AlertCircle,
     ArrowLeft,
@@ -12,6 +12,7 @@ import {
     FileText,
     History,
     LayoutGrid,
+    Loader2,
     Receipt,
     Settings2,
     User,
@@ -45,7 +46,7 @@ import { useCurrency } from '@/utils/currency';
 interface Props {
     workflow: Workflow;
     job: WorkflowJob;
-    events: WorkflowEvent[];
+    events?: WorkflowEvent[];
 }
 
 const priorityColors: Record<WorkflowJobPriority, string> = {
@@ -816,60 +817,70 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
                                     </CollapsibleTrigger>
                                     <CollapsibleContent>
                                         <CardContent className="px-6 py-6">
-                                            {events && events.length > 0 ? (
-                                                <div className="space-y-4">
-                                                    {events.map((event, index) => (
-                                                        <div key={event.id} className="relative">
-                                                            {index !== events.length - 1 && (
-                                                                <div className="absolute top-8 left-3 h-full w-0.5 bg-gray-200" />
-                                                            )}
-                                                            <div className="flex gap-3">
-                                                                <div className="relative z-10 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100">
-                                                                    {event.event_type === 'stage_changed' ? (
-                                                                        <LayoutGrid className="h-3 w-3 text-indigo-600" />
-                                                                    ) : event.event_type === 'priority_updated' ? (
-                                                                        <AlertCircle className="h-3 w-3 text-indigo-600" />
-                                                                    ) : (
-                                                                        <Edit className="h-3 w-3 text-indigo-600" />
-                                                                    )}
-                                                                </div>
-                                                                <div className="min-w-0 flex-1">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <p className="text-sm font-medium text-gray-900">
-                                                                            {getEventTypeLabel(event.event_type)}
-                                                                        </p>
-                                                                        {event.user?.name && (
-                                                                            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
-                                                                                {event.user.name}
-                                                                            </span>
+                                            <Deferred
+                                                data="events"
+                                                fallback={
+                                                    <div className="flex items-center justify-center py-8">
+                                                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                                                    </div>
+                                                }
+                                            >
+                                                {events && events.length > 0 ? (
+                                                    <div className="space-y-4">
+                                                        {events.map((event, index) => (
+                                                            <div key={event.id} className="relative">
+                                                                {index !== events.length - 1 && (
+                                                                    <div className="absolute top-8 left-3 h-full w-0.5 bg-gray-200" />
+                                                                )}
+                                                                <div className="flex gap-3">
+                                                                    <div className="relative z-10 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100">
+                                                                        {event.event_type === 'stage_changed' ? (
+                                                                            <LayoutGrid className="h-3 w-3 text-indigo-600" />
+                                                                        ) : event.event_type === 'priority_updated' ? (
+                                                                            <AlertCircle className="h-3 w-3 text-indigo-600" />
+                                                                        ) : (
+                                                                            <Edit className="h-3 w-3 text-indigo-600" />
                                                                         )}
                                                                     </div>
-                                                                    {event.event_type === 'stage_changed' && (
-                                                                        <p className="text-xs text-gray-600">
-                                                                            {event.from_stage?.name || 'Inicio'} → {event.to_stage?.name || 'Final'}
+                                                                    <div className="min-w-0 flex-1">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <p className="text-sm font-medium text-gray-900">
+                                                                                {getEventTypeLabel(event.event_type)}
+                                                                            </p>
+                                                                            {event.user?.name && (
+                                                                                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                                                                                    {event.user.name}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                        {event.event_type === 'stage_changed' && (
+                                                                            <p className="text-xs text-gray-600">
+                                                                                {event.from_stage?.name || 'Inicio'} →{' '}
+                                                                                {event.to_stage?.name || 'Final'}
+                                                                            </p>
+                                                                        )}
+                                                                        {event.event_type === 'priority_updated' && event.metadata && (
+                                                                            <p className="text-xs text-gray-600">
+                                                                                {getPriorityLabel(event.metadata.from_priority)} →{' '}
+                                                                                {getPriorityLabel(event.metadata.to_priority)}
+                                                                            </p>
+                                                                        )}
+                                                                        <p className="mt-1 text-xs text-gray-500">
+                                                                            Realizado por {event.user?.name && <span>{event.user.name}• </span>}
+                                                                            {formatDateTime(event.created_at)}
                                                                         </p>
-                                                                    )}
-                                                                    {event.event_type === 'priority_updated' && event.metadata && (
-                                                                        <p className="text-xs text-gray-600">
-                                                                            {getPriorityLabel(event.metadata.from_priority)} →{' '}
-                                                                            {getPriorityLabel(event.metadata.to_priority)}
-                                                                        </p>
-                                                                    )}
-                                                                    <p className="mt-1 text-xs text-gray-500">
-                                                                        Realizado por {event.user?.name && <span>{event.user.name}• </span>}
-                                                                        {formatDateTime(event.created_at)}
-                                                                    </p>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <div className="py-4 text-center text-gray-500">
-                                                    <History className="mx-auto mb-2 h-8 w-8 text-gray-300" />
-                                                    <p className="text-sm">Sin historial de cambios</p>
-                                                </div>
-                                            )}
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div className="py-4 text-center text-gray-500">
+                                                        <History className="mx-auto mb-2 h-8 w-8 text-gray-300" />
+                                                        <p className="text-sm">Sin historial de cambios</p>
+                                                    </div>
+                                                )}
+                                            </Deferred>
                                         </CardContent>
                                     </CollapsibleContent>
                                 </Card>

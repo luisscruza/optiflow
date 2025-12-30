@@ -14,8 +14,10 @@ use App\Models\Invoice;
 use App\Models\Mastertable;
 use App\Models\Prescription;
 use App\Models\Workflow;
+use App\Models\WorkflowJob;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Context;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,21 +28,25 @@ final class WorkflowController extends Controller
      */
     public function index(Request $request): Response
     {
+        $currentWorkspace = Context::get('workspace');
+
         $workflows = Workflow::query()
             ->withCount('stages')
-            ->withCount(['stages as pending_jobs_count' => function ($query) {
+            ->withCount(['stages as pending_jobs_count' => function ($query) use ($currentWorkspace) {
                 $query->selectRaw('count(workflow_jobs.id)')
                     ->join('workflow_jobs', 'workflow_stages.id', '=', 'workflow_jobs.workflow_stage_id')
                     ->whereNull('workflow_jobs.completed_at')
-                    ->whereNull('workflow_jobs.canceled_at');
+                    ->whereNull('workflow_jobs.canceled_at')
+                    ->where('workflow_jobs.workspace_id', $currentWorkspace->id);
             }])
-            ->withCount(['stages as overdue_jobs_count' => function ($query) {
+            ->withCount(['stages as overdue_jobs_count' => function ($query) use ($currentWorkspace) {
                 $query->selectRaw('count(workflow_jobs.id)')
                     ->join('workflow_jobs', 'workflow_stages.id', '=', 'workflow_jobs.workflow_stage_id')
                     ->whereNull('workflow_jobs.completed_at')
                     ->whereNull('workflow_jobs.canceled_at')
                     ->whereNotNull('workflow_jobs.due_date')
-                    ->where('workflow_jobs.due_date', '<', now());
+                    ->where('workflow_jobs.due_date', '<', now())
+                    ->where('workflow_jobs.workspace_id', $currentWorkspace->id);
             }])
             ->orderBy('name')
             ->get();
@@ -71,23 +77,35 @@ final class WorkflowController extends Controller
 
     /**
      * Display the specified workflow (Kanban board view).
+     * Jobs are paginated per stage via a separate endpoint for scalability.
      */
     public function show(Request $request, Workflow $workflow): Response
     {
+        // Load workflow with stages (without jobs - they'll be loaded per-stage)
         $workflow->load([
-            'stages' => fn($query) => $query->orderBy('position'),
-            'stages.jobs' => fn($query) => $query->orderBy('created_at', 'desc'),
-            'stages.jobs.invoice.contact',
-            'stages.jobs.contact',
-            'stages.jobs.prescription.patient',
-            'stages.jobs.comments.commentator',
+            'stages' => fn($query) => $query->orderBy('position')->withCount([
+                'jobs as pending_jobs_count' => fn($q) => $q->whereNull('completed_at')->whereNull('canceled_at'),
+                'jobs as completed_jobs_count' => fn($q) => $q->whereNotNull('completed_at'),
+            ]),
             'fields' => fn($query) => $query->where('is_active', true)->orderBy('position'),
             'fields.mastertable.items',
         ]);
 
+        $stageJobProps = [];
+        foreach ($workflow->stages as $stage) {
+            $propName = 'stage_' . str_replace('-', '_', $stage->id) . '_jobs';
+            $stageJobProps[$propName] = Inertia::scroll(
+                WorkflowJob::query()
+                    ->where('workflow_stage_id', $stage->id)
+                    ->with(['workspace','contact', 'invoice.contact', 'prescription.patient'])
+                    ->orderBy('created_at', 'desc')
+                    ->cursorPaginate(5, ['*'], $propName)
+            );
+        }
+
         $contactId = $request->query('contact_id');
 
-        return Inertia::render('workflows/show', [
+        return Inertia::render('workflows/show', array_merge([
             'workflow' => $workflow,
             'contacts' => fn() => Contact::query()
                 ->customers()
@@ -109,7 +127,7 @@ final class WorkflowController extends Controller
                 ->limit(50)
                 ->get()
                 : []),
-        ]);
+        ], $stageJobProps));
     }
 
     /**

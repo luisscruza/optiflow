@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { InfiniteScroll, router } from '@inertiajs/react';
 import { ArrowDown, ArrowUp, CheckCircle2, Circle, Flag, GripVertical, MoreHorizontal, Pencil, Play, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -10,14 +10,40 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { type Workflow, type WorkflowJob, type WorkflowStage } from '@/types';
 
 import { KanbanCard } from './kanban-card';
 
+/** Skeleton loader that mimics the KanbanCard appearance */
+function JobCardSkeleton() {
+    return (
+        <div className="space-y-2">
+            {[1, 2, 3].map((i) => (
+                <div key={i} className="rounded-lg border bg-card p-3 shadow-sm">
+                    <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 space-y-2">
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-3 w-1/2" />
+                        </div>
+                        <Skeleton className="h-5 w-5 rounded" />
+                    </div>
+                    <div className="mt-2 flex items-center gap-2">
+                        <Skeleton className="h-5 w-16 rounded-full" />
+                        <Skeleton className="h-5 w-20 rounded-full" />
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
 interface KanbanColumnProps {
     workflow: Workflow;
     stage: WorkflowStage;
+    jobs: WorkflowJob[];
+    stageJobsPropName: string;
     totalStages: number;
     onDragOver: (e: React.DragEvent) => void;
     onDrop: (e: React.DragEvent, stageId: string) => void;
@@ -26,7 +52,18 @@ interface KanbanColumnProps {
     onCreateJob: (stageId: string) => void;
 }
 
-export function KanbanColumn({ workflow, stage, totalStages, onDragOver, onDrop, onDragStart, onDragEnd, onCreateJob }: KanbanColumnProps) {
+export function KanbanColumn({
+    workflow,
+    stage,
+    jobs,
+    stageJobsPropName,
+    totalStages,
+    onDragOver,
+    onDrop,
+    onDragStart,
+    onDragEnd,
+    onCreateJob,
+}: KanbanColumnProps) {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [editName, setEditName] = useState(stage.name);
     const [editDescription, setEditDescription] = useState(stage.description || '');
@@ -75,7 +112,7 @@ export function KanbanColumn({ workflow, stage, totalStages, onDragOver, onDrop,
         }
     };
 
-    const jobCount = stage.jobs?.length || 0;
+    const jobCount = stage.pending_jobs_count ?? jobs.length;
 
     // Preset colors for quick selection
     const presetColors = [
@@ -142,11 +179,13 @@ export function KanbanColumn({ workflow, stage, totalStages, onDragOver, onDrop,
                 </CardHeader>
 
                 <CardContent className="flex-1 space-y-2 overflow-y-auto">
-                    {stage.jobs?.map((job) => (
-                        <KanbanCard key={job.id} job={job} workflow={workflow} onDragStart={onDragStart} onDragEnd={onDragEnd} />
-                    ))}
+                    <InfiniteScroll data={stageJobsPropName} buffer={100} preserveUrl loading={() => <JobCardSkeleton />}>
+                        {jobs.map((job) => (
+                            <KanbanCard key={job.id} job={job} workflow={workflow} onDragStart={onDragStart} onDragEnd={onDragEnd} />
+                        ))}
+                    </InfiniteScroll>
 
-                    {jobCount === 0 && (
+                    {jobs.length === 0 && (
                         <div className="flex h-24 items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25">
                             <p className="text-sm text-muted-foreground">Sin tareas</p>
                         </div>

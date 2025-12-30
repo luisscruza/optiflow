@@ -778,6 +778,13 @@ export interface WorkflowStage {
     workflow?: Workflow;
     jobs?: WorkflowJob[];
     jobs_count?: number;
+    pending_jobs_count?: number;
+    completed_jobs_count?: number;
+}
+
+// Cursor paginated response from Inertia::scroll()
+export interface CursorPaginatedData<T> {
+    data: T[];
 }
 
 export interface WorkflowJob {
@@ -804,6 +811,7 @@ export interface WorkflowJob {
     prescription?: Prescription;
     comments?: CommentData[];
     events?: WorkflowEvent[];
+    workspace: Workspace;
 }
 
 export type WorkflowEventType = 'stage_changed' | 'note_added' | 'priority_updated';

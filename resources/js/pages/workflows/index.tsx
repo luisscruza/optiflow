@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { AlertTriangle, Clock, Edit, Eye, LayoutGrid, MoreHorizontal, Plus, Trash2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Workflow } from '@/types';
+import { Workspace, type BreadcrumbItem, type Workflow } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -20,6 +20,8 @@ interface Props {
 }
 
 export default function WorkflowsIndex({ workflows }: Props) {
+    const { workspace } = usePage().props as { workspace?: { current: Workspace | null; } };
+
     const handleDelete = (workflowId: string) => {
         if (confirm('¿Estás seguro de que deseas eliminar este flujo de trabajo? Esto eliminará todas las etapas y tareas asociadas.')) {
             router.delete(`/workflows/${workflowId}`);
@@ -36,7 +38,7 @@ export default function WorkflowsIndex({ workflows }: Props) {
                     <div>
                         <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
                             <LayoutGrid className="h-6 w-6" />
-                            Flujos de trabajo
+                            Flujos de trabajo de {workspace?.current?.name || 'el espacio de trabajo'}
                         </h1>
                         <p className="mt-1 text-sm text-muted-foreground">Gestiona los procesos de trabajo para el seguimiento de lentes</p>
                     </div>

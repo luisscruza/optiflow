@@ -20,15 +20,18 @@ final class WorkflowJobController extends Controller
 {
     /**
      * Display the specified job.
+     * Uses deferred props for events to optimize initial load.
      */
     public function show(Workflow $workflow, WorkflowJob $job): Response
     {
+        // Load workflow with stages and fields (lightweight)
         $workflow->load([
-            'stages' => fn ($query) => $query->orderBy('position'),
-            'fields' => fn ($query) => $query->where('is_active', true)->orderBy('position'),
+            'stages' => fn($query) => $query->orderBy('position'),
+            'fields' => fn($query) => $query->where('is_active', true)->orderBy('position'),
             'fields.mastertable.items',
         ]);
 
+        // Eager load job relations
         $job->load([
             'workflow',
             'workflowStage',
@@ -42,15 +45,15 @@ final class WorkflowJobController extends Controller
             'comments.commentator',
         ]);
 
-        $events = $job->events()
-            ->with(['user', 'fromStage', 'toStage'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-
         return Inertia::render('workflow-jobs/show', [
             'workflow' => $workflow,
             'job' => $job,
-            'events' => $events,
+            // Defer events loading - they're not critical for initial render
+            'events' => Inertia::defer(fn() => $job->events()
+                ->with(['user', 'fromStage', 'toStage'])
+                ->orderBy('created_at', 'desc')
+                ->limit(50)
+                ->get()),
         ]);
     }
 

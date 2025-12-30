@@ -8,19 +8,28 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { type Contact, type Invoice, type Prescription, type Workflow, type WorkflowJob, type WorkflowJobPriority } from '@/types';
+import {
+    type Contact,
+    type CursorPaginatedData,
+    type Invoice,
+    type Prescription,
+    type Workflow,
+    type WorkflowJob,
+    type WorkflowJobPriority,
+} from '@/types';
 
 import { DynamicFields } from './dynamic-fields';
 import { KanbanColumn } from './kanban-column';
 
 interface KanbanBoardProps {
     workflow: Workflow;
+    stageJobs: Record<string, CursorPaginatedData<WorkflowJob>>;
     contacts?: Contact[];
     invoices?: Invoice[];
     prescriptions?: Prescription[];
 }
 
-export function KanbanBoard({ workflow, contacts = [], invoices = [], prescriptions = [] }: KanbanBoardProps) {
+export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [], prescriptions = [] }: KanbanBoardProps) {
     const [draggedJob, setDraggedJob] = useState<WorkflowJob | null>(null);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
@@ -176,6 +185,9 @@ export function KanbanBoard({ workflow, contacts = [], invoices = [], prescripti
 
     const totalStages = workflow.stages?.length || 0;
 
+    // Helper to get prop name for a stage's jobs
+    const getStagePropName = (stageId: string) => `stage_${stageId.replace(/-/g, '_')}_jobs`;
+
     return (
         <>
             <div className="flex h-full gap-4 overflow-x-auto pb-4">
@@ -184,6 +196,8 @@ export function KanbanBoard({ workflow, contacts = [], invoices = [], prescripti
                         key={stage.id}
                         workflow={workflow}
                         stage={stage}
+                        jobs={stageJobs[stage.id]?.data ?? []}
+                        stageJobsPropName={getStagePropName(stage.id)}
                         totalStages={totalStages}
                         onDragOver={handleDragOver}
                         onDrop={handleDrop}

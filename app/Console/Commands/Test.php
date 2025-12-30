@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Models\Contact;
 use App\Models\Invoice;
-use App\Models\User;
+use App\Models\Workflow;
+use App\Models\WorkflowJob;
 use Illuminate\Console\Command;
 
 final class Test extends Command
@@ -29,10 +31,17 @@ final class Test extends Command
      */
     public function handle(): void
     {
-        $invoice = Invoice::query()->first();
+        $workflow = Workflow::first();
 
-        $user = User::query()->first();
-
-        $invoice->commentAsUser($user, 'This is a test comment from the command line.');
+        for ($i = 0; $i < 50000; $i++) {
+            WorkflowJob::create([
+                'workflow_id' => $workflow->id,
+                'workflow_stage_id' => $workflow->stages()->inRandomOrder()->first()->id,
+                'invoice_id' => Invoice::inRandomOrder()->first()->id,
+                'contact_id' => Contact::inRandomOrder()->first()->id,
+                'prescription_id' => null,
+                'workspace_id' => 1,
+            ]);
+        }
     }
 }
