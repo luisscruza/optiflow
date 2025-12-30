@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\BelongsToWorkspace;
 use App\Concerns\HasComments;
 use App\Contracts\Commentable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class WorkflowJob extends Model implements Commentable
 {
+    use BelongsToWorkspace;
     use HasComments;
     use HasUuids;
 
