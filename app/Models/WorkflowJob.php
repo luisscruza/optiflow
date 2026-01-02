@@ -11,12 +11,52 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-final class WorkflowJob extends Model implements Commentable
+final class WorkflowJob extends Model implements Commentable, HasMedia
 {
     use BelongsToWorkspace;
     use HasComments;
     use HasUuids;
+    use InteractsWithMedia;
+
+    /**
+     * Register the media collections for this model.
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('images')
+            ->useFallbackUrl('/images/placeholder.png')
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+
+        $this->addMediaCollection('documents')
+            ->acceptsMimeTypes([
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
+    }
+
+    /**
+     * Register the media conversions for this model.
+     */
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(150)
+            ->height(150)
+            ->sharpen(10)
+            ->performOnCollections('images');
+
+        $this->addMediaConversion('preview')
+            ->width(800)
+            ->height(600)
+            ->performOnCollections('images');
+    }
 
     /**
      * @return BelongsTo<Workflow, $this>

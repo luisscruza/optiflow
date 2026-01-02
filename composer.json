@@ -16,6 +16,7 @@
         "laravel/tinker": "^2.10.1",
         "laravel/wayfinder": "^0.1.12",
         "nunomaduro/essentials": "^0.1",
+        "spatie/laravel-medialibrary": "^11.17",
         "spatie/laravel-permission": "^6.23",
         "stancl/tenancy": "^3.9.1"
     },
