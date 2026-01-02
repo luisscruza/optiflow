@@ -24,8 +24,8 @@ final class WorkflowJobController extends Controller
      */
     public function show(string $workflow, string $job): Response
     {
-        $workflow = Workflow::where('uuid', $workflow)->withoutGlobalScopes()->firstOrFail();
-        $job = WorkflowJob::where('uuid', $job)->withoutGlobalScopes()->firstOrFail();
+        $workflow = Workflow::where('id', $workflow)->withoutGlobalScopes()->firstOrFail();
+        $job = WorkflowJob::where('id', $job)->withoutGlobalScopes()->firstOrFail();
 
         $workflow->load([
             'stages' => fn ($query) => $query->orderBy('position'),
