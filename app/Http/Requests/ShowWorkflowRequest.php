@@ -83,7 +83,7 @@ final class ShowWorkflowRequest extends FormRequest
     /**
      * Get the contact ID for lazy loading.
      */
-    public function getContactId(): ?int
+    public function getContactId(): ?string
     {
         return $this->validated('contact_id');
     }
