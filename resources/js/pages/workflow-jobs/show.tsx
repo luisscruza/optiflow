@@ -751,6 +751,8 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
                                                 onRemoveExisting={handleRemoveExistingImage}
                                                 maxFiles={10}
                                                 disabled={isSavingImages}
+                                                dropzoneCollapsible={true}
+                                                dropzoneDefaultOpen={false}
                                             />
 
                                             {(newImages.length > 0 || imagesToRemove.length > 0) && (
