@@ -70,4 +70,40 @@ final readonly class RecordWorkflowEventAction
             ],
         ]);
     }
+
+    /**
+     * Record an images added event.
+     *
+     * @param  array<string>  $fileNames
+     */
+    public function imagesAdded(WorkflowJob $job, array $fileNames): WorkflowEvent
+    {
+        return WorkflowEvent::create([
+            'workflow_job_id' => $job->id,
+            'event_type' => EventType::ImagesAdded,
+            'user_id' => Auth::id(),
+            'metadata' => [
+                'count' => count($fileNames),
+                'file_names' => $fileNames,
+            ],
+        ]);
+    }
+
+    /**
+     * Record an images removed event.
+     *
+     * @param  array<string>  $fileNames
+     */
+    public function imagesRemoved(WorkflowJob $job, array $fileNames): WorkflowEvent
+    {
+        return WorkflowEvent::create([
+            'workflow_job_id' => $job->id,
+            'event_type' => EventType::ImagesRemoved,
+            'user_id' => Auth::id(),
+            'metadata' => [
+                'count' => count($fileNames),
+                'file_names' => $fileNames,
+            ],
+        ]);
+    }
 }

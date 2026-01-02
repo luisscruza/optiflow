@@ -59,9 +59,16 @@ final readonly class CreateWorkflowJobAction
      */
     private function addImages(WorkflowJob $job, array $images): void
     {
+        $fileNames = [];
+
         foreach ($images as $image) {
             $job->addMedia($image)
                 ->toMediaCollection('images');
+            $fileNames[] = $image->getClientOriginalName();
+        }
+
+        if (! empty($fileNames)) {
+            $this->recordEvent->imagesAdded($job, $fileNames);
         }
     }
 }

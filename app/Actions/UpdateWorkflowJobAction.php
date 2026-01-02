@@ -82,9 +82,16 @@ final readonly class UpdateWorkflowJobAction
      */
     private function addImages(WorkflowJob $job, array $images): void
     {
+        $fileNames = [];
+
         foreach ($images as $image) {
             $job->addMedia($image)
                 ->toMediaCollection('images');
+            $fileNames[] = $image->getClientOriginalName();
+        }
+
+        if (! empty($fileNames)) {
+            $this->recordEvent->imagesAdded($job, $fileNames);
         }
     }
 
@@ -95,9 +102,17 @@ final readonly class UpdateWorkflowJobAction
      */
     private function removeImages(WorkflowJob $job, array $mediaIds): void
     {
-        $job->media()
+        $mediaToDelete = $job->media()
             ->whereIn('id', $mediaIds)
             ->where('collection_name', 'images')
-            ->each(fn ($media) => $media->delete());
+            ->get();
+
+        $fileNames = $mediaToDelete->pluck('file_name')->toArray();
+
+        $mediaToDelete->each(fn ($media) => $media->delete());
+
+        if (! empty($fileNames)) {
+            $this->recordEvent->imagesRemoved($job, $fileNames);
+        }
     }
 }

@@ -172,16 +172,6 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
 
     const isOverdue = job.due_date && new Date(job.due_date) < new Date() && !job.completed_at;
 
-    const getEventTypeLabel = (eventType: string): string => {
-        const labels: Record<string, string> = {
-            stage_changed: 'Cambio de etapa',
-            note_added: 'Nota agregada',
-            priority_updated: 'Cambio de prioridad',
-            metadata_updated: 'Datos actualizados',
-        };
-        return labels[eventType] || eventType;
-    };
-
     const getPriorityLabel = (priority: string | null | undefined): string => {
         if (!priority) return 'Sin prioridad';
         return priorityLabels[priority as WorkflowJobPriority] || priority;
@@ -972,7 +962,7 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
                                                                     <div className="min-w-0 flex-1">
                                                                         <div className="flex items-center gap-2">
                                                                             <p className="text-sm font-medium text-gray-900">
-                                                                                {getEventTypeLabel(event.event_type)}
+                                                                                {event.event_type_label}
                                                                             </p>
                                                                             {event.user?.name && (
                                                                                 <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">

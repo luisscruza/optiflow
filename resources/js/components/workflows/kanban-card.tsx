@@ -83,7 +83,7 @@ export function KanbanCard({ job, workflow, onDragStart, onDragEnd }: KanbanCard
                 onDragStart={(e) => onDragStart(e, job)}
                 onDragEnd={onDragEnd}
                 onClick={handleCardClick}
-                className="cursor-grab transition-shadow hover:shadow-md active:cursor-grabbing mb-2"
+                className="mb-2 cursor-grab transition-shadow hover:shadow-md active:cursor-grabbing"
             >
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 p-3 pb-2">
                     <div className="flex-1 space-y-1">
@@ -93,10 +93,11 @@ export function KanbanCard({ job, workflow, onDragStart, onDragEnd }: KanbanCard
                                 <span>Factura #{job.invoice.document_number}</span>
                             </div>
                         )}
-                    <div className="flex items-center gap-1 text-sm font-medium">
-                                <Building className="h-3 w-3" />
-                                <span className='text-xs'>{job.workspace.name}</span>
-                            </div>                        {job.contact && (
+                        <div className="flex items-center gap-1 text-sm font-medium">
+                            <Building className="h-3 w-3" />
+                            <span className="text-xs">{job.workspace.name}</span>
+                        </div>{' '}
+                        {job.contact && (
                             <div className="flex items-center gap-1 text-sm font-medium">
                                 <User className="h-3 w-3" />
                                 <span>{job.contact.name}</span>
@@ -155,9 +156,7 @@ export function KanbanCard({ job, workflow, onDragStart, onDragEnd }: KanbanCard
                                     </div>
                                 ))}
                             </div>
-                            {job.media.length > 3 && (
-                                <span className="text-xs text-muted-foreground">+{job.media.length - 3}</span>
-                            )}
+                            {job.media.length > 3 && <span className="text-xs text-muted-foreground">+{job.media.length - 3}</span>}
                             {job.media.length <= 3 && (
                                 <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
                                     <ImageIcon className="h-3 w-3" />

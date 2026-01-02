@@ -838,11 +838,14 @@ export interface WorkflowJob {
     media?: Media[];
 }
 
-export type WorkflowEventType = 'stage_changed' | 'note_added' | 'priority_updated';
+export type WorkflowEventType = 'stage_changed' | 'note_added' | 'priority_updated' | 'metadata_updated' | 'images_added' | 'images_removed';
 
 export interface WorkflowEventMetadata {
     from_priority?: string | null;
     to_priority?: string | null;
+    changed_fields?: Record<string, { from: unknown; to: unknown }>;
+    count?: number;
+    file_names?: string[];
 }
 
 export interface WorkflowEvent {
@@ -851,6 +854,7 @@ export interface WorkflowEvent {
     from_stage_id?: string | null;
     to_stage_id?: string | null;
     event_type: WorkflowEventType;
+    event_type_label: string;
     user_id?: number | null;
     metadata?: WorkflowEventMetadata | null;
     created_at: string;

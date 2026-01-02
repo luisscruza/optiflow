@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\EventType;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 final class WorkflowEvent extends Model
 {
     use HasUuids;
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var list<string>
+     */
+    protected $appends = ['event_type_label'];
+
+    /**
+     * Get the human-readable label for the event type.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function eventTypeLabel(): Attribute
+    {
+        return Attribute::get(fn(): string => $this->event_type->label());
+    }
 
     /**
      * @return BelongsTo<WorkflowJob, $this>
