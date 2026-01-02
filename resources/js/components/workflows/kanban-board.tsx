@@ -237,7 +237,7 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
                         <DialogTitle>Nueva tarea</DialogTitle>
                         <DialogDescription>Agrega una nueva tarea al flujo de trabajo.</DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4">
+                    <div className="space-y-4 h-[75vh] overflow-y-auto pr-2">
                         {/* Contact Selection - Required and First */}
                         <div className="space-y-2">
                             <Label htmlFor="job-contact">

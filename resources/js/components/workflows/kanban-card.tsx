@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { AlertCircle, Building, Calendar, FileText, MoreHorizontal, Pencil, Trash2, User } from 'lucide-react';
+import { AlertCircle, Building, Calendar, FileText, ImageIcon, MoreHorizontal, Pencil, Trash2, User } from 'lucide-react';
 import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -138,6 +138,34 @@ export function KanbanCard({ job, workflow, onDragStart, onDragEnd }: KanbanCard
                             </Badge>
                         )}
                     </div>
+                    {job.media && job.media.length > 0 && (
+                        <div className="mt-2 flex items-center gap-1.5">
+                            <div className="flex -space-x-2">
+                                {job.media.slice(0, 3).map((media, index) => (
+                                    <div
+                                        key={media.id}
+                                        className="relative h-8 w-8 overflow-hidden rounded-md border-2 border-background bg-muted"
+                                        style={{ zIndex: 3 - index }}
+                                    >
+                                        <img
+                                            src={media.preview_url || media.original_url}
+                                            alt={media.file_name}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                            {job.media.length > 3 && (
+                                <span className="text-xs text-muted-foreground">+{job.media.length - 3}</span>
+                            )}
+                            {job.media.length <= 3 && (
+                                <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+                                    <ImageIcon className="h-3 w-3" />
+                                    {job.media.length}
+                                </span>
+                            )}
+                        </div>
+                    )}
                     {job.comments && job.comments.length > 0 && (
                         <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">{job.comments[0].comment}</p>
                     )}

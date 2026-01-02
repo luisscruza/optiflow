@@ -116,7 +116,7 @@ final class WorkflowController extends Controller
 
             $query = WorkflowJob::query()
                 ->where('workflow_stage_id', $stage->id)
-                ->with(['workspace', 'contact', 'invoice.contact', 'prescription.patient']);
+                ->with(['workspace', 'contact', 'invoice.contact', 'prescription.patient', 'media']);
 
             $query = app(Pipeline::class)
                 ->send($query)

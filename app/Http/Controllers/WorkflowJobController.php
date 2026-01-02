@@ -24,14 +24,12 @@ final class WorkflowJobController extends Controller
      */
     public function show(Workflow $workflow, WorkflowJob $job): Response
     {
-        // Load workflow with stages and fields (lightweight)
         $workflow->load([
             'stages' => fn ($query) => $query->orderBy('position'),
             'fields' => fn ($query) => $query->where('is_active', true)->orderBy('position'),
             'fields.mastertable.items',
         ]);
 
-        // Eager load job relations
         $job->load([
             'workflow',
             'workflowStage',
