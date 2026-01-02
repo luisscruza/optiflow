@@ -7,7 +7,13 @@ namespace App\Http\Controllers;
 use App\Actions\CreateWorkflowAction;
 use App\Actions\DeleteWorkflowAction;
 use App\Actions\UpdateWorkflowAction;
+use App\Filters\WorkflowJob\ContactFilter;
+use App\Filters\WorkflowJob\DateRangeFilter;
+use App\Filters\WorkflowJob\DueStatusFilter;
+use App\Filters\WorkflowJob\PriorityFilter;
+use App\Filters\WorkflowJob\WorkspaceFilter;
 use App\Http\Requests\CreateWorkflowRequest;
+use App\Http\Requests\ShowWorkflowRequest;
 use App\Http\Requests\UpdateWorkflowRequest;
 use App\Models\Contact;
 use App\Models\Invoice;
@@ -17,6 +23,7 @@ use App\Models\Workflow;
 use App\Models\WorkflowJob;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\Context;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -56,17 +63,11 @@ final class WorkflowController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new workflow.
-     */
     public function create(): Response
     {
         return Inertia::render('workflows/create');
     }
 
-    /**
-     * Store a newly created workflow in storage.
-     */
     public function store(CreateWorkflowRequest $request, CreateWorkflowAction $action): RedirectResponse
     {
         $workflow = $action->handle($request->validated());
@@ -75,67 +76,97 @@ final class WorkflowController extends Controller
             ->with('success', 'Flujo de trabajo creado exitosamente.');
     }
 
-    /**
-     * Display the specified workflow (Kanban board view).
-     * Jobs are paginated per stage via a separate endpoint for scalability.
-     */
-    public function show(Request $request, Workflow $workflow): Response
+    public function show(ShowWorkflowRequest $request, Workflow $workflow): Response
     {
-        // Load workflow with stages (without jobs - they'll be loaded per-stage)
+        $filters = $request->getFilters();
+        $showAllWorkspaces = $request->showAllWorkspaces();
+
+        $filterPipeline = [
+            new WorkspaceFilter($showAllWorkspaces),
+            new ContactFilter($filters['contact_id']),
+            new PriorityFilter($filters['priority']),
+            new DueStatusFilter($filters['due_status']),
+            new DateRangeFilter($filters['date_from'], $filters['date_to']),
+        ];
+
         $workflow->load([
-            'stages' => fn($query) => $query->orderBy('position')->withCount([
-                'jobs as pending_jobs_count' => fn($q) => $q->whereNull('completed_at')->whereNull('canceled_at'),
-                'jobs as completed_jobs_count' => fn($q) => $q->whereNotNull('completed_at'),
+            'stages' => fn ($query) => $query->orderBy('position')->withCount([
+                'jobs as pending_jobs_count' => function ($q) use ($filterPipeline, $filters) {
+                    $this->applyPipelineFilters($q, $filterPipeline);
+                    if (! $filters['status'] || $filters['status'] === 'pending') {
+                        $q->whereNull('completed_at')->whereNull('canceled_at');
+                    } elseif ($filters['status'] === 'completed') {
+                        $q->whereNotNull('completed_at');
+                    } elseif ($filters['status'] === 'canceled') {
+                        $q->whereNotNull('canceled_at');
+                    }
+                },
+                'jobs as completed_jobs_count' => function ($q) use ($filterPipeline) {
+                    $this->applyPipelineFilters($q, $filterPipeline);
+                    $q->whereNotNull('completed_at');
+                },
             ]),
-            'fields' => fn($query) => $query->where('is_active', true)->orderBy('position'),
+            'fields' => fn ($query) => $query->where('is_active', true)->orderBy('position'),
             'fields.mastertable.items',
         ]);
 
         $stageJobProps = [];
         foreach ($workflow->stages as $stage) {
-            $propName = 'stage_' . str_replace('-', '_', $stage->id) . '_jobs';
+            $propName = 'stage_'.str_replace('-', '_', $stage->id).'_jobs';
+
+            $query = WorkflowJob::query()
+                ->where('workflow_stage_id', $stage->id)
+                ->with(['workspace', 'contact', 'invoice.contact', 'prescription.patient']);
+
+            $query = app(Pipeline::class)
+                ->send($query)
+                ->through($filterPipeline)
+                ->thenReturn();
+
+            if ($filters['status'] === 'pending') {
+                $query->whereNull('completed_at')->whereNull('canceled_at');
+            } elseif ($filters['status'] === 'completed') {
+                $query->whereNotNull('completed_at');
+            } elseif ($filters['status'] === 'canceled') {
+                $query->whereNotNull('canceled_at');
+            }
+
             $stageJobProps[$propName] = Inertia::scroll(
-                WorkflowJob::query()
-                    ->where('workflow_stage_id', $stage->id)
-                    ->with(['workspace','contact', 'invoice.contact', 'prescription.patient'])
-                    ->orderBy('created_at', 'desc')
+                $query->orderBy('created_at', 'desc')
                     ->cursorPaginate(5, ['*'], $propName)
             );
         }
 
-        $contactId = $request->query('contact_id');
-
         return Inertia::render('workflows/show', array_merge([
             'workflow' => $workflow,
-            'contacts' => fn() => Contact::query()
+            'filters' => array_filter($filters),
+            'showAllWorkspaces' => $showAllWorkspaces,
+            'contacts' => fn () => Contact::query()
                 ->customers()
                 ->where('status', 'active')
                 ->orderBy('name')
                 ->get(),
-            'invoices' => Inertia::lazy(fn() => $contactId
+            'invoices' => Inertia::lazy(fn () => $request->getContactId()
                 ? Invoice::query()
-                ->with('contact')
-                ->orderBy('created_at', 'desc')
-                ->limit(50)
-                ->get()
+                    ->with('contact')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(50)
+                    ->get()
                 : []),
-            'prescriptions' => Inertia::lazy(fn() => $contactId
+            'prescriptions' => Inertia::lazy(fn () => $request->getContactId()
                 ? Prescription::query()
-                ->with('patient')
-                ->where('patient_id', $contactId)
-                ->orderBy('created_at', 'desc')
-                ->limit(50)
-                ->get()
+                    ->with('patient')
+                    ->where('patient_id', $request->getContactId())
+                    ->orderBy('created_at', 'desc')
+                    ->limit(50)
+                    ->get()
                 : []),
         ], $stageJobProps));
     }
 
-    /**
-     * Show the form for editing the specified workflow.
-     */
     public function edit(Workflow $workflow): Response
     {
-        $workflow->load(['fields' => fn($query) => $query->orderBy('position')]);
+        $workflow->load(['fields' => fn ($query) => $query->orderBy('position')]);
 
         return Inertia::render('workflows/edit', [
             'workflow' => $workflow,
@@ -143,9 +174,6 @@ final class WorkflowController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified workflow in storage.
-     */
     public function update(UpdateWorkflowRequest $request, Workflow $workflow, UpdateWorkflowAction $action): RedirectResponse
     {
         $action->handle($workflow, $request->validated());
@@ -154,14 +182,22 @@ final class WorkflowController extends Controller
             ->with('success', 'Flujo de trabajo actualizado exitosamente.');
     }
 
-    /**
-     * Remove the specified workflow from storage.
-     */
     public function destroy(Workflow $workflow, DeleteWorkflowAction $action): RedirectResponse
     {
         $action->handle($workflow);
 
         return redirect()->route('workflows.index')
             ->with('success', 'Flujo de trabajo eliminado exitosamente.');
+    }
+
+    /**
+     * Apply pipeline filters to a query.
+     */
+    private function applyPipelineFilters($query, array $filterPipeline): void
+    {
+        app(Pipeline::class)
+            ->send($query)
+            ->through($filterPipeline)
+            ->thenReturn();
     }
 }

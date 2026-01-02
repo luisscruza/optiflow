@@ -26,8 +26,8 @@ final class WorkflowJobController extends Controller
     {
         // Load workflow with stages and fields (lightweight)
         $workflow->load([
-            'stages' => fn($query) => $query->orderBy('position'),
-            'fields' => fn($query) => $query->where('is_active', true)->orderBy('position'),
+            'stages' => fn ($query) => $query->orderBy('position'),
+            'fields' => fn ($query) => $query->where('is_active', true)->orderBy('position'),
             'fields.mastertable.items',
         ]);
 
@@ -49,7 +49,7 @@ final class WorkflowJobController extends Controller
             'workflow' => $workflow,
             'job' => $job,
             // Defer events loading - they're not critical for initial render
-            'events' => Inertia::defer(fn() => $job->events()
+            'events' => Inertia::defer(fn () => $job->events()
                 ->with(['user', 'fromStage', 'toStage'])
                 ->orderBy('created_at', 'desc')
                 ->limit(50)

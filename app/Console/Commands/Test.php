@@ -40,7 +40,7 @@ final class Test extends Command
                 'invoice_id' => Invoice::inRandomOrder()->first()->id,
                 'contact_id' => Contact::inRandomOrder()->first()->id,
                 'prescription_id' => null,
-                'workspace_id' => 1,
+                'workspace_id' => 2,
             ]);
         }
     }
