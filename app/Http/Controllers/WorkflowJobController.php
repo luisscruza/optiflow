@@ -26,6 +26,7 @@ final class WorkflowJobController extends Controller
     {
         $job = WorkflowJob::where('uuid', $job)->withoutGlobalScopes()->firstOrFail();
 
+        dd($job);
         $workflow->load([
             'stages' => fn ($query) => $query->orderBy('position'),
             'fields' => fn ($query) => $query->where('is_active', true)->orderBy('position'),
