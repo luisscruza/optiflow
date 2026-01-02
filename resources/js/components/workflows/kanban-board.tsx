@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ImageUpload } from '@/components/ui/image-upload';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -44,6 +45,8 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
     const [newJobDueDate, setNewJobDueDate] = useState('');
     const [newJobNotes, setNewJobNotes] = useState('');
     const [newJobMetadata, setNewJobMetadata] = useState<Record<string, string | number | null>>({});
+    const [newJobImages, setNewJobImages] = useState<File[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // New stage form state
     const [newStageName, setNewStageName] = useState('');
@@ -127,25 +130,35 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
             return;
         }
 
-        router.post(
-            `/workflows/${workflow.id}/jobs`,
-            {
-                workflow_stage_id: selectedStageId,
-                contact_id: newJobContactId,
-                invoice_id: newJobInvoiceId || null,
-                prescription_id: newJobPrescriptionId || null,
-                priority: newJobPriority || null,
-                due_date: newJobDueDate || null,
-                notes: newJobNotes || null,
-                metadata: Object.keys(newJobMetadata).length > 0 ? newJobMetadata : null,
+        setIsSubmitting(true);
+
+        // Build form data for file uploads
+        const formData: Record<string, unknown> = {
+            workflow_stage_id: selectedStageId,
+            contact_id: newJobContactId,
+            invoice_id: newJobInvoiceId || null,
+            prescription_id: newJobPrescriptionId || null,
+            priority: newJobPriority || null,
+            due_date: newJobDueDate || null,
+            notes: newJobNotes || null,
+            metadata: Object.keys(newJobMetadata).length > 0 ? newJobMetadata : null,
+        };
+
+        // Add images to form data - Inertia handles FormData conversion automatically
+        if (newJobImages.length > 0) {
+            formData.images = newJobImages;
+        }
+
+        router.post(`/workflows/${workflow.id}/jobs`, formData, {
+            forceFormData: newJobImages.length > 0,
+            onSuccess: () => {
+                setIsCreateDialogOpen(false);
+                resetNewJobForm();
             },
-            {
-                onSuccess: () => {
-                    setIsCreateDialogOpen(false);
-                    resetNewJobForm();
-                },
+            onFinish: () => {
+                setIsSubmitting(false);
             },
-        );
+        });
     };
 
     const handleSubmitNewStage = () => {
@@ -174,6 +187,7 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
         setNewJobDueDate('');
         setNewJobNotes('');
         setNewJobMetadata({});
+        setNewJobImages([]);
         setSelectedStageId(null);
     };
 
@@ -369,13 +383,26 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
                                 onChange={(key, value) => setNewJobMetadata((prev) => ({ ...prev, [key]: value }))}
                             />
                         )}
+
+                        {/* Image Upload */}
+                        <div className="space-y-2">
+                            <Label>Imágenes</Label>
+                            <ImageUpload value={newJobImages} onChange={setNewJobImages} maxFiles={10} disabled={isSubmitting} />
+                        </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                        <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)} disabled={isSubmitting}>
                             Cancelar
                         </Button>
-                        <Button onClick={handleSubmitNewJob} disabled={!newJobContactId}>
-                            Crear tarea
+                        <Button onClick={handleSubmitNewJob} disabled={!newJobContactId || isSubmitting}>
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Creando...
+                                </>
+                            ) : (
+                                'Crear tarea'
+                            )}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

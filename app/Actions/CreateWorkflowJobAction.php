@@ -6,6 +6,7 @@ namespace App\Actions;
 
 use App\Models\WorkflowJob;
 use App\Models\WorkflowStage;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 final readonly class CreateWorkflowJobAction
@@ -17,7 +18,7 @@ final readonly class CreateWorkflowJobAction
     /**
      * Execute the action.
      *
-     * @param  array{invoice_id?: int, contact_id?: int, prescription_id?: int, priority?: string, due_date?: string, started_at?: string, completed_at?: string, canceled_at?: string, notes?: string, metadata?: array<string, mixed>}  $data
+     * @param  array{invoice_id?: int, contact_id?: int, prescription_id?: int, priority?: string, due_date?: string, started_at?: string, completed_at?: string, canceled_at?: string, notes?: string, metadata?: array<string, mixed>, images?: array<UploadedFile>}  $data
      */
     public function handle(WorkflowStage $stage, array $data): WorkflowJob
     {
@@ -43,7 +44,24 @@ final readonly class CreateWorkflowJobAction
                 $this->recordEvent->noteAdded($job);
             }
 
+            if (isset($data['images']) && is_array($data['images'])) {
+                $this->addImages($job, $data['images']);
+            }
+
             return $job;
         });
+    }
+
+    /**
+     * Add images to the workflow job.
+     *
+     * @param  array<UploadedFile>  $images
+     */
+    private function addImages(WorkflowJob $job, array $images): void
+    {
+        foreach ($images as $image) {
+            $job->addMedia($image)
+                ->toMediaCollection('images');
+        }
     }
 }

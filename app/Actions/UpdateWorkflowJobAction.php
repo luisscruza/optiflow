@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Models\WorkflowJob;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 final readonly class UpdateWorkflowJobAction
@@ -16,7 +17,7 @@ final readonly class UpdateWorkflowJobAction
     /**
      * Execute the action.
      *
-     * @param  array{invoice_id?: int, contact_id?: int, priority?: string|null, due_date?: string|null, started_at?: string|null, completed_at?: string|null, canceled_at?: string|null, metadata?: array<string, mixed>}  $data
+     * @param  array{invoice_id?: int, contact_id?: int, priority?: string|null, due_date?: string|null, started_at?: string|null, completed_at?: string|null, canceled_at?: string|null, metadata?: array<string, mixed>, images?: array<UploadedFile>, remove_images?: array<int>}  $data
      */
     public function handle(WorkflowJob $job, array $data): WorkflowJob
     {
@@ -62,7 +63,41 @@ final readonly class UpdateWorkflowJobAction
                 }
             }
 
+            if (isset($data['remove_images']) && is_array($data['remove_images'])) {
+                $this->removeImages($job, $data['remove_images']);
+            }
+
+            if (isset($data['images']) && is_array($data['images'])) {
+                $this->addImages($job, $data['images']);
+            }
+
             return $job->fresh();
         });
+    }
+
+    /**
+     * Add images to the workflow job.
+     *
+     * @param  array<UploadedFile>  $images
+     */
+    private function addImages(WorkflowJob $job, array $images): void
+    {
+        foreach ($images as $image) {
+            $job->addMedia($image)
+                ->toMediaCollection('images');
+        }
+    }
+
+    /**
+     * Remove images from the workflow job.
+     *
+     * @param  array<int>  $mediaIds
+     */
+    private function removeImages(WorkflowJob $job, array $mediaIds): void
+    {
+        $job->media()
+            ->whereIn('id', $mediaIds)
+            ->where('collection_name', 'images')
+            ->each(fn ($media) => $media->delete());
     }
 }

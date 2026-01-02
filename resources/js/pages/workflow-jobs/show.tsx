@@ -11,6 +11,7 @@ import {
     Edit,
     FileText,
     History,
+    ImageIcon,
     LayoutGrid,
     Loader2,
     Receipt,
@@ -25,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ImageUpload } from '@/components/ui/image-upload';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -33,6 +35,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import {
     type BreadcrumbItem,
+    type Media,
     type SharedData,
     type Workflow,
     type WorkflowEvent,
@@ -73,11 +76,60 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
     const [customFieldsOpen, setCustomFieldsOpen] = useState(true);
     const [historyOpen, setHistoryOpen] = useState(true);
     const [datesOpen, setDatesOpen] = useState(true);
+    const [imagesOpen, setImagesOpen] = useState(true);
     const [dueDateInput, setDueDateInput] = useState<string>('');
 
     // Metadata editing state
     const [editableMetadata, setEditableMetadata] = useState<Record<string, string | number | boolean | null>>(job.metadata || {});
     const [isSavingMetadata, setIsSavingMetadata] = useState(false);
+
+    // Images editing state
+    const [newImages, setNewImages] = useState<File[]>([]);
+    const [imagesToRemove, setImagesToRemove] = useState<number[]>([]);
+    const [isSavingImages, setIsSavingImages] = useState(false);
+
+    // Get existing media excluding those marked for removal
+    const existingImages = (job.media || []).filter((m: Media) => !imagesToRemove.includes(m.id));
+
+    const handleRemoveExistingImage = (mediaId: number) => {
+        setImagesToRemove((prev) => [...prev, mediaId]);
+    };
+
+    const handleSaveImages = () => {
+        if (newImages.length === 0 && imagesToRemove.length === 0) return;
+
+        setIsSavingImages(true);
+
+        const formData: Record<string, unknown> = {};
+
+        if (newImages.length > 0) {
+            formData.images = newImages;
+        }
+
+        if (imagesToRemove.length > 0) {
+            formData.remove_images = imagesToRemove;
+        }
+
+        // Use POST with _method spoofing for file uploads with PATCH
+        router.post(
+            `/workflows/${workflow.id}/jobs/${job.id}`,
+            {
+                _method: 'patch',
+                ...formData,
+            },
+            {
+                forceFormData: true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    setNewImages([]);
+                    setImagesToRemove([]);
+                },
+                onFinish: () => {
+                    setIsSavingImages(false);
+                },
+            },
+        );
+    };
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -664,6 +716,79 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
                                     </Card>
                                 </Collapsible>
                             )}
+
+                            {/* Images */}
+                            <Collapsible open={imagesOpen} onOpenChange={setImagesOpen}>
+                                <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
+                                    <CollapsibleTrigger asChild>
+                                        <CardHeader className="cursor-pointer bg-gray-50/50 px-6 py-5 transition-colors hover:bg-gray-100/50">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex flex-col gap-1.5">
+                                                    <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
+                                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-100 text-pink-600">
+                                                            <ImageIcon className="h-4 w-4" />
+                                                        </div>
+                                                        Imágenes
+                                                    </CardTitle>
+                                                    {(job.media?.length || 0) > 0 && (
+                                                        <CardDescription>
+                                                            {job.media?.length} {job.media?.length === 1 ? 'imagen' : 'imágenes'}
+                                                        </CardDescription>
+                                                    )}
+                                                </div>
+                                                <ChevronDown
+                                                    className={`h-5 w-5 text-gray-500 transition-transform duration-200 ${imagesOpen ? 'rotate-180' : ''}`}
+                                                />
+                                            </div>
+                                        </CardHeader>
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent>
+                                        <CardContent className="px-6 py-6">
+                                            <ImageUpload
+                                                value={newImages}
+                                                onChange={setNewImages}
+                                                existingMedia={existingImages}
+                                                onRemoveExisting={handleRemoveExistingImage}
+                                                maxFiles={10}
+                                                disabled={isSavingImages}
+                                            />
+
+                                            {(newImages.length > 0 || imagesToRemove.length > 0) && (
+                                                <div className="mt-4 flex items-center justify-between rounded-lg bg-amber-50 p-3">
+                                                    <p className="text-sm text-amber-800">
+                                                        {newImages.length > 0 && `${newImages.length} imagen(es) por agregar`}
+                                                        {newImages.length > 0 && imagesToRemove.length > 0 && ' • '}
+                                                        {imagesToRemove.length > 0 && `${imagesToRemove.length} imagen(es) por eliminar`}
+                                                    </p>
+                                                    <div className="flex gap-2">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                setNewImages([]);
+                                                                setImagesToRemove([]);
+                                                            }}
+                                                            disabled={isSavingImages}
+                                                        >
+                                                            Cancelar
+                                                        </Button>
+                                                        <Button size="sm" onClick={handleSaveImages} disabled={isSavingImages}>
+                                                            {isSavingImages ? (
+                                                                <>
+                                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                                    Guardando...
+                                                                </>
+                                                            ) : (
+                                                                'Guardar cambios'
+                                                            )}
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </CollapsibleContent>
+                                </Card>
+                            </Collapsible>
 
                             {/* Custom Fields / Metadata */}
                             {workflow.fields && workflow.fields.length > 0 && (

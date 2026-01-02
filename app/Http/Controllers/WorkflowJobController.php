@@ -43,6 +43,7 @@ final class WorkflowJobController extends Controller
             'prescription.patient',
             'prescription.optometrist',
             'comments.commentator',
+            'media',
         ]);
 
         return Inertia::render('workflow-jobs/show', [

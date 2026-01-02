@@ -33,6 +33,10 @@ final class UpdateWorkflowJobRequest extends FormRequest
             'canceled_at' => ['nullable', 'date'],
             'metadata' => ['nullable', 'array'],
             'metadata.*' => ['nullable'],
+            'images' => ['nullable', 'array', 'max:10'],
+            'images.*' => ['file', 'image', 'mimes:jpeg,png,gif,webp', 'max:10240'],
+            'remove_images' => ['nullable', 'array'],
+            'remove_images.*' => ['integer'],
         ];
     }
 
@@ -48,6 +52,11 @@ final class UpdateWorkflowJobRequest extends FormRequest
             'contact_id.exists' => 'El contacto seleccionado no existe.',
             'priority.in' => 'La prioridad debe ser: baja, media, alta o urgente.',
             'due_date.date' => 'La fecha de vencimiento debe ser una fecha válida.',
+            'images.max' => 'No se pueden subir más de 10 imágenes.',
+            'images.*.image' => 'El archivo debe ser una imagen.',
+            'images.*.mimes' => 'La imagen debe ser de tipo: jpeg, png, gif o webp.',
+            'images.*.max' => 'Cada imagen no puede exceder 10MB.',
+            'remove_images.*.integer' => 'ID de imagen inválido.',
         ];
     }
 }

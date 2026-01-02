@@ -227,7 +227,7 @@ final class Contact extends Model implements Commentable
     protected function identificationObject(): Attribute
     {
         return Attribute::make(
-            get: fn(): ?array => $this->identification_type && $this->identification_number
+            get: fn (): ?array => $this->identification_type && $this->identification_number
                 ? [
                     'type' => mb_strtoupper($this->identification_type),
                     'number' => $this->identification_number,
@@ -242,7 +242,7 @@ final class Contact extends Model implements Commentable
     protected function age(): Attribute
     {
         return Attribute::make(
-            get: fn(): ?int => $this->birth_date?->age
+            get: fn (): ?int => $this->birth_date?->age
         );
     }
 
@@ -252,7 +252,7 @@ final class Contact extends Model implements Commentable
     protected function fullAddress(): Attribute
     {
         return Attribute::make(
-            get: fn(): ?string => $this->primaryAddress?->full_address
+            get: fn (): ?string => $this->primaryAddress?->full_address
         );
     }
 

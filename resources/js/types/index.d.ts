@@ -787,6 +787,29 @@ export interface CursorPaginatedData<T> {
     data: T[];
 }
 
+// Media Library types
+export interface Media {
+    id: number;
+    model_type: string;
+    model_id: string;
+    uuid: string;
+    collection_name: string;
+    name: string;
+    file_name: string;
+    mime_type: string;
+    disk: string;
+    size: number;
+    manipulations: Record<string, unknown>[];
+    custom_properties: Record<string, unknown>;
+    generated_conversions: Record<string, boolean>;
+    responsive_images: Record<string, unknown>[];
+    order_column: number;
+    created_at: string;
+    updated_at: string;
+    original_url: string;
+    preview_url: string;
+}
+
 export interface WorkflowJob {
     id: string;
     workflow_id: string;
@@ -812,6 +835,7 @@ export interface WorkflowJob {
     comments?: CommentData[];
     events?: WorkflowEvent[];
     workspace: Workspace;
+    media?: Media[];
 }
 
 export type WorkflowEventType = 'stage_changed' | 'note_added' | 'priority_updated';
