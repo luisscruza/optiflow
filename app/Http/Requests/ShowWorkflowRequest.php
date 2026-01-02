@@ -32,7 +32,7 @@ final class ShowWorkflowRequest extends FormRequest
             'filter_date_from' => ['nullable', 'date'],
             'filter_date_to' => ['nullable', 'date', 'after_or_equal:filter_date_from'],
             'all_workspaces' => ['nullable', 'boolean'],
-            'contact_id' => ['nullable', 'integer', 'exists:contacts,id'],
+            'contact_id' => ['nullable', 'exists:contacts,id'],
         ];
     }
 

@@ -93,22 +93,11 @@ final class Contact extends Model implements Commentable
     /** @use HasFactory<\Database\Factories\ContactFactory> */
     use HasComments, HasFactory;
 
-    protected $fillable = [
-        'name',
-        'identification_type',
-        'identification_number',
-        'email',
-        'phone_primary',
-        'phone_secondary',
-        'mobile',
-        'fax',
-        'contact_type',
-        'status',
-        'observations',
-        'credit_limit',
-        'metadata',
-    ];
-
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array<int, string>
+     */
     protected $appends = [
         'identification_object',
         'full_address',
@@ -238,7 +227,7 @@ final class Contact extends Model implements Commentable
     protected function identificationObject(): Attribute
     {
         return Attribute::make(
-            get: fn (): ?array => $this->identification_type && $this->identification_number
+            get: fn(): ?array => $this->identification_type && $this->identification_number
                 ? [
                     'type' => mb_strtoupper($this->identification_type),
                     'number' => $this->identification_number,
@@ -253,7 +242,7 @@ final class Contact extends Model implements Commentable
     protected function age(): Attribute
     {
         return Attribute::make(
-            get: fn (): ?int => $this->birth_date?->age
+            get: fn(): ?int => $this->birth_date?->age
         );
     }
 
@@ -263,7 +252,7 @@ final class Contact extends Model implements Commentable
     protected function fullAddress(): Attribute
     {
         return Attribute::make(
-            get: fn (): ?string => $this->primaryAddress?->full_address
+            get: fn(): ?string => $this->primaryAddress?->full_address
         );
     }
 
