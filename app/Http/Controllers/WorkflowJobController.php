@@ -22,11 +22,11 @@ final class WorkflowJobController extends Controller
      * Display the specified job.
      * Uses deferred props for events to optimize initial load.
      */
-    public function show(Workflow $workflow, string $job): Response
+    public function show(string $workflow, string $job): Response
     {
+        $workflow = Workflow::where('uuid', $workflow)->withoutGlobalScopes()->firstOrFail();
         $job = WorkflowJob::where('uuid', $job)->withoutGlobalScopes()->firstOrFail();
 
-        dd($job);
         $workflow->load([
             'stages' => fn ($query) => $query->orderBy('position'),
             'fields' => fn ($query) => $query->where('is_active', true)->orderBy('position'),
