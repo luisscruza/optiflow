@@ -45,6 +45,7 @@ final class DashboardController extends Controller
             'customersWithSales' => $this->getCustomersWithSales($startDate, $endDate, $previousStartDate, $previousEndDate),
             'prescriptionsCreated' => $this->getPrescriptionsCreated($startDate, $endDate, $previousStartDate, $previousEndDate),
             'workflowsSummary' => $this->getWorkflowsSummary(),
+            'totalSales' => $this->getTotalSales($startDate, $endDate, $previousStartDate, $previousEndDate),
             'dashboardLayout' => $this->filterLayoutByPermissions(Auth::user()?->dashboard_layout ?? DashboardWidget::defaultLayouts()),
             'availableWidgets' => $this->getAvailableWidgets(),
         ]);
@@ -321,6 +322,70 @@ final class DashboardController extends Controller
                 'overdue_jobs_count' => $workflow->overdue_jobs_count ?? 0,
             ])
             ->toArray();
+    }
+
+    /**
+     * Get total sales data with daily breakdown for charting.
+     *
+     * @return array{total: float, previous_total: float, change_percentage: float, current_period: array{start: string, end: string}, previous_period: array{start: string, end: string}, daily_data: array<int, array{date: string, day: int, current: float, previous: float}>}
+     */
+    private function getTotalSales(Carbon $startDate, Carbon $endDate, Carbon $previousStartDate, Carbon $previousEndDate): array
+    {
+        // Get daily sales for current period
+        $currentDailySales = Invoice::query()
+            ->selectRaw('DATE(created_at) as date, SUM(total_amount) as total')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('date')
+            ->orderBy('date')
+            ->pluck('total', 'date')
+            ->toArray();
+
+        // Get daily sales for previous period
+        $previousDailySales = Invoice::query()
+            ->selectRaw('DATE(created_at) as date, SUM(total_amount) as total')
+            ->whereBetween('created_at', [$previousStartDate, $previousEndDate])
+            ->groupBy('date')
+            ->orderBy('date')
+            ->pluck('total', 'date')
+            ->toArray();
+
+        // Calculate totals
+        $currentTotal = array_sum($currentDailySales);
+        $previousTotal = array_sum($previousDailySales);
+
+        // Build daily data array aligned by day of period
+        $dailyData = [];
+        $periodDays = $startDate->diffInDays($endDate);
+
+        for ($i = 0; $i <= $periodDays; $i++) {
+            $currentDate = $startDate->copy()->addDays($i);
+            $previousDate = $previousStartDate->copy()->addDays($i);
+
+            $currentDateStr = $currentDate->format('Y-m-d');
+            $previousDateStr = $previousDate->format('Y-m-d');
+
+            $dailyData[] = [
+                'date' => $currentDate->format('j M'),
+                'day' => $i + 1,
+                'current' => (float) ($currentDailySales[$currentDateStr] ?? 0),
+                'previous' => (float) ($previousDailySales[$previousDateStr] ?? 0),
+            ];
+        }
+
+        return [
+            'total' => $currentTotal,
+            'previous_total' => $previousTotal,
+            'change_percentage' => $this->calculatePercentageChange((float) $previousTotal, (float) $currentTotal),
+            'current_period' => [
+                'start' => $startDate->format('j M Y'),
+                'end' => $endDate->format('j M Y'),
+            ],
+            'previous_period' => [
+                'start' => $previousStartDate->format('j M Y'),
+                'end' => $previousEndDate->format('j M Y'),
+            ],
+            'daily_data' => $dailyData,
+        ];
     }
 
     /**

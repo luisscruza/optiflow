@@ -12,6 +12,7 @@ enum DashboardWidget: string
     case CustomersWithSales = 'customers-with-sales';
     case PrescriptionsCreated = 'prescriptions-created';
     case WorkflowsSummary = 'workflows-summary';
+    case TotalSales = 'total-sales';
 
     /**
      * Get all widgets as an array for form options.
@@ -61,6 +62,7 @@ enum DashboardWidget: string
             self::CustomersWithSales => 'Clientes con ventas',
             self::PrescriptionsCreated => 'Recetas creadas',
             self::WorkflowsSummary => 'Resumen de procesos',
+            self::TotalSales => 'Total de ventas',
         };
     }
 
@@ -76,6 +78,7 @@ enum DashboardWidget: string
             self::CustomersWithSales => Permission::ViewDashboardCustomersStats,
             self::PrescriptionsCreated => Permission::ViewDashboardPrescriptionsStats,
             self::WorkflowsSummary => Permission::ViewDashboardWorkflowsStats,
+            self::TotalSales => Permission::ViewDashboardSalesStats,
         };
     }
 
@@ -93,6 +96,7 @@ enum DashboardWidget: string
             self::CustomersWithSales => ['x' => 10, 'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 1],
             self::PrescriptionsCreated => ['x' => 0, 'y' => 3, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 1],
             self::WorkflowsSummary => ['x' => 2, 'y' => 3, 'w' => 6, 'h' => 3, 'minW' => 4, 'minH' => 2],
+            self::TotalSales => ['x' => 0, 'y' => 6, 'w' => 12, 'h' => 4, 'minW' => 6, 'minH' => 3],
         };
     }
 }

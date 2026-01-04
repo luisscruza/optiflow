@@ -12,7 +12,7 @@ import 'gridstack/dist/gridstack.min.css';
 import { FileText, LayoutGrid, Package, Users } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { AccountsReceivableWidget, CountStatWidget, SalesTaxWidget, WorkflowsSummaryWidget } from './widgets';
+import { AccountsReceivableWidget, CountStatWidget, SalesTaxWidget, TotalSalesWidget, WorkflowsSummaryWidget } from './widgets';
 
 type DateRangePreset = 'current_month' | 'last_3_months' | 'last_6_months';
 
@@ -62,6 +62,26 @@ interface WorkflowSummary {
     overdue_jobs_count: number;
 }
 
+interface TotalSales {
+    total: number;
+    previous_total: number;
+    change_percentage: number;
+    current_period: {
+        start: string;
+        end: string;
+    };
+    previous_period: {
+        start: string;
+        end: string;
+    };
+    daily_data: Array<{
+        date: string;
+        day: number;
+        current: number;
+        previous: number;
+    }>;
+}
+
 interface DashboardProps {
     filters: {
         range: DateRangePreset;
@@ -72,6 +92,7 @@ interface DashboardProps {
     customersWithSales: CountStat;
     prescriptionsCreated: CountStat;
     workflowsSummary: WorkflowSummary[];
+    totalSales: TotalSales;
     dashboardLayout: WidgetLayout[];
     availableWidgets: Record<string, string>;
 }
@@ -97,6 +118,7 @@ const DEFAULT_WIDGET_LAYOUTS: Record<string, { w: number; h: number; minW: numbe
     'customers-with-sales': { w: 2, h: 2, minW: 2, minH: 1 },
     'prescriptions-created': { w: 2, h: 2, minW: 2, minH: 1 },
     'workflows-summary': { w: 6, h: 3, minW: 4, minH: 2 },
+    'total-sales': { w: 12, h: 4, minW: 6, minH: 3 },
 };
 
 export default function DashboardIndex({
@@ -107,6 +129,7 @@ export default function DashboardIndex({
     customersWithSales,
     prescriptionsCreated,
     workflowsSummary,
+    totalSales,
     dashboardLayout,
     availableWidgets,
 }: DashboardProps) {
@@ -318,6 +341,8 @@ export default function DashboardIndex({
                 );
             case 'workflows-summary':
                 return <WorkflowsSummaryWidget data={workflowsSummary} onRemove={() => removeWidget(widgetId)} />;
+            case 'total-sales':
+                return <TotalSalesWidget data={totalSales} formatCurrency={formatCurrency} onRemove={() => removeWidget(widgetId)} />;
             default:
                 return null;
         }
