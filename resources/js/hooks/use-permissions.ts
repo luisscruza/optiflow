@@ -34,7 +34,12 @@ export type WorkspacePermission =
     | 'view configuration'
     | 'edit configuration'
     | 'view reports'
-    | 'export reports';
+    | 'export reports'
+    | 'view dashboard accounts receivable'
+    | 'view dashboard sales stats'
+    | 'view dashboard products stats'
+    | 'view dashboard customers stats'
+    | 'view dashboard prescriptions stats';
 
 // Business-level permissions (granted to Owner/Admin users)
 export type BusinessPermission =

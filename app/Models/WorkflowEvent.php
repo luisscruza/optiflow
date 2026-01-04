@@ -22,16 +22,6 @@ final class WorkflowEvent extends Model
     protected $appends = ['event_type_label'];
 
     /**
-     * Get the human-readable label for the event type.
-     *
-     * @return Attribute<string, never>
-     */
-    protected function eventTypeLabel(): Attribute
-    {
-        return Attribute::get(fn(): string => $this->event_type->label());
-    }
-
-    /**
      * @return BelongsTo<WorkflowJob, $this>
      */
     public function workflowJob(): BelongsTo
@@ -61,6 +51,16 @@ final class WorkflowEvent extends Model
     public function toStage(): BelongsTo
     {
         return $this->belongsTo(WorkflowStage::class);
+    }
+
+    /**
+     * Get the human-readable label for the event type.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function eventTypeLabel(): Attribute
+    {
+        return Attribute::get(fn (): string => $this->event_type->label());
     }
 
     /**

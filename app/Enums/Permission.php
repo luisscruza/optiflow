@@ -54,6 +54,13 @@ enum Permission: string
     case ReportsView = 'view reports';
     case ReportsExport = 'export reports';
 
+    // Dashboard
+    case ViewDashboardAccountReceivable = 'view dashboard accounts receivable';
+    case ViewDashboardSalesStats = 'view dashboard sales stats';
+    case ViewDashboardProductsStats = 'view dashboard products stats';
+    case ViewDashboardCustomersStats = 'view dashboard customers stats';
+    case ViewDashboardPrescriptionsStats = 'view dashboard prescriptions stats';
+
     public static function all(): array
     {
         return array_map(fn (self $permission) => $permission->value, self::cases());
@@ -109,6 +116,13 @@ enum Permission: string
             // Reports
             self::ReportsView => 'Ver reportes',
             self::ReportsExport => 'Exportar reportes',
+
+            // Dashboard
+            self::ViewDashboardAccountReceivable => 'Ver panel de cuentas por cobrar',
+            self::ViewDashboardSalesStats => 'Ver panel de estadísticas de ventas',
+            self::ViewDashboardProductsStats => 'Ver panel de estadísticas de productos',
+            self::ViewDashboardCustomersStats => 'Ver panel de estadísticas de clientes',
+            self::ViewDashboardPrescriptionsStats => 'Ver panel de estadísticas de recetas',
         };
     }
 
@@ -124,6 +138,7 @@ enum Permission: string
             self::InventoryView, self::InventoryAdjust, self::InventoryTransfer => 'Inventario',
             self::ConfigurationView, self::ConfigurationEdit => 'Configuración',
             self::ReportsView, self::ReportsExport => 'Reportes',
+            self::ViewDashboardAccountReceivable, self::ViewDashboardSalesStats, self::ViewDashboardProductsStats, self::ViewDashboardCustomersStats, self::ViewDashboardPrescriptionsStats => 'Panel',
         };
     }
 }

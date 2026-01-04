@@ -109,7 +109,7 @@ final readonly class UpdateWorkflowJobAction
 
         $fileNames = $mediaToDelete->pluck('file_name')->toArray();
 
-        $mediaToDelete->each(fn($media) => $media->delete());
+        $mediaToDelete->each(fn ($media) => $media->delete());
 
         if (! empty($fileNames)) {
             $this->recordEvent->imagesRemoved($job, $fileNames);

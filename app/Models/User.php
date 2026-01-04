@@ -182,6 +182,7 @@ final class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'business_role' => UserRole::class,
+            'dashboard_layout' => 'array',
         ];
     }
 }

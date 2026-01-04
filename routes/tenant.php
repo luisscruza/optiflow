@@ -14,6 +14,7 @@ use App\Http\Controllers\ConvertQuotationToInvoiceController;
 use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\CurrencyRateController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DashboardLayoutController;
 use App\Http\Controllers\DocumentSubtypeController;
 use App\Http\Controllers\DownloadInvoicePdfController;
 use App\Http\Controllers\DownloadPrescriptionController;
@@ -102,6 +103,7 @@ Route::middleware([
 
         Route::middleware(HasWorkspace::class)->group(function (): void {
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+            Route::post('/dashboard/layout', [DashboardLayoutController::class, 'store'])->name('dashboard.layout.store');
 
             Route::get('configuration', [ConfigurationController::class, 'index'])->name('configuration.index');
 

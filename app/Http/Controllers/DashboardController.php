@@ -4,239 +4,301 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\DashboardWidget;
 use App\Models\Invoice;
+use App\Models\Payment;
+use App\Models\Prescription;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 final class DashboardController extends Controller
 {
-    public function index(): Response
+    private const RANGE_CURRENT_MONTH = 'current_month';
+
+    private const RANGE_LAST_3_MONTHS = 'last_3_months';
+
+    private const RANGE_LAST_6_MONTHS = 'last_6_months';
+
+    public function index(Request $request): Response
     {
-        $currentMonth = Carbon::now();
-        $startOfMonth = $currentMonth->copy()->startOfMonth();
-        $endOfMonth = $currentMonth->copy()->endOfMonth();
+        $range = $request->input('range', self::RANGE_CURRENT_MONTH);
 
-        // Get daily sales data for the current month
-        $dailySales = $this->getDailySalesData($startOfMonth, $endOfMonth);
+        [$startDate, $endDate] = $this->getDateRangeFromPreset($range);
 
-        // Get summary statistics
-        $summaryStats = $this->getSummaryStatistics($startOfMonth, $endOfMonth);
-
-        // Get accounts receivable and payable data
-        $accountsData = $this->getAccountsData();
+        // Calculate previous period for comparison
+        $periodDays = $startDate->diffInDays($endDate);
+        $previousStartDate = $startDate->copy()->subDays($periodDays + 1);
+        $previousEndDate = $startDate->copy()->subDay();
 
         return Inertia::render('Dashboard/Index', [
-            'dailySales' => $dailySales,
-            'summaryStats' => $summaryStats,
-            'accountsData' => $accountsData,
-            'currentMonth' => $currentMonth->format('F Y'),
+            'filters' => [
+                'range' => $range,
+            ],
+            'accountsReceivable' => $this->getAccountsReceivable($startDate, $endDate),
+            'salesTax' => $this->getSalesTax($startDate, $endDate, $previousStartDate, $previousEndDate),
+            'productsSold' => $this->getProductsSold($startDate, $endDate, $previousStartDate, $previousEndDate),
+            'customersWithSales' => $this->getCustomersWithSales($startDate, $endDate, $previousStartDate, $previousEndDate),
+            'prescriptionsCreated' => $this->getPrescriptionsCreated($startDate, $endDate, $previousStartDate, $previousEndDate),
+            'dashboardLayout' => $this->filterLayoutByPermissions(Auth::user()?->dashboard_layout ?? DashboardWidget::defaultLayouts()),
+            'availableWidgets' => $this->getAvailableWidgets(),
         ]);
     }
 
-    private function getDailySalesData(Carbon $startDate, Carbon $endDate): array
+    /**
+     * Get available widgets filtered by user permissions.
+     *
+     * @return array<string, string>
+     */
+    private function getAvailableWidgets(): array
     {
-        // Get daily sales aggregated by issue_date
-        $dailyData = Invoice::query()
-            ->select(
-                DB::raw('DATE(issue_date) as date'),
-                DB::raw('COUNT(*) as invoice_count'),
-                DB::raw('SUM(total_amount) as total_sales'),
-                DB::raw('SUM(tax_amount) as total_tax'),
-                DB::raw('SUM(subtotal_amount) as total_subtotal')
-            )
-            ->whereBetween('issue_date', [$startDate, $endDate])
-            ->where('status', '!=', 'cancelled') // Exclude cancelled invoices
-            ->groupBy(DB::raw('DATE(issue_date)'))
-            ->orderBy('date')
-            ->get()
-            ->keyBy('date');
+        $user = Auth::user();
+        $widgets = [];
 
-        // Create array with all dates in the month, filling gaps with zeros
-        $salesData = [];
-        $currentDate = $startDate->copy();
-
-        while ($currentDate->lte($endDate)) {
-            $dateKey = $currentDate->format('Y-m-d');
-            $dayData = $dailyData->get($dateKey);
-
-            $salesData[] = [
-                'date' => $currentDate->format('Y-m-d'),
-                'day' => $currentDate->format('j'),
-                'day_name' => $currentDate->format('D'),
-                'invoice_count' => $dayData ? (int) $dayData->invoice_count : 0,
-                'total_sales' => $dayData ? (float) $dayData->total_sales : 0,
-                'total_tax' => $dayData ? (float) $dayData->total_tax : 0,
-                'total_subtotal' => $dayData ? (float) $dayData->total_subtotal : 0,
-            ];
-
-            $currentDate->addDay();
+        foreach (DashboardWidget::cases() as $widget) {
+            if ($user?->can($widget->requiredPermission()->value)) {
+                $widgets[$widget->value] = $widget->label();
+            }
         }
 
-        return $salesData;
+        return $widgets;
     }
 
     /**
-     * @return array<string, array<string, float|int>|array<string, float>>
+     * Filter layout to only include widgets the user has permission to view.
+     *
+     * @param  array<array{id: string, x: int, y: int, w: int, h: int, minW?: int, minH?: int}>  $layout
+     * @return array<array{id: string, x: int, y: int, w: int, h: int, minW?: int, minH?: int}>
      */
-    private function getSummaryStatistics(Carbon $startDate, Carbon $endDate): array
+    private function filterLayoutByPermissions(array $layout): array
     {
-        // Current month totals
-        $currentMonthStats = Invoice::query()
-            ->withoutGlobalScopes()
-            ->whereBetween('issue_date', [$startDate, $endDate])
-            ->where('status', '!=', 'cancelled')
-            ->selectRaw('
-                COUNT(*) as total_invoices,
-                SUM(total_amount) as total_sales,
-                SUM(tax_amount) as total_tax,
-                AVG(total_amount) as average_invoice_amount
-            ')
-            ->first();
+        $user = Auth::user();
 
-        // Count unique products sold in current month
-        $uniqueProductsSold = DB::table('invoice_items')
-            ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
-            ->whereBetween('invoices.issue_date', [$startDate, $endDate])
-            ->where('invoices.status', '!=', 'cancelled')
-            ->count('invoice_items.product_id');
+        return array_values(array_filter($layout, function (array $widget) use ($user) {
+            $dashboardWidget = DashboardWidget::tryFrom($widget['id']);
+            if (! $dashboardWidget) {
+                return false;
+            }
 
-        // Count unique customers with sales in current month
-        $customersWithSales = Invoice::query()
-            ->withoutGlobalScopes()
-            ->whereBetween('issue_date', [$startDate, $endDate])
-            ->where('status', '!=', 'cancelled')
-            ->distinct('contact_id')
-            ->count('contact_id');
-
-        // Same month last year for comparison
-        $lastYearStartDate = $startDate->copy()->subYear()->startOfMonth();
-        $lastYearEndDate = $startDate->copy()->subYear()->endOfMonth();
-
-        $lastYearStats = Invoice::query()
-            ->withoutGlobalScopes()
-            ->whereBetween('issue_date', [$lastYearStartDate, $lastYearEndDate])
-            ->where('status', '!=', 'cancelled')
-            ->selectRaw('
-                COUNT(*) as total_invoices,
-                SUM(total_amount) as total_sales,
-                SUM(tax_amount) as total_tax
-            ')
-            ->first();
-
-        // Count unique products sold in same month last year
-        $lastYearUniqueProductsSold = DB::table('invoice_items')
-            ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
-            ->whereBetween('invoices.issue_date', [$lastYearStartDate, $lastYearEndDate])
-            ->where('invoices.status', '!=', 'cancelled')
-            ->count('invoice_items.product_id');
-
-        // Count unique customers with sales in same month last year
-        $lastYearCustomersWithSales = Invoice::query()
-            ->withoutGlobalScopes()
-            ->whereBetween('issue_date', [$lastYearStartDate, $lastYearEndDate])
-            ->where('status', '!=', 'cancelled')
-            ->distinct('contact_id')
-            ->count('contact_id');
-
-        // Calculate percentage changes
-        $salesChange = $this->calculatePercentageChange(
-            $lastYearStats->total_sales ?? 0,
-            $currentMonthStats->total_sales ?? 0
-        );
-
-        $invoiceCountChange = $this->calculatePercentageChange(
-            $lastYearStats->total_invoices ?? 0,
-            $currentMonthStats->total_invoices ?? 0
-        );
-
-        $productsSoldChange = $this->calculatePercentageChange(
-            $lastYearUniqueProductsSold,
-            $uniqueProductsSold
-        );
-
-        $customersWithSalesChange = $this->calculatePercentageChange(
-            $lastYearCustomersWithSales,
-            $customersWithSales
-        );
-
-        return [
-            'current_month' => [
-                'total_invoices' => (int) ($currentMonthStats->total_invoices ?? 0),
-                'total_sales' => (float) ($currentMonthStats->total_sales ?? 0),
-                'total_tax' => (float) ($currentMonthStats->total_tax ?? 0),
-                'average_invoice_amount' => (float) ($currentMonthStats->average_invoice_amount ?? 0),
-                'unique_products_sold' => $uniqueProductsSold,
-                'customers_with_sales' => $customersWithSales,
-            ],
-            'last_year_same_month' => [
-                'total_invoices' => (int) ($lastYearStats->total_invoices ?? 0),
-                'total_sales' => (float) ($lastYearStats->total_sales ?? 0),
-                'total_tax' => (float) ($lastYearStats->total_tax ?? 0),
-                'unique_products_sold' => $lastYearUniqueProductsSold,
-                'customers_with_sales' => $lastYearCustomersWithSales,
-            ],
-            'changes' => [
-                'sales_percentage' => $salesChange,
-                'invoice_count_percentage' => $invoiceCountChange,
-                'products_sold_percentage' => $productsSoldChange,
-                'customers_with_sales_percentage' => $customersWithSalesChange,
-            ],
-        ];
+            return $user?->can($dashboardWidget->requiredPermission()->value);
+        }));
     }
 
     /**
+     * Get start and end dates from preset range.
+     *
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    private function getDateRangeFromPreset(string $range): array
+    {
+        $today = Carbon::today();
+
+        return match ($range) {
+            self::RANGE_LAST_3_MONTHS => [
+                $today->copy()->subMonths(3)->startOfMonth(),
+                $today->copy()->endOfDay(),
+            ],
+            self::RANGE_LAST_6_MONTHS => [
+                $today->copy()->subMonths(6)->startOfMonth(),
+                $today->copy()->endOfDay(),
+            ],
+            default => [
+                $today->copy()->startOfMonth(),
+                $today->copy()->endOfMonth(),
+            ],
+        };
+    }
+
+    /**
+     * Get accounts receivable data filtered by invoice creation date.
+     *
      * @return array<string, array<string, float|int>>
      */
-    private function getAccountsData(): array
+    private function getAccountsReceivable(Carbon $startDate, Carbon $endDate): array
     {
-        // Accounts receivable (outstanding invoices)
-        $accountsReceivable = Invoice::query()
-            ->withoutGlobalScopes()
-            ->whereNotIn('status', ['paid', 'cancelled'])
-            ->selectRaw('
-                COUNT(*) as pending_count,
-                SUM(total_amount) as total_pending,
-                COUNT(CASE WHEN due_date < ? THEN 1 END) as overdue_count,
-                SUM(CASE WHEN due_date < ? THEN total_amount ELSE 0 END) as overdue_amount
-            ', [Carbon::now(), Carbon::now()])
-            ->first();
+        $today = Carbon::today();
 
-        // Customer returns/refunds (assuming negative amounts or credit notes)
-        $customerReturns = Invoice::query()
-            ->withoutGlobalScopes()
-            ->where('total_amount', '<', 0)
-            ->whereBetween('issue_date', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])
-            ->selectRaw('
-                COUNT(*) as return_count,
-                SUM(ABS(total_amount)) as total_returns
-            ')
-            ->first();
+        // Get invoices created within the date range that are not fully paid or cancelled
+        // We need to calculate amount_due = total_amount - sum(payments)
+        $invoices = Invoice::query()
+            ->whereBetween('issue_date', [$startDate, $endDate])
+            ->whereNotIn('status', ['cancelled'])
+            ->select([
+                'invoices.id',
+                'invoices.total_amount',
+                'invoices.due_date',
+            ])
+            ->get();
+
+        // Get all payments for these invoices
+        $invoiceIds = $invoices->pluck('id')->toArray();
+        $paymentsSum = Payment::query()
+            ->whereIn('invoice_id', $invoiceIds)
+            ->groupBy('invoice_id')
+            ->select('invoice_id', DB::raw('SUM(amount) as total_paid'))
+            ->pluck('total_paid', 'invoice_id');
+
+        $currentAmount = 0.0;
+        $currentCount = 0;
+        $overdueAmount = 0.0;
+        $overdueCount = 0;
+
+        foreach ($invoices as $invoice) {
+            $totalPaid = (float) ($paymentsSum[$invoice->id] ?? 0);
+            $amountDue = max(0, (float) $invoice->total_amount - $totalPaid);
+
+            // Skip fully paid invoices
+            if ($amountDue <= 0) {
+                continue;
+            }
+
+            $dueDate = $invoice->due_date ? Carbon::parse($invoice->due_date) : null;
+
+            if ($dueDate && $dueDate->lt($today)) {
+                // Overdue: due_date < today
+                $overdueAmount += $amountDue;
+                $overdueCount++;
+            } else {
+                // Current: due_date >= today (or no due date)
+                $currentAmount += $amountDue;
+                $currentCount++;
+            }
+        }
 
         return [
-            'accounts_receivable' => [
-                'pending_count' => (int) ($accountsReceivable->pending_count ?? 0),
-                'total_pending' => (float) ($accountsReceivable->total_pending ?? 0),
-                'overdue_count' => (int) ($accountsReceivable->overdue_count ?? 0),
-                'overdue_amount' => (float) ($accountsReceivable->overdue_amount ?? 0),
+            'current' => [
+                'amount' => round($currentAmount, 2),
+                'count' => $currentCount,
             ],
-            'customer_returns' => [
-                'return_count' => (int) ($customerReturns->return_count ?? 0),
-                'total_returns' => (float) ($customerReturns->total_returns ?? 0),
+            'overdue' => [
+                'amount' => round($overdueAmount, 2),
+                'count' => $overdueCount,
+            ],
+            'total' => [
+                'amount' => round($currentAmount + $overdueAmount, 2),
+                'count' => $currentCount + $overdueCount,
             ],
         ];
     }
 
+    /**
+     * Get sales tax data with comparison to previous period.
+     *
+     * @return array<string, float|int>
+     */
+    private function getSalesTax(Carbon $startDate, Carbon $endDate, Carbon $previousStartDate, Carbon $previousEndDate): array
+    {
+        $currentTax = (float) Invoice::query()
+            ->whereBetween('issue_date', [$startDate, $endDate])
+            ->whereNotIn('status', ['cancelled'])
+            ->sum('tax_amount');
+
+        $previousTax = (float) Invoice::query()
+            ->whereBetween('issue_date', [$previousStartDate, $previousEndDate])
+            ->whereNotIn('status', ['cancelled'])
+            ->sum('tax_amount');
+
+        $changePercentage = $this->calculatePercentageChange($previousTax, $currentTax);
+
+        return [
+            'amount' => round($currentTax, 2),
+            'previous_amount' => round($previousTax, 2),
+            'change_percentage' => $changePercentage,
+        ];
+    }
+
+    /**
+     * Get unique products sold count with comparison to previous period.
+     *
+     * @return array<string, float|int>
+     */
+    private function getProductsSold(Carbon $startDate, Carbon $endDate, Carbon $previousStartDate, Carbon $previousEndDate): array
+    {
+        $currentCount = DB::table('invoice_items')
+            ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
+            ->where('invoices.workspace_id', Auth::user()?->current_workspace_id)
+            ->whereBetween('invoices.issue_date', [$startDate, $endDate])
+            ->whereNotIn('invoices.status', ['cancelled'])
+            ->whereNotNull('invoice_items.product_id')
+            ->distinct('invoice_items.product_id')
+            ->count('invoice_items.product_id');
+
+        $previousCount = DB::table('invoice_items')
+            ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
+            ->where('invoices.workspace_id', Auth::user()?->current_workspace_id)
+            ->whereBetween('invoices.issue_date', [$previousStartDate, $previousEndDate])
+            ->whereNotIn('invoices.status', ['cancelled'])
+            ->whereNotNull('invoice_items.product_id')
+            ->distinct('invoice_items.product_id')
+            ->count('invoice_items.product_id');
+
+        return [
+            'count' => $currentCount,
+            'previous_count' => $previousCount,
+            'change_percentage' => $this->calculatePercentageChange((float) $previousCount, (float) $currentCount),
+        ];
+    }
+
+    /**
+     * Get unique customers with sales count with comparison to previous period.
+     *
+     * @return array<string, float|int>
+     */
+    private function getCustomersWithSales(Carbon $startDate, Carbon $endDate, Carbon $previousStartDate, Carbon $previousEndDate): array
+    {
+        $currentCount = Invoice::query()
+            ->whereBetween('issue_date', [$startDate, $endDate])
+            ->whereNotIn('status', ['cancelled'])
+            ->distinct('contact_id')
+            ->count('contact_id');
+
+        $previousCount = Invoice::query()
+            ->whereBetween('issue_date', [$previousStartDate, $previousEndDate])
+            ->whereNotIn('status', ['cancelled'])
+            ->distinct('contact_id')
+            ->count('contact_id');
+
+        return [
+            'count' => $currentCount,
+            'previous_count' => $previousCount,
+            'change_percentage' => $this->calculatePercentageChange((float) $previousCount, (float) $currentCount),
+        ];
+    }
+
+    /**
+     * Get prescriptions created count with comparison to previous period.
+     *
+     * @return array<string, float|int>
+     */
+    private function getPrescriptionsCreated(Carbon $startDate, Carbon $endDate, Carbon $previousStartDate, Carbon $previousEndDate): array
+    {
+        $currentCount = Prescription::query()
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->count();
+
+        $previousCount = Prescription::query()
+            ->whereBetween('created_at', [$previousStartDate, $previousEndDate])
+            ->count();
+
+        return [
+            'count' => $currentCount,
+            'previous_count' => $previousCount,
+            'change_percentage' => $this->calculatePercentageChange((float) $previousCount, (float) $currentCount),
+        ];
+    }
+
+    /**
+     * Calculate percentage change between two values.
+     */
     private function calculatePercentageChange(float $previous, float $current): float
     {
-        $epsilon = 1e-8; // small tolerance to prevent division by near-zero
-
-        if (abs($previous) < $epsilon) {
-            // Define what you consider the correct behavior when "previous" is (near) zero
+        if ($previous === 0.0) {
             return $current > 0 ? 100 : 0;
         }
 
-        return round((($current - $previous) / $previous) * 100, 2);
+        return round((($current - $previous) / $previous) * 100, 1);
     }
 }
