@@ -60,6 +60,7 @@ enum Permission: string
     case ViewDashboardProductsStats = 'view dashboard products stats';
     case ViewDashboardCustomersStats = 'view dashboard customers stats';
     case ViewDashboardPrescriptionsStats = 'view dashboard prescriptions stats';
+    case ViewDashboardWorkflowsStats = 'view dashboard workflows stats';
 
     public static function all(): array
     {
@@ -123,6 +124,7 @@ enum Permission: string
             self::ViewDashboardProductsStats => 'Ver panel de estadísticas de productos',
             self::ViewDashboardCustomersStats => 'Ver panel de estadísticas de clientes',
             self::ViewDashboardPrescriptionsStats => 'Ver panel de estadísticas de recetas',
+            self::ViewDashboardWorkflowsStats => 'Ver panel de resumen de procesos',
         };
     }
 
@@ -138,7 +140,7 @@ enum Permission: string
             self::InventoryView, self::InventoryAdjust, self::InventoryTransfer => 'Inventario',
             self::ConfigurationView, self::ConfigurationEdit => 'Configuración',
             self::ReportsView, self::ReportsExport => 'Reportes',
-            self::ViewDashboardAccountReceivable, self::ViewDashboardSalesStats, self::ViewDashboardProductsStats, self::ViewDashboardCustomersStats, self::ViewDashboardPrescriptionsStats => 'Panel',
+            self::ViewDashboardAccountReceivable, self::ViewDashboardSalesStats, self::ViewDashboardProductsStats, self::ViewDashboardCustomersStats, self::ViewDashboardPrescriptionsStats, self::ViewDashboardWorkflowsStats => 'Panel',
         };
     }
 }

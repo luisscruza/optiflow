@@ -8,6 +8,7 @@ use App\Enums\DashboardWidget;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Prescription;
+use App\Models\Workflow;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -43,6 +44,7 @@ final class DashboardController extends Controller
             'productsSold' => $this->getProductsSold($startDate, $endDate, $previousStartDate, $previousEndDate),
             'customersWithSales' => $this->getCustomersWithSales($startDate, $endDate, $previousStartDate, $previousEndDate),
             'prescriptionsCreated' => $this->getPrescriptionsCreated($startDate, $endDate, $previousStartDate, $previousEndDate),
+            'workflowsSummary' => $this->getWorkflowsSummary(),
             'dashboardLayout' => $this->filterLayoutByPermissions(Auth::user()?->dashboard_layout ?? DashboardWidget::defaultLayouts()),
             'availableWidgets' => $this->getAvailableWidgets(),
         ]);
@@ -288,6 +290,37 @@ final class DashboardController extends Controller
             'previous_count' => $previousCount,
             'change_percentage' => $this->calculatePercentageChange((float) $previousCount, (float) $currentCount),
         ];
+    }
+
+    /**
+     * Get workflows summary with pending and overdue jobs count.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function getWorkflowsSummary(): array
+    {
+        return Workflow::query()
+            ->withCount([
+                'stages as pending_jobs_count' => function ($query) {
+                    $query->join('workflow_jobs', 'workflow_stages.id', '=', 'workflow_jobs.workflow_stage_id')
+                        ->where('workflow_jobs.completed_at', null);
+                },
+                'stages as overdue_jobs_count' => function ($query) {
+                    $query->join('workflow_jobs', 'workflow_stages.id', '=', 'workflow_jobs.workflow_stage_id')
+                        ->where('workflow_jobs.completed_at', null)
+                        ->where('workflow_jobs.due_date', '<', now());
+                },
+            ])
+            ->orderBy('name')
+            ->get()
+            ->map(fn (Workflow $workflow) => [
+                'id' => $workflow->id,
+                'name' => $workflow->name,
+                'is_active' => $workflow->is_active,
+                'pending_jobs_count' => $workflow->pending_jobs_count ?? 0,
+                'overdue_jobs_count' => $workflow->overdue_jobs_count ?? 0,
+            ])
+            ->toArray();
     }
 
     /**

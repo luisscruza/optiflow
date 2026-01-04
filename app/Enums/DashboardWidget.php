@@ -11,6 +11,7 @@ enum DashboardWidget: string
     case ProductsSold = 'products-sold';
     case CustomersWithSales = 'customers-with-sales';
     case PrescriptionsCreated = 'prescriptions-created';
+    case WorkflowsSummary = 'workflows-summary';
 
     /**
      * Get all widgets as an array for form options.
@@ -20,8 +21,8 @@ enum DashboardWidget: string
     public static function options(): array
     {
         return array_combine(
-            array_map(fn(self $widget) => $widget->value, self::cases()),
-            array_map(fn(self $widget) => $widget->label(), self::cases()),
+            array_map(fn (self $widget) => $widget->value, self::cases()),
+            array_map(fn (self $widget) => $widget->label(), self::cases()),
         );
     }
 
@@ -32,7 +33,7 @@ enum DashboardWidget: string
      */
     public static function values(): array
     {
-        return array_map(fn(self $widget) => $widget->value, self::cases());
+        return array_map(fn (self $widget) => $widget->value, self::cases());
     }
 
     /**
@@ -43,7 +44,7 @@ enum DashboardWidget: string
     public static function defaultLayouts(): array
     {
         return array_map(
-            fn(self $widget) => ['id' => $widget->value, ...$widget->defaultLayout()],
+            fn (self $widget) => ['id' => $widget->value, ...$widget->defaultLayout()],
             self::cases(),
         );
     }
@@ -59,6 +60,7 @@ enum DashboardWidget: string
             self::ProductsSold => 'Productos vendidos',
             self::CustomersWithSales => 'Clientes con ventas',
             self::PrescriptionsCreated => 'Recetas creadas',
+            self::WorkflowsSummary => 'Resumen de procesos',
         };
     }
 
@@ -73,6 +75,7 @@ enum DashboardWidget: string
             self::ProductsSold => Permission::ViewDashboardProductsStats,
             self::CustomersWithSales => Permission::ViewDashboardCustomersStats,
             self::PrescriptionsCreated => Permission::ViewDashboardPrescriptionsStats,
+            self::WorkflowsSummary => Permission::ViewDashboardWorkflowsStats,
         };
     }
 
@@ -89,6 +92,7 @@ enum DashboardWidget: string
             self::ProductsSold => ['x' => 8, 'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 1],
             self::CustomersWithSales => ['x' => 10, 'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 1],
             self::PrescriptionsCreated => ['x' => 0, 'y' => 3, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 1],
+            self::WorkflowsSummary => ['x' => 2, 'y' => 3, 'w' => 6, 'h' => 3, 'minW' => 4, 'minH' => 2],
         };
     }
 }

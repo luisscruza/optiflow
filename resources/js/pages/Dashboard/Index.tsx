@@ -12,7 +12,7 @@ import 'gridstack/dist/gridstack.min.css';
 import { FileText, LayoutGrid, Package, Users } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { AccountsReceivableWidget, CountStatWidget, SalesTaxWidget } from './widgets';
+import { AccountsReceivableWidget, CountStatWidget, SalesTaxWidget, WorkflowsSummaryWidget } from './widgets';
 
 type DateRangePreset = 'current_month' | 'last_3_months' | 'last_6_months';
 
@@ -54,6 +54,14 @@ interface WidgetLayout {
     minH?: number;
 }
 
+interface WorkflowSummary {
+    id: string;
+    name: string;
+    is_active: boolean;
+    pending_jobs_count: number;
+    overdue_jobs_count: number;
+}
+
 interface DashboardProps {
     filters: {
         range: DateRangePreset;
@@ -63,6 +71,7 @@ interface DashboardProps {
     productsSold: CountStat;
     customersWithSales: CountStat;
     prescriptionsCreated: CountStat;
+    workflowsSummary: WorkflowSummary[];
     dashboardLayout: WidgetLayout[];
     availableWidgets: Record<string, string>;
 }
@@ -87,6 +96,7 @@ const DEFAULT_WIDGET_LAYOUTS: Record<string, { w: number; h: number; minW: numbe
     'products-sold': { w: 2, h: 2, minW: 2, minH: 1 },
     'customers-with-sales': { w: 2, h: 2, minW: 2, minH: 1 },
     'prescriptions-created': { w: 2, h: 2, minW: 2, minH: 1 },
+    'workflows-summary': { w: 6, h: 3, minW: 4, minH: 2 },
 };
 
 export default function DashboardIndex({
@@ -96,6 +106,7 @@ export default function DashboardIndex({
     productsSold,
     customersWithSales,
     prescriptionsCreated,
+    workflowsSummary,
     dashboardLayout,
     availableWidgets,
 }: DashboardProps) {
@@ -305,6 +316,8 @@ export default function DashboardIndex({
                 return (
                     <CountStatWidget title="Recetas creadas" data={prescriptionsCreated} icon={FileText} onRemove={() => removeWidget(widgetId)} />
                 );
+            case 'workflows-summary':
+                return <WorkflowsSummaryWidget data={workflowsSummary} onRemove={() => removeWidget(widgetId)} />;
             default:
                 return null;
         }

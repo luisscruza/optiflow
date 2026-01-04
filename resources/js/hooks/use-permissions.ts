@@ -39,7 +39,8 @@ export type WorkspacePermission =
     | 'view dashboard sales stats'
     | 'view dashboard products stats'
     | 'view dashboard customers stats'
-    | 'view dashboard prescriptions stats';
+    | 'view dashboard prescriptions stats'
+    | 'view dashboard workflows stats';
 
 // Business-level permissions (granted to Owner/Admin users)
 export type BusinessPermission =
