@@ -20,6 +20,8 @@ final class DashboardController extends Controller
 {
     private const RANGE_CURRENT_MONTH = 'current_month';
 
+    private const RANGE_LAST_MONTH = 'last_month';
+
     private const RANGE_LAST_3_MONTHS = 'last_3_months';
 
     private const RANGE_LAST_6_MONTHS = 'last_6_months';
@@ -107,6 +109,10 @@ final class DashboardController extends Controller
             self::RANGE_LAST_6_MONTHS => [
                 $today->copy()->subMonths(6)->startOfMonth(),
                 $today->copy()->endOfDay(),
+            ],
+            self::RANGE_LAST_MONTH => [
+                $today->copy()->subMonth()->startOfMonth(),
+                $today->copy()->subMonth()->endOfMonth(),
             ],
             default => [
                 $today->copy()->startOfMonth(),

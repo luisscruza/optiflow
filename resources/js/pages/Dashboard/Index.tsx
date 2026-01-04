@@ -14,7 +14,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { AccountsReceivableWidget, CountStatWidget, SalesTaxWidget, TotalSalesWidget, WorkflowsSummaryWidget } from './widgets';
 
-type DateRangePreset = 'current_month' | 'last_3_months' | 'last_6_months';
+type DateRangePreset = 'current_month' | 'last_month' | 'last_3_months' | 'last_6_months';
 
 interface AccountsReceivable {
     current: {
@@ -106,6 +106,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const rangeLabels: Record<DateRangePreset, string> = {
     current_month: 'Mes actual',
+    last_month: 'Mes pasado',
     last_3_months: 'Últimos 3 meses',
     last_6_months: 'Últimos 6 meses',
 };
@@ -411,6 +412,7 @@ export default function DashboardIndex({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="current_month">{rangeLabels.current_month}</SelectItem>
+                                <SelectItem value="last_month">{rangeLabels.last_month}</SelectItem>
                                 <SelectItem value="last_3_months">{rangeLabels.last_3_months}</SelectItem>
                                 <SelectItem value="last_6_months">{rangeLabels.last_6_months}</SelectItem>
                             </SelectContent>
