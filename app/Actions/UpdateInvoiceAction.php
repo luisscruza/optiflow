@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-// TODO: Fix total amount calculation.
 final readonly class UpdateInvoiceAction
 {
     public function __construct(
@@ -58,14 +57,6 @@ final readonly class UpdateInvoiceAction
 
                     return new InvoiceResult(error: $e->getMessage());
                 }
-
-                // Recalculate document totals (let the model handle this)
-                $invoice->recalculateTotal();
-
-                Log::info('Invoice updated successfully', [
-                    'invoice_id' => $invoice->id,
-                    'workspace_id' => $workspace->id,
-                ]);
 
                 return new InvoiceResult($invoice->load(['contact', 'documentSubtype', 'items.product']));
             });
