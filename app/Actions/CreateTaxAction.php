@@ -23,6 +23,7 @@ final class CreateTaxAction
 
         return Tax::query()->create([
             'name' => $data['name'],
+            'type' => $data['type'],
             'rate' => $data['rate'],
             'is_default' => $data['is_default'] ?? false,
         ]);

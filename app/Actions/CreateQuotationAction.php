@@ -33,7 +33,7 @@ final readonly class CreateQuotationAction
 
             $this->updateNumerator($documentSubtype, $data['ncf']);
 
-            $items = array_filter($data['items'], fn (array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
+            $items = array_filter($data['items'], fn(array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
                 $item['quantity'] > 0);
 
             $this->createQuotationItems($quotation, $items);
@@ -78,6 +78,7 @@ final readonly class CreateQuotationAction
      *     tax_rate?: float,
      *     tax_amount?: float,
      *     total?: float,
+     *     taxes?: array<int, array{id: int, rate: float, amount: float}>,
      * }> $items
      */
     private function createQuotationItems(Quotation $quotation, array $items): void
@@ -85,7 +86,8 @@ final readonly class CreateQuotationAction
         foreach ($items as $item) {
             $product = Product::query()->findOrFail($item['product_id']);
 
-            $quotation->items()->create([
+            /** @var \App\Models\QuotationItem $quotationItem */
+            $quotationItem = $quotation->items()->create([
                 'product_id' => $product->id,
                 'description' => $item['description'] ?? null,
                 'quantity' => $item['quantity'],
@@ -95,9 +97,21 @@ final readonly class CreateQuotationAction
                 'discount_rate' => $item['discount_rate'] ?? 0,
                 'tax_rate' => $item['tax_rate'] ?? 0,
                 'tax_amount' => $item['tax_amount'] ?? 0,
-                'tax_id' => 1, // @TODO: Pass the tax ID from the request
+                'tax_id' => 1, // @TODO: Remove legacy tax_id column after full migration
                 'total' => $item['total'],
             ]);
+
+            // Sync multi-tax relationship if taxes array is provided
+            if (! empty($item['taxes'])) {
+                $taxesData = [];
+                foreach ($item['taxes'] as $tax) {
+                    $taxesData[$tax['id']] = [
+                        'rate' => $tax['rate'],
+                        'amount' => $tax['amount'],
+                    ];
+                }
+                $quotationItem->taxes()->sync($taxesData);
+            }
         }
     }
 

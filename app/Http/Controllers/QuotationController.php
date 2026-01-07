@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Actions\CreateQuotationAction;
 use App\Actions\UpdateQuotationAction;
 use App\Enums\Permission;
+use App\Enums\TaxType;
 use App\Http\Requests\UpdateQuotationRequest;
 use App\Models\Contact;
 use App\Models\DocumentSubtype;
@@ -108,6 +109,21 @@ final class QuotationController extends Controller
 
         $availableWorkspaces = Auth::user()?->workspaces ?? collect();
 
+        // Group taxes by type for the multi-select component
+        $taxesGroupedByType = Tax::query()
+            ->orderBy('is_default', 'desc')
+            ->orderBy('name')
+            ->get()
+            ->groupBy('type')
+            ->mapWithKeys(fn($taxes, $type): array => [
+                $type => [
+                    'label' => TaxType::tryFrom($type)?->label() ?? $type,
+                    'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,
+                    'taxes' => $taxes->toArray(),
+                ],
+            ])
+            ->toArray();
+
         return Inertia::render('quotations/create', [
             'documentSubtypes' => $documentSubtypes,
             'customers' => $customers,
@@ -116,6 +132,7 @@ final class QuotationController extends Controller
             'document_subtype_id' => $documentSubtype->id,
             'currentWorkspace' => $currentWorkspace,
             'availableWorkspaces' => $availableWorkspaces,
+            'taxesGroupedByType' => $taxesGroupedByType,
         ]);
     }
 
@@ -149,7 +166,7 @@ final class QuotationController extends Controller
     {
         abort_unless($user->can(Permission::QuotationsView), 403);
 
-        $quotation->load(['contact', 'documentSubtype', 'items.product', 'items.tax']);
+        $quotation->load(['contact', 'documentSubtype', 'items.product', 'items.taxes']);
 
         return Inertia::render('quotations/show', [
             'quotation' => $quotation,
@@ -197,12 +214,28 @@ final class QuotationController extends Controller
 
         $taxes = Tax::query()->orderBy('name')->get();
 
+        // Group taxes by type for the multi-select component
+        $taxesGroupedByType = Tax::query()
+            ->orderBy('is_default', 'desc')
+            ->orderBy('name')
+            ->get()
+            ->groupBy('type')
+            ->mapWithKeys(fn($taxesGroup, $type): array => [
+                $type => [
+                    'label' => TaxType::tryFrom($type)?->label() ?? $type,
+                    'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,
+                    'taxes' => $taxesGroup->toArray(),
+                ],
+            ])
+            ->toArray();
+
         return Inertia::render('quotations/Edit', [
             'quotation' => $quotation,
             'documentSubtypes' => $documentSubtypes,
             'customers' => $customers,
             'products' => $products,
             'taxes' => $taxes,
+            'taxesGroupedByType' => $taxesGroupedByType,
         ]);
     }
 

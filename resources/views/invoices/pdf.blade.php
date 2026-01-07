@@ -164,6 +164,12 @@
         .status-paid { background-color: #28a745; color: white; }
         .status-overdue { background-color: #dc3545; color: white; }
         .status-cancelled { background-color: #6c757d; color: white; }
+
+        .tax-breakdown {
+            font-size: 11px;
+            color: #666;
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
@@ -230,7 +236,17 @@
                     <td class="text-center text-xs">{{ number_format($item->quantity, 2) }}</td>
                     <td class="text-right">RD$ {{ number_format($item->unit_price, 2) }}</td>
                     <td class="text-center">RD$ {{ number_format($item->discount_amount ?? 0, 2) }}</td>
-                    <td class="text-center">RD${{ number_format($item->tax_amount ?? 0, 2) }}</td>
+                    <td class="text-center">
+                        @php
+                            $itemTaxTotal = 0;
+                            if($item->taxes) {
+                                foreach($item->taxes as $tax) {
+                                    $itemTaxTotal += $tax->pivot->amount ?? 0;
+                                }
+                            }
+                        @endphp
+                        RD$ {{ number_format($itemTaxTotal, 2) }}
+                    </td>
                     <td class="text-right font-bold">RD$ {{ number_format($item->subtotal, 2) }}</td>
                 </tr>
             @endforeach
@@ -249,10 +265,27 @@
                     <td class="amount">-RD$ {{ number_format($invoice->discount_amount, 2) }}</td>
                 </tr>
             @endif
-            <tr>
-                <td class="label">ITBIS:</td>
-                <td class="amount">RD$ {{ number_format($invoice->tax_amount, 2) }}</td>
-            </tr>
+            @php
+                $taxBreakdown = [];
+                foreach($invoice->items as $item) {
+                    if($item->taxes) {
+                        foreach($item->taxes as $tax) {
+                            $taxName = $tax->name;
+                            $taxAmount = $tax->pivot->amount ?? 0;
+                            if (!isset($taxBreakdown[$taxName])) {
+                                $taxBreakdown[$taxName] = 0;
+                            }
+                            $taxBreakdown[$taxName] += $taxAmount;
+                        }
+                    }
+                }
+            @endphp
+            @foreach($taxBreakdown as $taxName => $taxAmount)
+                <tr>
+                    <td class="label">{{ $taxName }}:</td>
+                    <td class="amount">RD$ {{ number_format($taxAmount, 2) }}</td>
+                </tr>
+            @endforeach
             <tr class="total-row">
                 <td class="label">TOTAL:</td>
                 <td class="amount">RD$ {{ number_format($invoice->total_amount, 2) }}</td>

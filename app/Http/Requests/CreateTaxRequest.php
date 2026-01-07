@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\TaxType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 final class CreateTaxRequest extends FormRequest
 {
@@ -30,6 +32,10 @@ final class CreateTaxRequest extends FormRequest
                 'max:255',
                 'unique:taxes,name',
             ],
+            'type' => [
+                'required',
+                Rule::enum(TaxType::class),
+            ],
             'rate' => [
                 'required',
                 'numeric',
@@ -52,6 +58,7 @@ final class CreateTaxRequest extends FormRequest
     {
         return [
             'name' => 'tax name',
+            'type' => 'tax type',
             'rate' => 'tax rate',
             'is_default' => 'default tax',
         ];
@@ -67,6 +74,7 @@ final class CreateTaxRequest extends FormRequest
         return [
             'name.required' => 'The tax name is required.',
             'name.unique' => 'A tax with this name already exists.',
+            'type.required' => 'The tax type is required.',
             'rate.required' => 'The tax rate is required.',
             'rate.numeric' => 'The tax rate must be a number.',
             'rate.min' => 'The tax rate cannot be negative.',

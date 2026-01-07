@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 
@@ -20,9 +21,14 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function TaxesCreate() {
+interface Props {
+    taxTypes: Record<string, string>;
+}
+
+export default function TaxesCreate({ taxTypes }: Props) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
+        type: 'itbis',
         rate: '',
         is_default: false,
     });
@@ -53,7 +59,7 @@ export default function TaxesCreate() {
                             <CardDescription>Proporciona los detalles básicos del impuesto</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                                 <div className="space-y-2">
                                     <Label htmlFor="name">Nombre del Impuesto *</Label>
                                     <Input
@@ -65,6 +71,23 @@ export default function TaxesCreate() {
                                         className={errors.name ? 'border-red-500' : ''}
                                     />
                                     {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="type">Tipo de Impuesto *</Label>
+                                    <Select value={data.type} onValueChange={(value) => setData('type', value)}>
+                                        <SelectTrigger className={errors.type ? 'border-red-500' : ''}>
+                                            <SelectValue placeholder="Selecciona un tipo" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {Object.entries(taxTypes).map(([value, label]) => (
+                                                <SelectItem key={value} value={value}>
+                                                    {label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.type && <p className="text-sm text-red-500">{errors.type}</p>}
                                 </div>
 
                                 <div className="space-y-2">

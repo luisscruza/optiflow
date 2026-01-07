@@ -7,6 +7,7 @@ namespace App\Actions;
 use App\Enums\StockMovementType;
 use App\Exceptions\InsufficientStockException;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -26,6 +27,7 @@ final readonly class CreateInvoiceItemAction
      *     tax_rate?: float,
      *     tax_amount?: float,
      *     total?: float,
+     *     taxes?: array<int, array{id: int, rate: float, amount: float}>,
      * }> $items
      *
      * @throws Throwable
@@ -50,7 +52,7 @@ final readonly class CreateInvoiceItemAction
     private function validateStock(Invoice $invoice, mixed $item, Product $product): void
     {
         if (! $product->hasSufficientStock($invoice->workspace_id, $item['quantity'])) {
-            throw new InsufficientStockException('No hay stock ('.$item['quantity'].') suficiente para el producto: '.$product->name);
+            throw new InsufficientStockException('No hay stock (' . $item['quantity'] . ') suficiente para el producto: ' . $product->name);
         }
     }
 
@@ -87,7 +89,7 @@ final readonly class CreateInvoiceItemAction
         $stockForWorkspace = $product->getStockForWorkspace($invoice->workspace);
 
         if (! $stockForWorkspace instanceof \App\Models\ProductStock) {
-            throw new InsufficientStockException('No stock record found for product: '.$product->name);
+            throw new InsufficientStockException('No stock record found for product: ' . $product->name);
         }
 
         $stockForWorkspace->decrementStock($item['quantity']);
@@ -106,11 +108,13 @@ final readonly class CreateInvoiceItemAction
      *     tax_rate?: float,
      *     tax_amount?: float,
      *     total: float,
+     *     taxes?: array<int, array{id: int, rate: float, amount: float}>,
      * } $item
      */
     private function createLine(Invoice $invoice, array $item, Product $product): void
     {
-        $invoice->items()->create([
+        /** @var InvoiceItem $invoiceItem */
+        $invoiceItem = $invoice->items()->create([
             'product_id' => $product->id,
             'description' => $item['description'] ?? null,
             'quantity' => $item['quantity'],
@@ -120,8 +124,20 @@ final readonly class CreateInvoiceItemAction
             'discount_rate' => $item['discount_rate'] ?? 0,
             'tax_rate' => $item['tax_rate'] ?? 0,
             'tax_amount' => $item['tax_amount'] ?? 0,
-            'tax_id' => 1, // @TODO: Pass the tax ID from the request
+            'tax_id' => 1, // @TODO: Remove legacy tax_id column after full migration
             'total' => $item['total'],
         ]);
+
+        // Sync multi-tax relationship if taxes array is provided
+        if (! empty($item['taxes'])) {
+            $taxesData = [];
+            foreach ($item['taxes'] as $tax) {
+                $taxesData[$tax['id']] = [
+                    'rate' => $tax['rate'],
+                    'amount' => $tax['amount'],
+                ];
+            }
+            $invoiceItem->taxes()->sync($taxesData);
+        }
     }
 }

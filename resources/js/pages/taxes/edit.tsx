@@ -1,11 +1,13 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Save } from 'lucide-react';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Tax } from '@/types';
 
@@ -22,11 +24,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 interface Props {
     tax: Tax;
+    taxTypes: Record<string, string>;
+    isInUse: boolean;
 }
 
-export default function TaxesEdit({ tax }: Props) {
+export default function TaxesEdit({ tax, taxTypes, isInUse }: Props) {
     const { data, setData, put, processing, errors } = useForm({
         name: tax.name,
+        type: tax.type ?? 'itbis',
         rate: tax.rate.toString(),
         is_default: tax.is_default,
     });
@@ -53,73 +58,100 @@ export default function TaxesEdit({ tax }: Props) {
                         Volver
                     </Link>
                 </Button>
+
+                {isInUse && (
+                    <Alert variant="destructive" className="mt-4">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertDescription>
+                            Este impuesto está siendo utilizado en facturas, cotizaciones o productos. Algunos campos no pueden ser modificados.
+                        </AlertDescription>
+                    </Alert>
+                )}
+
+                <form onSubmit={handleSubmit} className="mt-6 space-y-8">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Información del Impuesto</CardTitle>
+                            <CardDescription>Actualiza los detalles del impuesto</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                                <div className="space-y-2">
+                                    <Label htmlFor="name">Nombre del Impuesto *</Label>
+                                    <Input
+                                        id="name"
+                                        type="text"
+                                        placeholder="ej. IVA, ISR, etc."
+                                        value={data.name}
+                                        onChange={(e) => setData('name', e.target.value)}
+                                        className={errors.name ? 'border-red-500' : ''}
+                                    />
+                                    {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="type">Tipo de Impuesto *</Label>
+                                    <Select value={data.type} onValueChange={(value) => setData('type', value)} disabled={isInUse}>
+                                        <SelectTrigger className={errors.type ? 'border-red-500' : ''}>
+                                            <SelectValue placeholder="Selecciona un tipo" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {Object.entries(taxTypes).map(([value, label]) => (
+                                                <SelectItem key={value} value={value}>
+                                                    {label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.type && <p className="text-sm text-red-500">{errors.type}</p>}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="rate">Tasa (%) *</Label>
+                                    <Input
+                                        id="rate"
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        max="100"
+                                        placeholder="ej. 16.00"
+                                        value={data.rate}
+                                        onChange={(e) => setData('rate', e.target.value)}
+                                        className={errors.rate ? 'border-red-500' : ''}
+                                        disabled={isInUse}
+                                    />
+                                    {errors.rate && <p className="text-sm text-red-500">{errors.rate}</p>}
+                                    <p className="text-sm text-gray-500">Ingresa la tasa de impuesto como porcentaje (0-100)</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="is_default"
+                                    checked={data.is_default}
+                                    onCheckedChange={(checked) => setData('is_default', checked as boolean)}
+                                />
+                                <Label htmlFor="is_default">Establecer como impuesto predeterminado</Label>
+                            </div>
+                            {data.is_default && (
+                                <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-600 dark:bg-amber-900/20">
+                                    Este impuesto se aplicará automáticamente a los nuevos productos
+                                </p>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    <div className="flex items-center justify-end space-x-4">
+                        <Button type="button" variant="outline" asChild>
+                            <Link href="/taxes">Cancelar</Link>
+                        </Button>
+                        <Button type="submit" disabled={processing}>
+                            <Save className="mr-2 h-4 w-4" />
+                            {processing ? 'Guardando...' : 'Guardar Cambios'}
+                        </Button>
+                    </div>
+                </form>
             </div>
-
-            <form onSubmit={handleSubmit} className="space-y-8">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Información del Impuesto</CardTitle>
-                        <CardDescription>Actualiza los detalles del impuesto</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Nombre del Impuesto *</Label>
-                                <Input
-                                    id="name"
-                                    type="text"
-                                    placeholder="ej. IVA, ISR, etc."
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    className={errors.name ? 'border-red-500' : ''}
-                                />
-                                {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="rate">Tasa (%) *</Label>
-                                <Input
-                                    id="rate"
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    max="100"
-                                    placeholder="ej. 16.00"
-                                    value={data.rate}
-                                    onChange={(e) => setData('rate', e.target.value)}
-                                    className={errors.rate ? 'border-red-500' : ''}
-                                />
-                                {errors.rate && <p className="text-sm text-red-500">{errors.rate}</p>}
-                                <p className="text-sm text-gray-500">Ingresa la tasa de impuesto como porcentaje (0-100)</p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                            <Checkbox
-                                id="is_default"
-                                checked={data.is_default}
-                                onCheckedChange={(checked) => setData('is_default', checked as boolean)}
-                            />
-                            <Label htmlFor="is_default">Establecer como impuesto predeterminado</Label>
-                        </div>
-                        {data.is_default && (
-                            <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-600 dark:bg-amber-900/20">
-                                Este impuesto se aplicará automáticamente a los nuevos productos
-                            </p>
-                        )}
-                    </CardContent>
-                </Card>
-
-                <div className="flex items-center justify-end space-x-4">
-                    <Button type="button" variant="outline" asChild>
-                        <Link href="/taxes">Cancelar</Link>
-                    </Button>
-                    <Button type="submit" disabled={processing}>
-                        <Save className="mr-2 h-4 w-4" />
-                        {processing ? 'Guardando...' : 'Guardar Cambios'}
-                    </Button>
-                </div>
-            </form>
         </AppLayout>
     );
 }

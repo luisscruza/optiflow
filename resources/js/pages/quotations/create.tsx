@@ -3,6 +3,7 @@ import { AlertTriangle, FileText, Plus, Save, ShoppingCart, Trash2 } from 'lucid
 import { useState } from 'react';
 
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
+import { type SelectedTax, TaxMultiSelect } from '@/components/taxes/tax-multi-select';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,7 +12,7 @@ import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/s
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Contact, type Product, type Workspace } from '@/types';
+import { type BreadcrumbItem, type Contact, type Product, type TaxesGroupedByType, type Workspace } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -32,6 +33,14 @@ interface DocumentSubtype {
     next_number: number;
 }
 
+interface QuotationItemTax {
+    id: number;
+    name: string;
+    type: string;
+    rate: number;
+    amount: number;
+}
+
 interface QuotationItem {
     id: string;
     product_id: number | null;
@@ -40,7 +49,7 @@ interface QuotationItem {
     unit_price: number;
     discount_rate: number;
     discount_amount: number;
-    tax_rate: number;
+    taxes: SelectedTax[];
     tax_amount: number;
     total: number;
 }
@@ -69,6 +78,7 @@ interface Props {
     document_subtype_id?: number | null;
     currentWorkspace?: Workspace | null;
     availableWorkspaces?: Workspace[];
+    taxesGroupedByType: TaxesGroupedByType;
 }
 
 export default function CreateQuotation({
@@ -79,6 +89,7 @@ export default function CreateQuotation({
     document_subtype_id,
     currentWorkspace,
     availableWorkspaces,
+    taxesGroupedByType,
 }: Props) {
     const [itemId, setItemId] = useState(3);
     const [showContactModal, setShowContactModal] = useState(false);
@@ -117,7 +128,7 @@ export default function CreateQuotation({
                 unit_price: 0,
                 discount_rate: 0,
                 discount_amount: 0,
-                tax_rate: 0,
+                taxes: [],
                 tax_amount: 0,
                 total: 0,
             },
@@ -129,7 +140,7 @@ export default function CreateQuotation({
                 unit_price: 0,
                 discount_rate: 0,
                 discount_amount: 0,
-                tax_rate: 0,
+                taxes: [],
                 tax_amount: 0,
                 total: 0,
             },
@@ -141,7 +152,7 @@ export default function CreateQuotation({
                 unit_price: 0,
                 discount_rate: 0,
                 discount_amount: 0,
-                tax_rate: 0,
+                taxes: [],
                 tax_amount: 0,
                 total: 0,
             },
@@ -218,7 +229,7 @@ export default function CreateQuotation({
                 unit_price: 0,
                 discount_rate: 0,
                 discount_amount: 0,
-                tax_rate: 0,
+                taxes: [],
                 tax_amount: 0,
                 total: 0,
             },
@@ -236,19 +247,38 @@ export default function CreateQuotation({
         }
     };
 
+    // Helper function to recalculate item totals based on taxes array
+    const recalculateItemTotals = (item: QuotationItem): QuotationItem => {
+        const lineSubtotal = item.quantity * item.unit_price;
+        const discountAmount = lineSubtotal * (item.discount_rate / 100);
+        const discountedSubtotal = lineSubtotal - discountAmount;
+
+        // Calculate total tax from all selected taxes
+        let totalTaxAmount = 0;
+        const updatedTaxes = item.taxes.map((tax) => {
+            const taxAmount = discountedSubtotal * (tax.rate / 100);
+            totalTaxAmount += taxAmount;
+            return { ...tax, amount: taxAmount };
+        });
+
+        return {
+            ...item,
+            discount_amount: discountAmount,
+            taxes: updatedTaxes,
+            tax_amount: totalTaxAmount,
+            total: discountedSubtotal + totalTaxAmount,
+        };
+    };
+
     // Update item data
     const updateItem = (itemId: string, field: keyof QuotationItem, value: any) => {
         const updatedItems = data.items.map((item) => {
             if (item.id === itemId) {
                 const updatedItem = { ...item, [field]: value };
 
-                // Recalculate item totals
-                if (field === 'quantity' || field === 'unit_price' || field === 'discount_rate' || field === 'tax_rate') {
-                    const lineSubtotal = updatedItem.quantity * updatedItem.unit_price;
-                    updatedItem.discount_amount = lineSubtotal * (updatedItem.discount_rate / 100);
-                    const discountedSubtotal = lineSubtotal - updatedItem.discount_amount;
-                    updatedItem.tax_amount = discountedSubtotal * (updatedItem.tax_rate / 100);
-                    updatedItem.total = discountedSubtotal + updatedItem.tax_amount; // Line total with tax
+                // Recalculate item totals when relevant fields change
+                if (field === 'quantity' || field === 'unit_price' || field === 'discount_rate' || field === 'taxes') {
+                    return recalculateItemTotals(updatedItem);
                 }
 
                 return updatedItem;
@@ -337,22 +367,29 @@ export default function CreateQuotation({
         if (product) {
             const updatedItems = data.items.map((item) => {
                 if (item.id === itemId) {
+                    // Build initial taxes array from product's default tax
+                    const initialTaxes: SelectedTax[] = product.default_tax
+                        ? [
+                              {
+                                  id: product.default_tax.id,
+                                  name: product.default_tax.name,
+                                  type: product.default_tax.type,
+                                  rate: product.default_tax.rate,
+                                  amount: 0,
+                              },
+                          ]
+                        : [];
+
                     const updatedItem = {
                         ...item,
                         product_id: product.id,
                         description: product.name,
                         unit_price: product.price,
-                        tax_rate: product.default_tax ? product.default_tax.rate : item.tax_rate,
+                        taxes: initialTaxes,
                     };
 
-                    // Recalculate totals
-                    const lineSubtotal = updatedItem.quantity * updatedItem.unit_price;
-                    updatedItem.discount_amount = lineSubtotal * (updatedItem.discount_rate / 100);
-                    const discountedSubtotal = lineSubtotal - updatedItem.discount_amount;
-                    updatedItem.tax_amount = discountedSubtotal * (updatedItem.tax_rate / 100);
-                    updatedItem.total = discountedSubtotal + updatedItem.tax_amount; // Line total with tax
-
-                    return updatedItem;
+                    // Recalculate totals using the helper
+                    return recalculateItemTotals(updatedItem);
                 }
                 return item;
             });
@@ -382,6 +419,22 @@ export default function CreateQuotation({
             tax_amount: taxAmount,
             total,
         }));
+    };
+
+    // Calculate tax breakdown by type (for display in totals)
+    const getTaxBreakdown = (): Array<{ name: string; amount: number }> => {
+        const taxMap = new Map<string, number>();
+
+        data.items.forEach((item) => {
+            item.taxes.forEach((tax) => {
+                const currentAmount = taxMap.get(tax.name) || 0;
+                taxMap.set(tax.name, currentAmount + (Number(tax.amount) || 0));
+            });
+        });
+
+        return Array.from(taxMap.entries())
+            .map(([name, amount]) => ({ name, amount }))
+            .sort((a, b) => b.amount - a.amount); // Sort by amount descending
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -720,8 +773,8 @@ export default function CreateQuotation({
                                         <div className="col-span-1 text-center">Cant.</div>
                                         <div className="col-span-1 text-right">Precio unit.</div>
                                         <div className="col-span-1 text-right">Desc. (%)</div>
-                                        <div className="col-span-1 text-right">Tax (%)</div>
-                                        <div className="col-span-2 text-right">Total</div>
+                                        <div className="col-span-2 text-right">Impuestos</div>
+                                        <div className="col-span-1 text-right">Total</div>
                                         <div className="col-span-2"></div>
                                     </div>
 
@@ -874,17 +927,17 @@ export default function CreateQuotation({
                                                                 />
                                                             </div>
                                                             <div>
-                                                                <Label className="text-xs font-medium text-gray-700">Impuesto (%)</Label>
-                                                                <Input
-                                                                    type="number"
-                                                                    min="0"
-                                                                    max="100"
-                                                                    step="0.01"
-                                                                    value={item.tax_rate}
-                                                                    onChange={(e) => updateItem(item.id, 'tax_rate', parseFloat(e.target.value) || 0)}
-                                                                    className="mt-1 h-10"
-                                                                    disabled={!item.product_id}
-                                                                />
+                                                                <Label className="text-xs font-medium text-gray-700">Impuestos</Label>
+                                                                <div className="mt-1">
+                                                                    <TaxMultiSelect
+                                                                        taxesGroupedByType={taxesGroupedByType}
+                                                                        selectedTaxes={item.taxes}
+                                                                        onSelectionChange={(taxes) => updateItem(item.id, 'taxes', taxes)}
+                                                                        taxableAmount={item.quantity * item.unit_price - item.discount_amount}
+                                                                        disabled={!item.product_id}
+                                                                        placeholder="Sin impuesto"
+                                                                    />
+                                                                </div>
                                                             </div>
                                                         </div>
 
@@ -992,21 +1045,19 @@ export default function CreateQuotation({
                                                     </div>
 
                                                     {/* Tax Rate */}
-                                                    <div className="col-span-1">
-                                                        <Input
-                                                            type="number"
-                                                            min="0"
-                                                            max="100"
-                                                            step="0.01"
-                                                            value={item.tax_rate}
-                                                            onChange={(e) => updateItem(item.id, 'tax_rate', parseFloat(e.target.value) || 0)}
-                                                            className="h-9 border-gray-200 text-right focus:border-blue-500 focus:ring-blue-500/20"
+                                                    <div className="col-span-2">
+                                                        <TaxMultiSelect
+                                                            taxesGroupedByType={taxesGroupedByType}
+                                                            selectedTaxes={item.taxes}
+                                                            onSelectionChange={(taxes) => updateItem(item.id, 'taxes', taxes)}
+                                                            taxableAmount={item.quantity * item.unit_price - item.discount_amount}
                                                             disabled={!item.product_id}
+                                                            placeholder="Sin impuesto"
                                                         />
                                                     </div>
 
                                                     {/* Total */}
-                                                    <div className="col-span-2">
+                                                    <div className="col-span-1">
                                                         <Input
                                                             value={formatCurrency(item.total)}
                                                             disabled
@@ -1047,10 +1098,16 @@ export default function CreateQuotation({
                                                         <span className="font-medium text-red-600">-{formatCurrency(data.discount_total)}</span>
                                                     </div>
                                                 )}
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <span className="text-gray-600">Impuestos:</span>
-                                                    <span className="font-medium text-gray-900">+{formatCurrency(data.tax_amount)}</span>
-                                                </div>
+                                                {getTaxBreakdown().length > 0 && (
+                                                    <div className="space-y-2 border-t border-gray-100 pt-2">
+                                                        {getTaxBreakdown().map((tax) => (
+                                                            <div key={tax.name} className="flex items-center justify-between text-sm">
+                                                                <span className="text-gray-600">{tax.name}:</span>
+                                                                <span className="font-medium text-gray-900">+{formatCurrency(tax.amount)}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                                 <div className="flex items-center justify-between border-t border-gray-200 pt-3 text-lg font-bold">
                                                     <span className="text-gray-900">Total:</span>
                                                     <span className="text-primary">{formatCurrency(data.total)}</span>

@@ -29,6 +29,22 @@ export default function QuotationShow({ quotation }: Props) {
     const { format: formatCurrency } = useCurrency();
     const { can } = usePermissions();
 
+    // Calculate tax breakdown by type (for display in totals)
+    const getTaxBreakdown = (): Array<{ name: string; amount: number }> => {
+        const taxMap = new Map<string, number>();
+
+        quotation.items?.forEach((item) => {
+            item.taxes?.forEach((tax) => {
+                const currentAmount = taxMap.get(tax.name) || 0;
+                taxMap.set(tax.name, currentAmount + (Number(tax.pivot.amount) || 0));
+            });
+        });
+
+        return Array.from(taxMap.entries())
+            .map(([name, amount]) => ({ name, amount }))
+            .sort((a, b) => b.amount - a.amount); // Sort by amount descending
+    };
+
     const handleConvertToInvoice = () => {
         if (confirm('¿Estás seguro de que deseas convertir esta cotización en una factura? Esta acción no se puede deshacer.')) {
             router.post(
@@ -191,12 +207,18 @@ export default function QuotationShow({ quotation }: Props) {
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="text-right">
-                                                        {item.tax_rate > 0 ? (
-                                                            <div>
-                                                                <span className="font-medium">{item.tax_rate}%</span>
-                                                                <span className="ml-1 text-xs text-gray-600">
-                                                                    (+{formatCurrency(item.tax_amount)})
-                                                                </span>
+                                                        {item.taxes && item.taxes.length > 0 ? (
+                                                            <div className="space-y-0.5 text-xs">
+                                                                {item.taxes.map((tax) => (
+                                                                    <div key={tax.id}>
+                                                                        <span className="font-medium">
+                                                                            {tax.name} ({tax.pivot.rate}%)
+                                                                        </span>
+                                                                        <span className="ml-1 text-gray-600">
+                                                                            (+{formatCurrency(tax.pivot.amount)})
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
                                                             </div>
                                                         ) : (
                                                             <span className="text-gray-400">-</span>
@@ -264,10 +286,16 @@ export default function QuotationShow({ quotation }: Props) {
                                             <span className="text-sm font-medium text-red-600">-{formatCurrency(quotation.discount_amount)}</span>
                                         </div>
                                     )}
-                                    <div className="flex justify-between">
-                                        <span className="text-sm text-gray-600">Impuestos:</span>
-                                        <span className="text-sm font-medium">{formatCurrency(quotation.tax_amount)}</span>
-                                    </div>
+                                    {getTaxBreakdown().length > 0 && (
+                                        <div className="space-y-2 border-t border-gray-100 pt-2">
+                                            {getTaxBreakdown().map((tax) => (
+                                                <div key={tax.name} className="flex justify-between">
+                                                    <span className="text-sm text-gray-600">{tax.name}:</span>
+                                                    <span className="text-sm font-medium">+{formatCurrency(tax.amount)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                     <div className="border-t pt-3">
                                         <div className="flex justify-between">
                                             <span className="text-base font-bold">Total:</span>

@@ -21,11 +21,18 @@ final class UpdateTaxAction
             Tax::query()->where('is_default', true)->update(['is_default' => false]);
         }
 
-        $tax->update([
+        $updateData = [
             'name' => $data['name'],
-            'rate' => $data['rate'],
             'is_default' => $data['is_default'] ?? false,
-        ]);
+        ];
+
+        // Only update type and rate if the tax is not in use
+        if (! $tax->isInUse()) {
+            $updateData['type'] = $data['type'];
+            $updateData['rate'] = $data['rate'];
+        }
+
+        $tax->update($updateData);
 
         return $tax->fresh();
     }

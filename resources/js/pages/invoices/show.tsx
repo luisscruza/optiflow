@@ -59,6 +59,22 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
         return methods[method] || method;
     };
 
+    // Calculate tax breakdown by type (for display in totals)
+    const getTaxBreakdown = (): Array<{ name: string; amount: number }> => {
+        const taxMap = new Map<string, number>();
+
+        invoice.items?.forEach((item) => {
+            item.taxes?.forEach((tax) => {
+                const currentAmount = taxMap.get(tax.name) || 0;
+                taxMap.set(tax.name, currentAmount + (Number(tax.pivot.amount) || 0));
+            });
+        });
+
+        return Array.from(taxMap.entries())
+            .map(([name, amount]) => ({ name, amount }))
+            .sort((a, b) => b.amount - a.amount); // Sort by amount descending
+    };
+
     // Get status badge styling
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -278,14 +294,20 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
                                                         )}
                                                     </div>
 
-                                                    {/* Tax (rate + amount) */}
+                                                    {/* Tax - Show all taxes for this item */}
                                                     <div className="text-right">
-                                                        {item.tax_rate > 0 ? (
-                                                            <div className="text-sm text-gray-900">
-                                                                <span className="font-medium">{item.tax_rate}%</span>
-                                                                <span className="ml-1 text-xs text-gray-600">
-                                                                    (+{formatCurrency(item.tax_amount)})
-                                                                </span>
+                                                        {item.taxes && item.taxes.length > 0 ? (
+                                                            <div className="space-y-0.5 text-xs text-gray-900">
+                                                                {item.taxes.map((tax) => (
+                                                                    <div key={tax.id}>
+                                                                        <span className="font-medium">
+                                                                            {tax.name} ({tax.pivot.rate}%)
+                                                                        </span>
+                                                                        <span className="ml-1 text-gray-600">
+                                                                            (+{formatCurrency(tax.pivot.amount)})
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
                                                             </div>
                                                         ) : (
                                                             <span className="text-sm text-gray-400">-</span>
@@ -321,10 +343,14 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
                                                     <span className="font-medium text-gray-900">-{formatCurrency(invoice.discount_amount)}</span>
                                                 </div>
                                             )}
-                                            {invoice.tax_amount > 0 && (
-                                                <div className="flex justify-between text-sm">
-                                                    <span className="text-gray-600">Impuestos:</span>
-                                                    <span className="font-medium text-gray-900">{formatCurrency(invoice.tax_amount)}</span>
+                                            {getTaxBreakdown().length > 0 && (
+                                                <div className="space-y-2 border-t border-gray-100 pt-2">
+                                                    {getTaxBreakdown().map((tax) => (
+                                                        <div key={tax.name} className="flex justify-between text-sm">
+                                                            <span className="text-gray-600">{tax.name}:</span>
+                                                            <span className="font-medium text-gray-900">+{formatCurrency(tax.amount)}</span>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             )}
                                             <div className="flex justify-between border-t border-gray-200 pt-3 text-lg font-bold">

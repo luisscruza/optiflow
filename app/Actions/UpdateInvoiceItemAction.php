@@ -93,6 +93,18 @@ final class UpdateInvoiceItemAction
             'tax_id' => $taxId,
             'total' => $data['total'],
         ]);
+
+        // Sync multi-tax relationship if taxes array is provided
+        if (isset($data['taxes']) && is_array($data['taxes'])) {
+            $taxesData = [];
+            foreach ($data['taxes'] as $tax) {
+                $taxesData[$tax['id']] = [
+                    'rate' => $tax['rate'],
+                    'amount' => $tax['amount'],
+                ];
+            }
+            $existingItem->taxes()->sync($taxesData);
+        }
     }
 
     /**
@@ -119,6 +131,9 @@ final class UpdateInvoiceItemAction
             }
         }
 
+        // Detach all taxes before deleting the item
+        $item->taxes()->detach();
+
         $item->delete();
     }
 
@@ -130,7 +145,7 @@ final class UpdateInvoiceItemAction
     private function validateStock(Invoice $invoice, array $item, Product $product): void
     {
         if (! $product->hasSufficientStock($invoice->workspace_id, $item['quantity'])) {
-            throw new InsufficientStockException('No hay stock ('.$item['quantity'].') suficiente para el producto: '.$product->name);
+            throw new InsufficientStockException('No hay stock (' . $item['quantity'] . ') suficiente para el producto: ' . $product->name);
         }
     }
 
@@ -156,7 +171,7 @@ final class UpdateInvoiceItemAction
         $stockForWorkspace = $product->getStockForWorkspace($invoice->workspace);
 
         if (! $stockForWorkspace instanceof \App\Models\ProductStock) {
-            throw new InsufficientStockException('No stock record found for product: '.$product->name);
+            throw new InsufficientStockException('No stock record found for product: ' . $product->name);
         }
 
         $stockForWorkspace->decrementStock($item['quantity']);
@@ -171,7 +186,8 @@ final class UpdateInvoiceItemAction
     {
         $taxId = $this->findTaxIdByRate($item['tax_rate'] ?? 0);
 
-        $invoice->items()->create([
+        /** @var InvoiceItem $invoiceItem */
+        $invoiceItem = $invoice->items()->create([
             'product_id' => $product->id,
             'description' => $item['description'] ?? null,
             'quantity' => $item['quantity'],
@@ -184,6 +200,18 @@ final class UpdateInvoiceItemAction
             'tax_id' => $taxId,
             'total' => $item['total'],
         ]);
+
+        // Sync multi-tax relationship if taxes array is provided
+        if (! empty($item['taxes'])) {
+            $taxesData = [];
+            foreach ($item['taxes'] as $tax) {
+                $taxesData[$tax['id']] = [
+                    'rate' => $tax['rate'],
+                    'amount' => $tax['amount'],
+                ];
+            }
+            $invoiceItem->taxes()->sync($taxesData);
+        }
     }
 
     /**
@@ -205,7 +233,7 @@ final class UpdateInvoiceItemAction
         $stockForWorkspace = $product->getStockForWorkspace($invoice->workspace);
 
         if (! $stockForWorkspace instanceof \App\Models\ProductStock) {
-            throw new InsufficientStockException('No stock record found for product: '.$product->name);
+            throw new InsufficientStockException('No stock record found for product: ' . $product->name);
         }
 
         // Find the existing stock movement for this document and product

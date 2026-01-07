@@ -9,6 +9,7 @@ use App\Actions\UpdateInvoiceAction;
 use App\Enums\PaymentMethod;
 use App\Enums\Permission;
 use App\Enums\QuotationStatus;
+use App\Enums\TaxType;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\BankAccount;
 use App\Models\CompanyDetail;
@@ -121,6 +122,21 @@ final class InvoiceController extends Controller
 
         $availableWorkspaces = Auth::user()?->workspaces ?? collect();
 
+        // Group taxes by type for the multi-select component
+        $taxesGroupedByType = Tax::query()
+            ->orderBy('is_default', 'desc')
+            ->orderBy('name')
+            ->get()
+            ->groupBy('type')
+            ->mapWithKeys(fn($taxes, $type): array => [
+                $type => [
+                    'label' => TaxType::tryFrom($type)?->label() ?? $type,
+                    'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,
+                    'taxes' => $taxes->toArray(),
+                ],
+            ])
+            ->toArray();
+
         return Inertia::render('invoices/create', [
             'documentSubtypes' => $documentSubtypes,
             'customers' => $customers,
@@ -132,6 +148,7 @@ final class InvoiceController extends Controller
             'defaultNote' => CompanyDetail::getByKey('terms_conditions'),
             'bankAccounts' => BankAccount::onlyActive()->with('currency')->orderBy('name')->get(),
             'paymentMethods' => PaymentMethod::options(),
+            'taxesGroupedByType' => $taxesGroupedByType,
         ]);
     }
 
@@ -175,7 +192,7 @@ final class InvoiceController extends Controller
             'contact',
             'documentSubtype',
             'items.product',
-            'items.tax',
+            'items.taxes',
             'payments.bankAccount',
             'payments.currency',
             'comments.commentator',
@@ -210,7 +227,7 @@ final class InvoiceController extends Controller
 
         $currentWorkspace = Context::get('workspace');
 
-        $invoice->load(['contact', 'documentSubtype', 'items.product', 'items.tax']);
+        $invoice->load(['contact', 'documentSubtype', 'items.product', 'items.taxes']);
 
         $documentSubtypes = DocumentSubtype::active()
             ->forInvoice()
@@ -249,12 +266,28 @@ final class InvoiceController extends Controller
             $ncf = $documentSubtype->generateNCF();
         }
 
+        // Group taxes by type for the multi-select component
+        $taxesGroupedByType = Tax::query()
+            ->orderBy('is_default', 'desc')
+            ->orderBy('name')
+            ->get()
+            ->groupBy('type')
+            ->mapWithKeys(fn($taxes, $type): array => [
+                $type => [
+                    'label' => TaxType::tryFrom($type)?->label() ?? $type,
+                    'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,
+                    'taxes' => $taxes->toArray(),
+                ],
+            ])
+            ->toArray();
+
         return Inertia::render('invoices/edit', [
             'invoice' => $invoice,
             'documentSubtypes' => $documentSubtypes,
             'customers' => $customers,
             'products' => $products,
             'taxes' => $taxes,
+            'taxesGroupedByType' => $taxesGroupedByType,
             'ncf' => $ncf,
         ]);
     }

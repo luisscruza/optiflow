@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         DB::table('taxes')->insert([
-            ['name' => 'ITBIS 18%', 'rate' => 18, 'is_default' => true],
-            ['name' => 'ITBIS 16%', 'rate' => 16, 'is_default' => false],
+            ['name' => 'ITBIS 18%', 'rate' => 18, 'is_default' => true, 'type' => 'itbis'],
+            ['name' => 'ITBIS 16%', 'rate' => 16, 'is_default' => false, 'type' => 'itbis'],
         ]);
     }
 };

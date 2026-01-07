@@ -173,6 +173,12 @@
             margin-bottom: 20px;
             font-weight: bold;
         }
+
+        .tax-breakdown {
+            font-size: 11px;
+            color: #666;
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
@@ -228,7 +234,7 @@
                 <th style="width: 45%;">Descripción</th>
                 <th style="width: 10%;" class="text-center">Cant.</th>
                 <th style="width: 15%;" class="text-right">Precio Unit.</th>
-                <th style="width: 10%;" class="text-center">ITBIS</th>
+                <th style="width: 10%;" class="text-center">Impuestos</th>
                 <th style="width: 15%;" class="text-right">Total</th>
             </tr>
         </thead>
@@ -239,7 +245,17 @@
                     <td>{{ $item->description }}</td>
                     <td class="text-center">{{ number_format($item->quantity, 2) }}</td>
                     <td class="text-right">RD$ {{ number_format($item->unit_price, 2) }}</td>
-                    <td class="text-center">{{ number_format($item->tax_rate ?? 0, 0) }}%</td>
+                    <td class="text-center">
+                        @php
+                            $itemTaxTotal = 0;
+                            if($item->taxes) {
+                                foreach($item->taxes as $tax) {
+                                    $itemTaxTotal += $tax->pivot->amount ?? 0;
+                                }
+                            }
+                        @endphp
+                        RD$ {{ number_format($itemTaxTotal, 2) }}
+                    </td>
                     <td class="text-right">RD$ {{ number_format($item->total + $item->tax_amount, 2) }}</td>
                 </tr>
             @endforeach
@@ -258,10 +274,27 @@
                     <td class="amount">-RD$ {{ number_format($quotation->discount_amount, 2) }}</td>
                 </tr>
             @endif
-            <tr>
-                <td class="label">ITBIS:</td>
-                <td class="amount">RD$ {{ number_format($quotation->tax_amount, 2) }}</td>
-            </tr>
+            @php
+                $taxBreakdown = [];
+                foreach($quotation->items as $item) {
+                    if($item->taxes) {
+                        foreach($item->taxes as $tax) {
+                            $taxName = $tax->name;
+                            $taxAmount = $tax->pivot->amount ?? 0;
+                            if (!isset($taxBreakdown[$taxName])) {
+                                $taxBreakdown[$taxName] = 0;
+                            }
+                            $taxBreakdown[$taxName] += $taxAmount;
+                        }
+                    }
+                }
+            @endphp
+            @foreach($taxBreakdown as $taxName => $taxAmount)
+                <tr>
+                    <td class="label">{{ $taxName }}:</td>
+                    <td class="amount">RD$ {{ number_format($taxAmount, 2) }}</td>
+                </tr>
+            @endforeach
             <tr class="total-row">
                 <td class="label">TOTAL:</td>
                 <td class="amount">RD$ {{ number_format($quotation->total_amount, 2) }}</td>

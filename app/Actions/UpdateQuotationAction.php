@@ -42,7 +42,7 @@ final class UpdateQuotationAction
                     $this->updateNumerator($documentSubtype, $data['ncf']);
                 }
 
-                $items = array_filter($data['items'] ?? [], fn (array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
+                $items = array_filter($data['items'] ?? [], fn(array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
                     $item['quantity'] > 0);
 
                 $this->processItemChanges($quotation, $originalItems, $items);
@@ -51,7 +51,7 @@ final class UpdateQuotationAction
             });
         } catch (Throwable $e) {
 
-            return new QuotationResult(error: 'Error actualizando la cotización: '.$e->getMessage());
+            return new QuotationResult(error: 'Error actualizando la cotización: ' . $e->getMessage());
         }
     }
 
@@ -145,7 +145,7 @@ final class UpdateQuotationAction
         }
 
         // Remove items that are no longer present
-        $itemsToRemove = $originalItems->reject(fn ($item): bool => in_array($item->id, $processedIds));
+        $itemsToRemove = $originalItems->reject(fn($item): bool => in_array($item->id, $processedIds));
 
         foreach ($itemsToRemove as $item) {
             $this->removeQuotationItem($item);
@@ -161,7 +161,8 @@ final class UpdateQuotationAction
     {
         $product = Product::query()->findOrFail($data['product_id']);
 
-        $quotation->items()->create([
+        /** @var QuotationItem $quotationItem */
+        $quotationItem = $quotation->items()->create([
             'product_id' => $product->id,
             'description' => $data['description'] ?? null,
             'quantity' => $data['quantity'],
@@ -171,9 +172,21 @@ final class UpdateQuotationAction
             'discount_rate' => $data['discount_rate'] ?? 0,
             'tax_rate' => $data['tax_rate'] ?? 0,
             'tax_amount' => $data['tax_amount'] ?? 0,
-            'tax_id' => 1, // @TODO: Pass the tax ID from the request
+            'tax_id' => 1, // @TODO: Remove legacy tax_id column after full migration
             'total' => $data['total'],
         ]);
+
+        // Sync multi-tax relationship if taxes array is provided
+        if (! empty($data['taxes'])) {
+            $taxesData = [];
+            foreach ($data['taxes'] as $tax) {
+                $taxesData[$tax['id']] = [
+                    'rate' => $tax['rate'],
+                    'amount' => $tax['amount'],
+                ];
+            }
+            $quotationItem->taxes()->sync($taxesData);
+        }
     }
 
     /**
@@ -195,9 +208,21 @@ final class UpdateQuotationAction
             'discount_rate' => $data['discount_rate'] ?? 0,
             'tax_rate' => $data['tax_rate'] ?? 0,
             'tax_amount' => $data['tax_amount'] ?? 0,
-            'tax_id' => 1, // @TODO: Pass the tax ID from the request
+            'tax_id' => 1, // @TODO: Remove legacy tax_id column after full migration
             'total' => $data['total'],
         ]);
+
+        // Sync multi-tax relationship if taxes array is provided
+        if (isset($data['taxes']) && is_array($data['taxes'])) {
+            $taxesData = [];
+            foreach ($data['taxes'] as $tax) {
+                $taxesData[$tax['id']] = [
+                    'rate' => $tax['rate'],
+                    'amount' => $tax['amount'],
+                ];
+            }
+            $existingItem->taxes()->sync($taxesData);
+        }
     }
 
     /**
@@ -205,6 +230,9 @@ final class UpdateQuotationAction
      */
     private function removeQuotationItem(QuotationItem $item): void
     {
+        // Detach all taxes before deleting the item
+        $item->taxes()->detach();
+
         $item->delete();
     }
 

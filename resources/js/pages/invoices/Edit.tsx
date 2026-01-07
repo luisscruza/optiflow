@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import { EditNcfModal } from '@/components/invoices/edit-ncf-modal';
 import QuickProductModal from '@/components/products/quick-product-modal';
+import { type SelectedTax, TaxMultiSelect } from '@/components/taxes/tax-multi-select';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,7 +14,7 @@ import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/s
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Contact, type Product, type Workspace } from '@/types';
+import { type BreadcrumbItem, type Contact, type Product, type TaxesGroupedByType, type Workspace } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -42,7 +43,7 @@ interface InvoiceItem {
     unit_price: number;
     discount_rate: number;
     discount_amount: number;
-    tax_rate: number;
+    taxes: SelectedTax[];
     tax_amount: number;
     total: number;
 }
@@ -105,9 +106,19 @@ interface Props {
     currentWorkspace?: Workspace | null;
     availableWorkspaces?: Workspace[];
     ncf?: string | null;
+    taxesGroupedByType: TaxesGroupedByType;
 }
 
-export default function EditInvoice({ invoice, documentSubtypes, customers, products, currentWorkspace, availableWorkspaces, ncf }: Props) {
+export default function EditInvoice({
+    invoice,
+    documentSubtypes,
+    customers,
+    products,
+    currentWorkspace,
+    availableWorkspaces,
+    ncf,
+    taxesGroupedByType,
+}: Props) {
     const [itemId, setItemId] = useState(invoice.items.length > 0 ? Math.max(...invoice.items.map((item) => parseInt(item.id.toString()))) + 1 : 1);
     const [showContactModal, setShowContactModal] = useState(false);
     const [showProductModal, setShowProductModal] = useState(false);
@@ -141,7 +152,15 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
             unit_price: item.unit_price || 0,
             discount_rate: item.discount_rate || 0,
             discount_amount: item.discount_amount || 0,
-            tax_rate: item.tax_rate || 0,
+            taxes: item.taxes
+                ? item.taxes.map((tax) => ({
+                      id: tax.id,
+                      name: tax.name,
+                      type: tax.type,
+                      rate: tax.pivot.rate,
+                      amount: tax.pivot.amount,
+                  }))
+                : [],
             tax_amount: item.tax_amount || 0,
             total: item.total || 0,
         }));
@@ -243,6 +262,29 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
     };
 
     // Add new invoice item
+    // Helper function to recalculate item totals based on taxes array
+    const recalculateItemTotals = (item: InvoiceItem): InvoiceItem => {
+        const lineSubtotal = item.quantity * item.unit_price;
+        const discountAmount = lineSubtotal * (item.discount_rate / 100);
+        const discountedSubtotal = lineSubtotal - discountAmount;
+
+        // Calculate total tax from all selected taxes
+        let totalTaxAmount = 0;
+        const updatedTaxes = item.taxes.map((tax) => {
+            const taxAmount = discountedSubtotal * (tax.rate / 100);
+            totalTaxAmount += taxAmount;
+            return { ...tax, amount: taxAmount };
+        });
+
+        return {
+            ...item,
+            discount_amount: discountAmount,
+            taxes: updatedTaxes,
+            tax_amount: totalTaxAmount,
+            total: discountedSubtotal + totalTaxAmount,
+        };
+    };
+
     const addItem = () => {
         const newItemId = itemId + 1;
         setItemId(newItemId);
@@ -257,7 +299,7 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
                 unit_price: 0,
                 discount_rate: 0,
                 discount_amount: 0,
-                tax_rate: 0,
+                taxes: [],
                 tax_amount: 0,
                 total: 0,
             },
@@ -281,13 +323,9 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
             if (item.id === itemId) {
                 const updatedItem = { ...item, [field]: value };
 
-                // Recalculate item totals
-                if (field === 'quantity' || field === 'unit_price' || field === 'discount_rate' || field === 'tax_rate') {
-                    const lineSubtotal = updatedItem.quantity * updatedItem.unit_price;
-                    updatedItem.discount_amount = lineSubtotal * (updatedItem.discount_rate / 100);
-                    const discountedSubtotal = lineSubtotal - updatedItem.discount_amount;
-                    updatedItem.tax_amount = discountedSubtotal * (updatedItem.tax_rate / 100);
-                    updatedItem.total = discountedSubtotal + updatedItem.tax_amount; // Line total with tax
+                // Recalculate item totals when relevant fields change
+                if (field === 'quantity' || field === 'unit_price' || field === 'discount_rate' || field === 'taxes') {
+                    return recalculateItemTotals(updatedItem);
                 }
 
                 return updatedItem;
@@ -376,22 +414,29 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
         if (product) {
             const updatedItems = data.items.map((item) => {
                 if (item.id === itemId) {
+                    // Build initial taxes array from product's default tax
+                    const initialTaxes: SelectedTax[] = product.default_tax
+                        ? [
+                              {
+                                  id: product.default_tax.id,
+                                  name: product.default_tax.name,
+                                  type: product.default_tax.type,
+                                  rate: product.default_tax.rate,
+                                  amount: 0,
+                              },
+                          ]
+                        : [];
+
                     const updatedItem = {
                         ...item,
                         product_id: product.id,
                         description: product.name,
                         unit_price: product.price,
-                        tax_rate: product.default_tax ? product.default_tax.rate : item.tax_rate,
+                        taxes: initialTaxes,
                     };
 
-                    // Recalculate totals
-                    const lineSubtotal = updatedItem.quantity * updatedItem.unit_price;
-                    updatedItem.discount_amount = lineSubtotal * (updatedItem.discount_rate / 100);
-                    const discountedSubtotal = lineSubtotal - updatedItem.discount_amount;
-                    updatedItem.tax_amount = discountedSubtotal * (updatedItem.tax_rate / 100);
-                    updatedItem.total = discountedSubtotal + updatedItem.tax_amount; // Line total with tax
-
-                    return updatedItem;
+                    // Recalculate totals using the helper
+                    return recalculateItemTotals(updatedItem);
                 }
                 return item;
             });
@@ -409,21 +454,28 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
         if (activeProductItemId) {
             const updatedItems = data.items.map((item) => {
                 if (item.id === activeProductItemId) {
+                    // Build initial taxes array from product's default tax
+                    const initialTaxes: SelectedTax[] = newProduct.default_tax
+                        ? [
+                              {
+                                  id: newProduct.default_tax.id,
+                                  name: newProduct.default_tax.name,
+                                  type: newProduct.default_tax.type,
+                                  rate: newProduct.default_tax.rate,
+                                  amount: 0,
+                              },
+                          ]
+                        : [];
+
                     const updatedItem = {
                         ...item,
                         product_id: newProduct.id,
                         description: newProduct.name,
                         unit_price: newProduct.price,
-                        tax_rate: newProduct.default_tax ? newProduct.default_tax.rate : item.tax_rate,
+                        taxes: initialTaxes,
                     };
 
-                    const lineSubtotal = updatedItem.quantity * updatedItem.unit_price;
-                    updatedItem.discount_amount = lineSubtotal * (updatedItem.discount_rate / 100);
-                    const discountedSubtotal = lineSubtotal - updatedItem.discount_amount;
-                    updatedItem.tax_amount = discountedSubtotal * (updatedItem.tax_rate / 100);
-                    updatedItem.total = discountedSubtotal + updatedItem.tax_amount;
-
-                    return updatedItem;
+                    return recalculateItemTotals(updatedItem);
                 }
                 return item;
             });
@@ -432,6 +484,22 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
             calculateTotals(updatedItems);
             setActiveProductItemId(null);
         }
+    };
+
+    // Calculate tax breakdown by type (for display in totals)
+    const getTaxBreakdown = (): Array<{ name: string; amount: number }> => {
+        const taxMap = new Map<string, number>();
+
+        data.items.forEach((item) => {
+            item.taxes.forEach((tax) => {
+                const currentAmount = taxMap.get(tax.name) || 0;
+                taxMap.set(tax.name, currentAmount + (Number(tax.amount) || 0));
+            });
+        });
+
+        return Array.from(taxMap.entries())
+            .map(([name, amount]) => ({ name, amount }))
+            .sort((a, b) => b.amount - a.amount); // Sort by amount descending
     };
 
     const calculateTotals = (items: InvoiceItem[]) => {
@@ -811,8 +879,8 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
                                         <div className="col-span-1 text-center">Cant.</div>
                                         <div className="col-span-1 text-right">Precio unit.</div>
                                         <div className="col-span-1 text-right">Desc. (%)</div>
-                                        <div className="col-span-1 text-right">Tax (%)</div>
-                                        <div className="col-span-2 text-right">Subtotal</div>
+                                        <div className="col-span-2 text-right">Impuestos</div>
+                                        <div className="col-span-1 text-right">Subtotal</div>
                                         <div className="col-span-2 text-right">Total</div>
                                         <div className="col-span-1"></div>
                                     </div>
@@ -928,17 +996,17 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
                                                                 />
                                                             </div>
                                                             <div>
-                                                                <Label className="text-xs font-medium text-gray-700">Impuesto (%)</Label>
-                                                                <Input
-                                                                    type="number"
-                                                                    min="0"
-                                                                    max="100"
-                                                                    step="0.01"
-                                                                    value={item.tax_rate?.toString() || '0'}
-                                                                    onChange={(e) => updateItem(item.id, 'tax_rate', parseFloat(e.target.value) || 0)}
-                                                                    className="mt-1 text-right"
-                                                                    disabled={!item.product_id}
-                                                                />
+                                                                <Label className="text-xs font-medium text-gray-700">Impuestos</Label>
+                                                                <div className="mt-1">
+                                                                    <TaxMultiSelect
+                                                                        taxesGroupedByType={taxesGroupedByType}
+                                                                        selectedTaxes={item.taxes}
+                                                                        onSelectionChange={(taxes) => updateItem(item.id, 'taxes', taxes)}
+                                                                        taxableAmount={item.quantity * item.unit_price - item.discount_amount}
+                                                                        disabled={!item.product_id}
+                                                                        placeholder="Sin impuesto"
+                                                                    />
+                                                                </div>
                                                             </div>
                                                         </div>
 
@@ -1078,22 +1146,21 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
                                                         />
                                                     </div>
 
-                                                    {/* Tax rate */}
-                                                    <div className="col-span-1">
-                                                        <Input
-                                                            type="number"
-                                                            min="0"
-                                                            max="100"
-                                                            step="0.01"
-                                                            value={item.tax_rate?.toString() || '0'}
-                                                            onChange={(e) => updateItem(item.id, 'tax_rate', parseFloat(e.target.value) || 0)}
-                                                            className="h-9 border-gray-200 text-right focus:border-blue-500 focus:ring-blue-500/20"
+                                                    {/* Tax Multi-Select */}
+                                                    <div className="col-span-2">
+                                                        <TaxMultiSelect
+                                                            taxesGroupedByType={taxesGroupedByType}
+                                                            selectedTaxes={item.taxes}
+                                                            onSelectionChange={(taxes) => updateItem(item.id, 'taxes', taxes)}
+                                                            taxableAmount={item.quantity * item.unit_price - item.discount_amount}
                                                             disabled={!item.product_id}
+                                                            placeholder="—"
+                                                            className="h-9"
                                                         />
                                                     </div>
 
                                                     {/* Subtotal (quantity × unit_price, no discount/tax) */}
-                                                    <div className="col-span-2">
+                                                    <div className="col-span-1">
                                                         <Input
                                                             value={formatCurrency((item.quantity || 0) * (item.unit_price || 0))}
                                                             disabled
@@ -1143,10 +1210,16 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
                                                         <span className="font-medium text-gray-900">-{formatCurrency(data.discount_total)}</span>
                                                     </div>
                                                 )}
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <span className="text-gray-600">Impuestos:</span>
-                                                    <span className="font-medium text-gray-900">+{formatCurrency(data.tax_amount)}</span>
-                                                </div>
+                                                {getTaxBreakdown().length > 0 && (
+                                                    <div className="space-y-2 border-t border-gray-100 pt-2">
+                                                        {getTaxBreakdown().map((tax) => (
+                                                            <div key={tax.name} className="flex items-center justify-between text-sm">
+                                                                <span className="text-gray-600">{tax.name}:</span>
+                                                                <span className="font-medium text-gray-900">+{formatCurrency(tax.amount)}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                                 <div className="flex items-center justify-between border-t border-gray-200 pt-3 text-lg font-bold">
                                                     <span className="text-gray-900">Total:</span>
                                                     <span className="text-blue-600">{formatCurrency(data.total)}</span>

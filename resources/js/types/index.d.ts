@@ -141,12 +141,15 @@ export interface WorkspaceData {
 export interface Tax {
     id: number;
     name: string;
+    type: string;
     rate: number;
     is_default: boolean;
     created_at: string;
     updated_at: string;
     products_count?: number;
     document_items_count?: number;
+    invoice_items_count?: number;
+    quotation_items_count?: number;
 }
 
 export interface PaginatedTaxes {
@@ -428,6 +431,35 @@ export interface DocumentSubtype {
     updated_at: string;
 }
 
+/**
+ * Represents a tax applied to an item in the pivot table.
+ */
+export interface ItemTax {
+    id: number;
+    name: string;
+    type: string;
+    rate: number;
+    is_default: boolean;
+    pivot: {
+        rate: number;
+        amount: number;
+    };
+}
+
+/**
+ * Tax type group with metadata for multi-select component.
+ */
+export interface TaxTypeGroup {
+    label: string;
+    isExclusive: boolean;
+    taxes: Tax[];
+}
+
+/**
+ * Taxes grouped by type for the multi-select component.
+ */
+export type TaxesGroupedByType = Record<string, TaxTypeGroup>;
+
 export interface DocumentItem {
     id: number;
     invoice_id: number;
@@ -442,6 +474,8 @@ export interface DocumentItem {
     total: string | number;
     product?: Product;
     tax?: Tax;
+    /** Multiple taxes per item (many-to-many relationship) */
+    taxes?: ItemTax[];
 }
 
 export interface Invoice {

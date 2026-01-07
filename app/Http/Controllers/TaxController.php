@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Actions\CreateTaxAction;
 use App\Actions\DeleteTaxAction;
 use App\Actions\UpdateTaxAction;
+use App\Enums\TaxType;
 use App\Http\Requests\CreateTaxRequest;
 use App\Http\Requests\UpdateTaxRequest;
 use App\Models\Tax;
@@ -35,8 +36,24 @@ final class TaxController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        // Group taxes by type for the API/frontend multi-select usage
+        $taxesGroupedByType = Tax::query()
+            ->orderBy('is_default', 'desc')
+            ->orderBy('name')
+            ->get()
+            ->groupBy('type')
+            ->mapWithKeys(fn($taxes, $type): array => [
+                $type => [
+                    'label' => TaxType::tryFrom($type)?->label() ?? $type,
+                    'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,
+                    'taxes' => $taxes->toArray(),
+                ],
+            ])
+            ->toArray();
+
         return Inertia::render('taxes/index', [
             'taxes' => $taxes,
+            'taxesGroupedByType' => $taxesGroupedByType,
             'filters' => [
                 'search' => $request->search,
             ],
@@ -48,7 +65,9 @@ final class TaxController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('taxes/create');
+        return Inertia::render('taxes/create', [
+            'taxTypes' => TaxType::options(),
+        ]);
     }
 
     /**
@@ -68,10 +87,11 @@ final class TaxController extends Controller
      */
     public function show(Tax $tax): Response
     {
-        $tax->loadCount(['products', 'invoiceItems']);
+        $tax->loadCount(['products', 'invoiceItems', 'quotationItems']);
 
         return Inertia::render('taxes/show', [
             'tax' => $tax,
+            'isInUse' => $tax->isInUse(),
         ]);
     }
 
@@ -82,6 +102,8 @@ final class TaxController extends Controller
     {
         return Inertia::render('taxes/edit', [
             'tax' => $tax,
+            'taxTypes' => TaxType::options(),
+            'isInUse' => $tax->isInUse(),
         ]);
     }
 

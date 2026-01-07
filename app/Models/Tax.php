@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\TaxType;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -47,6 +49,7 @@ final class Tax extends Model
 
     protected $fillable = [
         'name',
+        'type',
         'rate',
         'is_default',
     ];
@@ -66,13 +69,37 @@ final class Tax extends Model
     }
 
     /**
-     * Get the invoices items that use this tax.
+     * Get the invoice items that use this tax (many-to-many).
      *
-     * @return HasMany<InvoiceItem, $this>
+     * @return BelongsToMany<InvoiceItem, $this>
      */
-    public function invoiceItems(): HasMany
+    public function invoiceItems(): BelongsToMany
     {
-        return $this->hasMany(InvoiceItem::class);
+        return $this->belongsToMany(InvoiceItem::class, 'invoice_item_tax')
+            ->withPivot(['rate', 'amount'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the quotation items that use this tax (many-to-many).
+     *
+     * @return BelongsToMany<QuotationItem, $this>
+     */
+    public function quotationItems(): BelongsToMany
+    {
+        return $this->belongsToMany(QuotationItem::class, 'quotation_item_tax')
+            ->withPivot(['rate', 'amount'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if the tax is in use (has invoice items, quotation items, or products).
+     */
+    public function isInUse(): bool
+    {
+        return $this->invoiceItems()->exists()
+            || $this->quotationItems()->exists()
+            || $this->products()->exists();
     }
 
     /**
@@ -90,7 +117,7 @@ final class Tax extends Model
     protected function ratePercentage(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => $this->rate.'%'
+            get: fn(): string => $this->rate . '%'
         );
     }
 
@@ -100,6 +127,7 @@ final class Tax extends Model
     protected function casts(): array
     {
         return [
+            'type' => TaxType::class,
             'rate' => 'decimal:2',
             'is_default' => 'boolean',
         ];

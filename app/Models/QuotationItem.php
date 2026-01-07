@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property int $id
@@ -86,14 +87,25 @@ final class QuotationItem extends Model
         return $this->belongsTo(Product::class);
     }
 
-    /**
-     * Get the tax for this item.
+    /** (legacy single tax - kept for backwards compatibility).
      *
      * @return BelongsTo<Tax, $this>
      */
     public function tax(): BelongsTo
     {
         return $this->belongsTo(Tax::class);
+    }
+
+    /**
+     * Get all taxes for this item (many-to-many).
+     *
+     * @return BelongsToMany<Tax, $this>
+     */
+    public function taxes(): BelongsToMany
+    {
+        return $this->belongsToMany(Tax::class, 'quotation_item_tax')
+            ->withPivot(['rate', 'amount'])
+            ->withTimestamps();
     }
 
     /**
