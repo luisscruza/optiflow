@@ -184,7 +184,7 @@ export default function QuotationShow({ quotation }: Props) {
                                                         {item.discount_rate > 0 ? (
                                                             <div className="text-red-600">
                                                                 <span className="font-medium">{item.discount_rate}%</span>
-                                                                <span className="text-xs ml-1">(-{formatCurrency(item.discount_amount)})</span>
+                                                                <span className="ml-1 text-xs">(-{formatCurrency(item.discount_amount)})</span>
                                                             </div>
                                                         ) : (
                                                             <span className="text-gray-400">-</span>
@@ -194,7 +194,9 @@ export default function QuotationShow({ quotation }: Props) {
                                                         {item.tax_rate > 0 ? (
                                                             <div>
                                                                 <span className="font-medium">{item.tax_rate}%</span>
-                                                                <span className="text-xs ml-1 text-gray-600">(+{formatCurrency(item.tax_amount)})</span>
+                                                                <span className="ml-1 text-xs text-gray-600">
+                                                                    (+{formatCurrency(item.tax_amount)})
+                                                                </span>
                                                             </div>
                                                         ) : (
                                                             <span className="text-gray-400">-</span>

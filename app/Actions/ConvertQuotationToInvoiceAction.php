@@ -44,7 +44,7 @@ final readonly class ConvertQuotationToInvoiceAction
 
             foreach ($quotation->items as $index => $item) {
                 $invoiceData['items'][] = [
-                    'id' => 'new_'.$index, // Frontend needs IDs for new items
+                    'id' => 'new_'.$index, 
                     'product_id' => $item->product_id,
                     'description' => $item->description,
                     'quantity' => $item->quantity,

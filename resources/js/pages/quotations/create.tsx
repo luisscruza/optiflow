@@ -1,16 +1,15 @@
-import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { Calendar, FileText, Plus, Save, ShoppingCart, User, Receipt, Hash, Trash2, AlertTriangle, Building2 } from 'lucide-react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { AlertTriangle, FileText, Plus, Save, ShoppingCart, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
+import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/searchable-select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Contact, type Product, type Workspace } from '@/types';
 import { useCurrency } from '@/utils/currency';
@@ -72,7 +71,15 @@ interface Props {
     availableWorkspaces?: Workspace[];
 }
 
-export default function CreateQuotation({ documentSubtypes, customers, products, ncf, document_subtype_id, currentWorkspace, availableWorkspaces }: Props) {
+export default function CreateQuotation({
+    documentSubtypes,
+    customers,
+    products,
+    ncf,
+    document_subtype_id,
+    currentWorkspace,
+    availableWorkspaces,
+}: Props) {
     const [itemId, setItemId] = useState(3);
     const [showContactModal, setShowContactModal] = useState(false);
     const [contactsList, setContactsList] = useState<Contact[]>(customers);
@@ -97,7 +104,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
         contact_id: null,
         workspace_id: currentWorkspace?.id || null,
         issue_date: new Date().toISOString().split('T')[0],
-            due_date: new Date(new Date().setDate(new Date().getDate() + 15)).toISOString().split('T')[0],
+        due_date: new Date(new Date().setDate(new Date().getDate() + 15)).toISOString().split('T')[0],
         payment_term: '15days',
         notes: '',
         ncf: ncf || '',
@@ -221,7 +228,10 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
     // Remove quotation item
     const removeItem = (itemId: string) => {
         if (data.items.length > 1) {
-            setData('items', data.items.filter((item) => item.id !== itemId));
+            setData(
+                'items',
+                data.items.filter((item) => item.id !== itemId),
+            );
             calculateTotals(data.items.filter((item) => item.id !== itemId));
         }
     };
@@ -253,7 +263,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
     // Get selected product for an item
     const getSelectedProduct = (item: QuotationItem): Product | null => {
         if (!item.product_id) return null;
-        return products.find(p => p.id === item.product_id) || null;
+        return products.find((p) => p.id === item.product_id) || null;
     };
 
     // Get stock warning for a specific item
@@ -265,7 +275,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
             return {
                 hasWarning: true,
                 message: `${product.name} está agotado`,
-                type: 'error'
+                type: 'error',
             };
         }
 
@@ -273,7 +283,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
             return {
                 hasWarning: true,
                 message: `Stock insuficiente. Disponible: ${product.stock_quantity}`,
-                type: 'error'
+                type: 'error',
             };
         }
 
@@ -281,7 +291,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
             return {
                 hasWarning: true,
                 message: `Stock bajo. Disponible: ${product.stock_quantity}`,
-                type: 'warning'
+                type: 'warning',
             };
         }
 
@@ -332,7 +342,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                         product_id: product.id,
                         description: product.name,
                         unit_price: product.price,
-                        tax_rate: product.default_tax ? product.default_tax.rate : item.tax_rate
+                        tax_rate: product.default_tax ? product.default_tax.rate : item.tax_rate,
                     };
 
                     // Recalculate totals
@@ -354,7 +364,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
 
     const calculateTotals = (items: QuotationItem[]) => {
         // Calculate raw subtotal (before discounts)
-        const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+        const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
 
         // Calculate total discounts
         const discountTotal = items.reduce((sum, item) => sum + item.discount_amount, 0);
@@ -377,7 +387,6 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-
         post('/quotations', {
             onSuccess: () => {
                 router.visit('/quotations');
@@ -387,14 +396,14 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
 
     const handleContactCreated = (newContact: Contact) => {
         // Add the new contact to the list
-        setContactsList(prev => [...prev, newContact]);
+        setContactsList((prev) => [...prev, newContact]);
         // Auto-select the new contact
         setData('contact_id', newContact.id);
         setSelectedContact(newContact);
     };
 
     const handleContactSelect = (contactId: string) => {
-        const contact = contactsList.find(c => c.id === parseInt(contactId));
+        const contact = contactsList.find((c) => c.id === parseInt(contactId));
         setData('contact_id', parseInt(contactId));
         setSelectedContact(contact || null);
     };
@@ -406,11 +415,25 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
     }));
 
     // Helper function to convert products to SearchableSelectOption format
-    const getProductOptions = (): SearchableSelectOption[] => products.map((product) => ({
-        value: product.id.toString(),
-        label: `${product.name} - ${formatCurrency(product.price)}`,
-        disabled: product.track_stock && product.stock_status === 'out_of_stock',
-    }));
+    // For quotations, we allow selecting out-of-stock items but show stock status
+    const getProductOptions = (): SearchableSelectOption[] =>
+        products.map((product) => {
+            let stockLabel = '';
+            if (product.track_stock) {
+                if (product.stock_status === 'out_of_stock') {
+                    stockLabel = ' ⚠️ Sin stock';
+                } else if (product.stock_status === 'low_stock') {
+                    stockLabel = ` ⚠️ Stock bajo (${product.stock_quantity})`;
+                } else {
+                    stockLabel = ` (${product.stock_quantity} disp.)`;
+                }
+            }
+            return {
+                value: product.id.toString(),
+                label: `${product.name} - ${formatCurrency(product.price)}${stockLabel}`,
+                disabled: false, // Allow selection even if out of stock for quotations
+            };
+        });
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -430,31 +453,38 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                     </div>
 
                                     {/* Quotation Details */}
-                                    <div className="text-right space-y-1">
+                                    <div className="space-y-1 text-right">
                                         <h2 className="text-xl font-bold text-gray-900">Cotización No. 1</h2>
-                                        <div className="flex items-center gap-2 justify-end">
+                                        <div className="flex items-center justify-end gap-2">
                                             <span className="text-sm font-medium text-gray-600">Numeración</span>
-                                            <span className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
-                                                {ncf || 'N/A'}
-                                            </span>
+                                            <span className="rounded bg-gray-100 px-2 py-1 font-mono text-sm">{ncf || 'N/A'}</span>
                                             <button type="button" className="text-gray-400 hover:text-gray-600">
                                                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                                                    />
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                    />
                                                 </svg>
                                             </button>
                                         </div>
                                         {/* Document Subtype Selection */}
-                                        <div className="space-y-3 flex flex-col justify-end">
-                                            <Label className="text-sm font-medium text-gray-900 gap-1">
+                                        <div className="flex flex-col justify-end space-y-3">
+                                            <Label className="gap-1 text-sm font-medium text-gray-900">
                                                 Tipo de documento
                                                 <span className="text-red-500">*</span>
                                             </Label>
-                                            <Select
-                                                value={data.document_subtype_id?.toString() || ''}
-                                                onValueChange={handleDocumentSubtypeChange}
-                                            >
-                                                <SelectTrigger className={`h-8 text-xs ${errors.document_subtype_id ? 'border-red-300' : 'border-gray-300'}`}>
+                                            <Select value={data.document_subtype_id?.toString() || ''} onValueChange={handleDocumentSubtypeChange}>
+                                                <SelectTrigger
+                                                    className={`h-8 text-xs ${errors.document_subtype_id ? 'border-red-300' : 'border-gray-300'}`}
+                                                >
                                                     <SelectValue placeholder="Seleccionar tipo" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -465,9 +495,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                     ))}
                                                 </SelectContent>
                                             </Select>
-                                            {errors.document_subtype_id && (
-                                                <p className="text-sm text-red-600">{errors.document_subtype_id}</p>
-                                            )}
+                                            {errors.document_subtype_id && <p className="text-sm text-red-600">{errors.document_subtype_id}</p>}
                                         </div>
                                     </div>
                                 </div>
@@ -479,11 +507,11 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                         {/* Customer and Document Details - Cleaner Layout */}
                         <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
                             <CardContent className="px-6 py-6">
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
                                     {/* Left Column - Customer Details */}
                                     <div className="space-y-6">
                                         <div className="space-y-3">
-                                            <Label className="text-sm font-medium text-gray-900 flex items-center gap-1">
+                                            <Label className="flex items-center gap-1 text-sm font-medium text-gray-900">
                                                 Contacto
                                                 <span className="text-red-500">*</span>
                                             </Label>
@@ -503,7 +531,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                             onClick={() => setShowContactModal(true)}
                                                             className="text-primary hover:bg-primary/10"
                                                         >
-                                                            <Plus className="h-4 w-4 mr-1" />
+                                                            <Plus className="mr-1 h-4 w-4" />
                                                             Crear nuevo contacto
                                                         </Button>
                                                     }
@@ -515,21 +543,17 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => setShowContactModal(true)}
-                                                    className="h-10 px-3 border-gray-300 text-primary hover:bg-primary/10"
+                                                    className="h-10 border-gray-300 px-3 text-primary hover:bg-primary/10"
                                                 >
-                                                    <Plus className="h-4 w-4 mr-1" />
+                                                    <Plus className="mr-1 h-4 w-4" />
                                                     Nuevo contacto
                                                 </Button>
                                             </div>
-                                            {errors.contact_id && (
-                                                <p className="text-sm text-red-600">{errors.contact_id}</p>
-                                            )}
+                                            {errors.contact_id && <p className="text-sm text-red-600">{errors.contact_id}</p>}
                                         </div>
 
                                         <div className="space-y-3">
-                                            <Label className="text-sm font-medium text-gray-900">
-                                                RNC o Cédula
-                                            </Label>
+                                            <Label className="text-sm font-medium text-gray-900">RNC o Cédula</Label>
                                             <div className="relative">
                                                 <Input
                                                     value={selectedContact?.identification_number || ''}
@@ -540,19 +564,22 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                 />
                                                 <button
                                                     type="button"
-                                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                    className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                                                 >
                                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                        />
                                                     </svg>
                                                 </button>
                                             </div>
                                         </div>
 
                                         <div className="space-y-3">
-                                            <Label className="text-sm font-medium text-gray-900">
-                                                Teléfono
-                                            </Label>
+                                            <Label className="text-sm font-medium text-gray-900">Teléfono</Label>
                                             <Input
                                                 value={selectedContact?.phone_primary || ''}
                                                 placeholder="Número de teléfono"
@@ -566,7 +593,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                     {/* Right Column - quotation Details */}
                                     <div className="space-y-6">
                                         <div className="space-y-3">
-                                            <Label className="text-sm font-medium text-gray-900 flex items-center gap-1">
+                                            <Label className="flex items-center gap-1 text-sm font-medium text-gray-900">
                                                 Fecha
                                                 <span className="text-red-500">*</span>
                                             </Label>
@@ -579,32 +606,30 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                 />
                                                 <button
                                                     type="button"
-                                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                    className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                                                 >
                                                     ×
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                    className="absolute top-1/2 right-8 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                                                 >
                                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                        />
                                                     </svg>
                                                 </button>
                                             </div>
-                                            {errors.issue_date && (
-                                                <p className="text-sm text-red-600">{errors.issue_date}</p>
-                                            )}
+                                            {errors.issue_date && <p className="text-sm text-red-600">{errors.issue_date}</p>}
                                         </div>
 
                                         <div className="space-y-3">
-                                            <Label className="text-sm font-medium text-gray-900">
-                                                Plazo de pago
-                                            </Label>
-                                            <Select
-                                                value={data.payment_term}
-                                                onValueChange={handlePaymentTermChange}
-                                            >
+                                            <Label className="text-sm font-medium text-gray-900">Plazo de pago</Label>
+                                            <Select value={data.payment_term} onValueChange={handlePaymentTermChange}>
                                                 <SelectTrigger className="h-10 border-gray-300">
                                                     <SelectValue />
                                                 </SelectTrigger>
@@ -621,7 +646,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                         </div>
 
                                         <div className="space-y-3">
-                                            <Label className="text-sm font-medium text-gray-900 flex items-center gap-1">
+                                            <Label className="flex items-center gap-1 text-sm font-medium text-gray-900">
                                                 Vencimiento
                                                 <span className="text-red-500">*</span>
                                             </Label>
@@ -634,25 +659,26 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                 />
                                                 <button
                                                     type="button"
-                                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                    className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                                                 >
                                                     ×
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                    className="absolute top-1/2 right-8 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                                                 >
                                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                        />
                                                     </svg>
                                                 </button>
                                             </div>
-                                            {errors.due_date && (
-                                                <p className="text-sm text-red-600">{errors.due_date}</p>
-                                            )}
+                                            {errors.due_date && <p className="text-sm text-red-600">{errors.due_date}</p>}
                                         </div>
-
-
                                     </div>
                                 </div>
                             </CardContent>
@@ -678,7 +704,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                         variant="outline"
                                         size="sm"
                                         onClick={addItem}
-                                        className="flex items-center gap-2 border-primary bg-background text-primary hover:bg-primary/10 hover:border-primary"
+                                        className="flex items-center gap-2 border-primary bg-background text-primary hover:border-primary hover:bg-primary/10"
                                     >
                                         <Plus className="h-4 w-4" />
                                         Agregar línea
@@ -688,7 +714,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                             <CardContent className="px-6 py-6">
                                 <div className="space-y-6">
                                     {/* Enhanced Table Header */}
-                                    <div className="hidden lg:grid lg:grid-cols-12 gap-3 text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 px-4 py-3 rounded-lg border">
+                                    <div className="hidden gap-3 rounded-lg border bg-gray-50 px-4 py-3 text-xs font-semibold tracking-wider text-gray-700 uppercase lg:grid lg:grid-cols-12">
                                         <div className="col-span-2">Producto</div>
                                         <div className="col-span-2">Descripción</div>
                                         <div className="col-span-1 text-center">Cant.</div>
@@ -702,9 +728,12 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                     {/* Enhanced Items */}
                                     <div className="space-y-4">
                                         {data.items.map((item, index) => (
-                                            <div key={item.id} className="relative bg-gray-50/50 border border-gray-200 rounded-xl p-4 lg:p-0 lg:bg-transparent lg:border-0">
+                                            <div
+                                                key={item.id}
+                                                className="relative rounded-xl border border-gray-200 bg-gray-50/50 p-4 lg:border-0 lg:bg-transparent lg:p-0"
+                                            >
                                                 {/* Mobile/Small screen layout */}
-                                                <div className="lg:hidden space-y-4">
+                                                <div className="space-y-4 lg:hidden">
                                                     <div className="flex items-center justify-between">
                                                         <h4 className="text-sm font-medium text-gray-900">Línea {index + 1}</h4>
                                                         {data.items.length > 1 && (
@@ -713,7 +742,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                                 variant="ghost"
                                                                 size="sm"
                                                                 onClick={() => removeItem(item.id)}
-                                                                className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                                className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-700"
                                                             >
                                                                 <Trash2 className="h-4 w-4" />
                                                             </Button>
@@ -741,7 +770,9 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                                     const product = getSelectedProduct(item);
                                                                     if (product && product.track_stock) {
                                                                         return (
-                                                                            <div className={`text-xs px-2 py-0.5 rounded-full border ${getStockStatusColor(product.stock_status || 'not_tracked')}`}>
+                                                                            <div
+                                                                                className={`rounded-full border px-2 py-0.5 text-xs ${getStockStatusColor(product.stock_status || 'not_tracked')}`}
+                                                                            >
                                                                                 {getStockStatusText(product)}
                                                                             </div>
                                                                         );
@@ -753,7 +784,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                                 placeholder="Descripción del producto"
                                                                 value={item.description}
                                                                 onChange={(e) => updateItem(item.id, 'description', e.target.value)}
-                                                                className="h-10 mt-1"
+                                                                className="mt-1 h-10"
                                                                 disabled={!item.product_id}
                                                             />
                                                         </div>
@@ -766,13 +797,13 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                                         const warning = getStockWarning(item);
                                                                         if (warning) {
                                                                             return (
-                                                                                <div className="relative group">
+                                                                                <div className="group relative">
                                                                                     <AlertTriangle
                                                                                         className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-yellow-500'}`}
                                                                                     />
-                                                                                    <div className="absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                                                                                    <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 transform rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                                                                                         {warning.message}
-                                                                                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                                                                                        <div className="absolute top-full left-1/2 h-0 w-0 -translate-x-1/2 transform border-t-4 border-r-4 border-l-4 border-transparent border-t-gray-900"></div>
                                                                                     </div>
                                                                                 </div>
                                                                             );
@@ -786,10 +817,11 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                                     step="1"
                                                                     value={item.quantity}
                                                                     onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
-                                                                    className={`h-10 mt-1 ${(() => {
+                                                                    className={`mt-1 h-10 ${(() => {
                                                                         const warning = getStockWarning(item);
                                                                         if (warning?.type === 'error') return 'border-red-300 ring-red-500/20';
-                                                                        if (warning?.type === 'warning') return 'border-yellow-300 ring-yellow-500/20';
+                                                                        if (warning?.type === 'warning')
+                                                                            return 'border-yellow-300 ring-yellow-500/20';
                                                                         return '';
                                                                     })()}`}
                                                                     disabled={!item.product_id}
@@ -798,7 +830,9 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                                     const warning = getStockWarning(item);
                                                                     if (warning) {
                                                                         return (
-                                                                            <div className={`mt-1 text-xs flex items-center gap-1 ${warning.type === 'error' ? 'text-red-600' : 'text-yellow-600'}`}>
+                                                                            <div
+                                                                                className={`mt-1 flex items-center gap-1 text-xs ${warning.type === 'error' ? 'text-red-600' : 'text-yellow-600'}`}
+                                                                            >
                                                                                 <AlertTriangle className="h-3 w-3" />
                                                                                 {warning.message}
                                                                             </div>
@@ -814,8 +848,10 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                                     min="0"
                                                                     step="0.01"
                                                                     value={item.unit_price}
-                                                                    onChange={(e) => updateItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)}
-                                                                    className="h-10 mt-1"
+                                                                    onChange={(e) =>
+                                                                        updateItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)
+                                                                    }
+                                                                    className="mt-1 h-10"
                                                                     disabled={!item.product_id}
                                                                 />
                                                             </div>
@@ -830,8 +866,10 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                                     max="100"
                                                                     step="0.01"
                                                                     value={item.discount_rate}
-                                                                    onChange={(e) => updateItem(item.id, 'discount_rate', parseFloat(e.target.value) || 0)}
-                                                                    className="h-10 mt-1"
+                                                                    onChange={(e) =>
+                                                                        updateItem(item.id, 'discount_rate', parseFloat(e.target.value) || 0)
+                                                                    }
+                                                                    className="mt-1 h-10"
                                                                     disabled={!item.product_id}
                                                                 />
                                                             </div>
@@ -844,7 +882,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                                     step="0.01"
                                                                     value={item.tax_rate}
                                                                     onChange={(e) => updateItem(item.id, 'tax_rate', parseFloat(e.target.value) || 0)}
-                                                                    className="h-10 mt-1"
+                                                                    className="mt-1 h-10"
                                                                     disabled={!item.product_id}
                                                                 />
                                                             </div>
@@ -856,7 +894,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                                 <Input
                                                                     value={formatCurrency(item.total)}
                                                                     disabled
-                                                                    className="h-10 mt-1 bg-gray-100 font-semibold text-gray-900"
+                                                                    className="mt-1 h-10 bg-gray-100 font-semibold text-gray-900"
                                                                 />
                                                             </div>
                                                         </div>
@@ -864,7 +902,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                 </div>
 
                                                 {/* Desktop layout */}
-                                                <div className="hidden lg:grid lg:grid-cols-12 gap-3 items-center py-3 border-b border-gray-100 last:border-b-0">
+                                                <div className="hidden items-center gap-3 border-b border-gray-100 py-3 last:border-b-0 lg:grid lg:grid-cols-12">
                                                     {/* Product Selection */}
                                                     <div className="col-span-2">
                                                         <SearchableSelect
@@ -890,7 +928,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                     </div>
 
                                                     {/* Quantity */}
-                                                    <div className="col-span-1 relative">
+                                                    <div className="relative col-span-1">
                                                         <div className="relative">
                                                             <Input
                                                                 type="number"
@@ -898,7 +936,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                                 step="1"
                                                                 value={item.quantity}
                                                                 onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
-                                                                className={`h-9 text-center border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 ${(() => {
+                                                                className={`h-9 border-gray-200 text-center focus:border-blue-500 focus:ring-blue-500/20 ${(() => {
                                                                     const warning = getStockWarning(item);
                                                                     if (warning?.type === 'error') return 'border-red-300 ring-red-500/20';
                                                                     if (warning?.type === 'warning') return 'border-yellow-300 ring-yellow-500/20';
@@ -910,13 +948,13 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                                 const warning = getStockWarning(item);
                                                                 if (warning) {
                                                                     return (
-                                                                        <div className="absolute -top-1 -right-1 group">
+                                                                        <div className="group absolute -top-1 -right-1">
                                                                             <AlertTriangle
                                                                                 className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-yellow-500'}`}
                                                                             />
-                                                                            <div className="absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                                                                            <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 transform rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                                                                                 {warning.message}
-                                                                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                                                                                <div className="absolute top-full left-1/2 h-0 w-0 -translate-x-1/2 transform border-t-4 border-r-4 border-l-4 border-transparent border-t-gray-900"></div>
                                                                             </div>
                                                                         </div>
                                                                     );
@@ -934,7 +972,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                             step="0.01"
                                                             value={item.unit_price}
                                                             onChange={(e) => updateItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)}
-                                                            className="h-9 text-right border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
+                                                            className="h-9 border-gray-200 text-right focus:border-blue-500 focus:ring-blue-500/20"
                                                             disabled={!item.product_id}
                                                         />
                                                     </div>
@@ -948,7 +986,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                             step="0.01"
                                                             value={item.discount_rate}
                                                             onChange={(e) => updateItem(item.id, 'discount_rate', parseFloat(e.target.value) || 0)}
-                                                            className="h-9 text-right border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
+                                                            className="h-9 border-gray-200 text-right focus:border-blue-500 focus:ring-blue-500/20"
                                                             disabled={!item.product_id}
                                                         />
                                                     </div>
@@ -962,7 +1000,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                             step="0.01"
                                                             value={item.tax_rate}
                                                             onChange={(e) => updateItem(item.id, 'tax_rate', parseFloat(e.target.value) || 0)}
-                                                            className="h-9 text-right border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
+                                                            className="h-9 border-gray-200 text-right focus:border-blue-500 focus:ring-blue-500/20"
                                                             disabled={!item.product_id}
                                                         />
                                                     </div>
@@ -972,7 +1010,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                         <Input
                                                             value={formatCurrency(item.total)}
                                                             disabled
-                                                            className="h-9 text-right bg-gray-50 font-semibold text-gray-900 border-gray-200"
+                                                            className="h-9 border-gray-200 bg-gray-50 text-right font-semibold text-gray-900"
                                                         />
                                                     </div>
 
@@ -984,7 +1022,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                                                 variant="ghost"
                                                                 size="sm"
                                                                 onClick={() => removeItem(item.id)}
-                                                                className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                                className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-700"
                                                             >
                                                                 <Trash2 className="h-4 w-4" />
                                                             </Button>
@@ -999,21 +1037,21 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                     <div className="border-t border-gray-200 pt-6">
                                         <div className="flex justify-end">
                                             <div className="w-full max-w-sm space-y-3">
-                                                <div className="flex justify-between items-center text-sm">
+                                                <div className="flex items-center justify-between text-sm">
                                                     <span className="text-gray-600">Subtotal:</span>
                                                     <span className="font-medium text-gray-900">{formatCurrency(data.subtotal)}</span>
                                                 </div>
                                                 {data.discount_total > 0 && (
-                                                    <div className="flex justify-between items-center text-sm">
+                                                    <div className="flex items-center justify-between text-sm">
                                                         <span className="text-gray-600">Descuentos:</span>
                                                         <span className="font-medium text-red-600">-{formatCurrency(data.discount_total)}</span>
                                                     </div>
                                                 )}
-                                                <div className="flex justify-between items-center text-sm">
+                                                <div className="flex items-center justify-between text-sm">
                                                     <span className="text-gray-600">Impuestos:</span>
                                                     <span className="font-medium text-gray-900">+{formatCurrency(data.tax_amount)}</span>
                                                 </div>
-                                                <div className="flex justify-between items-center text-lg font-bold border-t border-gray-200 pt-3">
+                                                <div className="flex items-center justify-between border-t border-gray-200 pt-3 text-lg font-bold">
                                                     <span className="text-gray-900">Total:</span>
                                                     <span className="text-primary">{formatCurrency(data.total)}</span>
                                                 </div>
@@ -1050,9 +1088,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                         rows={4}
                                         className="resize-none border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
                                     />
-                                    <p className="text-xs text-gray-500">
-                                        Estas notas aparecerán al final de la cotización
-                                    </p>
+                                    <p className="text-xs text-gray-500">Estas notas aparecerán al final de la cotización</p>
                                 </div>
                             </CardContent>
                         </Card>
@@ -1064,7 +1100,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                 variant="outline"
                                 size="lg"
                                 asChild
-                                className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400"
+                                className="border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50"
                             >
                                 <a href="/quotations" className="flex items-center justify-center gap-2">
                                     Cancelar
@@ -1074,10 +1110,8 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                                 type="submit"
                                 size="lg"
                                 disabled={processing || !ncf || !data.contact_id || data.items.length === 0}
-                                className={`flex items-center justify-center gap-2 min-w-[160px] ${
-                                    processing || !ncf
-                                        ? 'bg-gray-400 hover:bg-gray-400'
-                                        : 'bg-primary hover:bg-primary/90'
+                                className={`flex min-w-[160px] items-center justify-center gap-2 ${
+                                    processing || !ncf ? 'bg-gray-400 hover:bg-gray-400' : 'bg-primary hover:bg-primary/90'
                                 }`}
                             >
                                 {processing ? (

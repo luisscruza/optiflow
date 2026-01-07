@@ -11,6 +11,7 @@ use App\Http\Requests\UpdateQuotationRequest;
 use App\Models\Contact;
 use App\Models\DocumentSubtype;
 use App\Models\Product;
+use App\Models\ProductStock;
 use App\Models\Quotation;
 use App\Models\Tax;
 use App\Models\User;
@@ -80,10 +81,26 @@ final class QuotationController extends Controller
             ->orderBy('name')
             ->get();
 
-        // For quotations, we don't need stock information since we don't track stock movements
+        // Include stock information to help users see available stock when creating quotations
         $products = Product::with(['defaultTax'])
+            ->when($currentWorkspace, function ($query) use ($currentWorkspace): void {
+                $query->with(['stocks' => function ($stockQuery) use ($currentWorkspace): void {
+                    $stockQuery->where('workspace_id', $currentWorkspace->id);
+                }]);
+            })
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->map(function ($product) use ($currentWorkspace): Product {
+                $stock = $currentWorkspace ? $product->stocks->first() : null;
+                $product->current_stock = $stock;
+                $product->stock_quantity = $stock ? $stock->quantity : 0;
+                $product->minimum_quantity = $stock ? $stock->minimum_quantity : 0;
+                $product->stock_status = $this->getStockStatus($product, $stock);
+
+                unset($product->stocks);
+
+                return $product;
+            });
 
         $documentSubtype = $request->filled('document_subtype_id')
             ? DocumentSubtype::query()->findOrFail($request->get('document_subtype_id'))
@@ -155,9 +172,28 @@ final class QuotationController extends Controller
 
         $customers = Contact::customers()->orderBy('name')->get();
 
+        $currentWorkspace = Context::get('workspace');
+
+        // Include stock information to help users see available stock when editing quotations
         $products = Product::with(['defaultTax'])
+            ->when($currentWorkspace, function ($query) use ($currentWorkspace): void {
+                $query->with(['stocks' => function ($stockQuery) use ($currentWorkspace): void {
+                    $stockQuery->where('workspace_id', $currentWorkspace->id);
+                }]);
+            })
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->map(function ($product) use ($currentWorkspace): Product {
+                $stock = $currentWorkspace ? $product->stocks->first() : null;
+                $product->current_stock = $stock;
+                $product->stock_quantity = $stock ? $stock->quantity : 0;
+                $product->minimum_quantity = $stock ? $stock->minimum_quantity : 0;
+                $product->stock_status = $this->getStockStatus($product, $stock);
+
+                unset($product->stocks);
+
+                return $product;
+            });
 
         $taxes = Tax::query()->orderBy('name')->get();
 
@@ -208,5 +244,25 @@ final class QuotationController extends Controller
 
         return redirect()->route('quotations.index')
             ->with('success', 'Cotización eliminada exitosamente.');
+    }
+
+    /**
+     * Get stock status for a product.
+     */
+    private function getStockStatus(Product $product, ?ProductStock $stock): string
+    {
+        if (! $product->track_stock) {
+            return 'not_tracked';
+        }
+
+        if (! $stock instanceof ProductStock || $stock->quantity <= 0) {
+            return 'out_of_stock';
+        }
+
+        if ($stock->quantity <= $stock->minimum_quantity) {
+            return 'low_stock';
+        }
+
+        return 'in_stock';
     }
 }
