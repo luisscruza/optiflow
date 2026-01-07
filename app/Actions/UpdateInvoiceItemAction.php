@@ -129,7 +129,7 @@ final class UpdateInvoiceItemAction
     private function validateStock(Invoice $invoice, array $item, Product $product): void
     {
         if (! $product->hasSufficientStock($invoice->workspace_id, $item['quantity'])) {
-            throw new InsufficientStockException('Insufficient stock for product: '.$product->name);
+            throw new InsufficientStockException('No hay stock (' . $item['quantity'] . ') suficiente para el producto: '.$product->name);
         }
     }
 

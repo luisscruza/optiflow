@@ -132,7 +132,7 @@ final class QuotationController extends Controller
     {
         abort_unless($user->can(Permission::QuotationsView), 403);
 
-        $quotation->load('contact', 'document_subtype', 'items.product', 'items.taxes');
+        $quotation->load(['contact', 'documentSubtype', 'items.product', 'items.tax']);
 
         return Inertia::render('quotations/show', [
             'quotation' => $quotation,
@@ -146,8 +146,6 @@ final class QuotationController extends Controller
     {
         abort_unless($user->can(Permission::QuotationsEdit), 403);
 
-        $workspace = Context::get('workspace');
-
         $quotation->load(['contact', 'documentSubtype', 'items.product', 'items.tax']);
 
         $documentSubtypes = DocumentSubtype::query()
@@ -157,7 +155,6 @@ final class QuotationController extends Controller
 
         $customers = Contact::customers()->orderBy('name')->get();
 
-        // For quotations, we don't need stock information
         $products = Product::with(['defaultTax'])
             ->orderBy('name')
             ->get();

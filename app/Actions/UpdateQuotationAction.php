@@ -25,10 +25,8 @@ final class UpdateQuotationAction
     {
         try {
             return DB::transaction(function () use ($quotation, $data): QuotationResult {
-                // Store original state for comparison
                 $originalItems = $quotation->items()->with('product')->get()->keyBy('id');
 
-                // Validate NCF if document number changed
                 if (isset($data['ncf']) && $data['ncf'] !== $quotation->document_number) {
                     $documentSubtype = DocumentSubtype::query()->findOrFail($data['document_subtype_id']);
 
@@ -37,24 +35,17 @@ final class UpdateQuotationAction
                     }
                 }
 
-                // Update document-level fields
                 $this->updateDocumentFields($quotation, $data);
 
-                // Update numerator if NCF changed
                 if (isset($data['ncf']) && $data['ncf'] !== $quotation->document_number) {
                     $documentSubtype = DocumentSubtype::query()->findOrFail($data['document_subtype_id']);
                     $this->updateNumerator($documentSubtype, $data['ncf']);
                 }
 
-                // Filter valid items (same as CreateQuotationAction)
                 $items = array_filter($data['items'] ?? [], fn (array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
                     $item['quantity'] > 0);
 
-                // Process item changes (without stock movements)
                 $this->processItemChanges($quotation, $originalItems, $items);
-
-                // Recalculate document totals (let the model handle this)
-                $quotation->recalculateTotal();
 
                 return new QuotationResult($quotation->load(['contact', 'documentSubtype', 'items.product']));
             });
@@ -141,17 +132,14 @@ final class UpdateQuotationAction
     ): void {
         $processedIds = [];
 
-        // Process new and updated items
         foreach ($newItems as $itemData) {
             $itemId = $itemData['id'] ?? null;
 
             if ($itemId && isset($originalItems[$itemId])) {
-                // Update existing item (without stock movements)
                 $originalItem = $originalItems[$itemId];
                 $this->updateQuotationItem($originalItem, $itemData);
                 $processedIds[] = $itemId;
             } else {
-                // Add new item (without stock movements)
                 $this->createQuotationItem($quotation, $itemData);
             }
         }

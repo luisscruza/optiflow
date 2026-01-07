@@ -25,12 +25,11 @@ final class ConvertQuotationToInvoiceController extends Controller
     ): RedirectResponse {
         if ($quotation->status === QuotationStatus::Converted->value) {
             return redirect()->back()
-                ->withErrors(['error' => 'Esta cotización ya ha sido convertida a factura.']);
+                ->with('error', 'La cotización ya ha sido convertida a factura.');
         }
 
         if ($quotation->status === QuotationStatus::Cancelled->value) {
-            return redirect()->back()
-                ->withErrors(['error' => 'No se puede convertir una cotización cancelada.']);
+            return redirect()->back()->with('error', 'No se puede convertir una cotización cancelada a factura.');
         }
 
         try {
@@ -41,8 +40,7 @@ final class ConvertQuotationToInvoiceController extends Controller
             $result = $convertAction->handle($workspace, $quotation, $createInvoiceAction);
 
             if ($result->isError()) {
-                return redirect()->back()
-                    ->withErrors(['error' => 'Error al crear la factura: '.$result->error]);
+                return redirect()->back()->with('error', "Error al convertir la cotización: " . $result->error);
             }
 
             Session::flash('success', "Cotización convertida exitosamente a factura #{$result->invoice->document_number}.");
@@ -50,9 +48,7 @@ final class ConvertQuotationToInvoiceController extends Controller
             return redirect()->route('invoices.edit', $result->invoice);
 
         } catch (Throwable $e) {
-
-            return redirect()->back()
-                ->withErrors(['error' => 'Error al convertir la cotización: '.$e->getMessage()]);
+            return redirect()->back()->with('error', 'Ocurrió un error al convertir la cotización a factura.');
         }
     }
 }

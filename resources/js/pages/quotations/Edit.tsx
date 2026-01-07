@@ -16,11 +16,11 @@ import { type BreadcrumbItem, type Contact, type Product, type Workspace } from 
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Facturas',
-        href: '/invoices',
+        title: 'Cotizaciones',
+        href: '/quotations',
     },
     {
-        title: 'Editar factura',
+        title: 'Editar cotización',
         href: '#',
     },
 ];
@@ -32,7 +32,7 @@ interface DocumentSubtype {
     next_number: number;
 }
 
-interface InvoiceItem {
+interface QuotationItem {
     id: string;
     product_id: number | null;
     description: string;
@@ -54,14 +54,14 @@ interface FormData {
     due_date: string;
     payment_term: string;
     notes: string;
-    items: InvoiceItem[];
+    items: QuotationItem[];
     subtotal: number;
     discount_total: number;
     tax_amount: number;
     total: number;
 }
 
-interface Invoice {
+interface Quotation {
     id: number;
     document_number: string;
     ncf: string;
@@ -96,7 +96,7 @@ interface Invoice {
 }
 
 interface Props {
-    invoice: Invoice;
+    quotation: Quotation;
     documentSubtypes: DocumentSubtype[];
     customers: Contact[];
     products: Product[];
@@ -104,8 +104,8 @@ interface Props {
     availableWorkspaces?: Workspace[];
 }
 
-export default function EditInvoice({ 
-    invoice, 
+export default function EditQuotation({ 
+    quotation, 
     documentSubtypes, 
     customers, 
     products, 
@@ -113,13 +113,13 @@ export default function EditInvoice({
     availableWorkspaces 
 }: Props) {
     const [itemId, setItemId] = useState(
-        invoice.items.length > 0 
-            ? Math.max(...invoice.items.map(item => parseInt(item.id.toString()))) + 1
+        quotation.items.length > 0 
+            ? Math.max(...quotation.items.map(item => parseInt(item.id.toString()))) + 1
             : 1
     );
     const [showContactModal, setShowContactModal] = useState(false);
     const [contactsList, setContactsList] = useState<Contact[]>(customers);
-    const [selectedContact, setSelectedContact] = useState<Contact | null>(invoice.contact);
+    const [selectedContact, setSelectedContact] = useState<Contact | null>(quotation.contact);
 
     const { format: formatCurrency } = useCurrency();
 
@@ -135,8 +135,8 @@ export default function EditInvoice({
         return date.toISOString().split('T')[0];
     };
 
-    // Convert invoice items to the format expected by the form
-    const convertInvoiceItems = (items: Invoice['items']): InvoiceItem[] => {
+    // Convert quotation items to the format expected by the form
+    const convertQuotationItems = (items: Quotation['items']): QuotationItem[] => {
         return items.map((item, index) => ({
             id: (index + 1).toString(),
             product_id: item.product_id,
@@ -161,19 +161,19 @@ export default function EditInvoice({
     };
 
     const { data, setData, put, processing, errors } = useForm<FormData>({
-        document_subtype_id: invoice.document_subtype_id,
-        contact_id: invoice.contact_id,
-        workspace_id: invoice.workspace_id,
-        issue_date: formatDateForInput(invoice.issue_date),
-        due_date: formatDateForInput(invoice.due_date),
-        payment_term: invoice.payment_term,
-        notes: invoice.notes || '',
-        ncf: invoice.ncf || '',
-        items: convertInvoiceItems(invoice.items),
-        subtotal: invoice.subtotal,
-        discount_total: invoice.discount_total,
-        tax_amount: invoice.tax_amount,
-        total: invoice.total,
+        document_subtype_id: quotation.document_subtype_id,
+        contact_id: quotation.contact_id,
+        workspace_id: quotation.workspace_id,
+        issue_date: formatDateForInput(quotation.issue_date),
+        due_date: formatDateForInput(quotation.due_date),
+        payment_term: quotation.payment_term,
+        notes: quotation.notes || '',
+        ncf: quotation.ncf || '',
+        items: convertQuotationItems(quotation.items),
+        subtotal: quotation.subtotal,
+        discount_total: quotation.discount_total,
+        tax_amount: quotation.tax_amount,
+        total: quotation.total,
     });
 
     // Recalculate totals when component mounts and items are loaded
@@ -193,7 +193,7 @@ export default function EditInvoice({
         setData('workspace_id', parseInt(workspaceId));
 
         // Trigger full reload to get updated stock data
-        router.visit(`/invoices/${invoice.id}/edit`, {
+        router.visit(`/quotations/${quotation.id}/edit`, {
             method: 'get',
             data: { workspace_id: workspaceId },
             preserveState: false,
@@ -236,7 +236,7 @@ export default function EditInvoice({
         }));
     };
 
-    // Add new invoice item
+    // Add new quotation item
     const addItem = () => {
         const newItemId = itemId + 1;
         setItemId(newItemId);
@@ -258,7 +258,7 @@ export default function EditInvoice({
         ]);
     };
 
-    // Remove invoice item
+    // Remove quotation item
     const removeItem = (itemId: string) => {
         if (data.items.length > 1) {
             setData('items', data.items.filter((item) => item.id !== itemId));
@@ -267,7 +267,7 @@ export default function EditInvoice({
     };
 
     // Update item data
-    const updateItem = (itemId: string, field: keyof InvoiceItem, value: any) => {
+    const updateItem = (itemId: string, field: keyof QuotationItem, value: any) => {
         const updatedItems = data.items.map((item) => {
             if (item.id === itemId) {
                 const updatedItem = { ...item, [field]: value };
@@ -291,13 +291,13 @@ export default function EditInvoice({
     };
 
     // Get selected product for an item
-    const getSelectedProduct = (item: InvoiceItem): Product | null => {
+    const getSelectedProduct = (item: QuotationItem): Product | null => {
         if (!item.product_id) return null;
         return products.find(p => p.id === item.product_id) || null;
     };
 
     // Get stock warning for a specific item
-    const getStockWarning = (item: InvoiceItem): { hasWarning: boolean; message: string; type: 'error' | 'warning' } | null => {
+    const getStockWarning = (item: QuotationItem): { hasWarning: boolean; message: string; type: 'error' | 'warning' } | null => {
         const product = getSelectedProduct(item);
         if (!product || !product.track_stock) return null;
 
@@ -392,7 +392,7 @@ export default function EditInvoice({
         }
     };
 
-    const calculateTotals = (items: InvoiceItem[]) => {
+    const calculateTotals = (items: QuotationItem[]) => {
         // Calculate raw subtotal (before discounts)
         const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
 
@@ -417,9 +417,9 @@ export default function EditInvoice({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        put(`/invoices/${invoice.id}`, {
+        put(`/quotations/${quotation.id}`, {
             onSuccess: () => {
-                router.visit('/invoices');
+                router.visit('/quotations');
             },
         });
     };
@@ -453,11 +453,11 @@ export default function EditInvoice({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Editar factura ${invoice.document_number}`} />
+            <Head title={`Editar cotización ${quotation.document_number}`} />
 
             <div className="min-h-screen bg-gray-50/30">
                 <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                    {/* Enhanced Header - Invoice Style */}
+                    {/* Enhanced Header - Quotation Style */}
                     <div className="mb-6">
                         <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
                             <CardContent className="px-6 py-6">
@@ -469,13 +469,13 @@ export default function EditInvoice({
                                         <p className="text-sm text-gray-600">info@covi.com.do</p>
                                     </div>
 
-                                    {/* Invoice Details */}
+                                    {/* Quotation Details */}
                                     <div className="text-right space-y-1">
-                                        <h2 className="text-xl font-bold text-gray-900">Factura No. {invoice.id}</h2>
+                                        <h2 className="text-xl font-bold text-gray-900">Cotización No. {quotation.id}</h2>
                                         <div className="flex items-center gap-2 justify-end">
-                                            <span className="text-sm font-medium text-gray-600">NCF</span>
+                                            <span className="text-sm font-medium text-gray-600">Seuencia</span>
                                             <span className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
-                                                {invoice.document_number || 'N/A'}
+                                                {quotation.document_number || 'N/A'}
                                             </span>
                                             <button type="button" className="text-gray-400 hover:text-gray-600">
                                                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -632,7 +632,7 @@ export default function EditInvoice({
                                         </div>
                                     </div>
 
-                                    {/* Right Column - Invoice Details */}
+                                    {/* Right Column - Quotation Details */}
                                     <div className="space-y-6">
                                         <div className="space-y-3">
                                             <Label className="text-sm font-medium text-gray-900 flex items-center gap-1">
@@ -664,28 +664,6 @@ export default function EditInvoice({
                                             {errors.issue_date && (
                                                 <p className="text-sm text-red-600">{errors.issue_date}</p>
                                             )}
-                                        </div>
-                                        <div className="space-y-3">
-                                            <Label className="text-sm font-medium text-gray-900">
-                                                Plazo de pago
-                                            </Label>
-                                            <Select
-                                                value={data.payment_term}
-                                                onValueChange={handlePaymentTermChange}
-                                            >
-                                                <SelectTrigger className="h-10 border-gray-300">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="manual">Vencimiento manual</SelectItem>
-                                                    <SelectItem value="7days">7 días</SelectItem>
-                                                    <SelectItem value="15days">15 días</SelectItem>
-                                                    <SelectItem value="30days">30 días</SelectItem>
-                                                    <SelectItem value="45days">45 días</SelectItem>
-                                                    <SelectItem value="60days">60 días</SelectItem>
-                                                    <SelectItem value="90days">90 días</SelectItem>
-                                                </SelectContent>
-                                            </Select>
                                         </div>
 
                                         <div className="space-y-3">
@@ -724,7 +702,7 @@ export default function EditInvoice({
                             </CardContent>
                         </Card>
 
-                        {/* Invoice Items - Enhanced */}
+                        {/* Quotation Items - Enhanced */}
                         <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
                             <CardHeader className="bg-gray-50/50 px-6 py-5">
                                 <div className="flex items-center justify-between">
@@ -1086,7 +1064,7 @@ export default function EditInvoice({
                                 asChild
                                 className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400"
                             >
-                                <a href="/invoices" className="flex items-center justify-center gap-2">
+                                <a href="/quotations" className="flex items-center justify-center gap-2">
                                     Cancelar
                                 </a>
                             </Button>

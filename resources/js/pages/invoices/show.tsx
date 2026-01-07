@@ -230,72 +230,86 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
                         </CardHeader>
                         <CardContent className="px-6 py-6">
                             <div className="space-y-6">
-                                {/* Headers - Desktop */}
-                                <div className="hidden gap-3 rounded-lg border bg-gray-50 px-4 py-3 text-xs font-semibold tracking-wider text-gray-700 uppercase lg:grid lg:grid-cols-12">
-                                    <div className="col-span-4">Descripción</div>
-                                    <div className="col-span-2 text-center">Cantidad</div>
-                                    <div className="col-span-2 text-right">Precio Unit.</div>
-                                    <div className="col-span-1 text-right">Desc. %</div>
-                                    <div className="col-span-1 text-right">Imp. %</div>
-                                    <div className="col-span-2 text-right">Total</div>
-                                </div>
-
-                                {/* Items */}
-                                <div className="space-y-4">
-                                    {invoice.items?.map((item) => (
-                                        <div
-                                            key={item.id}
-                                            className="grid grid-cols-1 gap-3 rounded-lg border border-gray-200 bg-white p-4 lg:grid-cols-12"
-                                        >
-                                            {/* Description */}
-                                            <div className="col-span-1 lg:col-span-4">
-                                                <div className="space-y-1">
-                                                    <p className="text-sm font-medium text-gray-900">{item.description}</p>
-                                                    {item.product && <p className="text-xs text-gray-500">SKU: {item.product.sku}</p>}
-                                                </div>
-                                            </div>
-
-                                            {/* Quantity */}
-                                            <div className="col-span-1 lg:col-span-2">
-                                                <div className="lg:text-center">
-                                                    <span className="text-xs font-medium text-gray-500 lg:hidden">Cantidad: </span>
-                                                    <span className="text-sm text-gray-900">{item.quantity}</span>
-                                                </div>
-                                            </div>
-
-                                            {/* Unit Price */}
-                                            <div className="col-span-1 lg:col-span-2">
-                                                <div className="lg:text-right">
-                                                    <span className="text-xs font-medium text-gray-500 lg:hidden">Precio: </span>
-                                                    <span className="text-sm text-gray-900">{formatCurrency(item.unit_price)}</span>
-                                                </div>
-                                            </div>
-
-                                            {/* Discount Rate */}
-                                            <div className="col-span-1 lg:col-span-1">
-                                                <div className="lg:text-right">
-                                                    <span className="text-xs font-medium text-gray-500 lg:hidden">Desc.: </span>
-                                                    <span className="text-sm text-gray-900">{item.discount_rate}%</span>
-                                                </div>
-                                            </div>
-
-                                            {/* Tax Rate */}
-                                            <div className="col-span-1 lg:col-span-1">
-                                                <div className="lg:text-right">
-                                                    <span className="text-xs font-medium text-gray-500 lg:hidden">Imp.: </span>
-                                                    <span className="text-sm text-gray-900">{item.tax_rate}%</span>
-                                                </div>
-                                            </div>
-
-                                            {/* Total */}
-                                            <div className="col-span-1 lg:col-span-2">
-                                                <div className="lg:text-right">
-                                                    <span className="text-xs font-medium text-gray-500 lg:hidden">Total: </span>
-                                                    <span className="text-sm font-medium text-gray-900">{formatCurrency(item.total)}</span>
-                                                </div>
-                                            </div>
+                                {/* Headers - Desktop - Using overflow for wider tables */}
+                                <div className="overflow-x-auto">
+                                    <div className="min-w-[900px]">
+                                        <div className="grid grid-cols-[2fr_0.8fr_1.2fr_1.2fr_0.8fr_1.2fr_1.2fr_1.2fr] gap-2 rounded-lg border bg-gray-50 px-4 py-3 text-xs font-semibold tracking-wider text-gray-700 uppercase">
+                                            <div>Descripción</div>
+                                            <div className="text-center">Cant.</div>
+                                            <div className="text-right">Precio Unit.</div>
+                                            <div className="text-right">Descuento</div>
+                                            <div className="text-right">Imp. %</div>
+                                            <div className="text-right">Imp. Monto</div>
+                                            <div className="text-right">Subtotal</div>
+                                            <div className="text-right">Total</div>
                                         </div>
-                                    ))}
+
+                                        {/* Items */}
+                                        <div className="mt-4 space-y-3">
+                                            {invoice.items?.map((item) => {
+                                                // Calculate subtotal (quantity × unit price, before discounts and taxes)
+                                                const lineSubtotal = item.quantity * item.unit_price;
+
+                                                return (
+                                                    <div
+                                                        key={item.id}
+                                                        className="grid grid-cols-[2fr_0.8fr_1.2fr_1.2fr_0.8fr_1.2fr_1.2fr_1.2fr] gap-2 rounded-lg border border-gray-200 bg-white px-4 py-3"
+                                                    >
+                                                        {/* Description */}
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-900">{item.description}</p>
+                                                            {item.product && <p className="text-xs text-gray-500">SKU: {item.product.sku}</p>}
+                                                        </div>
+
+                                                        {/* Quantity */}
+                                                        <div className="text-center">
+                                                            <span className="text-sm text-gray-900">{item.quantity}</span>
+                                                        </div>
+
+                                                        {/* Unit Price */}
+                                                        <div className="text-right">
+                                                            <span className="text-sm text-gray-900">{formatCurrency(item.unit_price)}</span>
+                                                        </div>
+
+                                                        {/* Discount */}
+                                                        <div className="text-right">
+                                                            <span className="text-sm text-gray-900">
+                                                                {item.discount_rate > 0 ? (
+                                                                    <span className="text-red-600">
+                                                                        -{formatCurrency(item.discount_amount)} ({item.discount_rate}%)
+                                                                    </span>
+                                                                ) : (
+                                                                    '-'
+                                                                )}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Tax Rate */}
+                                                        <div className="text-right">
+                                                            <span className="text-sm text-gray-900">{item.tax_rate}%</span>
+                                                        </div>
+
+                                                        {/* Tax Amount */}
+                                                        <div className="text-right">
+                                                            <span className="text-sm text-gray-900">
+                                                                {item.tax_amount > 0 ? formatCurrency(item.tax_amount) : '-'}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Subtotal (before discount and taxes) */}
+                                                        <div className="text-right">
+                                                            <span className="text-sm text-gray-900">{formatCurrency(lineSubtotal)}</span>
+                                                        </div>
+
+                                                        {/* Total (with discount and taxes) */}
+                                                        <div className="text-right">
+                                                            <span className="text-sm font-semibold text-gray-900">{formatCurrency(item.total)}</span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Totals */}
