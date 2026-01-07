@@ -11,6 +11,7 @@ use App\Http\Controllers\CompanyDetailsController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ConvertQuotationToInvoiceController;
+use App\Http\Controllers\CreateInvoiceFromQuotationController;
 use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\CurrencyRateController;
 use App\Http\Controllers\DashboardController;
@@ -129,6 +130,7 @@ Route::middleware([
             Route::resource('bank-accounts', BankAccountController::class);
 
             Route::resource('invoices', InvoiceController::class);
+            Route::get('invoices/create/quotation/{quotation}', CreateInvoiceFromQuotationController::class)->name('invoices.create-from-quotation');
             Route::get('invoices/{invoice}/pdf', DownloadInvoicePdfController::class)->name('invoices.pdf');
 
             Route::post('payments', [PaymentController::class, 'store'])->name('payments.store');

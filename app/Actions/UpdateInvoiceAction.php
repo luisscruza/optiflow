@@ -29,7 +29,7 @@ final readonly class UpdateInvoiceAction
     public function handle(Workspace $workspace, Invoice $invoice, array $data): InvoiceResult
     {
         try {
-            return DB::transaction(function () use ($workspace, $invoice, $data): InvoiceResult {
+            return DB::transaction(function () use ($invoice, $data): InvoiceResult {
                 $originalItems = $invoice->items()->with('product')->get()->keyBy('id');
 
                 $documentSubtype = DocumentSubtype::query()->findOrFail($data['document_subtype_id']);

@@ -8,6 +8,7 @@ use App\Actions\CreateInvoiceAction;
 use App\Actions\UpdateInvoiceAction;
 use App\Enums\PaymentMethod;
 use App\Enums\Permission;
+use App\Enums\QuotationStatus;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\BankAccount;
 use App\Models\CompanyDetail;
@@ -16,6 +17,7 @@ use App\Models\DocumentSubtype;
 use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\ProductStock;
+use App\Models\Quotation;
 use App\Models\Tax;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
@@ -151,6 +153,12 @@ final class InvoiceController extends Controller
 
             return redirect()->route('invoices.create')
                 ->withErrors(['error' => $result->error]);
+        }
+
+        if ($request->filled('quotation_id')) {
+            Quotation::query()
+                ->where('id', $request->integer('quotation_id'))
+                ->update(['status' => QuotationStatus::Converted]);
         }
 
         return redirect()->route('invoices.index')->with('success', 'Factura creada exitosamente.');

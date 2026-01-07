@@ -17,17 +17,6 @@ import AppLayout from '@/layouts/app-layout';
 import { type BankAccount, type BreadcrumbItem, type Contact, type Product, type Workspace } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Facturas',
-        href: '/invoices',
-    },
-    {
-        title: 'Nueva factura',
-        href: '/invoices/create',
-    },
-];
-
 interface DocumentSubtype {
     id: number;
     name: string;
@@ -67,6 +56,23 @@ interface FormData {
     payment_amount: number;
     payment_method: string;
     payment_notes: string;
+    quotation_id: number | null;
+}
+
+interface FromQuotation {
+    id: number;
+    document_number: string;
+    contact_id: number;
+    contact: Contact;
+    issue_date: string;
+    due_date?: string;
+    payment_term: string;
+    notes: string;
+    items: InvoiceItem[];
+    subtotal: number;
+    discount_total: number;
+    tax_amount: number;
+    total: number;
 }
 
 interface Props {
@@ -80,6 +86,7 @@ interface Props {
     defaultNote?: string;
     bankAccounts: BankAccount[];
     paymentMethods: Record<string, string>;
+    fromQuotation?: FromQuotation | null;
 }
 
 export default function CreateInvoice({
@@ -93,14 +100,54 @@ export default function CreateInvoice({
     defaultNote,
     bankAccounts,
     paymentMethods,
+    fromQuotation,
 }: Props) {
-    const [itemId, setItemId] = useState(3);
+    const defaultItems: InvoiceItem[] = fromQuotation?.items ?? [
+        {
+            id: '1',
+            product_id: null,
+            description: '',
+            quantity: 1,
+            unit_price: 0,
+            discount_rate: 0,
+            discount_amount: 0,
+            tax_rate: 0,
+            tax_amount: 0,
+            total: 0,
+        },
+        {
+            id: '2',
+            product_id: null,
+            description: '',
+            quantity: 1,
+            unit_price: 0,
+            discount_rate: 0,
+            discount_amount: 0,
+            tax_rate: 0,
+            tax_amount: 0,
+            total: 0,
+        },
+        {
+            id: '3',
+            product_id: null,
+            description: '',
+            quantity: 1,
+            unit_price: 0,
+            discount_rate: 0,
+            discount_amount: 0,
+            tax_rate: 0,
+            tax_amount: 0,
+            total: 0,
+        },
+    ];
+
+    const [itemId, setItemId] = useState(fromQuotation?.items?.length ?? 3);
     const [showContactModal, setShowContactModal] = useState(false);
     const [showProductModal, setShowProductModal] = useState(false);
     const [activeProductItemId, setActiveProductItemId] = useState<string | null>(null);
     const [showNcfModal, setShowNcfModal] = useState(false);
     const [contactsList, setContactsList] = useState<Contact[]>(customers);
-    const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+    const [selectedContact, setSelectedContact] = useState<Contact | null>(fromQuotation?.contact ?? null);
     const [productsList, setProductsList] = useState<Product[]>(products);
 
     const { format: formatCurrency } = useCurrency();
@@ -119,60 +166,24 @@ export default function CreateInvoice({
 
     const { data, setData, post, processing, errors } = useForm<FormData>({
         document_subtype_id: document_subtype_id || null,
-        contact_id: null,
+        contact_id: fromQuotation?.contact_id ?? null,
         workspace_id: currentWorkspace?.id || null,
-        issue_date: new Date().toISOString().split('T')[0],
-        due_date: '',
-        payment_term: 'manual',
-        notes: defaultNote || '',
+        issue_date: fromQuotation?.issue_date ?? new Date().toISOString().split('T')[0],
+        due_date: fromQuotation?.due_date ?? '',
+        payment_term: fromQuotation?.payment_term ?? 'manual',
+        notes: fromQuotation?.notes ?? defaultNote ?? '',
         ncf: ncf || '',
-        items: [
-            {
-                id: '1',
-                product_id: null,
-                description: '',
-                quantity: 1,
-                unit_price: 0,
-                discount_rate: 0,
-                discount_amount: 0,
-                tax_rate: 0,
-                tax_amount: 0,
-                total: 0,
-            },
-            {
-                id: '2',
-                product_id: null,
-                description: '',
-                quantity: 1,
-                unit_price: 0,
-                discount_rate: 0,
-                discount_amount: 0,
-                tax_rate: 0,
-                tax_amount: 0,
-                total: 0,
-            },
-            {
-                id: '3',
-                product_id: null,
-                description: '',
-                quantity: 1,
-                unit_price: 0,
-                discount_rate: 0,
-                discount_amount: 0,
-                tax_rate: 0,
-                tax_amount: 0,
-                total: 0,
-            },
-        ],
-        subtotal: 0,
-        discount_total: 0,
-        tax_amount: 0,
-        total: 0,
+        items: defaultItems,
+        subtotal: fromQuotation?.subtotal ?? 0,
+        discount_total: fromQuotation?.discount_total ?? 0,
+        tax_amount: fromQuotation?.tax_amount ?? 0,
+        total: fromQuotation?.total ?? 0,
         register_payment: false,
         payment_bank_account_id: null,
         payment_amount: 0,
         payment_method: '',
         payment_notes: '',
+        quotation_id: fromQuotation?.id ?? null,
     });
 
     // Handle workspace switching
@@ -484,9 +495,22 @@ export default function CreateInvoice({
             disabled: product.track_stock && product.stock_status === 'out_of_stock',
         }));
 
+    const breadcrumbs: BreadcrumbItem[] = fromQuotation
+        ? [
+              { title: 'Cotizaciones', href: '/quotations' },
+              { title: `Cotización #${fromQuotation.document_number}`, href: `/quotations/${fromQuotation.id}` },
+              { title: 'Convertir a factura', href: '#' },
+          ]
+        : [
+              { title: 'Facturas', href: '/invoices' },
+              { title: 'Nueva factura', href: '/invoices/create' },
+          ];
+
+    const pageTitle = fromQuotation ? `Convertir cotización #${fromQuotation.document_number} a factura` : 'Nueva factura';
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Nueva factura" />
+            <Head title={pageTitle} />
 
             <div className="min-h-screen bg-gray-50/30">
                 <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -503,7 +527,6 @@ export default function CreateInvoice({
 
                                     {/* Invoice Details */}
                                     <div className="space-y-1 text-right">
-                                        <h2 className="text-xl font-bold text-gray-900">Factura No. 1</h2>
                                         <div className="flex items-center justify-end gap-2">
                                             <span className="text-sm font-medium text-gray-600">NCF</span>
                                             <span className="rounded bg-gray-100 px-2 py-1 font-mono text-sm">{data.ncf || 'N/A'}</span>
