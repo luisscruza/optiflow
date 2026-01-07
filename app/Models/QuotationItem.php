@@ -124,6 +124,7 @@ final class QuotationItem extends Model
         return [
             'quantity' => 'float',
             'unit_price' => 'float',
+            'subtotal' => 'float',
             'discount_rate' => 'float',
             'discount_amount' => 'float',
             'tax_rate' => 'float',

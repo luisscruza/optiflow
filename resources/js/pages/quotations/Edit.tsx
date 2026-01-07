@@ -278,7 +278,7 @@ export default function EditQuotation({
                     updatedItem.discount_amount = lineSubtotal * (updatedItem.discount_rate / 100);
                     const discountedSubtotal = lineSubtotal - updatedItem.discount_amount;
                     updatedItem.tax_amount = discountedSubtotal * (updatedItem.tax_rate / 100);
-                    updatedItem.total = discountedSubtotal; // Line total without tax
+                    updatedItem.total = discountedSubtotal + updatedItem.tax_amount; // Line total with tax
                 }
 
                 return updatedItem;
@@ -380,7 +380,7 @@ export default function EditQuotation({
                     updatedItem.discount_amount = lineSubtotal * (updatedItem.discount_rate / 100);
                     const discountedSubtotal = lineSubtotal - updatedItem.discount_amount;
                     updatedItem.tax_amount = discountedSubtotal * (updatedItem.tax_rate / 100);
-                    updatedItem.total = discountedSubtotal; // Line total without tax
+                    updatedItem.total = discountedSubtotal + updatedItem.tax_amount; // Line total with tax
 
                     return updatedItem;
                 }
@@ -732,15 +732,16 @@ export default function EditQuotation({
                             <CardContent className="px-6 py-6">
                                 <div className="space-y-6">
                                     {/* Enhanced Table Header */}
-                                    <div className="hidden lg:grid lg:grid-cols-12 gap-3 text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 px-4 py-3 rounded-lg border">
+                                    <div className="hidden lg:grid lg:grid-cols-14 gap-3 text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 px-4 py-3 rounded-lg border">
                                         <div className="col-span-2">Producto</div>
                                         <div className="col-span-2">Descripción</div>
                                         <div className="col-span-1 text-center">Cant.</div>
                                         <div className="col-span-1 text-right">Precio unit.</div>
                                         <div className="col-span-1 text-right">Desc. (%)</div>
                                         <div className="col-span-1 text-right">Tax (%)</div>
+                                        <div className="col-span-2 text-right">Subtotal</div>
                                         <div className="col-span-2 text-right">Total</div>
-                                        <div className="col-span-2"></div>
+                                        <div className="col-span-1"></div>
                                     </div>
 
                                     {/* Enhanced Items */}
@@ -845,13 +846,23 @@ export default function EditQuotation({
                                                             </div>
                                                         </div>
 
-                                                        <div>
-                                                            <Label className="text-xs font-medium text-gray-700">Total de línea</Label>
-                                                            <Input
-                                                                value={formatCurrency(item.total)}
-                                                                disabled
-                                                                className="mt-1 text-right bg-gray-50 font-semibold"
-                                                            />
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <div>
+                                                                <Label className="text-xs font-medium text-gray-700">Subtotal</Label>
+                                                                <Input
+                                                                    value={formatCurrency((item.quantity || 0) * (item.unit_price || 0))}
+                                                                    disabled
+                                                                    className="mt-1 text-right bg-gray-50"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <Label className="text-xs font-medium text-gray-700">Total de línea</Label>
+                                                                <Input
+                                                                    value={formatCurrency(item.total)}
+                                                                    disabled
+                                                                    className="mt-1 text-right bg-gray-50 font-semibold"
+                                                                />
+                                                            </div>
                                                         </div>
 
                                                         {/* Stock warning for mobile */}
@@ -872,7 +883,7 @@ export default function EditQuotation({
                                                 </div>
 
                                                 {/* Desktop layout */}
-                                                <div className="hidden lg:grid lg:grid-cols-12 gap-3 items-center py-3 border-b border-gray-100 last:border-b-0">
+                                                <div className="hidden lg:grid lg:grid-cols-14 gap-3 items-center py-3 border-b border-gray-100 last:border-b-0">
                                                     {/* Product selection */}
                                                     <div className="col-span-2">
                                                         <SearchableSelect
@@ -966,6 +977,15 @@ export default function EditQuotation({
                                                         />
                                                     </div>
 
+                                                    {/* Subtotal (quantity × unit_price, no discount/tax) */}
+                                                    <div className="col-span-2">
+                                                        <Input
+                                                            value={formatCurrency((item.quantity || 0) * (item.unit_price || 0))}
+                                                            disabled
+                                                            className="h-9 text-right bg-gray-50 text-gray-700 border-gray-200"
+                                                        />
+                                                    </div>
+
                                                     {/* Total */}
                                                     <div className="col-span-2">
                                                         <Input
@@ -976,7 +996,7 @@ export default function EditQuotation({
                                                     </div>
 
                                                     {/* Actions */}
-                                                    <div className="col-span-2 flex justify-end">
+                                                    <div className="col-span-1 flex justify-end">
                                                         {data.items.length > 1 && (
                                                             <Button
                                                                 type="button"

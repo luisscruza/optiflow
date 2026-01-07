@@ -159,8 +159,9 @@ export default function QuotationShow({ quotation }: Props) {
                                                 <TableHead>Descripción</TableHead>
                                                 <TableHead className="text-center">Cantidad</TableHead>
                                                 <TableHead className="text-right">Precio unitario</TableHead>
-                                                <TableHead className="text-center">Descuento</TableHead>
-                                                <TableHead className="text-center">Impuesto</TableHead>
+                                                <TableHead className="text-right">Descuento</TableHead>
+                                                <TableHead className="text-right">Impuesto</TableHead>
+                                                <TableHead className="text-right">Subtotal</TableHead>
                                                 <TableHead className="text-right">Total</TableHead>
                                             </TableRow>
                                         </TableHeader>
@@ -179,8 +180,27 @@ export default function QuotationShow({ quotation }: Props) {
                                                             : item.quantity.toLocaleString()}
                                                     </TableCell>
                                                     <TableCell className="text-right">{formatCurrency(item.unit_price)}</TableCell>
-                                                    <TableCell className="text-center">{item.discount_rate}%</TableCell>
-                                                    <TableCell className="text-center">{item.tax_rate}%</TableCell>
+                                                    <TableCell className="text-right">
+                                                        {item.discount_rate > 0 ? (
+                                                            <div className="text-red-600">
+                                                                <span className="font-medium">{item.discount_rate}%</span>
+                                                                <span className="text-xs ml-1">(-{formatCurrency(item.discount_amount)})</span>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-gray-400">-</span>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        {item.tax_rate > 0 ? (
+                                                            <div>
+                                                                <span className="font-medium">{item.tax_rate}%</span>
+                                                                <span className="text-xs ml-1 text-gray-600">(+{formatCurrency(item.tax_amount)})</span>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-gray-400">-</span>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">{formatCurrency(item.subtotal)}</TableCell>
                                                     <TableCell className="text-right font-medium">{formatCurrency(item.total)}</TableCell>
                                                 </TableRow>
                                             ))}

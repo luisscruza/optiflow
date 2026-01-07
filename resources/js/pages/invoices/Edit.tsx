@@ -287,7 +287,7 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
                     updatedItem.discount_amount = lineSubtotal * (updatedItem.discount_rate / 100);
                     const discountedSubtotal = lineSubtotal - updatedItem.discount_amount;
                     updatedItem.tax_amount = discountedSubtotal * (updatedItem.tax_rate / 100);
-                    updatedItem.total = discountedSubtotal; // Line total without tax
+                    updatedItem.total = discountedSubtotal + updatedItem.tax_amount; // Line total with tax
                 }
 
                 return updatedItem;
@@ -389,7 +389,7 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
                     updatedItem.discount_amount = lineSubtotal * (updatedItem.discount_rate / 100);
                     const discountedSubtotal = lineSubtotal - updatedItem.discount_amount;
                     updatedItem.tax_amount = discountedSubtotal * (updatedItem.tax_rate / 100);
-                    updatedItem.total = discountedSubtotal; // Line total without tax
+                    updatedItem.total = discountedSubtotal + updatedItem.tax_amount; // Line total with tax
 
                     return updatedItem;
                 }
@@ -421,7 +421,7 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
                     updatedItem.discount_amount = lineSubtotal * (updatedItem.discount_rate / 100);
                     const discountedSubtotal = lineSubtotal - updatedItem.discount_amount;
                     updatedItem.tax_amount = discountedSubtotal * (updatedItem.tax_rate / 100);
-                    updatedItem.total = discountedSubtotal;
+                    updatedItem.total = discountedSubtotal + updatedItem.tax_amount;
 
                     return updatedItem;
                 }
@@ -805,15 +805,16 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
                             <CardContent className="px-6 py-6">
                                 <div className="space-y-6">
                                     {/* Enhanced Table Header */}
-                                    <div className="hidden gap-3 rounded-lg border bg-gray-50 px-4 py-3 text-xs font-semibold tracking-wider text-gray-700 uppercase lg:grid lg:grid-cols-12">
+                                    <div className="hidden gap-3 rounded-lg border bg-gray-50 px-4 py-3 text-xs font-semibold tracking-wider text-gray-700 uppercase lg:grid lg:grid-cols-14">
                                         <div className="col-span-2">Producto</div>
                                         <div className="col-span-2">Descripción</div>
                                         <div className="col-span-1 text-center">Cant.</div>
                                         <div className="col-span-1 text-right">Precio unit.</div>
                                         <div className="col-span-1 text-right">Desc. (%)</div>
                                         <div className="col-span-1 text-right">Tax (%)</div>
+                                        <div className="col-span-2 text-right">Subtotal</div>
                                         <div className="col-span-2 text-right">Total</div>
-                                        <div className="col-span-2"></div>
+                                        <div className="col-span-1"></div>
                                     </div>
 
                                     {/* Enhanced Items */}
@@ -941,13 +942,23 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
                                                             </div>
                                                         </div>
 
-                                                        <div>
-                                                            <Label className="text-xs font-medium text-gray-700">Total de línea</Label>
-                                                            <Input
-                                                                value={formatCurrency(item.total)}
-                                                                disabled
-                                                                className="mt-1 bg-gray-50 text-right font-semibold"
-                                                            />
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <div>
+                                                                <Label className="text-xs font-medium text-gray-700">Subtotal</Label>
+                                                                <Input
+                                                                    value={formatCurrency((item.quantity || 0) * (item.unit_price || 0))}
+                                                                    disabled
+                                                                    className="mt-1 bg-gray-50 text-right"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <Label className="text-xs font-medium text-gray-700">Total de línea</Label>
+                                                                <Input
+                                                                    value={formatCurrency(item.total)}
+                                                                    disabled
+                                                                    className="mt-1 bg-gray-50 text-right font-semibold"
+                                                                />
+                                                            </div>
                                                         </div>
 
                                                         {/* Stock warning for mobile */}
@@ -970,7 +981,7 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
                                                 </div>
 
                                                 {/* Desktop layout */}
-                                                <div className="hidden items-center gap-3 border-b border-gray-100 py-3 last:border-b-0 lg:grid lg:grid-cols-12">
+                                                <div className="hidden items-center gap-3 border-b border-gray-100 py-3 last:border-b-0 lg:grid lg:grid-cols-14">
                                                     {/* Product selection */}
                                                     <div className="col-span-2">
                                                         <SearchableSelect
@@ -1081,6 +1092,15 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
                                                         />
                                                     </div>
 
+                                                    {/* Subtotal (quantity × unit_price, no discount/tax) */}
+                                                    <div className="col-span-2">
+                                                        <Input
+                                                            value={formatCurrency((item.quantity || 0) * (item.unit_price || 0))}
+                                                            disabled
+                                                            className="h-9 border-gray-200 bg-gray-50 text-right text-gray-700"
+                                                        />
+                                                    </div>
+
                                                     {/* Total */}
                                                     <div className="col-span-2">
                                                         <Input
@@ -1091,7 +1111,7 @@ export default function EditInvoice({ invoice, documentSubtypes, customers, prod
                                                     </div>
 
                                                     {/* Actions */}
-                                                    <div className="col-span-2 flex justify-end">
+                                                    <div className="col-span-1 flex justify-end">
                                                         {data.items.length > 1 && (
                                                             <Button
                                                                 type="button"

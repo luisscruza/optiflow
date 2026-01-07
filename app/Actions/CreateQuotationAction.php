@@ -39,7 +39,8 @@ final readonly class CreateQuotationAction
             $this->createQuotationItems($quotation, $items);
 
             return new QuotationResult(
-                quotation: $quotation->load(['contact', 'documentSubtype', 'items.product']));
+                quotation: $quotation->load(['contact', 'documentSubtype', 'items.product'])
+            );
         });
     }
 
@@ -89,6 +90,7 @@ final readonly class CreateQuotationAction
                 'description' => $item['description'] ?? null,
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'],
+                'subtotal' => $item['quantity'] * $item['unit_price'],
                 'discount_amount' => $item['discount_amount'] ?? 0,
                 'discount_rate' => $item['discount_rate'] ?? 0,
                 'tax_rate' => $item['tax_rate'] ?? 0,

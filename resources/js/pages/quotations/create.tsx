@@ -238,7 +238,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                     updatedItem.discount_amount = lineSubtotal * (updatedItem.discount_rate / 100);
                     const discountedSubtotal = lineSubtotal - updatedItem.discount_amount;
                     updatedItem.tax_amount = discountedSubtotal * (updatedItem.tax_rate / 100);
-                    updatedItem.total = discountedSubtotal; // Line total without tax
+                    updatedItem.total = discountedSubtotal + updatedItem.tax_amount; // Line total with tax
                 }
 
                 return updatedItem;
@@ -340,7 +340,7 @@ export default function CreateQuotation({ documentSubtypes, customers, products,
                     updatedItem.discount_amount = lineSubtotal * (updatedItem.discount_rate / 100);
                     const discountedSubtotal = lineSubtotal - updatedItem.discount_amount;
                     updatedItem.tax_amount = discountedSubtotal * (updatedItem.tax_rate / 100);
-                    updatedItem.total = discountedSubtotal; // Line total without tax
+                    updatedItem.total = discountedSubtotal + updatedItem.tax_amount; // Line total with tax
 
                     return updatedItem;
                 }
