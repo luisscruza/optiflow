@@ -320,7 +320,7 @@ final class DashboardController extends Controller
             ])
             ->orderBy('name')
             ->get()
-            ->map(fn (Workflow $workflow) => [
+            ->map(fn(Workflow $workflow) => [
                 'id' => $workflow->id,
                 'name' => $workflow->name,
                 'is_active' => $workflow->is_active,

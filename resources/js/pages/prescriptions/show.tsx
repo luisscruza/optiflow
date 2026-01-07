@@ -41,8 +41,8 @@ export default function PrescriptionShow({ prescription }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Receta #${prescription.id}`} />
 
-            <div className="min-h-screen bg-gray-50/30">
-                <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+            <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                <div>
                     <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <div className="mb-2 flex items-center gap-3">

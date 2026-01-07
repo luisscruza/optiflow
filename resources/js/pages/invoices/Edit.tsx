@@ -566,7 +566,7 @@ export default function EditInvoice({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar factura ${invoice.document_number}`} />
 
-            <div className="min-h-screen bg-gray-50/30">
+            <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                     {/* Enhanced Header - Invoice Style */}
                     <div className="mb-6">

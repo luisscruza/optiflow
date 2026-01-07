@@ -86,7 +86,7 @@ export default function InitialStockCreate({ products, workspace }: Props) {
                         <Card>
                             <CardHeader>
                                 <CardTitle>Detalles del inventario inicial</CardTitle>
-                                    <CardDescription>Selecciona un producto y establece su cantidad de inventario inicial</CardDescription>
+                                <CardDescription>Selecciona un producto y establece su cantidad de inventario inicial</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -99,10 +99,12 @@ export default function InitialStockCreate({ products, workspace }: Props) {
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {products.length === 0 ? (
-                                                        <div className="p-4 text-center text-muted-foreground">
+                                                    <div className="p-4 text-center text-muted-foreground">
                                                         <Package className="mx-auto mb-2 h-8 w-8" />
                                                         <p>No hay productos disponibles</p>
-                                                        <p className="text-sm">Todos los productos con seguimiento de stock ya tienen inventario establecido</p>
+                                                        <p className="text-sm">
+                                                            Todos los productos con seguimiento de stock ya tienen inventario establecido
+                                                        </p>
                                                     </div>
                                                 ) : (
                                                     products.map((product) => (
@@ -179,12 +181,12 @@ export default function InitialStockCreate({ products, workspace }: Props) {
                                     {data.quantity && data.unit_cost && (
                                         <div className="rounded-lg border bg-background p-4 dark:bg-blue-950/20">
                                             <div className="flex items-center justify-between">
-                                                        <span className="font-medium">Valor total del stock:</span>
-                                                        <span className="text-lg font-bold">${calculateTotalValue().toFixed(2)}</span>
+                                                <span className="font-medium">Valor total del stock:</span>
+                                                <span className="text-lg font-bold">${calculateTotalValue().toFixed(2)}</span>
                                             </div>
-                                                    <p className="mt-1 text-sm text-muted-foreground">
-                                                        {data.quantity} unidades × ${data.unit_cost} por unidad
-                                                    </p>
+                                            <p className="mt-1 text-sm text-muted-foreground">
+                                                {data.quantity} unidades × ${data.unit_cost} por unidad
+                                            </p>
                                         </div>
                                     )}
 
@@ -250,15 +252,19 @@ export default function InitialStockCreate({ products, workspace }: Props) {
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-2 text-sm text-muted-foreground">
-                                        <p>Inventario inicial es la cantidad inicial para un producto en este espacio de trabajo. Normalmente se utiliza cuando:</p>
+                                    <p>
+                                        Inventario inicial es la cantidad inicial para un producto en este espacio de trabajo. Normalmente se utiliza
+                                        cuando:
+                                    </p>
                                     <ul className="ml-4 list-inside list-disc space-y-1">
-                                            <li>Agregas un nuevo producto a tu inventario</li>
-                                            <li>Comienzas el rastreo de inventario para un producto existente</li>
-                                            <li>Importas stock existente a un nuevo espacio de trabajo</li>
+                                        <li>Agregas un nuevo producto a tu inventario</li>
+                                        <li>Comienzas el rastreo de inventario para un producto existente</li>
+                                        <li>Importas stock existente a un nuevo espacio de trabajo</li>
                                     </ul>
-                                        <p className="mt-3">
-                                            Después de establecer el inventario inicial, puedes usar ajustes de inventario y transferencias para gestionar los cambios continuos de inventario.
-                                        </p>
+                                    <p className="mt-3">
+                                        Después de establecer el inventario inicial, puedes usar ajustes de inventario y transferencias para gestionar
+                                        los cambios continuos de inventario.
+                                    </p>
                                 </div>
                             </CardContent>
                         </Card>

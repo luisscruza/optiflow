@@ -17,7 +17,7 @@ export function SalesTaxWidget({ data, formatCurrency, onRemove }: SalesTaxWidge
     const isNegative = data.change_percentage < 0;
 
     return (
-        <div className="group relative flex h-full flex-col justify-center p-4">
+        <div className="group  bg-white relative flex h-full flex-col justify-center p-4">
             <button
                 onClick={(e) => {
                     e.stopPropagation();

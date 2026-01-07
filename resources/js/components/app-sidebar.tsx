@@ -6,11 +6,12 @@ import { usePermissions } from '@/hooks/use-permissions';
 import { dashboard } from '@/routes';
 import contacts from '@/routes/contacts';
 import inventory from '@/routes/inventory';
+import payments from '@/routes/payments';
 import prescriptions from '@/routes/prescriptions';
 import products from '@/routes/products';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Eye, Folder, Kanban, LayoutGrid, Package, Receipt, RotateCcw, Settings, Users2 } from 'lucide-react';
+import { BookOpen, DollarSign, Eye, Folder, Kanban, LayoutGrid, Package, Receipt, RotateCcw, Settings, Users2 } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
@@ -27,7 +28,7 @@ export function AppSidebar() {
             href: '/workflows',
             icon: Kanban,
         },
-        ...(can('view invoices') || can('view quotations')
+        ...(can('view invoices') || can('view quotations') || can('view payments')
             ? [
                   {
                       title: 'Ingresos',
@@ -48,6 +49,15 @@ export function AppSidebar() {
                                         title: 'Cotizaciones',
                                         href: '/quotations',
                                         icon: BookOpen,
+                                    },
+                                ]
+                              : []),
+                          ...(can('view payments')
+                              ? [
+                                    {
+                                        title: 'Pagos recibidos',
+                                        href: payments.index(),
+                                        icon: DollarSign,
                                     },
                                 ]
                               : []),

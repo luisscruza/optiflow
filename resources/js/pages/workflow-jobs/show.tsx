@@ -263,7 +263,7 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Tarea - ${workflow.name}`} />
 
-            <div className="min-h-screen bg-gray-50/30">
+            <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="flex h-[calc(100vh-8rem)] flex-col px-4 py-4 sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="mb-6">

@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
 import { Head, router } from '@inertiajs/react';
-import { AlertCircle, CheckCircle2, Pencil, Plus, RefreshCw, Shield, Trash2, Users } from 'lucide-react';
+import { Pencil, Plus, RefreshCw, Shield, Trash2, Users } from 'lucide-react';
 import { useState } from 'react';
 
 interface Permission {
@@ -322,7 +322,6 @@ export default function BusinessRoles({ roles, permissions, workspaces }: Props)
                                                     <p className="font-medium">{role.name}</p>
                                                     <TooltipProvider>
                                                         <Tooltip>
-
                                                             <TooltipContent>
                                                                 {role.is_synced
                                                                     ? 'Este rol existe en todos los workspaces'

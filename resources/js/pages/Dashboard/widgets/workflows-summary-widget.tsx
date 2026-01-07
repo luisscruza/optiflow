@@ -19,7 +19,7 @@ interface WorkflowsSummaryWidgetProps {
 
 export function WorkflowsSummaryWidget({ data, onRemove }: WorkflowsSummaryWidgetProps) {
     return (
-        <div className="group relative flex h-full flex-col p-5">
+        <div className="bg-white group relative flex h-full flex-col p-5">
             {/* Remove button */}
             <button
                 onClick={onRemove}

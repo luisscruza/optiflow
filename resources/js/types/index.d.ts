@@ -519,19 +519,32 @@ export interface Invoice {
     comments?: CommentData[];
 }
 
+import type { PaymentLine, PaymentWithholding } from './accounting';
+
 export interface Payment {
     id: number;
-    invoice_id: number;
+    payment_type: 'invoice' | 'other_income';
+    payment_number: string;
+    invoice_id?: number | null;
+    contact_id?: number | null;
     bank_account_id: number;
     currency_id: number;
     amount: number;
+    subtotal_amount: number;
+    tax_amount: number;
+    withholding_amount: number;
     payment_date: string;
     payment_method: 'cash' | 'transfer' | 'check' | 'credit_card' | 'debit_card' | 'other';
     note?: string | null;
+    status: 'completed' | 'voided';
     created_at: string;
     updated_at: string;
     bank_account?: BankAccount;
     currency?: Currency;
+    invoice?: Invoice;
+    contact?: Contact;
+    lines?: PaymentLine[];
+    withholdings?: PaymentWithholding[];
 }
 
 export interface BankAccount {

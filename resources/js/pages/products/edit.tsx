@@ -198,7 +198,9 @@ export default function ProductsEdit({ product, taxes }: Props) {
                                     <Label htmlFor="track_stock" className="text-sm font-medium">
                                         Rastrear inventario para este producto
                                     </Label>
-                                    <p className="text-xs text-muted-foreground">Activa esto para rastrear niveles de stock y recibir alertas de bajo inventario.</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        Activa esto para rastrear niveles de stock y recibir alertas de bajo inventario.
+                                    </p>
                                 </div>
                             </div>
                             {errors.track_stock && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.track_stock}</p>}
@@ -209,7 +211,8 @@ export default function ProductsEdit({ product, taxes }: Props) {
                                         <span className="text-sm font-medium">Advertencia</span>
                                     </div>
                                     <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-300">
-                                        Desactivar el rastreo de inventario no eliminará los registros existentes, pero no se actualizarán automáticamente.
+                                        Desactivar el rastreo de inventario no eliminará los registros existentes, pero no se actualizarán
+                                        automáticamente.
                                     </p>
                                 </div>
                             )}

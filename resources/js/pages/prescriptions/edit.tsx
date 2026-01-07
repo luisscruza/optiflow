@@ -47,8 +47,8 @@ export default function EditPrescription({ prescription, customers, optometrists
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar Receta #${prescription.id}`} />
 
-            <div className="min-h-screen bg-gray-50/30">
-                <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+            <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                <div>
                     <PrescriptionForm
                         customers={customers}
                         optometrists={optometrists}

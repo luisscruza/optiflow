@@ -5,11 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Paginator } from '@/components/ui/paginator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { Product, type BreadcrumbItem, type PaginatedProducts, type Workspace } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Paginator } from '@/components/ui/paginator';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -67,7 +67,9 @@ export default function InitialStockIndex({ productsWithStock, workspace }: Prop
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight">Configuración de inventario inicial</h1>
-                            <p className="text-muted-foreground">Configura y gestiona los niveles de inventario inicial para productos en {workspace.name}</p>
+                            <p className="text-muted-foreground">
+                                Configura y gestiona los niveles de inventario inicial para productos en {workspace.name}
+                            </p>
                         </div>
 
                         <Button asChild>
@@ -100,7 +102,7 @@ export default function InitialStockIndex({ productsWithStock, workspace }: Prop
                             {/* Productos Table */}
                             <div className="rounded-md border">
                                 <Table>
-                                        <TableHeader>
+                                    <TableHeader>
                                         <TableRow>
                                             <TableHead>Producto</TableHead>
                                             <TableHead>SKU</TableHead>
@@ -131,7 +133,7 @@ export default function InitialStockIndex({ productsWithStock, workspace }: Prop
 
                                                 return (
                                                     <TableRow key={product.id}>
-                                                            <TableCell className="font-medium">
+                                                        <TableCell className="font-medium">
                                                             <div className="flex items-center space-x-2">
                                                                 <Package className="h-4 w-4 text-muted-foreground" />
                                                                 <span>{product.name}</span>
@@ -158,7 +160,7 @@ export default function InitialStockIndex({ productsWithStock, workspace }: Prop
                                                         <TableCell className="text-right">
                                                             <div className="flex items-center justify-end space-x-2">
                                                                 {stock ? (
-                                                                        <Button asChild size="sm" variant="outline">
+                                                                    <Button asChild size="sm" variant="outline">
                                                                         <Link href={`/initial-stock/${product.id}`}>
                                                                             <Eye className="mr-1 h-3 w-3" />
                                                                             Ver detalles

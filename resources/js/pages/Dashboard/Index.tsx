@@ -379,7 +379,7 @@ export default function DashboardIndex({
                 }
             `}</style>
 
-            <div className="flex h-full flex-1 flex-col gap-6 p-6">
+            <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8 bg-gray-50 min-h-[100vh]">
                 {/* Header with Range Filter */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>

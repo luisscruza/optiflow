@@ -15,9 +15,12 @@ final class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            // DocumentSubtypeSeeder::class,
-            // MastertableSeeder::class,
+            DocumentSubtypeSeeder::class,
+            MastertableSeeder::class,
             PermissionSeeder::class,
+            ChartAccountSeeder::class,
+            PaymentConceptSeeder::class,
+            WithholdingTypeSeeder::class,
         ]);
     }
 }

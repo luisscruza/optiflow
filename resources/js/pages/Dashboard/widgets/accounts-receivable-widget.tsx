@@ -31,7 +31,7 @@ export function AccountsReceivableWidget({ data, formatCurrency, onRemove }: Acc
     const overduePercent = total > 0 ? (data.overdue.amount / total) * 100 : 0;
 
     return (
-        <div className="group relative flex h-full flex-col p-4">
+        <div className="group relative flex h-full flex-col bg-white p-4">
             <button
                 onClick={(e) => {
                     e.stopPropagation();

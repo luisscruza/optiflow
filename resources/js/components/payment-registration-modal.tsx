@@ -108,6 +108,8 @@ export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccount
                     {({ processing, wasSuccessful, errors }) => (
                         <div className="space-y-5">
                             {!isEditing && <input type="hidden" name="invoice_id" value={invoice.id} />}
+                            {/* Set payment type to invoice payment */}
+                            <input type="hidden" name="payment_type" value="invoice_payment" />
                             {/* Use current system date/time automatically */}
                             <input type="hidden" name="payment_date" value={today} />
 

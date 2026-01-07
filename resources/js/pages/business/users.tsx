@@ -7,12 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
+import type { SharedData } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
 import { Building2, Mail, Plus, Shield, Trash2, UserPlus, Users } from 'lucide-react';
 import { useState } from 'react';
-import { usePermissions } from '@/hooks/use-permissions';
-import type { SharedData } from '@/types';
 
 interface Role {
     id: number;
@@ -82,8 +82,7 @@ export default function BusinessUsers({ users, workspaces, rolesByWorkspace }: P
 
     const impersonate = (user: User) => {
         router.post('/impersonate/' + user.id); //
-    }
-
+    };
 
     const openInviteDialog = () => {
         setInviteName('');
@@ -253,8 +252,9 @@ export default function BusinessUsers({ users, workspaces, rolesByWorkspace }: P
                                 <TableBody>
                                     {users.map((user) => (
                                         <TableRow key={user.id}>
-                                            <TableCell className="font-medium">{user.name}
-                                                { auth.user.id === user.id && (<span className='font-bold font-italic'> (Yo)</span>)}
+                                            <TableCell className="font-medium">
+                                                {user.name}
+                                                {auth.user.id === user.id && <span className="font-italic font-bold"> (Yo)</span>}
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -268,16 +268,12 @@ export default function BusinessUsers({ users, workspaces, rolesByWorkspace }: P
                                             <TableCell className="text-center">
                                                 <Badge variant="secondary">{user.workspaces_count}</Badge>
                                             </TableCell>
-                                            <TableCell className='flex gap-2'>
+                                            <TableCell className="flex gap-2">
                                                 <Button variant="outline" size="sm" onClick={() => openUserDetails(user)}>
                                                     Ver detalles
                                                 </Button>
                                                 {can('impersonate') && user.id !== auth.user.id && (
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => impersonate(user)}
-                                                    >
+                                                    <Button variant="outline" size="sm" onClick={() => impersonate(user)}>
                                                         Suplantar
                                                     </Button>
                                                 )}

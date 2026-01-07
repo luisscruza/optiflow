@@ -577,8 +577,8 @@ export default function CreateInvoice({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={pageTitle} />
 
-            <div className="min-h-screen bg-gray-50/30">
-                <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+            <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                <div>
                     <div className="mb-6">
                         <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
                             <CardContent className="px-6 py-6">

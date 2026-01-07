@@ -20,7 +20,7 @@ interface Props {
 }
 
 export default function WorkflowsIndex({ workflows }: Props) {
-    const { workspace } = usePage().props as { workspace?: { current: Workspace | null; } };
+    const { workspace } = usePage().props as { workspace?: { current: Workspace | null } };
 
     const handleDelete = (workflowId: string) => {
         if (confirm('¿Estás seguro de que deseas eliminar este flujo de trabajo? Esto eliminará todas las etapas y tareas asociadas.')) {

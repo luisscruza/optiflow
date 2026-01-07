@@ -1,7 +1,7 @@
 import { Info, TrendingDown, TrendingUp, X } from 'lucide-react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-import { Tooltip as TooltipUI, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipContent, TooltipProvider, TooltipTrigger, Tooltip as TooltipUI } from '@/components/ui/tooltip';
 
 interface TotalSalesData {
     total: number;
@@ -51,15 +51,11 @@ export function TotalSalesWidget({ data, formatCurrency, onRemove }: TotalSalesW
                     <p className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-100">{label}</p>
                     {payload.map((entry, index) => (
                         <div key={index} className="flex items-center gap-2 text-sm">
-                            <div
-                                className={`h-2 w-2 rounded-full ${entry.dataKey === 'current' ? 'bg-blue-600' : 'bg-emerald-500'}`}
-                            />
+                            <div className={`h-2 w-2 rounded-full ${entry.dataKey === 'current' ? 'bg-blue-600' : 'bg-emerald-500'}`} />
                             <span className="text-gray-600 dark:text-gray-400">
                                 {entry.dataKey === 'current' ? 'Período actual' : 'Período anterior'}:
                             </span>
-                            <span className="font-medium text-gray-900 dark:text-gray-100">
-                                {formatCurrency(entry.value)}
-                            </span>
+                            <span className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(entry.value)}</span>
                         </div>
                     ))}
                 </div>
@@ -69,7 +65,7 @@ export function TotalSalesWidget({ data, formatCurrency, onRemove }: TotalSalesW
     };
 
     return (
-        <div className="group relative flex h-full flex-col p-4">
+        <div className="group relative flex h-full flex-col bg-white p-4">
             {/* Remove button */}
             <button
                 onClick={onRemove}
@@ -96,19 +92,16 @@ export function TotalSalesWidget({ data, formatCurrency, onRemove }: TotalSalesW
                             </TooltipUI>
                         </TooltipProvider>
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                        La gráfica muestra el valor de tus ventas con impuestos incluidos.
-                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">La gráfica muestra el valor de tus ventas con impuestos incluidos.</p>
                 </div>
 
                 <div className="text-right">
-                    <p className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">
-                        {formatCurrency(data.total)}
-                    </p>
+                    <p className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">{formatCurrency(data.total)}</p>
                     <div className={`flex items-center justify-end gap-1 ${isPositive ? 'text-green-600' : 'text-red-500'}`}>
                         {isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
                         <span className="text-sm font-medium">
-                            {isPositive ? '+' : ''}{data.change_percentage}%
+                            {isPositive ? '+' : ''}
+                            {data.change_percentage}%
                         </span>
                     </div>
                 </div>

@@ -88,7 +88,7 @@ export default function QuotationShow({ quotation }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Cotización ${quotation.document_number}`} />
 
-            <div className="px-4 py-8 sm:px-6 lg:px-8">
+            <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="mb-8 flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Cotización {quotation.document_number}</h1>

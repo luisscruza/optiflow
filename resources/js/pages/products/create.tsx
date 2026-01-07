@@ -111,8 +111,8 @@ export default function ProductsCreate({ taxes }: Props) {
 
                     <Card>
                         <CardHeader>
-                                    <CardTitle>Precios</CardTitle>
-                                    <CardDescription>Establece la información de precios para este producto.</CardDescription>
+                            <CardTitle>Precios</CardTitle>
+                            <CardDescription>Establece la información de precios para este producto.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -210,7 +210,9 @@ export default function ProductsCreate({ taxes }: Props) {
                                     <Label htmlFor="track_stock" className="text-sm font-medium">
                                         Rastrear inventario para este producto
                                     </Label>
-                                    <p className="text-xs text-muted-foreground">Activa esto para rastrear niveles de stock y recibir alertas de bajo inventario.</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        Activa esto para rastrear niveles de stock y recibir alertas de bajo inventario.
+                                    </p>
                                 </div>
                             </div>
                             {errors.track_stock && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.track_stock}</p>}

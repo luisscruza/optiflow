@@ -25,6 +25,7 @@ enum Permission: string
     case InvoicesDelete = 'delete invoices';
 
     // Payments
+    case PaymentsView = 'view payments';
     case PaymentsCreate = 'create payments';
     case PaymentsEdit = 'edit payments';
     case PaymentsDelete = 'delete payments';
@@ -89,6 +90,7 @@ enum Permission: string
             self::InvoicesDelete => 'Eliminar facturas',
 
             // Payments
+            self::PaymentsView => 'Ver pagos',
             self::PaymentsCreate => 'Registrar pagos',
             self::PaymentsEdit => 'Editar pagos',
             self::PaymentsDelete => 'Eliminar pagos',
@@ -134,7 +136,7 @@ enum Permission: string
             self::ProductsView, self::ProductsCreate, self::ProductsEdit, self::ProductsDelete => 'Productos',
             self::ContactsView, self::ContactsCreate, self::ContactsEdit, self::ContactsDelete => 'Contactos',
             self::InvoicesView, self::InvoicesCreate, self::InvoicesEdit, self::InvoicesDelete => 'Facturas',
-            self::PaymentsCreate, self::PaymentsEdit, self::PaymentsDelete => 'Pagos',
+            self::PaymentsView, self::PaymentsCreate, self::PaymentsEdit, self::PaymentsDelete => 'Pagos',
             self::QuotationsView, self::QuotationsCreate, self::QuotationsEdit, self::QuotationsDelete => 'Cotizaciones',
             self::PrescriptionsView, self::PrescriptionsCreate, self::PrescriptionsEdit, self::PrescriptionsDelete => 'Recetas',
             self::InventoryView, self::InventoryAdjust, self::InventoryTransfer => 'Inventario',
