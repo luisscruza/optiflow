@@ -17,6 +17,8 @@ interface KanbanCardProps {
     workflow: Workflow;
     onDragStart: (e: React.DragEvent, job: WorkflowJob) => void;
     onDragEnd: (e: React.DragEvent) => void;
+    canEdit?: boolean;
+    canDelete?: boolean;
 }
 
 const priorityColors: Record<WorkflowJobPriority, string> = {
@@ -33,7 +35,7 @@ const priorityLabels: Record<WorkflowJobPriority, string> = {
     urgent: 'Urgente',
 };
 
-export function KanbanCard({ job, workflow, onDragStart, onDragEnd }: KanbanCardProps) {
+export function KanbanCard({ job, workflow, onDragStart, onDragEnd, canEdit = false, canDelete = false }: KanbanCardProps) {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [editPriority, setEditPriority] = useState<WorkflowJobPriority | ''>(job.priority || '');
     const [editDueDate, setEditDueDate] = useState(job.due_date?.split('T')[0] || '');
@@ -79,11 +81,11 @@ export function KanbanCard({ job, workflow, onDragStart, onDragEnd }: KanbanCard
     return (
         <>
             <Card
-                draggable
-                onDragStart={(e) => onDragStart(e, job)}
-                onDragEnd={onDragEnd}
+                draggable={canEdit}
+                onDragStart={canEdit ? (e) => onDragStart(e, job) : undefined}
+                onDragEnd={canEdit ? onDragEnd : undefined}
                 onClick={handleCardClick}
-                className="mb-2 cursor-grab transition-shadow hover:shadow-md active:cursor-grabbing"
+                className={`mb-2 transition-shadow hover:shadow-md ${canEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
             >
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 p-3 pb-2">
                     <div className="flex-1 space-y-1">
@@ -105,23 +107,29 @@ export function KanbanCard({ job, workflow, onDragStart, onDragEnd }: KanbanCard
                         )}
                         {!job.invoice && !job.contact && <span className="text-sm text-muted-foreground">Tarea #{job.id}</span>}
                     </div>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" data-no-navigate>
-                                <MoreHorizontal className="h-3 w-3" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" data-no-navigate>
-                            <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive" onClick={handleDeleteJob}>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Eliminar
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    {(canEdit || canDelete) && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-6 w-6 p-0" data-no-navigate>
+                                    <MoreHorizontal className="h-3 w-3" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" data-no-navigate>
+                                {canEdit && (
+                                    <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        Editar
+                                    </DropdownMenuItem>
+                                )}
+                                {canDelete && (
+                                    <DropdownMenuItem className="text-destructive" onClick={handleDeleteJob}>
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Eliminar
+                                    </DropdownMenuItem>
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
                 </CardHeader>
 
                 <CardContent className="p-3 pt-0">

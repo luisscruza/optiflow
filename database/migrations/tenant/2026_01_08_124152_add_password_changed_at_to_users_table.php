@@ -14,7 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->json('dashboard_layout')->nullable()->after('current_workspace_id');
+            $table->timestamp('password_changed_at')->nullable();
         });
     }
 
@@ -24,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('dashboard_layout');
+            $table->dropColumn('password_changed_at');
         });
     }
 };

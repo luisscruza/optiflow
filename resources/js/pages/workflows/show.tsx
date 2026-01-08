@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { KanbanBoard } from '@/components/workflows/kanban-board';
+import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import {
@@ -51,6 +52,8 @@ export default function WorkflowShow({
     prescriptions = [],
     ...rest
 }: Props) {
+    const { can } = usePermissions();
+
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [localFilters, setLocalFilters] = useState<Filters>(filters);
 
@@ -207,15 +210,17 @@ export default function WorkflowShow({
                     </div>
                     <div className="flex items-center gap-2">
                         {/* All Workspaces Toggle */}
-                        <Button
-                            variant={showAllWorkspaces ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={toggleAllWorkspaces}
-                            title={showAllWorkspaces ? 'Mostrando todas las sucursales' : 'Mostrar todas las sucursales'}
-                        >
-                            <Building2 className="mr-2 h-4 w-4" />
-                            {showAllWorkspaces ? 'Todas las sucursales' : 'Mi sucursal'}
-                        </Button>
+                        {can('view all locations') && (
+                            <Button
+                                variant={showAllWorkspaces ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={toggleAllWorkspaces}
+                                title={showAllWorkspaces ? 'Mostrando todas las sucursales' : 'Mostrar todas las sucursales'}
+                            >
+                                <Building2 className="mr-2 h-4 w-4" />
+                                {showAllWorkspaces ? 'Todas las sucursales' : 'Mi sucursal'}
+                            </Button>
+                        )}
 
                         {/* Filter Button */}
                         <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
@@ -384,12 +389,14 @@ export default function WorkflowShow({
                             </PopoverContent>
                         </Popover>
 
-                        <Link href={`/workflows/${workflow.id}/edit`}>
-                            <Button variant="outline" size="sm">
-                                <Edit className="mr-2 h-4 w-4" />
-                                Editar
-                            </Button>
-                        </Link>
+                        {can('edit workflows') && (
+                            <Link href={`/workflows/${workflow.id}/edit`}>
+                                <Button variant="outline" size="sm">
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Editar
+                                </Button>
+                            </Link>
+                        )}
                     </div>
                 </div>
 

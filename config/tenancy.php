@@ -23,6 +23,8 @@ return [
         'optiflow.com.do',
     ],
 
+    'central_domain' => env('CENTRAL_DOMAIN', 'opticanet.com.do'),
+
     /**
      * Tenancy bootstrappers are executed when tenancy is initialized.
      * Their responsibility is making Laravel features tenant-aware.

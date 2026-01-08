@@ -15,15 +15,20 @@ final class WorkspaceUserCreatedNotification extends Notification implements Sho
 {
     use Queueable;
 
+    private string $domain;
+
     /**
      * Create a new notification instance.
      */
     public function __construct(
         public Workspace $workspace,
         public User $invitedBy,
-        public string $password
+        public string $password,
+        string $subdomain,
     ) {
-        //
+        $centralDomain = config()->string('tenancy.central_domain');
+
+        $this->domain = $subdomain.'.'.$centralDomain;
     }
 
     /**
@@ -44,14 +49,14 @@ final class WorkspaceUserCreatedNotification extends Notification implements Sho
         $loginUrl = config('app.url').'/login';
 
         return (new MailMessage)
-            ->subject('Bienvenido a '.$this->workspace->name)
+            ->subject('Invitación a Optiflow: Se te ha agregado a '.$this->workspace->name)
             ->greeting('¡Hola '.$notifiable->name.'!')
-            ->line($this->invitedBy->name.' te ha creado una cuenta en '.$this->workspace->name.'.')
+            ->line($this->invitedBy->name.' te ha agregado a '.$this->workspace->name.'.')
             ->line('**Tus credenciales de acceso:**')
             ->line('**Email:** '.$notifiable->email)
             ->line('**Contraseña temporal:** '.$this->password)
             ->line('Te recomendamos cambiar tu contraseña después de iniciar sesión.')
-            ->action('Iniciar Sesión', $loginUrl)
+            ->action('Iniciar sesión', tenant_route($this->domain, 'login'))
             ->line('Si no esperabas recibir este correo, por favor ignóralo.');
     }
 

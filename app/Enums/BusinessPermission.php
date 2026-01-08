@@ -14,6 +14,7 @@ enum BusinessPermission: string
     case ManageCurrencies = 'manage currencies';
     case ManageBusinessDetails = 'manage business details';
     case Impersonate = 'impersonate';
+    case ManageWorkspaces = 'manage workspaces';
 
     /**
      * Todos los permisos.
@@ -37,6 +38,7 @@ enum BusinessPermission: string
             self::ManageCurrencies => 'Gestionar monedas',
             self::ManageBusinessDetails => 'Gestionar detalles del negocio',
             self::Impersonate => 'Suplantar',
+            self::ManageWorkspaces => 'Gestionar sucursales',
         };
     }
 }

@@ -23,11 +23,13 @@ export function AppSidebar() {
             href: dashboard(),
             icon: LayoutGrid,
         },
+        ...(can('view workflows') ? [
         {
             title: 'Procesos',
             href: '/workflows',
             icon: Kanban,
         },
+    ] : []),
         ...(can('view invoices') || can('view quotations') || can('view payments')
             ? [
                   {

@@ -7,8 +7,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { ImageUpload } from '@/components/ui/image-upload';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Textarea } from '@/components/ui/textarea';
+import { usePermissions } from '@/hooks/use-permissions';
 import {
     type Contact,
     type CursorPaginatedData,
@@ -31,6 +32,7 @@ interface KanbanBoardProps {
 }
 
 export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [], prescriptions = [] }: KanbanBoardProps) {
+    const { can } = usePermissions();
     const [draggedJob, setDraggedJob] = useState<WorkflowJob | null>(null);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
@@ -92,6 +94,11 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
 
     const handleDrop = (e: React.DragEvent, targetStageId: string) => {
         e.preventDefault();
+
+        if (!can('edit workflow jobs')) {
+            setDraggedJob(null);
+            return;
+        }
 
         if (draggedJob && draggedJob.workflow_stage_id !== targetStageId) {
             router.patch(`/workflows/${workflow.id}/jobs/${draggedJob.id}/move`, {
@@ -218,16 +225,23 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
                         onDragStart={handleDragStart}
                         onDragEnd={handleDragEnd}
                         onCreateJob={handleCreateJob}
+                        canCreateJobs={can('create workflow jobs')}
+                        canEditJobs={can('edit workflow jobs')}
+                        canDeleteJobs={can('delete workflow jobs')}
+                        canEditStages={can('edit workflow stages')}
+                        canDeleteStages={can('delete workflow stages')}
                     />
                 ))}
 
                 {/* Add Stage Button */}
-                <div className="flex w-80 flex-shrink-0 items-start">
-                    <Button variant="outline" className="w-full justify-start" onClick={() => setIsAddStageDialogOpen(true)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Agregar etapa
-                    </Button>
-                </div>
+                {can('create workflow stages') && (
+                    <div className="flex w-80 flex-shrink-0 items-start">
+                        <Button variant="outline" className="w-full justify-start" onClick={() => setIsAddStageDialogOpen(true)}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Agregar etapa
+                        </Button>
+                    </div>
+                )}
             </div>
 
             {/* Create Job Dialog */}
@@ -237,27 +251,23 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
                         <DialogTitle>Nueva tarea</DialogTitle>
                         <DialogDescription>Agrega una nueva tarea al flujo de trabajo.</DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4 h-[75vh] overflow-y-auto pr-2">
+                    <div className="h-[75vh] space-y-4 overflow-y-auto pr-2">
                         {/* Contact Selection - Required and First */}
                         <div className="space-y-2">
                             <Label htmlFor="job-contact">
                                 Cliente <span className="text-destructive">*</span>
                             </Label>
-                            <Select value={newJobContactId} onValueChange={handleContactChange}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Seleccionar cliente" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {contacts.map((contact) => (
-                                        <SelectItem key={contact.id} value={contact.id.toString()}>
-                                            {contact.name}
-                                            {contact.identification_number && (
-                                                <span className="ml-2 text-muted-foreground">({contact.identification_number})</span>
-                                            )}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <SearchableSelect
+                                options={contacts.map((contact) => ({
+                                    value: contact.id.toString(),
+                                    label: `${contact.name}${contact.identification_number ? ` (${contact.identification_number})` : ''}`,
+                                }))}
+                                value={newJobContactId}
+                                onValueChange={handleContactChange}
+                                placeholder="Seleccionar cliente"
+                                searchPlaceholder="Buscar cliente..."
+                                emptyText="No se encontraron clientes"
+                            />
                         </div>
 
                         {/* Invoice Selection - Filtered by Contact */}
@@ -271,35 +281,24 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
                                         <span className="text-muted-foreground">(opcional)</span>
                                     )}
                                 </Label>
-                                <Select
+                                <SearchableSelect
+                                    options={invoices.map((invoice) => ({
+                                        value: invoice.id.toString(),
+                                        label: `#${invoice.document_number} - $${Number(invoice.total_amount).toLocaleString('es-DO')}`,
+                                    }))}
                                     value={newJobInvoiceId}
                                     onValueChange={setNewJobInvoiceId}
                                     disabled={!newJobContactId || isLoadingContactData}
-                                >
-                                    <SelectTrigger>
-                                        {isLoadingContactData ? (
-                                            <div className="flex items-center gap-2">
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                                <span>Cargando...</span>
-                                            </div>
-                                        ) : (
-                                            <SelectValue placeholder={newJobContactId ? 'Seleccionar factura' : 'Primero seleccione un cliente'} />
-                                        )}
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {invoices.length === 0 ? (
-                                            <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-                                                No hay facturas para este cliente
-                                            </div>
-                                        ) : (
-                                            invoices.map((invoice) => (
-                                                <SelectItem key={invoice.id} value={invoice.id.toString()}>
-                                                    #{invoice.document_number} - ${Number(invoice.total_amount).toLocaleString('es-DO')}
-                                                </SelectItem>
-                                            ))
-                                        )}
-                                    </SelectContent>
-                                </Select>
+                                    placeholder={
+                                        isLoadingContactData
+                                            ? 'Cargando...'
+                                            : newJobContactId
+                                              ? 'Seleccionar factura'
+                                              : 'Primero seleccione un cliente'
+                                    }
+                                    searchPlaceholder="Buscar factura..."
+                                    emptyText="No hay facturas para este cliente"
+                                />
                             </div>
                         )}
 
@@ -314,51 +313,42 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
                                         <span className="text-muted-foreground">(opcional)</span>
                                     )}
                                 </Label>
-                                <Select
+                                <SearchableSelect
+                                    options={prescriptions.map((prescription) => ({
+                                        value: prescription.id.toString(),
+                                        label: `Receta #${prescription.id} - ${prescription.human_readable_date}`,
+                                    }))}
                                     value={newJobPrescriptionId}
                                     onValueChange={setNewJobPrescriptionId}
                                     disabled={!newJobContactId || isLoadingContactData}
-                                >
-                                    <SelectTrigger>
-                                        {isLoadingContactData ? (
-                                            <div className="flex items-center gap-2">
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                                <span>Cargando...</span>
-                                            </div>
-                                        ) : (
-                                            <SelectValue placeholder={newJobContactId ? 'Seleccionar receta' : 'Primero seleccione un cliente'} />
-                                        )}
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {prescriptions.length === 0 ? (
-                                            <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-                                                No hay recetas para este cliente
-                                            </div>
-                                        ) : (
-                                            prescriptions.map((prescription) => (
-                                                <SelectItem key={prescription.id} value={prescription.id.toString()}>
-                                                    Receta #{prescription.id} - {prescription.human_readable_date}
-                                                </SelectItem>
-                                            ))
-                                        )}
-                                    </SelectContent>
-                                </Select>
+                                    placeholder={
+                                        isLoadingContactData
+                                            ? 'Cargando...'
+                                            : newJobContactId
+                                              ? 'Seleccionar receta'
+                                              : 'Primero seleccione un cliente'
+                                    }
+                                    searchPlaceholder="Buscar receta..."
+                                    emptyText="No hay recetas para este cliente"
+                                />
                             </div>
                         )}
 
                         <div className="space-y-2">
                             <Label htmlFor="job-priority">Prioridad</Label>
-                            <Select value={newJobPriority} onValueChange={(v) => setNewJobPriority(v as WorkflowJobPriority | '')}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Seleccionar prioridad" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="low">Baja</SelectItem>
-                                    <SelectItem value="medium">Media</SelectItem>
-                                    <SelectItem value="high">Alta</SelectItem>
-                                    <SelectItem value="urgent">Urgente</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <SearchableSelect
+                                options={[
+                                    { value: 'low', label: 'Baja' },
+                                    { value: 'medium', label: 'Media' },
+                                    { value: 'high', label: 'Alta' },
+                                    { value: 'urgent', label: 'Urgente' },
+                                ]}
+                                value={newJobPriority}
+                                onValueChange={(v) => setNewJobPriority(v as WorkflowJobPriority | '')}
+                                placeholder="Seleccionar prioridad"
+                                searchPlaceholder="Buscar prioridad..."
+                                emptyText="No se encontró la prioridad"
+                            />
                         </div>
 
                         <div className="space-y-2">

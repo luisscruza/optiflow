@@ -50,6 +50,11 @@ interface KanbanColumnProps {
     onDragStart: (e: React.DragEvent, job: WorkflowJob) => void;
     onDragEnd: (e: React.DragEvent) => void;
     onCreateJob: (stageId: string) => void;
+    canCreateJobs?: boolean;
+    canEditJobs?: boolean;
+    canDeleteJobs?: boolean;
+    canEditStages?: boolean;
+    canDeleteStages?: boolean;
 }
 
 export function KanbanColumn({
@@ -63,6 +68,11 @@ export function KanbanColumn({
     onDragStart,
     onDragEnd,
     onCreateJob,
+    canCreateJobs = false,
+    canEditJobs = false,
+    canDeleteJobs = false,
+    canEditStages = false,
+    canDeleteStages = false,
 }: KanbanColumnProps) {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [editName, setEditName] = useState(stage.name);
@@ -162,18 +172,24 @@ export function KanbanColumn({
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => onCreateJob(stage.id)}>
-                                <Plus className="mr-2 h-4 w-4" />
-                                Agregar tarea
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={handleOpenDialog}>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Editar etapa
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive" onClick={handleDeleteStage}>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Eliminar etapa
-                            </DropdownMenuItem>
+                            {canCreateJobs && (
+                                <DropdownMenuItem onClick={() => onCreateJob(stage.id)}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Agregar tarea
+                                </DropdownMenuItem>
+                            )}
+                            {canEditStages && (
+                                <DropdownMenuItem onClick={handleOpenDialog}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Editar etapa
+                                </DropdownMenuItem>
+                            )}
+                            {canDeleteStages && (
+                                <DropdownMenuItem className="text-destructive" onClick={handleDeleteStage}>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Eliminar etapa
+                                </DropdownMenuItem>
+                            )}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </CardHeader>
@@ -181,7 +197,15 @@ export function KanbanColumn({
                 <CardContent className="flex-1 space-y-2 overflow-y-auto">
                     <InfiniteScroll data={stageJobsPropName} buffer={100} preserveUrl loading={() => <JobCardSkeleton />}>
                         {jobs.map((job) => (
-                            <KanbanCard key={job.id} job={job} workflow={workflow} onDragStart={onDragStart} onDragEnd={onDragEnd} />
+                            <KanbanCard
+                                key={job.id}
+                                job={job}
+                                workflow={workflow}
+                                onDragStart={onDragStart}
+                                onDragEnd={onDragEnd}
+                                canEdit={canEditJobs}
+                                canDelete={canDeleteJobs}
+                            />
                         ))}
                     </InfiniteScroll>
 
@@ -192,12 +216,14 @@ export function KanbanColumn({
                     )}
                 </CardContent>
 
-                <div className="border-t p-2">
-                    <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => onCreateJob(stage.id)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Agregar tarea
-                    </Button>
-                </div>
+                {canCreateJobs && (
+                    <div className="border-t p-2">
+                        <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => onCreateJob(stage.id)}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Agregar tarea
+                        </Button>
+                    </div>
+                )}
             </Card>
 
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Actions\CreateWorkflowAction;
 use App\Actions\DeleteWorkflowAction;
 use App\Actions\UpdateWorkflowAction;
+use App\Enums\Permission;
 use App\Filters\WorkflowJob\ContactFilter;
 use App\Filters\WorkflowJob\DateRangeFilter;
 use App\Filters\WorkflowJob\DueStatusFilter;
@@ -35,6 +36,8 @@ final class WorkflowController extends Controller
      */
     public function index(Request $request): Response
     {
+        abort_unless($request->user()->can(Permission::ViewWorkflows), 403);
+
         $currentWorkspace = Context::get('workspace');
 
         $workflows = Workflow::query()
@@ -63,13 +66,17 @@ final class WorkflowController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
+        abort_unless($request->user()->can(Permission::CreateWorkflows), 403);
+
         return Inertia::render('workflows/create');
     }
 
     public function store(CreateWorkflowRequest $request, CreateWorkflowAction $action): RedirectResponse
     {
+        abort_unless($request->user()->can(Permission::CreateWorkflows), 403);
+
         $workflow = $action->handle($request->validated());
 
         return redirect()->route('workflows.show', $workflow)
@@ -78,6 +85,7 @@ final class WorkflowController extends Controller
 
     public function show(ShowWorkflowRequest $request, Workflow $workflow): Response
     {
+
         $filters = $request->getFilters();
         $showAllWorkspaces = $request->showAllWorkspaces();
 
@@ -164,8 +172,10 @@ final class WorkflowController extends Controller
         ], $stageJobProps));
     }
 
-    public function edit(Workflow $workflow): Response
+    public function edit(Request $request, Workflow $workflow): Response
     {
+        abort_unless($request->user()->can(Permission::EditWorkflows), 403);
+
         $workflow->load(['fields' => fn ($query) => $query->orderBy('position')]);
 
         return Inertia::render('workflows/edit', [
@@ -176,14 +186,18 @@ final class WorkflowController extends Controller
 
     public function update(UpdateWorkflowRequest $request, Workflow $workflow, UpdateWorkflowAction $action): RedirectResponse
     {
+        abort_unless($request->user()->can(Permission::EditWorkflows), 403);
+
         $action->handle($workflow, $request->validated());
 
         return redirect()->route('workflows.show', $workflow)
             ->with('success', 'Flujo de trabajo actualizado exitosamente.');
     }
 
-    public function destroy(Workflow $workflow, DeleteWorkflowAction $action): RedirectResponse
+    public function destroy(Request $request, Workflow $workflow, DeleteWorkflowAction $action): RedirectResponse
     {
+        abort_unless($request->user()->can(Permission::DeleteWorkflows), 403);
+
         $action->handle($workflow);
 
         return redirect()->route('workflows.index')

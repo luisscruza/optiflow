@@ -72,12 +72,15 @@ final readonly class AssignUserToWorkspaceAction
                 }
             }
 
+            $domain = tenant()->domain;
+
             if ($isNewUser && $assignedBy && $workspaceAssignments !== []) {
                 $firstWorkspace = Workspace::query()->findOrFail($workspaceAssignments[0]['workspace_id']);
                 $user->notify(new WorkspaceUserCreatedNotification(
                     $firstWorkspace,
                     $assignedBy,
-                    $password
+                    $password,
+                    $domain
                 ));
             } elseif (! $isNewUser && $assignedBy && $workspaceAssignments !== []) {
                 $user->notify(new WorkspaceUserAssignedNotification(

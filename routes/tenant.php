@@ -24,6 +24,7 @@ use App\Http\Controllers\GlobalRoleController;
 use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\InitialStockController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PasswordChangeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\ProductController;
@@ -44,6 +45,7 @@ use App\Http\Controllers\WorkspaceInvitationController;
 use App\Http\Controllers\WorkspaceMemberController;
 use App\Http\Controllers\WorkspaceMemberRoleController;
 use App\Http\Controllers\WorkspaceRoleController;
+use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\HasWorkspace;
 use App\Http\Middleware\SetWorkspaceContext;
 use Illuminate\Support\Facades\Route;
@@ -76,7 +78,12 @@ Route::middleware([
         Route::post('{token}/decline', [WorkspaceInvitationController::class, 'destroy'])->name('decline');
     });
 
-    Route::middleware(['auth', 'verified', SetWorkspaceContext::class])->group(function (): void {
+    Route::middleware(['auth'])->group(function (): void {
+        Route::get('new-password', [PasswordChangeController::class, 'edit'])->name('password.new');
+        Route::post('new-password', [PasswordChangeController::class, 'update'])->name('password.new.update');
+    });
+
+    Route::middleware(['auth', 'verified', SetWorkspaceContext::class, EnsurePasswordChanged::class])->group(function (): void {
         Route::resource('workspaces', WorkspaceController::class)->only(['index', 'store', 'update']);
 
         Route::prefix('workspace-context')->name('workspace-context.')->group(function (): void {

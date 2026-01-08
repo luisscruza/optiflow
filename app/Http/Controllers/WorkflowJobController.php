@@ -7,12 +7,14 @@ namespace App\Http\Controllers;
 use App\Actions\CreateWorkflowJobAction;
 use App\Actions\DeleteWorkflowJobAction;
 use App\Actions\UpdateWorkflowJobAction;
+use App\Enums\Permission;
 use App\Http\Requests\CreateWorkflowJobRequest;
 use App\Http\Requests\UpdateWorkflowJobRequest;
 use App\Models\Workflow;
 use App\Models\WorkflowJob;
 use App\Models\WorkflowStage;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -64,6 +66,8 @@ final class WorkflowJobController extends Controller
      */
     public function store(CreateWorkflowJobRequest $request, Workflow $workflow, CreateWorkflowJobAction $action): RedirectResponse
     {
+        abort_unless($request->user()->can(Permission::CreateWorkflowJobs), 403);
+
         $validated = $request->validated();
         $stage = WorkflowStage::findOrFail($validated['workflow_stage_id']);
 
@@ -78,6 +82,8 @@ final class WorkflowJobController extends Controller
      */
     public function update(UpdateWorkflowJobRequest $request, Workflow $workflow, WorkflowJob $job, UpdateWorkflowJobAction $action): RedirectResponse
     {
+        abort_unless($request->user()->can(Permission::EditWorkflowJobs), 403);
+
         $action->handle($job, $request->validated());
 
         return redirect()->back()
@@ -87,8 +93,10 @@ final class WorkflowJobController extends Controller
     /**
      * Remove the specified job from storage.
      */
-    public function destroy(Workflow $workflow, WorkflowJob $job, DeleteWorkflowJobAction $action): RedirectResponse
+    public function destroy(Request $request, Workflow $workflow, WorkflowJob $job, DeleteWorkflowJobAction $action): RedirectResponse
     {
+        abort_unless($request->user()->can(Permission::DeleteWorkflowJobs), 403);
+
         $action->handle($job);
 
         return redirect()->route('workflows.show', $workflow)

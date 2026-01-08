@@ -221,11 +221,11 @@ export default function ProductsEdit({ product, taxes }: Props) {
 
                     <div className="flex items-center justify-end space-x-4">
                         <Button type="button" variant="outline" asChild>
-                            <Link href={show(product.id).url}>Cancel</Link>
+                            <Link href={show(product.id).url}>Cancelar</Link>
                         </Button>
                         <Button type="submit" disabled={processing}>
                             <Save className="mr-2 h-4 w-4" />
-                            {processing ? 'Updating...' : 'Update Product'}
+                            {processing ? 'Actualizando...' : 'Actualizar'}
                         </Button>
                     </div>
                 </form>

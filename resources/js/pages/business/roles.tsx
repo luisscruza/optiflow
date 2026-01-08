@@ -8,8 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
 import { Head, router } from '@inertiajs/react';
-import { Pencil, Plus, RefreshCw, Shield, Trash2, Users } from 'lucide-react';
-import { useState } from 'react';
+import { Pencil, Plus, RefreshCw, Search, Shield, Trash2, Users } from 'lucide-react';
+import { useRef, useState } from 'react';
 
 interface Permission {
     name: string;
@@ -46,11 +46,14 @@ export default function BusinessRoles({ roles, permissions, workspaces }: Props)
     const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [searchQuery, setSearchQuery] = useState('');
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     const resetForm = () => {
         setRoleName('');
         setSelectedPermissions([]);
         setErrors({});
+        setSearchQuery('');
     };
 
     const openCreateDialog = () => {
@@ -66,7 +69,13 @@ export default function BusinessRoles({ roles, permissions, workspaces }: Props)
     };
 
     const handlePermissionToggle = (permissionName: string) => {
+        const scrollPosition = scrollContainerRef.current?.scrollTop || 0;
         setSelectedPermissions((prev) => (prev.includes(permissionName) ? prev.filter((p) => p !== permissionName) : [...prev, permissionName]));
+        requestAnimationFrame(() => {
+            if (scrollContainerRef.current) {
+                scrollContainerRef.current.scrollTop = scrollPosition;
+            }
+        });
     };
 
     const handleSelectAllInGroup = (groupPermissions: Permission[]) => {
@@ -167,7 +176,6 @@ export default function BusinessRoles({ roles, permissions, workspaces }: Props)
                     value={roleName}
                     onChange={(e) => setRoleName(e.target.value)}
                     placeholder="Ej: Vendedor, Optometrista, etc."
-                    autoFocus
                 />
                 {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
             </div>
@@ -185,42 +193,62 @@ export default function BusinessRoles({ roles, permissions, workspaces }: Props)
                 </div>
                 {errors.permissions && <p className="text-sm text-red-600">{errors.permissions}</p>}
 
-                <div className="max-h-[400px] space-y-6 overflow-y-auto pr-2">
-                    {Object.entries(permissions).map(([groupName, groupPermissions]) => (
-                        <div key={groupName} className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{groupName}</h4>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleSelectAllInGroup(groupPermissions)}
-                                    className="h-7 text-xs"
-                                >
-                                    {groupPermissions.every((p) => selectedPermissions.includes(p.name))
-                                        ? 'Deseleccionar todos'
-                                        : 'Seleccionar todos'}
-                                </Button>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                {groupPermissions.map((permission) => (
-                                    <div
-                                        key={permission.name}
-                                        className="flex items-center space-x-2 rounded-md p-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+                <div className="relative">
+                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Input
+                        type="text"
+                        placeholder="Buscar permisos..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9"
+                    />
+                </div>
+
+                <div ref={scrollContainerRef} className="max-h-[400px] space-y-6 overflow-y-auto pr-2">
+                    {Object.entries(permissions).map(([groupName, groupPermissions]) => {
+                        const filteredPermissions = groupPermissions.filter((p) =>
+                            searchQuery
+                                ? p.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                  p.name.toLowerCase().includes(searchQuery.toLowerCase())
+                                : true,
+                        );
+                        if (filteredPermissions.length === 0) return null;
+                        return (
+                            <div key={groupName} className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{groupName}</h4>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleSelectAllInGroup(filteredPermissions)}
+                                        className="h-7 text-xs"
                                     >
-                                        <Checkbox
-                                            id={`${formId}-${permission.name}`}
-                                            checked={selectedPermissions.includes(permission.name)}
-                                            onCheckedChange={() => handlePermissionToggle(permission.name)}
-                                        />
-                                        <label htmlFor={`${formId}-${permission.name}`} className="flex-1 cursor-pointer text-sm">
-                                            {permission.label}
-                                        </label>
-                                    </div>
-                                ))}
+                                        {filteredPermissions.every((p) => selectedPermissions.includes(p.name))
+                                            ? 'Deseleccionar todos'
+                                            : 'Seleccionar todos'}
+                                    </Button>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {filteredPermissions.map((permission) => (
+                                        <div
+                                            key={permission.name}
+                                            className="flex items-center space-x-2 rounded-md p-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                        >
+                                            <Checkbox
+                                                id={`${formId}-${permission.name}`}
+                                                checked={selectedPermissions.includes(permission.name)}
+                                                onCheckedChange={() => handlePermissionToggle(permission.name)}
+                                            />
+                                            <label htmlFor={`${formId}-${permission.name}`} className="flex-1 cursor-pointer text-sm">
+                                                {permission.label}
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 

@@ -172,6 +172,14 @@ final class User extends Authenticatable
     }
 
     /**
+     * Whether the user must change password on next login.
+     */
+    public function mustChangePassword(): bool
+    {
+        return $this->password_changed_at === null;
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -183,6 +191,7 @@ final class User extends Authenticatable
             'password' => 'hashed',
             'business_role' => UserRole::class,
             'dashboard_layout' => 'array',
+            'password_changed_at' => 'datetime',
         ];
     }
 }

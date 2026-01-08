@@ -36,6 +36,17 @@ export type WorkspacePermission =
     | 'edit configuration'
     | 'view reports'
     | 'export reports'
+    | 'view workflows'
+    | 'create workflows'
+    | 'edit workflows'
+    | 'delete workflows'
+    | 'create workflow jobs'
+    | 'edit workflow jobs'
+    | 'delete workflow jobs'
+    | 'create workflow stages'
+    | 'edit workflow stages'
+    | 'delete workflow stages'
+    | 'view all locations'
     | 'view dashboard accounts receivable'
     | 'view dashboard sales stats'
     | 'view dashboard products stats'
@@ -52,6 +63,7 @@ export type BusinessPermission =
     | 'manage_bank_accounts'
     | 'manage_currencies'
     | 'manage_business_details'
+    | 'manage_workspaces'
     | 'impersonate';
 
 // Combined permission type

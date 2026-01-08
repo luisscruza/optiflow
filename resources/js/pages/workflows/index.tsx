@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import AppLayout from '@/layouts/app-layout';
 import { Workspace, type BreadcrumbItem, type Workflow } from '@/types';
+import { usePermissions } from '@/hooks/use-permissions';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -21,6 +22,7 @@ interface Props {
 
 export default function WorkflowsIndex({ workflows }: Props) {
     const { workspace } = usePage().props as { workspace?: { current: Workspace | null } };
+    const { can } = usePermissions();
 
     const handleDelete = (workflowId: string) => {
         if (confirm('¿Estás seguro de que deseas eliminar este flujo de trabajo? Esto eliminará todas las etapas y tareas asociadas.')) {
@@ -42,12 +44,14 @@ export default function WorkflowsIndex({ workflows }: Props) {
                         </h1>
                         <p className="mt-1 text-sm text-muted-foreground">Gestiona los procesos de trabajo para el seguimiento de lentes</p>
                     </div>
+                    {can('create workflows') &&
                     <Link href="/workflows/create">
                         <Button>
                             <Plus className="mr-2 h-4 w-4" />
                             Nuevo flujo
                         </Button>
                     </Link>
+                    }
                 </div>
 
                 {workflows.length === 0 ? (
@@ -55,6 +59,8 @@ export default function WorkflowsIndex({ workflows }: Props) {
                         <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                             <LayoutGrid className="mb-4 h-12 w-12 text-muted-foreground" />
                             <h3 className="mb-2 text-lg font-semibold">No hay flujos de trabajo</h3>
+                            { can('create workflows') && (
+                            <>
                             <p className="mb-4 text-muted-foreground">Crea tu primer flujo de trabajo para comenzar a gestionar tus procesos.</p>
                             <Link href="/workflows/create">
                                 <Button>
@@ -62,6 +68,8 @@ export default function WorkflowsIndex({ workflows }: Props) {
                                     Crear flujo de trabajo
                                 </Button>
                             </Link>
+                            </>
+                            ) }
                         </CardContent>
                     </Card>
                 ) : (

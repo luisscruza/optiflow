@@ -6,6 +6,7 @@ namespace App\Enums;
 
 enum Permission: string
 {
+    case ViewAllLocations = 'view all locations';
     // Products
     case ProductsView = 'view products';
     case ProductsCreate = 'create products';
@@ -63,14 +64,57 @@ enum Permission: string
     case ViewDashboardPrescriptionsStats = 'view dashboard prescriptions stats';
     case ViewDashboardWorkflowsStats = 'view dashboard workflows stats';
 
+    // Workflows
+    case ViewWorkflows = 'view workflows';
+    case CreateWorkflows = 'create workflows';
+    case EditWorkflows = 'edit workflows';
+    case DeleteWorkflows = 'delete workflows';
+
+    // Workflow Jobs
+    case CreateWorkflowJobs = 'create workflow jobs';
+    case EditWorkflowJobs = 'edit workflow jobs';
+    case DeleteWorkflowJobs = 'delete workflow jobs';
+
+    // Workflow Stages
+    case CreateWorkflowStages = 'create workflow stages';
+    case EditWorkflowStages = 'edit workflow stages';
+    case DeleteWorkflowStages = 'delete workflow stages';
+
     public static function all(): array
     {
         return array_map(fn (self $permission) => $permission->value, self::cases());
     }
 
+    public static function adminOnly(): array
+    {
+        return [
+            self::ConfigurationView->value,
+            self::ConfigurationEdit->value,
+            self::ReportsView->value,
+            self::ReportsExport->value,
+            self::InventoryAdjust->value,
+            self::InventoryTransfer->value,
+            self::ProductsDelete->value,
+            self::ContactsDelete->value,
+            self::InvoicesDelete->value,
+            self::PaymentsDelete->value,
+            self::QuotationsDelete->value,
+            self::PrescriptionsDelete->value,
+            self::CreateWorkflows->value,
+            self::EditWorkflows->value,
+            self::DeleteWorkflows->value,
+            self::DeleteWorkflowJobs->value,
+            self::CreateWorkflowStages->value,
+            self::EditWorkflowStages->value,
+            self::DeleteWorkflowStages->value,
+            self::ViewAllLocations->value,
+        ];
+    }
+
     public function label(): string
     {
         return match ($this) {
+            self::ViewAllLocations => 'Ver todas las sucursales',
             // Products
             self::ProductsView => 'Ver productos',
             self::ProductsCreate => 'Crear productos',
@@ -120,6 +164,22 @@ enum Permission: string
             self::ReportsView => 'Ver reportes',
             self::ReportsExport => 'Exportar reportes',
 
+            // Workflows
+            self::ViewWorkflows => 'Ver flujos de trabajo',
+            self::CreateWorkflows => 'Crear flujos de trabajo',
+            self::EditWorkflows => 'Editar flujos de trabajo',
+            self::DeleteWorkflows => 'Eliminar flujos de trabajo',
+
+            // Workflow Jobs
+            self::CreateWorkflowJobs => 'Crear procesos',
+            self::EditWorkflowJobs => 'Editar procesos',
+            self::DeleteWorkflowJobs => 'Eliminar procesos',
+
+            // Workflow Stages
+            self::CreateWorkflowStages => 'Crear etapas de procesos',
+            self::EditWorkflowStages => 'Editar etapas de procesos',
+            self::DeleteWorkflowStages => 'Eliminar etapas de procesos',
+
             // Dashboard
             self::ViewDashboardAccountReceivable => 'Ver panel de cuentas por cobrar',
             self::ViewDashboardSalesStats => 'Ver panel de estadísticas de ventas',
@@ -133,6 +193,7 @@ enum Permission: string
     public function group(): string
     {
         return match ($this) {
+            self::ViewAllLocations => 'General',
             self::ProductsView, self::ProductsCreate, self::ProductsEdit, self::ProductsDelete => 'Productos',
             self::ContactsView, self::ContactsCreate, self::ContactsEdit, self::ContactsDelete => 'Contactos',
             self::InvoicesView, self::InvoicesCreate, self::InvoicesEdit, self::InvoicesDelete => 'Facturas',
@@ -143,6 +204,7 @@ enum Permission: string
             self::ConfigurationView, self::ConfigurationEdit => 'Configuración',
             self::ReportsView, self::ReportsExport => 'Reportes',
             self::ViewDashboardAccountReceivable, self::ViewDashboardSalesStats, self::ViewDashboardProductsStats, self::ViewDashboardCustomersStats, self::ViewDashboardPrescriptionsStats, self::ViewDashboardWorkflowsStats => 'Panel',
+            self::ViewWorkflows, self::CreateWorkflows, self::EditWorkflows, self::DeleteWorkflows, self::CreateWorkflowJobs, self::EditWorkflowJobs, self::DeleteWorkflowJobs, self::CreateWorkflowStages, self::EditWorkflowStages, self::DeleteWorkflowStages => 'Flujos de trabajo',
         };
     }
 }

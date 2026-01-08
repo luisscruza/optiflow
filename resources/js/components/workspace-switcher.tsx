@@ -9,6 +9,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { usePermissions } from '@/hooks/use-permissions';
 import { type Workspace } from '@/types';
 import { router, usePage } from '@inertiajs/react';
 import { Check, ChevronsUpDown, Plus, Settings } from 'lucide-react';
@@ -21,6 +22,8 @@ export function WorkspaceSwitcher() {
     }
 
     const { current, available } = workspace;
+
+    const { can } = usePermissions();
 
     const switchWorkspace = (targetWorkspace: Workspace) => {
         if (current?.id === targetWorkspace.id) {
@@ -78,6 +81,8 @@ export function WorkspaceSwitcher() {
                                 {current?.id === workspace.id && <Check className="size-4" />}
                             </DropdownMenuItem>
                         ))}
+                        {can('manage_workspaces') && (
+                            <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={manageWorkspaces} className="gap-2 p-2">
                             <div className="flex size-6 items-center justify-center rounded-md border">
@@ -85,7 +90,10 @@ export function WorkspaceSwitcher() {
                             </div>
                             Gestionar sucursales
                         </DropdownMenuItem>
+                        </>
+                        )}
                     </DropdownMenuContent>
+
                 </DropdownMenu>
             </SidebarMenuItem>
         </SidebarMenu>

@@ -1,6 +1,6 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { AlertTriangle, CreditCard, FileText, Plus, Save, ShoppingCart, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import { EditNcfModal } from '@/components/invoices/edit-ncf-modal';
@@ -198,6 +198,13 @@ export default function CreateInvoice({
         payment_notes: '',
         quotation_id: fromQuotation?.id ?? null,
     });
+
+    // Sync NCF prop changes to form data when document subtype changes
+    useEffect(() => {
+        if (ncf && ncf !== data.ncf) {
+            setData('ncf', ncf);
+        }
+    }, [ncf]);
 
     // Handle workspace switching
     const handleWorkspaceSwitch = (workspaceId: string) => {
