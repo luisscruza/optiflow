@@ -1,14 +1,17 @@
-import { Head, router } from '@inertiajs/react';
-import { Download, Filter, Search } from 'lucide-react';
-import { FormEventHandler, useState } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
+import { Calendar, ChevronDown, Download, Filter, Search } from 'lucide-react';
+import { useState } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Paginator } from '@/components/ui/paginator';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type PaginatedData } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 interface Report {
@@ -20,36 +23,44 @@ interface Report {
     groupLabel: string;
 }
 
-interface CustomerData {
-    customer_id: number;
-    customer_name: string;
-    total_invoices: number;
-    total_sales: number;
-    total_taxes: number;
-    total_amount: number;
+interface ReportFilter {
+    name: string;
+    label: string;
+    type: string;
+    default?: unknown;
+    options?: Array<{ value: string; label: string }>;
+    placeholder?: string;
 }
 
-interface Summary {
-    total_customers: number;
-    total_invoices: number;
-    total_sales: number;
-    total_amount: number;
+interface ReportColumn {
+    key: string;
+    label: string;
+    type: string;
+    sortable: boolean;
+    align?: string;
 }
 
-interface ReportData {
-    customers?: CustomerData[];
-    summary?: Summary;
+interface SummaryItem {
+    key: string;
+    label: string;
+    value: number;
+    type: string;
 }
 
-interface Filters {
-    start_date?: string;
-    end_date?: string;
+interface StatusConfig {
+    value: string;
+    label: string;
+    variant: string;
+    className: string;
 }
 
 interface Props {
     report: Report;
-    data: ReportData;
-    filters: Filters;
+    filters: ReportFilter[];
+    columns: ReportColumn[];
+    summary: SummaryItem[];
+    data: PaginatedData<Record<string, unknown>>;
+    appliedFilters: Record<string, string>;
 }
 
 const breadcrumbs = (reportName: string, groupLabel: string, groupValue: string): BreadcrumbItem[] => [
@@ -67,20 +78,83 @@ const breadcrumbs = (reportName: string, groupLabel: string, groupValue: string)
     },
 ];
 
-export default function ReportShow({ report, data, filters }: Props) {
-    const formatCurrency = useCurrency();
-    const [startDate, setStartDate] = useState(filters.start_date || '');
-    const [endDate, setEndDate] = useState(filters.end_date || '');
-    const [showFilters, setShowFilters] = useState(false);
+export default function ReportShow({ report, filters, columns, summary, data, appliedFilters }: Props) {
+    const { format: formatCurrency } = useCurrency();
+    const [filterValues, setFilterValues] = useState<Record<string, string>>(appliedFilters);
+    const [searchQuery, setSearchQuery] = useState(appliedFilters.search || '');
 
-    const handleFilter: FormEventHandler = (e) => {
-        e.preventDefault();
-        router.get(`/reports/${report.type}`, { start_date: startDate, end_date: endDate }, { preserveState: true, preserveScroll: true });
+    const handleFilterChange = (name: string, value: string) => {
+        const newFilters = { ...filterValues, [name]: value };
+        setFilterValues(newFilters);
+        router.get(`/reports/${report.type}`, newFilters, { preserveState: true, preserveScroll: true });
+    };
+
+    const handleSearch = (value: string) => {
+        setSearchQuery(value);
+        const newFilters = { ...filterValues, search: value };
+        setFilterValues(newFilters);
+
+        // Debounce search
+        const timeoutId = setTimeout(() => {
+            router.get(`/reports/${report.type}`, newFilters, { preserveState: true, preserveScroll: true });
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
     };
 
     const handleExport = () => {
         // TODO: Implement export functionality
         console.log('Export report');
+    };
+
+    const renderCellContent = (row: Record<string, unknown>, column: ReportColumn) => {
+        const value = row[column.key];
+
+        switch (column.type) {
+            case 'currency':
+                return formatCurrency(Number(value));
+            case 'badge': {
+                const statusConfig = value as StatusConfig;
+                return (
+                    <Badge variant={statusConfig.variant as 'default' | 'destructive' | 'outline' | 'secondary'} className={statusConfig.className}>
+                        {statusConfig.label}
+                    </Badge>
+                );
+            }
+            case 'date':
+                return String(value);
+            case 'link':
+                return (
+                    <Link href={`/invoices/${row.id}`} className="font-medium text-primary hover:underline">
+                        {String(value)}
+                    </Link>
+                );
+            default:
+                return String(value);
+        }
+    };
+
+    const renderSummaryValue = (item: SummaryItem) => {
+        if (item.type === 'currency') {
+            return formatCurrency(item.value);
+        }
+        return item.value.toLocaleString();
+    };
+
+    // Get filters by type
+    const searchFilter = filters.find((f) => f.type === 'search');
+    const dateFilters = filters.filter((f) => f.type === 'date');
+    const selectFilters = filters.filter((f) => f.type === 'select');
+
+    const formatDateRange = () => {
+        const start = filterValues.start_date;
+        const end = filterValues.end_date;
+        if (start && end) {
+            return `${new Date(start).toLocaleDateString('es-ES')} - ${new Date(end).toLocaleDateString('es-ES')}`;
+        }
+        if (start) return `Desde ${new Date(start).toLocaleDateString('es-ES')}`;
+        if (end) return `Hasta ${new Date(end).toLocaleDateString('es-ES')}`;
+        return 'Seleccionar fechas';
     };
 
     return (
@@ -89,123 +163,138 @@ export default function ReportShow({ report, data, filters }: Props) {
 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="space-y-6">
-                    {/* Header */}
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <h1 className="text-3xl font-bold tracking-tight">{report.name}</h1>
-                            <p className="text-muted-foreground">{report.description}</p>
-                        </div>
-                        <div className="flex gap-2">
-                            <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
-                                <Filter className="h-4 w-4" />
-                                Filtros
-                            </Button>
-                            <Button onClick={handleExport}>
-                                <Download className="h-4 w-4" />
-                                Exportar
-                            </Button>
-                        </div>
+                    {/* Top Filter Bar */}
+                    <div className="flex flex-wrap items-center gap-3">
+                        {/* Date Range Picker */}
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className="gap-2">
+                                    <Calendar className="h-4 w-4" />
+                                    {formatDateRange()}
+                                    <ChevronDown className="h-4 w-4" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-4" align="start">
+                                <div className="grid gap-4">
+                                    {dateFilters.map((filter) => (
+                                        <div key={filter.name} className="grid gap-2">
+                                            <label className="text-sm font-medium">{filter.label}</label>
+                                            <Input
+                                                type="date"
+                                                value={filterValues[filter.name] || ''}
+                                                onChange={(e) => handleFilterChange(filter.name, e.target.value)}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+
+                        {/* Select Filters */}
+                        {selectFilters.map((filter) => (
+                            <Select
+                                key={filter.name}
+                                value={filterValues[filter.name] || ''}
+                                onValueChange={(value) => handleFilterChange(filter.name, value)}
+                            >
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder={filter.label} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todos</SelectItem>
+                                    {filter.options?.map((option) => (
+                                        <SelectItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        ))}
+
+                        {/* More Filters Button */}
+                        <Button variant="outline" className="gap-2">
+                            <Filter className="h-4 w-4" />
+                            Más filtros
+                            <ChevronDown className="h-4 w-4" />
+                        </Button>
+
+                        {/* Export Button */}
+                        <Button variant="outline" onClick={handleExport} className="ml-auto gap-2">
+                            <Download className="h-4 w-4" />
+                            Exportar
+                        </Button>
                     </div>
 
-                    {/* Filters */}
-                    {showFilters && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Filtros</CardTitle>
-                                <CardDescription>Filtra los datos del reporte por fecha</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <form onSubmit={handleFilter} className="flex flex-col gap-4 sm:flex-row sm:items-end">
-                                    <div className="flex-1 space-y-2">
-                                        <Label htmlFor="start_date">Fecha de inicio</Label>
-                                        <Input id="start_date" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-                                    </div>
-                                    <div className="flex-1 space-y-2">
-                                        <Label htmlFor="end_date">Fecha de fin</Label>
-                                        <Input id="end_date" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-                                    </div>
-                                    <Button type="submit">Aplicar filtros</Button>
-                                </form>
-                            </CardContent>
-                        </Card>
-                    )}
-
                     {/* Summary Cards */}
-                    {data.summary && (
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                            <Card>
-                                <CardHeader className="pb-3">
-                                    <CardDescription>Total Clientes</CardDescription>
-                                    <CardTitle className="text-2xl">{data.summary.total_customers}</CardTitle>
-                                </CardHeader>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        {summary.map((item) => (
+                            <Card key={item.key} className="border-border/40 bg-card/50">
+                                <CardContent className="p-4">
+                                    <p className="text-sm text-muted-foreground">{item.label}</p>
+                                    <p className="mt-1 text-2xl font-bold tracking-tight">{renderSummaryValue(item)}</p>
+                                </CardContent>
                             </Card>
-                            <Card>
-                                <CardHeader className="pb-3">
-                                    <CardDescription>Total Facturas</CardDescription>
-                                    <CardTitle className="text-2xl">{data.summary.total_invoices}</CardTitle>
-                                </CardHeader>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-3">
-                                    <CardDescription>Total Ventas</CardDescription>
-                                    <CardTitle className="text-2xl">{formatCurrency(data.summary.total_sales)}</CardTitle>
-                                </CardHeader>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-3">
-                                    <CardDescription>Monto Total</CardDescription>
-                                    <CardTitle className="text-2xl">{formatCurrency(data.summary.total_amount)}</CardTitle>
-                                </CardHeader>
-                            </Card>
-                        </div>
-                    )}
+                        ))}
+                    </div>
 
-                    {/* Data Table for Sales by Customer */}
-                    {data.customers && data.customers.length > 0 && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Detalle por Cliente</CardTitle>
-                                <CardDescription>Ventas detalladas por cada cliente</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Cliente</TableHead>
-                                            <TableHead className="text-right">Facturas</TableHead>
-                                            <TableHead className="text-right">Ventas</TableHead>
-                                            <TableHead className="text-right">Impuestos</TableHead>
-                                            <TableHead className="text-right">Total</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {data.customers.map((customer) => (
-                                            <TableRow key={customer.customer_id}>
-                                                <TableCell className="font-medium">{customer.customer_name}</TableCell>
-                                                <TableCell className="text-right">{customer.total_invoices}</TableCell>
-                                                <TableCell className="text-right">{formatCurrency(customer.total_sales)}</TableCell>
-                                                <TableCell className="text-right">{formatCurrency(customer.total_taxes)}</TableCell>
-                                                <TableCell className="text-right font-semibold">{formatCurrency(customer.total_amount)}</TableCell>
-                                            </TableRow>
+                    {/* Data Table */}
+                    <Card>
+                        <CardContent className="p-0">
+                            {/* Table Header with Search */}
+                            <div className="flex items-center gap-4 border-b p-4">
+                                {searchFilter && (
+                                    <div className="relative max-w-xs flex-1">
+                                        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            type="search"
+                                            placeholder={searchFilter.placeholder || searchFilter.label}
+                                            className="pl-9"
+                                            value={searchQuery}
+                                            onChange={(e) => handleSearch(e.target.value)}
+                                        />
+                                    </div>
+                                )}
+                                <Button variant="outline" size="sm" className="gap-2">
+                                    <Filter className="h-4 w-4" />
+                                    Filtrar
+                                </Button>
+                            </div>
+
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        {columns.map((column) => (
+                                            <TableHead key={column.key} className={column.align === 'right' ? 'text-right' : ''}>
+                                                {column.label}
+                                            </TableHead>
                                         ))}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                        </Card>
-                    )}
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {data.data.length > 0 ? (
+                                        data.data.map((row, index) => (
+                                            <TableRow key={index}>
+                                                {columns.map((column) => (
+                                                    <TableCell key={column.key} className={column.align === 'right' ? 'text-right' : ''}>
+                                                        {renderCellContent(row, column)}
+                                                    </TableCell>
+                                                ))}
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={columns.length} className="h-24 text-center">
+                                                No hay datos disponibles para los filtros seleccionados.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
 
-                    {/* Empty State */}
-                    {data.customers && data.customers.length === 0 && (
-                        <Card>
-                            <CardContent className="flex min-h-[300px] flex-col items-center justify-center py-12">
-                                <Search className="h-12 w-12 text-muted-foreground/50" />
-                                <h3 className="mt-4 text-lg font-semibold">No hay datos disponibles</h3>
-                                <p className="mt-2 text-sm text-muted-foreground">
-                                    No se encontraron datos para el período seleccionado. Intenta ajustar los filtros.
-                                </p>
-                            </CardContent>
-                        </Card>
-                    )}
+                    {/* Pagination */}
+                    {data.data.length > 0 && <Paginator data={data} />}
                 </div>
             </div>
         </AppLayout>

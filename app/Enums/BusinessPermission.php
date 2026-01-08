@@ -14,7 +14,7 @@ enum BusinessPermission: string
     case ManageCurrencies = 'manage currencies';
     case ManageBusinessDetails = 'manage business details';
     case Impersonate = 'impersonate';
-    case ManageWorkspaces = 'manage workspaces';
+    case ManageWorkspaces = 'manage_workspaces';
 
     /**
      * Todos los permisos.

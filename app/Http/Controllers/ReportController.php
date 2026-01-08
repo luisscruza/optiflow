@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Contracts\ReportContract;
 use App\Enums\ReportGroup;
 use App\Enums\ReportType;
-use App\Models\Invoice;
 use App\Models\Report;
+use App\Reports\GeneralSalesReport;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -55,14 +56,14 @@ class ReportController extends Controller
         $reportType = ReportType::from($type);
         $report = Report::where('type', $reportType)->firstOrFail();
 
-        // Get filter parameters from request
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
+        // Get the report implementation
+        $reportImplementation = $this->getReportImplementation($reportType);
 
-        $data = match ($reportType) {
-            ReportType::SalesByCustomer => $this->getSalesByCustomer($startDate, $endDate),
-            default => [],
-        };
+        // Get filters from request
+        $filters = $request->only(['workspace_id', 'start_date', 'end_date', 'customer_id', 'status', 'search']);
+
+        // Execute the report
+        $results = $reportImplementation->execute($filters, $request->integer('per_page', 15));
 
         return Inertia::render('reports/show', [
             'report' => [
@@ -73,52 +74,25 @@ class ReportController extends Controller
                 'group' => $report->group->value,
                 'groupLabel' => $report->group->label(),
             ],
-            'data' => $data,
-            'filters' => [
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-            ],
+            'filters' => array_map(
+                fn($filter) => $filter->toArray(),
+                $reportImplementation->filters()
+            ),
+            'columns' => array_map(
+                fn($column) => $column->toArray(),
+                $reportImplementation->columns()
+            ),
+            'summary' => $reportImplementation->summary($filters),
+            'data' => $results,
+            'appliedFilters' => $filters,
         ]);
     }
 
-    private function getSalesByCustomer(?string $startDate, ?string $endDate): array
+    private function getReportImplementation(ReportType $type): ReportContract
     {
-        $query = Invoice::query()
-            ->with('customer')
-            ->selectRaw('
-                customer_id,
-                COUNT(*) as total_invoices,
-                SUM(subtotal) as total_sales,
-                SUM(total_taxes) as total_taxes,
-                SUM(total) as total_amount
-            ')
-            ->groupBy('customer_id');
-
-        if ($startDate) {
-            $query->where('invoice_date', '>=', $startDate);
-        }
-
-        if ($endDate) {
-            $query->where('invoice_date', '<=', $endDate);
-        }
-
-        $results = $query->get();
-
-        return [
-            'customers' => $results->map(fn($item) => [
-                'customer_id' => $item->customer_id,
-                'customer_name' => $item->customer?->name ?? 'Sin cliente',
-                'total_invoices' => (int) $item->total_invoices,
-                'total_sales' => (float) $item->total_sales,
-                'total_taxes' => (float) $item->total_taxes,
-                'total_amount' => (float) $item->total_amount,
-            ]),
-            'summary' => [
-                'total_customers' => $results->count(),
-                'total_invoices' => $results->sum('total_invoices'),
-                'total_sales' => $results->sum('total_sales'),
-                'total_amount' => $results->sum('total_amount'),
-            ],
-        ];
+        return match ($type) {
+            ReportType::GeneralSales => new GeneralSalesReport,
+            default => throw new \Exception('Report not implemented'),
+        };
     }
 }
