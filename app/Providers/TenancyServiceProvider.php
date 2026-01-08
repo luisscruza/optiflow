@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Enums\BusinessPermission;
+use App\Enums\UserRole;
 use App\Jobs\ConfigureTenant;
+use App\Models\User;
+use App\Support\Impersonator;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Stancl\JobPipeline\JobPipeline;
@@ -105,11 +110,49 @@ final class TenancyServiceProvider extends ServiceProvider
     {
         $this->bootEvents();
         $this->mapRoutes();
-
+        
         $this->makeTenancyMiddlewareHighestPriority();
+        $this->allowSuperAdmin();
+        $this->setupImpersonator();
+
+
 
         // Configure TenantAssetsController to use the correct tenancy middleware
         TenantAssetsController::$tenancyMiddleware = Middleware\InitializeTenancyByDomainOrSubdomain::class;
+    }
+
+    private function allowSuperAdmin(): void
+    {
+       if (! $this->isRunningOnTenant()) {
+           return;
+       }
+
+        Gate::before(function ($user) {
+            return in_array($user->business_role, [UserRole::Owner, UserRole::Admin]) ? true : null;
+        });
+    }
+
+    private function setupImpersonator(): void
+    {
+        Gate::define(BusinessPermission::Impersonate->value, function (User $user) {
+            return in_array($user->business_role, [UserRole::Owner, UserRole::Admin]);
+        });
+
+        app()->bind('impersonator', Impersonator::class);
+    }
+
+    private function isRunningOnTenant(): bool
+    {
+        // if its running on console, we consider it not running on tenant
+        if (app()->runningInConsole()) {
+            return false;
+        }
+        
+        if (in_array(request()->getHost(), config('tenancy.central_domains'), true)) {
+        return false;
+    }
+
+        return true;
     }
 
     private function bootEvents(): void

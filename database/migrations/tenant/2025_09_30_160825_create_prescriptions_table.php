@@ -29,31 +29,31 @@ return new class extends Migration
             $table->foreignIdFor(Contact::class, 'optometrist_id')->nullable()->constrained('contacts');
 
             // === LENSOMETRÍA ===
-            $table->string('lensometria_od')->nullable(); // Ojo Derecho
-            $table->string('lensometria_oi')->nullable(); // Ojo Izquierdo
-            $table->string('lensometria_add')->nullable(); // Adición
+            $table->string('lensometria_od', 50)->nullable(); // Ojo Derecho
+            $table->string('lensometria_oi', 50)->nullable(); // Ojo Izquierdo
+            $table->string('lensometria_add', 50)->nullable(); // Adición
 
             // === AGUDEZA VISUAL - LEJANA ===
             // Sin Corrección (SC)
-            $table->string('av_lejos_sc_od')->nullable(); // 20/
-            $table->string('av_lejos_sc_oi')->nullable(); // 20/
+            $table->string('av_lejos_sc_od', 20)->nullable(); // 20/
+            $table->string('av_lejos_sc_oi', 20)->nullable(); // 20/
             // Con Corrección (CC)
-            $table->string('av_lejos_cc_od')->nullable(); // 20/
-            $table->string('av_lejos_cc_oi')->nullable(); // 20/
+            $table->string('av_lejos_cc_od', 20)->nullable(); // 20/
+            $table->string('av_lejos_cc_oi', 20)->nullable(); // 20/
             // Pin Hole (PH)
-            $table->string('av_lejos_ph_od')->nullable(); // 20/
-            $table->string('av_lejos_ph_oi')->nullable(); // 20/
+            $table->string('av_lejos_ph_od', 20)->nullable(); // 20/
+            $table->string('av_lejos_ph_oi', 20)->nullable(); // 20/
 
             // === AGUDEZA VISUAL - CERCANA ===
             // Sin Corrección (SC)
-            $table->string('av_cerca_sc_od')->nullable();
-            $table->string('av_cerca_sc_oi')->nullable();
+            $table->string('av_cerca_sc_od', 20)->nullable();
+            $table->string('av_cerca_sc_oi', 20)->nullable();
             // Con Corrección (CC)
-            $table->string('av_cerca_cc_od')->nullable();
-            $table->string('av_cerca_cc_oi')->nullable();
+            $table->string('av_cerca_cc_od', 20)->nullable();
+            $table->string('av_cerca_cc_oi', 20)->nullable();
             // Pin Hole (PH)
-            $table->string('av_cerca_ph_od')->nullable();
-            $table->string('av_cerca_ph_oi')->nullable();
+            $table->string('av_cerca_ph_od', 20)->nullable();
+            $table->string('av_cerca_ph_oi', 20)->nullable();
 
             // === BIOMICROSCOPÍA - OJO DERECHO ===
             $table->text('biomicroscopia_od_cejas')->nullable();
@@ -93,128 +93,128 @@ return new class extends Migration
 
             // === OFTALMOSCOPÍA ===
             // OD (Ojo Derecho)
-            $table->string('oftalmoscopia_od_color')->nullable();
-            $table->string('oftalmoscopia_od_papila')->nullable();
-            $table->string('oftalmoscopia_od_excavacion')->nullable();
-            $table->string('oftalmoscopia_od_relacion_av')->nullable(); // Relación Arteria/Vena
-            $table->string('oftalmoscopia_od_macula')->nullable();
-            $table->string('oftalmoscopia_od_brillo_foveal')->nullable();
-            $table->string('oftalmoscopia_od_fijacion')->nullable();
+            $table->string('oftalmoscopia_od_color', 100)->nullable();
+            $table->string('oftalmoscopia_od_papila', 100)->nullable();
+            $table->string('oftalmoscopia_od_excavacion', 50)->nullable();
+            $table->string('oftalmoscopia_od_relacion_av', 50)->nullable(); // Relación Arteria/Vena
+            $table->string('oftalmoscopia_od_macula', 100)->nullable();
+            $table->string('oftalmoscopia_od_brillo_foveal', 100)->nullable();
+            $table->string('oftalmoscopia_od_fijacion', 100)->nullable();
 
             // OI (Ojo Izquierdo)
-            $table->string('oftalmoscopia_oi_color')->nullable();
-            $table->string('oftalmoscopia_oi_papila')->nullable();
-            $table->string('oftalmoscopia_oi_excavacion')->nullable();
-            $table->string('oftalmoscopia_oi_relacion_av')->nullable(); // Relación Arteria/Vena
-            $table->string('oftalmoscopia_oi_macula')->nullable(); // Avascular
-            $table->string('oftalmoscopia_oi_brillo_foveal')->nullable(); // Presente
-            $table->string('oftalmoscopia_oi_fijacion')->nullable(); // Central
+            $table->string('oftalmoscopia_oi_color', 100)->nullable();
+            $table->string('oftalmoscopia_oi_papila', 100)->nullable();
+            $table->string('oftalmoscopia_oi_excavacion', 50)->nullable();
+            $table->string('oftalmoscopia_oi_relacion_av', 50)->nullable(); // Relación Arteria/Vena
+            $table->string('oftalmoscopia_oi_macula', 100)->nullable(); // Avascular
+            $table->string('oftalmoscopia_oi_brillo_foveal', 100)->nullable(); // Presente
+            $table->string('oftalmoscopia_oi_fijacion', 100)->nullable(); // Central
 
             // === OFTALMOSCOPÍA - OBSERVACIONES ===
             $table->text('oftalmoscopia_observaciones')->nullable();
 
             // === QUERATOMETRÍA ===
-            $table->string('quera_od_horizontal')->nullable();
-            $table->string('quera_od_vertical')->nullable();
-            $table->string('quera_od_eje')->nullable();
-            $table->string('quera_od_dif')->nullable();
-            $table->string('quera_oi_horizontal')->nullable();
-            $table->string('quera_oi_vertical')->nullable();
-            $table->string('quera_oi_eje')->nullable();
-            $table->string('quera_oi_dif')->nullable();
+            $table->string('quera_od_horizontal', 20)->nullable();
+            $table->string('quera_od_vertical', 20)->nullable();
+            $table->string('quera_od_eje', 20)->nullable();
+            $table->string('quera_od_dif', 20)->nullable();
+            $table->string('quera_oi_horizontal', 20)->nullable();
+            $table->string('quera_oi_vertical', 20)->nullable();
+            $table->string('quera_oi_eje', 20)->nullable();
+            $table->string('quera_oi_dif', 20)->nullable();
 
             // === PRESIÓN INTRAOCULAR ===
-            $table->string('presion_od')->nullable(); // mmHg
-            $table->string('presion_od_hora')->nullable(); // Hora de medición
-            $table->string('presion_oi')->nullable(); // mmHg
-            $table->string('presion_oi_hora')->nullable(); // Hora de medición
+            $table->string('presion_od', 20)->nullable(); // mmHg
+            $table->string('presion_od_hora', 10)->nullable(); // Hora de medición
+            $table->string('presion_oi', 20)->nullable(); // mmHg
+            $table->string('presion_oi_hora', 10)->nullable(); // Hora de medición
 
             // === CICLOPLEGIA ===
-            $table->string('cicloplegia_medicamento')->nullable();
-            $table->string('cicloplegia_num_gotas')->nullable();
-            $table->string('cicloplegia_hora_aplicacion')->nullable();
-            $table->string('cicloplegia_hora_examen')->nullable();
+            $table->string('cicloplegia_medicamento', 100)->nullable();
+            $table->string('cicloplegia_num_gotas', 10)->nullable();
+            $table->string('cicloplegia_hora_aplicacion', 10)->nullable();
+            $table->string('cicloplegia_hora_examen', 10)->nullable();
 
             // === AUTOREFRACCIÓN ===
             // Ojo Derecho
-            $table->string('autorefraccion_od_esfera')->nullable();
-            $table->string('autorefraccion_od_cilindro')->nullable();
-            $table->string('autorefraccion_od_eje')->nullable();
+            $table->string('autorefraccion_od_esfera', 20)->nullable();
+            $table->string('autorefraccion_od_cilindro', 20)->nullable();
+            $table->string('autorefraccion_od_eje', 20)->nullable();
             // Ojo Izquierdo
-            $table->string('autorefraccion_oi_esfera')->nullable();
-            $table->string('autorefraccion_oi_cilindro')->nullable();
-            $table->string('autorefraccion_oi_eje')->nullable();
+            $table->string('autorefraccion_oi_esfera', 20)->nullable();
+            $table->string('autorefraccion_oi_cilindro', 20)->nullable();
+            $table->string('autorefraccion_oi_eje', 20)->nullable();
 
             // === REFRACCIÓN ===
             // Ojo Derecho
-            $table->string('refraccion_od_esfera')->nullable();
-            $table->string('refraccion_od_cilindro')->nullable();
-            $table->string('refraccion_od_eje')->nullable();
+            $table->string('refraccion_od_esfera', 20)->nullable();
+            $table->string('refraccion_od_cilindro', 20)->nullable();
+            $table->string('refraccion_od_eje', 20)->nullable();
             // Ojo Izquierdo
-            $table->string('refraccion_oi_esfera')->nullable();
-            $table->string('refraccion_oi_cilindro')->nullable();
-            $table->string('refraccion_oi_eje')->nullable();
+            $table->string('refraccion_oi_esfera', 20)->nullable();
+            $table->string('refraccion_oi_cilindro', 20)->nullable();
+            $table->string('refraccion_oi_eje', 20)->nullable();
 
             // === RETINOSCOPÍA ===
             // Ojo Derecho
-            $table->string('retinoscopia_od_esfera')->nullable();
-            $table->string('retinoscopia_od_cilindro')->nullable();
-            $table->string('retinoscopia_od_eje')->nullable();
+            $table->string('retinoscopia_od_esfera', 20)->nullable();
+            $table->string('retinoscopia_od_cilindro', 20)->nullable();
+            $table->string('retinoscopia_od_eje', 20)->nullable();
             // Ojo Izquierdo
-            $table->string('retinoscopia_oi_esfera')->nullable();
-            $table->string('retinoscopia_oi_cilindro')->nullable();
-            $table->string('retinoscopia_oi_eje')->nullable();
+            $table->string('retinoscopia_oi_esfera', 20)->nullable();
+            $table->string('retinoscopia_oi_cilindro', 20)->nullable();
+            $table->string('retinoscopia_oi_eje', 20)->nullable();
             // Tipo
             $table->boolean('retinoscopia_estatica')->default(false);
             $table->boolean('retinoscopia_dinamica')->default(false);
 
             // === SUBJETIVO (en sección de refracción) ===
             // Ojo Derecho
-            $table->string('refraccion_subjetivo_od_esfera')->nullable();
-            $table->string('refraccion_subjetivo_od_cilindro')->nullable();
-            $table->string('refraccion_subjetivo_od_eje')->nullable();
-            $table->string('refraccion_subjetivo_od_adicion')->nullable();
+            $table->string('refraccion_subjetivo_od_esfera', 20)->nullable();
+            $table->string('refraccion_subjetivo_od_cilindro', 20)->nullable();
+            $table->string('refraccion_subjetivo_od_eje', 20)->nullable();
+            $table->string('refraccion_subjetivo_od_adicion', 20)->nullable();
             // Ojo Izquierdo
-            $table->string('refraccion_subjetivo_oi_esfera')->nullable();
-            $table->string('refraccion_subjetivo_oi_cilindro')->nullable();
-            $table->string('refraccion_subjetivo_oi_eje')->nullable();
-            $table->string('refraccion_subjetivo_oi_adicion')->nullable();
+            $table->string('refraccion_subjetivo_oi_esfera', 20)->nullable();
+            $table->string('refraccion_subjetivo_oi_cilindro', 20)->nullable();
+            $table->string('refraccion_subjetivo_oi_eje', 20)->nullable();
+            $table->string('refraccion_subjetivo_oi_adicion', 20)->nullable();
 
             // === OBSERVACIONES DE REFRACCIÓN ===
             $table->text('refraccion_observaciones')->nullable();
 
             // === SUBJETIVO ===
-            $table->string('subjetivo_od_esfera')->nullable();
-            $table->string('subjetivo_od_cilindro')->nullable();
-            $table->string('subjetivo_od_eje')->nullable();
-            $table->string('subjetivo_od_add')->nullable();
-            $table->string('subjetivo_od_dp')->nullable(); // Distancia pupilar
-            $table->string('subjetivo_od_av_lejos')->nullable(); // 20/
-            $table->string('subjetivo_od_av_cerca')->nullable();
+            $table->string('subjetivo_od_esfera', 20)->nullable();
+            $table->string('subjetivo_od_cilindro', 20)->nullable();
+            $table->string('subjetivo_od_eje', 20)->nullable();
+            $table->string('subjetivo_od_add', 20)->nullable();
+            $table->string('subjetivo_od_dp', 20)->nullable(); // Distancia pupilar
+            $table->string('subjetivo_od_av_lejos', 20)->nullable(); // 20/
+            $table->string('subjetivo_od_av_cerca', 20)->nullable();
 
-            $table->string('subjetivo_oi_esfera')->nullable();
-            $table->string('subjetivo_oi_cilindro')->nullable();
-            $table->string('subjetivo_oi_eje')->nullable();
-            $table->string('subjetivo_oi_add')->nullable();
-            $table->string('subjetivo_oi_dp')->nullable(); // Distancia pupilar
-            $table->string('subjetivo_oi_av_lejos')->nullable(); // 20/
-            $table->string('subjetivo_oi_av_cerca')->nullable();
+            $table->string('subjetivo_oi_esfera', 20)->nullable();
+            $table->string('subjetivo_oi_cilindro', 20)->nullable();
+            $table->string('subjetivo_oi_eje', 20)->nullable();
+            $table->string('subjetivo_oi_add', 20)->nullable();
+            $table->string('subjetivo_oi_dp', 20)->nullable(); // Distancia pupilar
+            $table->string('subjetivo_oi_av_lejos', 20)->nullable(); // 20/
+            $table->string('subjetivo_oi_av_cerca', 20)->nullable();
 
             // === TEST'S ===
 
             // === VISIÓN CROMÁTICA ===
-            $table->string('vision_cromatica_test_usado')->nullable();
+            $table->string('vision_cromatica_test_usado', 100)->nullable();
             $table->text('vision_cromatica_od')->nullable();
             $table->text('vision_cromatica_oi')->nullable();
             $table->text('vision_cromatica_interpretacion')->nullable();
 
             // === ESTEREOPSIS ===
-            $table->string('estereopsis_test_usado')->nullable();
+            $table->string('estereopsis_test_usado', 100)->nullable();
             $table->text('estereopsis_agudeza')->nullable(); // Resultado del test de estereopsis
 
             // === TONOMETRÍA ===
-            $table->string('tonometria_metodo')->nullable(); // Método usado
-            $table->string('tonometria_hora')->nullable(); // Hora de la medición
+            $table->string('tonometria_metodo', 100)->nullable(); // Método usado
+            $table->string('tonometria_hora', 10)->nullable(); // Hora de la medición
             $table->text('tonometria_tonometro')->nullable(); // Tipo de tonómetro
             $table->text('tonometria_od')->nullable(); // Presión OD
             $table->text('tonometria_oi')->nullable(); // Presión OI
@@ -237,48 +237,48 @@ return new class extends Migration
             $table->text('ducciones_oi')->nullable();
 
             // === HIRSHBERG ===
-            $table->string('hirshberg')->nullable();
+            $table->string('hirshberg', 100)->nullable();
 
             // === VERSIONES ===
             // Grid de OK boxes - almacenar como JSON o campos individuales
             $table->json('versiones_grid')->nullable(); // Puede almacenar matriz de OK/valores
 
             // === TEST USADO (Cover Test) ===
-            $table->string('motilidad_test_usado')->nullable();
+            $table->string('motilidad_test_usado', 100)->nullable();
 
             // RFP (Sin corrección) y RFN (Con corrección)
-            $table->string('motilidad_rfp_vl')->nullable(); // RFP Visión Lejana
-            $table->string('motilidad_rfp_vc')->nullable(); // RFP Visión Cercana
-            $table->string('motilidad_rfn_vl')->nullable(); // RFN Visión Lejana
-            $table->string('motilidad_rfn_vc')->nullable(); // RFN Visión Cercana
+            $table->string('motilidad_rfp_vl', 50)->nullable(); // RFP Visión Lejana
+            $table->string('motilidad_rfp_vc', 50)->nullable(); // RFP Visión Cercana
+            $table->string('motilidad_rfn_vl', 50)->nullable(); // RFN Visión Lejana
+            $table->string('motilidad_rfn_vc', 50)->nullable(); // RFN Visión Cercana
 
             // Saltos Vergenciales
-            $table->string('motilidad_saltos_vergenciales_vl')->nullable();
-            $table->string('motilidad_saltos_vergenciales_vc')->nullable();
+            $table->string('motilidad_saltos_vergenciales_vl', 50)->nullable();
+            $table->string('motilidad_saltos_vergenciales_vc', 50)->nullable();
 
             // === PPC (Punto Próximo de Convergencia) ===
-            $table->string('ppc_objeto_real')->nullable();
-            $table->string('ppc_luz')->nullable();
-            $table->string('ppc_filtro_rojo')->nullable();
+            $table->string('ppc_objeto_real', 50)->nullable();
+            $table->string('ppc_luz', 50)->nullable();
+            $table->string('ppc_filtro_rojo', 50)->nullable();
 
             // === LAG (Acomodación y Flexibilidad) ===
             // OD
-            $table->string('lag_od_acomodacion')->nullable();
-            $table->string('lag_od_flexibilidad')->nullable();
+            $table->string('lag_od_acomodacion', 50)->nullable();
+            $table->string('lag_od_flexibilidad', 50)->nullable();
             // OI
-            $table->string('lag_oi_acomodacion')->nullable();
-            $table->string('lag_oi_flexibilidad')->nullable();
+            $table->string('lag_oi_acomodacion', 50)->nullable();
+            $table->string('lag_oi_flexibilidad', 50)->nullable();
 
             // ARP (Acomodación Relativa Positiva)
-            $table->string('arp_subjetiva')->nullable();
-            $table->string('arp_objetiva')->nullable();
+            $table->string('arp_subjetiva', 50)->nullable();
+            $table->string('arp_objetiva', 50)->nullable();
 
             // ARN (Acomodación Relativa Negativa)
-            $table->string('arn_amplitud')->nullable();
+            $table->string('arn_amplitud', 50)->nullable();
 
             // AO (Ambos Ojos)
-            $table->string('ao_valor')->nullable();
-            $table->string('ao_aa')->nullable(); // A/A column
+            $table->string('ao_valor', 50)->nullable();
+            $table->string('ao_aa', 50)->nullable(); // A/A column
 
             // === OBSERVACIONES DE MOTILIDAD ===
             $table->text('motilidad_observaciones')->nullable();
@@ -294,10 +294,10 @@ return new class extends Migration
             $table->text('recomendacion')->nullable();
 
             // === DIAGNÓSTICO ===
-            $table->string('tipo_diagnostico')->nullable(); // Ej: "Impresión diagnóstica"
-            $table->string('diagnostico_codigo')->nullable(); // Ej: "CIE10"
-            $table->string('diagnostico_tipo')->nullable(); // Ej: "Diagnóstico"
-            $table->string('diagnostico_principal')->nullable(); // Ej: "Principal"
+            $table->string('tipo_diagnostico', 100)->nullable(); // Ej: "Impresión diagnóstica"
+            $table->string('diagnostico_codigo', 50)->nullable(); // Ej: "CIE10"
+            $table->string('diagnostico_tipo', 100)->nullable(); // Ej: "Diagnóstico"
+            $table->string('diagnostico_principal', 100)->nullable(); // Ej: "Principal"
             $table->integer('num_dispositivos_medicos')->default(0);
             $table->text('diagnosticos')->nullable(); // Texto libre para diagnósticos múltiples
 
@@ -311,7 +311,6 @@ return new class extends Migration
             // Indexes
             $table->index('patient_id');
             $table->index('created_by');
-            $table->index('fecha_examen');
         });
     }
 

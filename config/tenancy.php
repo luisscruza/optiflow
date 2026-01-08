@@ -53,22 +53,22 @@ return [
          * Tenant database names are created like this:
          * prefix + tenant_id + suffix.
          */
-        'prefix' => 'tenant',
-        'suffix' => '.sqlite',
+        'prefix' => 'optiflow_',
+        'suffix' => '',
 
         /**
          * TenantDatabaseManagers are classes that handle the creation & deletion of tenant databases.
          */
         'managers' => [
-            'sqlite' => Stancl\Tenancy\TenantDatabaseManagers\SQLiteDatabaseManager::class,
-            //            'mysql' => Stancl\Tenancy\TenantDatabaseManagers\MySQLDatabaseManager::class,
+            // 'sqlite' => Stancl\Tenancy\TenantDatabaseManagers\SQLiteDatabaseManager::class,
+                       'mysql' => Stancl\Tenancy\TenantDatabaseManagers\MySQLDatabaseManager::class,
             //            'pgsql' => Stancl\Tenancy\TenantDatabaseManagers\PostgreSQLDatabaseManager::class,
 
         /**
          * Use this database manager for MySQL to have a DB user created for each tenant database.
          * You can customize the grants given to these users by changing the $grants property.
          */
-            // 'mysql' => Stancl\Tenancy\TenantDatabaseManagers\PermissionControlledMySQLDatabaseManager::class,
+            'mysql' => Stancl\Tenancy\TenantDatabaseManagers\PermissionControlledMySQLDatabaseManager::class,
 
         /**
          * Disable the pgsql manager above, and enable the one below if you

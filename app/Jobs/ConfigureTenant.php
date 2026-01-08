@@ -56,7 +56,7 @@ final class ConfigureTenant implements ShouldQueue
         app(CreateWorkspaceAction::class)->handle($user, [
             'name' => 'Principal',
             'code' => mb_strtoupper(Slug::generateUniqueSlug($user->name, Workspace::class)),
-            'description' => 'Main workspace for '.$user->name,
+            'description' => 'Sucursal principal',
             'is_default' => true,
         ]);
     }

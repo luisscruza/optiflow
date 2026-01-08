@@ -52,15 +52,15 @@ export function AppSidebar() {
                                     },
                                 ]
                               : []),
-                          ...(can('view payments')
-                              ? [
-                                    {
-                                        title: 'Pagos recibidos',
-                                        href: payments.index(),
-                                        icon: DollarSign,
-                                    },
-                                ]
-                              : []),
+                        //   ...(can('view payments')
+                        //       ? [
+                        //             {
+                        //                 title: 'Pagos recibidos',
+                        //                 href: payments.index(),
+                        //                 icon: DollarSign,
+                        //             },
+                        //         ]
+                        //       : []),
                       ],
                   } as NavItem,
               ]

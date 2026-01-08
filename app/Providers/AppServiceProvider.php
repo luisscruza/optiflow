@@ -32,8 +32,6 @@ final class AppServiceProvider extends ServiceProvider
     {
         $this->enforceMorphMaps();
         $this->ensureContextPriority();
-        $this->allowSuperAdmin();
-        $this->setupImpersonator();
     }
 
     private function enforceMorphMaps(): void
@@ -58,19 +56,5 @@ final class AppServiceProvider extends ServiceProvider
         );
     }
 
-    private function allowSuperAdmin(): void
-    {
-        Gate::before(function ($user) {
-            return in_array($user->business_role, [UserRole::Owner, UserRole::Admin]) ? true : null;
-        });
-    }
 
-    private function setupImpersonator(): void
-    {
-        Gate::define(BusinessPermission::Impersonate->value, function (User $user) {
-            return in_array($user->business_role, [UserRole::Owner, UserRole::Admin]);
-        });
-
-        app()->bind('impersonator', Impersonator::class);
-    }
 }

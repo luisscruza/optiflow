@@ -37,6 +37,16 @@ return new class extends Migration
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        // Add foreign key constraint to invoices table
+        Schema::table('invoices', function (Blueprint $table): void {
+            $table->foreign('currency_id')->references('id')->on('currencies')->onDelete('cascade');
+        });
+
+        // Add foreign key constraint to quotations table
+        Schema::table('quotations', function (Blueprint $table): void {
+            $table->foreign('currency_id')->references('id')->on('currencies')->onDelete('cascade');
+        });
     }
 
     /**
@@ -44,6 +54,14 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('invoices', function (Blueprint $table): void {
+            $table->dropForeign(['currency_id']);
+        });
+
+        Schema::table('quotations', function (Blueprint $table): void {
+            $table->dropForeign(['currency_id']);
+        });
+
         Schema::dropIfExists('currencies');
     }
 };

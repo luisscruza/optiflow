@@ -25,7 +25,7 @@ return new class extends Migration
             $table->decimal('total_amount', 12, 2)->default(0);
             $table->text('notes')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->foreignId('currency_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('currency_id')->nullable();
             $table->timestamps();
 
             $table->index(['workspace_id', 'status']);

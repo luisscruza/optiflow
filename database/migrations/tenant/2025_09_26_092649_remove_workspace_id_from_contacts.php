@@ -14,20 +14,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // First, let's check what indexes exist and drop any that reference workspace_id
-        $indexes = DB::select("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='contacts' AND sql LIKE '%workspace_id%'");
-
-        foreach ($indexes as $index) {
-            DB::statement("DROP INDEX IF EXISTS {$index->name}");
-        }
-
         Schema::table('contacts', function (Blueprint $table): void {
-            // Drop foreign key constraint if it exists
-            try {
-                $table->dropForeign(['workspace_id']);
-            } catch (Exception) {
-                // Foreign key might not exist, continue
-            }
+            // Drop foreign key constraint first
+            $table->dropForeign(['workspace_id']);
+
+            // Drop indexes that include workspace_id
+            $table->dropIndex(['workspace_id', 'contact_type']);
+            $table->dropIndex(['workspace_id', 'name']);
 
             // Drop the column
             $table->dropColumn('workspace_id');
