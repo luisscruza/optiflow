@@ -31,6 +31,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImportController;
 use App\Http\Controllers\QuickProductCreate;
 use App\Http\Controllers\QuotationController;
+use App\Http\Controllers\SalesmanController;
 use App\Http\Controllers\SetDefaultDocumentSubtypeController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockTransferController;
@@ -133,6 +134,8 @@ Route::middleware([
             Route::resource('taxes', TaxController::class);
 
             Route::resource('contacts', ContactController::class);
+
+            Route::resource('salesmen', SalesmanController::class)->except(['show']);
 
             Route::resource('bank-accounts', BankAccountController::class);
 

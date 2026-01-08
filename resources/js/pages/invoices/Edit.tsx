@@ -14,7 +14,7 @@ import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/s
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Contact, type Product, type TaxesGroupedByType, type Workspace } from '@/types';
+import { type BreadcrumbItem, type Contact, type Product, type Salesman, type TaxesGroupedByType, type Workspace } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -62,6 +62,7 @@ interface FormData {
     discount_total: number;
     tax_amount: number;
     total: number;
+    salesmen_ids: number[];
 }
 
 interface Invoice {
@@ -83,6 +84,7 @@ interface Invoice {
     contact: Contact;
     document_subtype: DocumentSubtype;
     workspace: Workspace;
+    salesmen?: Salesman[];
     items: Array<{
         id: number;
         product_id: number | null;
@@ -107,6 +109,7 @@ interface Props {
     availableWorkspaces?: Workspace[];
     ncf?: string | null;
     taxesGroupedByType: TaxesGroupedByType;
+    salesmen: Salesman[];
 }
 
 export default function EditInvoice({
@@ -117,6 +120,7 @@ export default function EditInvoice({
     currentWorkspace,
     availableWorkspaces,
     ncf,
+    salesmen,
     taxesGroupedByType,
 }: Props) {
     const [itemId, setItemId] = useState(invoice.items.length > 0 ? Math.max(...invoice.items.map((item) => parseInt(item.id.toString()))) + 1 : 1);
@@ -189,6 +193,7 @@ export default function EditInvoice({
         discount_total: invoice.discount_total,
         tax_amount: invoice.tax_amount,
         total: invoice.total,
+        salesmen_ids: invoice.salesmen?.map((s) => s.id) ?? [],
     });
 
     // Recalculate totals when component mounts and items are loaded
@@ -747,6 +752,58 @@ export default function EditInvoice({
                                                 readOnly
                                                 disabled
                                             />
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <Label className="text-sm font-medium text-gray-900">Vendedores</Label>
+                                            <SearchableSelect
+                                                options={salesmen.map((salesman) => ({
+                                                    value: salesman.id.toString(),
+                                                    label: salesman.full_name,
+                                                }))}
+                                                value={data.salesmen_ids.length > 0 ? data.salesmen_ids[0].toString() : ''}
+                                                onValueChange={(value) => {
+                                                    if (value) {
+                                                        const salesmanId = parseInt(value);
+                                                        if (!data.salesmen_ids.includes(salesmanId)) {
+                                                            setData('salesmen_ids', [...data.salesmen_ids, salesmanId]);
+                                                        }
+                                                    }
+                                                }}
+                                                placeholder="Seleccionar vendedor..."
+                                                searchPlaceholder="Buscar vendedor..."
+                                                emptyText="No se encontró ningún vendedor."
+                                                className="flex-1"
+                                                triggerClassName="h-10 border-gray-300"
+                                            />
+                                            {data.salesmen_ids.length > 0 && (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {data.salesmen_ids.map((salesmanId) => {
+                                                        const salesman = salesmen.find((s) => s.id === salesmanId);
+                                                        if (!salesman) return null;
+                                                        return (
+                                                            <div
+                                                                key={salesmanId}
+                                                                className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary"
+                                                            >
+                                                                {salesman.full_name}
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setData(
+                                                                            'salesmen_ids',
+                                                                            data.salesmen_ids.filter((id) => id !== salesmanId),
+                                                                        );
+                                                                    }}
+                                                                    className="ml-1 text-primary hover:text-primary/80"
+                                                                >
+                                                                    ×
+                                                                </button>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 

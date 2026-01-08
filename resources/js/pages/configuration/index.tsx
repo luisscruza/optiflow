@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
-import { Building2, Calculator, FileText, Receipt, Settings, Users } from 'lucide-react';
+import { Banknote, Building2, Calculator, ChevronRight, Coins, FileText, Hash, MapPin, Settings, Shield, Users } from 'lucide-react';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 
@@ -15,70 +15,28 @@ const breadcrumbs: BreadcrumbItem[] = [
 const configurationSections = [
     {
         title: 'Empresa',
-        description: 'Configura la información básica de tu empresa.',
         icon: Building2,
-        color: 'text-gray-800',
-        bgColor: 'bg-gray-50',
         items: [
-            {
-                title: 'Datos de la empresa',
-                description: 'Nombre, dirección, contacto',
-                href: '/company-details',
-            },
-                {
-                title: 'Permisos',
-                description: 'Gestiona los permisos de tu empresa',
-                href: '/business/roles',    
-            },
-            {
-                title: 'Usuarios',
-                description: 'Gestiona los usuarios de tu empresa',
-                href: '/business/users',    
-            },
-            {
-                title: 'Sucursales',
-                description: 'Gestiona las sucursales de tu empresa',
-                href: '/workspaces',
-            },
-            {
-                title: 'Monedas',
-                description: 'Gestiona las monedas y tasas de cambio',
-                href: '/currencies',
-            },
-            {
-                title: 'Cuentas bancarias',
-                description: 'Administra tus cuentas y transacciones',
-                href: '/bank-accounts',
-            },
+            { title: 'Datos de la empresa', href: '/company-details', icon: Building2 },
+            { title: 'Permisos', href: '/business/roles', icon: Shield },
+            { title: 'Usuarios', href: '/business/users', icon: Users },
+            { title: 'Sucursales', href: '/workspaces', icon: MapPin },
+            { title: 'Monedas', href: '/currencies', icon: Coins },
+            { title: 'Cuentas bancarias', href: '/bank-accounts', icon: Banknote },
         ],
     },
     {
         title: 'Facturación',
-        description: 'Configura la información que se mostrará en tus facturas.',
         icon: FileText,
-        color: 'text-gray-800',
-        bgColor: 'bg-gray-50',
         items: [
-            {
-                title: 'Numeraciones',
-                description: 'Configuración de documentos',
-                href: '/document-subtypes',
-            },
+            { title: 'Numeraciones', href: '/document-subtypes', icon: Hash },
+            { title: 'Vendedores', href: '/salesmen', icon: Users },
         ],
     },
     {
         title: 'Impuestos',
-        description: 'Define aquí los tipos de impuestos y retenciones que aplican a tus facturas.',
         icon: Calculator,
-        color: 'text-gray-800',
-        bgColor: 'bg-gray-50',
-        items: [
-            {
-                title: 'Impuestos',
-                description: 'Retenciones',
-                href: '/taxes',
-            },
-        ],
+        items: [{ title: 'Impuestos', href: '/taxes', icon: Calculator }],
     },
 ];
 
@@ -87,59 +45,46 @@ export default function ConfigurationIndex() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Configuración" />
 
-            <div className="max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+            <div className="max-w-5xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
-                            <Settings className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Configuración</h1>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Configura la información de tu empresa y adapta Alegra a tu negocio.
-                            </p>
-                        </div>
+                <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
+                        <Settings className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                     </div>
+                    <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Configuración</h1>
                 </div>
 
                 {/* Configuration Sections */}
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {configurationSections.map((section) => {
-                        const IconComponent = section.icon;
+                        const SectionIcon = section.icon;
 
                         return (
-                            <Card key={section.title} className="transition-shadow hover:shadow-md">
-                                <CardHeader className="pb-4">
-                                    <div className="flex items-start gap-4">
-                                        <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${section.bgColor} dark:bg-gray-700`}>
-                                            <IconComponent className={`h-6 w-6 ${section.color} dark:text-gray-200`} />
-                                        </div>
-                                        <div className="flex-1">
-                                            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">{section.title}</CardTitle>
-                                            <CardDescription className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                                {section.description}
-                                            </CardDescription>
-                                        </div>
-                                    </div>
+                            <Card key={section.title} className="overflow-hidden">
+                                <CardHeader className="border-b bg-gray-50/50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800/50">
+                                    <CardTitle className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        <SectionIcon className="h-4 w-4" />
+                                        {section.title}
+                                    </CardTitle>
                                 </CardHeader>
-                                <CardContent className="pt-0">
-                                    <div className="space-y-3">
-                                        {section.items.map((item) => (
-                                            <Link
-                                                key={item.title}
-                                                href={item.href}
-                                                className="block rounded-md border border-gray-200 bg-white p-3 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-transparent dark:hover:bg-gray-800"
-                                            >
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <h4 className="font-medium text-gray-900 dark:text-gray-100">{item.title}</h4>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400">{item.description}</p>
+                                <CardContent className="p-0">
+                                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                                        {section.items.map((item) => {
+                                            const ItemIcon = item.icon;
+                                            return (
+                                                <Link
+                                                    key={item.title}
+                                                    href={item.href}
+                                                    className="flex items-center justify-between px-4 py-2.5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <ItemIcon className="h-4 w-4 text-gray-400" />
+                                                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.title}</span>
                                                     </div>
-                                                    <Receipt className="h-4 w-4 text-gray-400 dark:text-gray-400" />
-                                                </div>
-                                            </Link>
-                                        ))}
+                                                    <ChevronRight className="h-4 w-4 text-gray-400" />
+                                                </Link>
+                                            );
+                                        })}
                                     </div>
                                 </CardContent>
                             </Card>

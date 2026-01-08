@@ -58,6 +58,11 @@ final readonly class UpdateInvoiceAction
                     return new InvoiceResult(error: $e->getMessage());
                 }
 
+                // Update salesmen if provided
+                if (isset($data['salesmen_ids']) && is_array($data['salesmen_ids'])) {
+                    $invoice->salesmen()->sync($data['salesmen_ids']);
+                }
+
                 return new InvoiceResult($invoice->load(['contact', 'documentSubtype', 'items.product']));
             });
         } catch (Throwable $e) {

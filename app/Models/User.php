@@ -141,6 +141,16 @@ final class User extends Authenticatable
     }
 
     /**
+     * Get the salesman record associated with this user.
+     *
+     * @return HasMany<Salesman, $this>
+     */
+    public function salesmen(): HasMany
+    {
+        return $this->hasMany(Salesman::class);
+    }
+
+    /**
      * Check if user has access to a workspace.
      */
     public function hasAccessToWorkspace(Workspace $workspace): bool

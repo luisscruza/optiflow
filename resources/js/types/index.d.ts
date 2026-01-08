@@ -113,6 +113,17 @@ export interface User {
     [key: string]: unknown; // This allows for additional properties...
 }
 
+export interface Salesman {
+    id: number;
+    name: string;
+    surname: string;
+    full_name: string;
+    user_id?: number | null;
+    workspace_id: number;
+    created_at?: string;
+    updated_at?: string;
+}
+
 export interface Workspace {
     id: number;
     name: string;
@@ -517,6 +528,7 @@ export interface Invoice {
     payment_term: string;
     payments?: Payment[];
     comments?: CommentData[];
+    salesmen?: Salesman[];
 }
 
 import type { PaymentLine, PaymentWithholding } from './accounting';

@@ -19,6 +19,7 @@ use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\Quotation;
+use App\Models\Salesman;
 use App\Models\Tax;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
@@ -137,6 +138,17 @@ final class InvoiceController extends Controller
             ])
             ->toArray();
 
+        $salesmen = Salesman::query()
+            ->orderBy('name')
+            ->orderBy('surname')
+            ->get()
+            ->map(fn ($salesman) => [
+                'id' => $salesman->id,
+                'name' => $salesman->name,
+                'surname' => $salesman->surname,
+                'full_name' => $salesman->full_name,
+            ]);
+
         return Inertia::render('invoices/create', [
             'documentSubtypes' => $documentSubtypes,
             'customers' => $customers,
@@ -149,6 +161,7 @@ final class InvoiceController extends Controller
             'bankAccounts' => BankAccount::onlyActive()->with('currency')->orderBy('name')->get(),
             'paymentMethods' => PaymentMethod::options(),
             'taxesGroupedByType' => $taxesGroupedByType,
+            'salesmen' => $salesmen,
         ]);
     }
 
@@ -198,6 +211,7 @@ final class InvoiceController extends Controller
             'comments.commentator',
             'comments.comments.commentator',
             'comments.comments.comments.commentator',
+            'salesmen',
         ]);
 
         // Get bank accounts and payment methods for payment registration
@@ -227,7 +241,7 @@ final class InvoiceController extends Controller
 
         $currentWorkspace = Context::get('workspace');
 
-        $invoice->load(['contact', 'documentSubtype', 'items.product', 'items.taxes']);
+        $invoice->load(['contact', 'documentSubtype', 'items.product', 'items.taxes', 'salesmen']);
 
         $documentSubtypes = DocumentSubtype::active()
             ->forInvoice()
@@ -281,7 +295,18 @@ final class InvoiceController extends Controller
             ])
             ->toArray();
 
-        return Inertia::render('invoices/edit', [
+        $salesmen = Salesman::query()
+            ->orderBy('name')
+            ->orderBy('surname')
+            ->get()
+            ->map(fn ($salesman) => [
+                'id' => $salesman->id,
+                'name' => $salesman->name,
+                'surname' => $salesman->surname,
+                'full_name' => $salesman->full_name,
+            ]);
+
+        return Inertia::render('invoices/Edit', [
             'invoice' => $invoice,
             'documentSubtypes' => $documentSubtypes,
             'customers' => $customers,
@@ -289,6 +314,7 @@ final class InvoiceController extends Controller
             'taxes' => $taxes,
             'taxesGroupedByType' => $taxesGroupedByType,
             'ncf' => $ncf,
+            'salesmen' => $salesmen,
         ]);
     }
 

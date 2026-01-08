@@ -181,6 +181,22 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
                                                 </div>
                                             )}
 
+                                            {invoice.salesmen && invoice.salesmen.length > 0 && (
+                                                <div>
+                                                    <Label className="text-sm font-medium text-gray-700">Vendedores</Label>
+                                                    <div className="mt-1 flex flex-wrap gap-2">
+                                                        {invoice.salesmen.map((salesman) => (
+                                                            <span
+                                                                key={salesman.id}
+                                                                className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm text-primary"
+                                                            >
+                                                                {salesman.full_name}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {invoice.contact.primary_address && (
                                                 <div>
                                                     <Label className="text-sm font-medium text-gray-700">Dirección</Label>

@@ -15,7 +15,7 @@ import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/s
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { type BankAccount, type BreadcrumbItem, type Contact, type Product, type TaxesGroupedByType, type Workspace } from '@/types';
+import { type BankAccount, type BreadcrumbItem, type Contact, type Product, type Salesman, type TaxesGroupedByType, type Workspace } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 interface DocumentSubtype {
@@ -65,6 +65,7 @@ interface FormData {
     payment_method: string;
     payment_notes: string;
     quotation_id: number | null;
+    salesmen_ids: number[];
 }
 
 interface FromQuotation {
@@ -96,6 +97,7 @@ interface Props {
     paymentMethods: Record<string, string>;
     fromQuotation?: FromQuotation | null;
     taxesGroupedByType: TaxesGroupedByType;
+    salesmen: Salesman[];
 }
 
 export default function CreateInvoice({
@@ -110,6 +112,7 @@ export default function CreateInvoice({
     bankAccounts,
     paymentMethods,
     taxesGroupedByType,
+    salesmen,
     fromQuotation,
 }: Props) {
     const defaultItems: InvoiceItem[] = fromQuotation?.items ?? [
@@ -196,6 +199,7 @@ export default function CreateInvoice({
         payment_amount: 0,
         payment_method: '',
         payment_notes: '',
+        salesmen_ids: [],
         quotation_id: fromQuotation?.id ?? null,
     });
 
@@ -737,6 +741,58 @@ export default function CreateInvoice({
                                                 readOnly
                                                 disabled
                                             />
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <Label className="text-sm font-medium text-gray-900">Vendedores</Label>
+                                            <SearchableSelect
+                                                options={salesmen.map((salesman) => ({
+                                                    value: salesman.id.toString(),
+                                                    label: salesman.full_name,
+                                                }))}
+                                                value={data.salesmen_ids.length > 0 ? data.salesmen_ids[0].toString() : ''}
+                                                onValueChange={(value) => {
+                                                    if (value) {
+                                                        const salesmanId = parseInt(value);
+                                                        if (!data.salesmen_ids.includes(salesmanId)) {
+                                                            setData('salesmen_ids', [...data.salesmen_ids, salesmanId]);
+                                                        }
+                                                    }
+                                                }}
+                                                placeholder="Seleccionar vendedor..."
+                                                searchPlaceholder="Buscar vendedor..."
+                                                emptyText="No se encontró ningún vendedor."
+                                                className="flex-1"
+                                                triggerClassName="h-10 border-gray-300"
+                                            />
+                                            {data.salesmen_ids.length > 0 && (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {data.salesmen_ids.map((salesmanId) => {
+                                                        const salesman = salesmen.find((s) => s.id === salesmanId);
+                                                        if (!salesman) return null;
+                                                        return (
+                                                            <div
+                                                                key={salesmanId}
+                                                                className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary"
+                                                            >
+                                                                {salesman.full_name}
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setData(
+                                                                            'salesmen_ids',
+                                                                            data.salesmen_ids.filter((id) => id !== salesmanId),
+                                                                        );
+                                                                    }}
+                                                                    className="ml-1 text-primary hover:text-primary/80"
+                                                                >
+                                                                    ×
+                                                                </button>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 

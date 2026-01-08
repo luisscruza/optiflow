@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -151,13 +152,23 @@ final class Invoice extends Model implements Commentable
     }
 
     /**
-     * The payments associated with the invoice.
+     * Get the payments associated with the invoice.
      *
      * @return HasMany<Payment, $this>
      */
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Get the salesmen associated with the invoice.
+     *
+     * @return BelongsToMany<Salesman, $this>
+     */
+    public function salesmen(): BelongsToMany
+    {
+        return $this->belongsToMany(Salesman::class, 'invoice_salesman');
     }
 
     /**

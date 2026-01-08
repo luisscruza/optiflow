@@ -53,6 +53,11 @@ final readonly class CreateInvoiceAction
                 );
             }
 
+            // Attach salesmen if provided
+            if (! empty($data['salesmen_ids']) && is_array($data['salesmen_ids'])) {
+                $invoice->salesmen()->sync($data['salesmen_ids']);
+            }
+
             // Create payment if payment data is provided
             if (! empty($data['register_payment']) && ! empty($data['payment_amount']) && $data['payment_amount'] > 0) {
                 $this->createPayment->handle($invoice, [
