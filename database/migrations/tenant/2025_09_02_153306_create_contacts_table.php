@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('fax')->nullable();
             $table->string('identification_type')->nullable();
             $table->string('identification_number')->nullable();
-            $table->enum('contact_type', ['customer', 'supplier', 'both'])->default('customer');
+            $table->string('contact_type');
             $table->string('status')->default('active');
             $table->text('observations')->nullable();
             $table->decimal('credit_limit', 15, 2)->default(0);

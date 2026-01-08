@@ -231,13 +231,68 @@ export default function ReportShow({ report, filters, columns, summary, data, ap
             case 'date':
                 content = String(value);
                 break;
-            case 'link':
+            case 'link': {
+                const href = column.href?.replace(/\{(\w+)\}/g, (_, key) => String(row[key] || '')) || '#';
                 content = (
-                    <Link href={`/invoices/${row.id}`} className="font-medium text-primary hover:underline">
+                    <Link href={href} className="font-medium text-primary hover:underline">
                         {String(value)}
                     </Link>
                 );
                 break;
+            }
+            case 'prescription': {
+                const prescriptionData = value as {
+                    od: { esfera?: string; cilindro?: string; eje?: string; add?: string; av_lejos?: string; av_cerca?: string };
+                    oi: { esfera?: string; cilindro?: string; eje?: string; add?: string; av_lejos?: string; av_cerca?: string };
+                };
+                content = (
+                    <div className="space-y-1 text-xs">
+                        <div>
+                            <strong>OD:</strong> E:{prescriptionData.od.esfera || '-'} C:{prescriptionData.od.cilindro || '-'} Eje:
+                            {prescriptionData.od.eje || '-'} Add:{prescriptionData.od.add || '-'}
+                        </div>
+                        <div>
+                            <strong>OI:</strong> E:{prescriptionData.oi.esfera || '-'} C:{prescriptionData.oi.cilindro || '-'} Eje:
+                            {prescriptionData.oi.eje || '-'} Add:{prescriptionData.oi.add || '-'}
+                        </div>
+                    </div>
+                );
+                break;
+            }
+            case 'invoices': {
+                const invoices = value as Array<{
+                    id: number;
+                    document_number: string;
+                    total_amount: number;
+                    issue_date: string;
+                    status: string;
+                }>;
+                if (!invoices || invoices.length === 0) {
+                    content = <span className="text-xs text-muted-foreground">Sin facturas</span>;
+                } else {
+                    content = (
+                        <div className="space-y-1">
+                            {invoices.map((invoice) => (
+                                <div key={invoice.id} className="flex items-center gap-2 text-xs">
+                                    <Link href={`/invoices/${invoice.id}`} className="font-medium text-primary hover:underline">
+                                        {invoice.document_number}
+                                    </Link>
+                                    <Badge
+                                        variant={
+                                            invoice.status === 'paid' ? 'default' : invoice.status === 'partially_paid' ? 'secondary' : 'outline'
+                                        }
+                                        className="text-[10px]"
+                                    >
+                                        {invoice.status === 'paid' ? 'Pagada' : invoice.status === 'partially_paid' ? 'Parcial' : 'Pendiente'}
+                                    </Badge>
+                                    <span className="text-muted-foreground">{formatCurrency(invoice.total_amount)}</span>
+                                </div>
+                            ))}
+                        </div>
+                    );
+                }
+                break;
+            }
             default:
                 content = String(value);
         }
@@ -299,7 +354,7 @@ export default function ReportShow({ report, filters, columns, summary, data, ap
             <Head title={report.name} />
 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                <h2 className="mb-1 text-2xl font-bold leading-tight text-gray-900 dark:text-gray-100">{report.name}</h2>
+                <h2 className="mb-1 text-2xl leading-tight font-bold text-gray-900 dark:text-gray-100">{report.name}</h2>
                 {report.description && <p className="mb-6 text-gray-600 dark:text-gray-400">{report.description}</p>}
                 <div className="space-y-6">
                     {/* Top Filter Bar */}

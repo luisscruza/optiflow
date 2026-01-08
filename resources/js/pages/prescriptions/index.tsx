@@ -68,7 +68,7 @@ export default function PrescriptionsIndex({ prescriptions, filters = {} }: Prop
                 <div className="mb-8 flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Recetas</h1>
-                        <p className="text-gray-600 dark:text-gray-400">Gestiona las recetas médicas de tus pacientes y su información óptica.</p>
+                        <p className="text-gray-600 dark:text-gray-400">Gestiona las recetas de tus pacientes y su información óptica.</p>
                     </div>
 
                     {can('create prescriptions') && (

@@ -97,8 +97,9 @@ final readonly class GeneralSalesReport implements ReportContract
             new ReportColumn(
                 key: 'document_number',
                 label: 'Número de documento',
-                type: 'text',
+                type: 'link',
                 sortable: true,
+                href: '/invoices/{id}',
             ),
             new ReportColumn(
                 key: 'customer_name',
