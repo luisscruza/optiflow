@@ -42,11 +42,17 @@ final class UpdateInvoiceRequest extends FormRequest
             'items.*.description' => ['required', 'string', 'max:500'],
             'items.*.quantity' => ['required', 'numeric', 'min:0.01'],
             'items.*.unit_price' => ['required', 'numeric', 'min:0'],
-            'items.*.discount_rate' => ['required', 'numeric', 'min:0', 'max:100'], // Frontend sends discount_rate
+            'items.*.discount_rate' => ['required', 'numeric', 'min:0', 'max:100'],
             'items.*.discount_amount' => ['required', 'numeric', 'min:0'],
-            'items.*.tax_rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            'items.*.taxes' => ['nullable', 'array'],
+            'items.*.taxes.*.id' => ['required', 'integer', 'exists:taxes,id'],
+            'items.*.taxes.*.rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            'items.*.taxes.*.amount' => ['required', 'numeric', 'min:0'],
             'items.*.tax_amount' => ['required', 'numeric', 'min:0'],
             'items.*.total' => ['required', 'numeric', 'min:0'],
+
+            'salesmen_ids' => ['nullable', 'array'],
+            'salesmen_ids.*' => ['integer', 'exists:salesmen,id'],
         ];
     }
 
@@ -78,8 +84,11 @@ final class UpdateInvoiceRequest extends FormRequest
             'items.*.discount_rate.min' => 'El descuento debe ser mayor o igual a 0.',
             'items.*.discount_rate.max' => 'El descuento no puede ser mayor al 100%.',
             'items.*.discount_amount.required' => 'El monto del descuento es requerido para cada item.',
-            'items.*.tax_rate.required' => 'El impuesto es requerido para cada item.',
-            'items.*.tax_amount.required' => 'El monto del impuesto es requerido para cada item.',
+            'items.*.taxes.*.id.required' => 'El ID del impuesto es requerido.',
+            'items.*.taxes.*.id.exists' => 'El impuesto seleccionado no existe.',
+            'items.*.taxes.*.rate.required' => 'La tasa del impuesto es requerida.',
+            'items.*.taxes.*.amount.required' => 'El monto del impuesto es requerido.',
+            'items.*.tax_amount.required' => 'El monto total de impuestos es requerido para cada item.',
             'items.*.total.required' => 'El total es requerido para cada item.',
             'items.*.unit_price.min' => 'El precio unitario debe ser mayor o igual a 0.',
             'items.*.discount.required' => 'El descuento es requerido para cada item.',
@@ -87,6 +96,8 @@ final class UpdateInvoiceRequest extends FormRequest
             'items.*.discount.max' => 'El descuento no puede ser mayor al 100%.',
             'items.*.tax_id.required' => 'El impuesto es requerido para cada item.',
             'items.*.tax_id.exists' => 'El impuesto seleccionado no existe.',
+            'salesmen_ids.array' => 'Los vendedores deben ser un array.',
+            'salesmen_ids.*.exists' => 'Uno de los vendedores seleccionados no existe.',
         ];
     }
 
