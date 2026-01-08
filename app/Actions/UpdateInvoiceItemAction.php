@@ -145,7 +145,7 @@ final class UpdateInvoiceItemAction
     private function validateStock(Invoice $invoice, array $item, Product $product): void
     {
         if (! $product->hasSufficientStock($invoice->workspace_id, $item['quantity'])) {
-            throw new InsufficientStockException('No hay stock (' . $item['quantity'] . ') suficiente para el producto: ' . $product->name);
+            throw new InsufficientStockException('No hay stock ('.$item['quantity'].') suficiente para el producto: '.$product->name);
         }
     }
 
@@ -171,7 +171,7 @@ final class UpdateInvoiceItemAction
         $stockForWorkspace = $product->getStockForWorkspace($invoice->workspace);
 
         if (! $stockForWorkspace instanceof \App\Models\ProductStock) {
-            throw new InsufficientStockException('No stock record found for product: ' . $product->name);
+            throw new InsufficientStockException('No stock record found for product: '.$product->name);
         }
 
         $stockForWorkspace->decrementStock($item['quantity']);
@@ -233,7 +233,7 @@ final class UpdateInvoiceItemAction
         $stockForWorkspace = $product->getStockForWorkspace($invoice->workspace);
 
         if (! $stockForWorkspace instanceof \App\Models\ProductStock) {
-            throw new InsufficientStockException('No stock record found for product: ' . $product->name);
+            throw new InsufficientStockException('No stock record found for product: '.$product->name);
         }
 
         // Find the existing stock movement for this document and product

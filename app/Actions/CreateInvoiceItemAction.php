@@ -52,7 +52,7 @@ final readonly class CreateInvoiceItemAction
     private function validateStock(Invoice $invoice, mixed $item, Product $product): void
     {
         if (! $product->hasSufficientStock($invoice->workspace_id, $item['quantity'])) {
-            throw new InsufficientStockException('No hay stock (' . $item['quantity'] . ') suficiente para el producto: ' . $product->name);
+            throw new InsufficientStockException('No hay stock ('.$item['quantity'].') suficiente para el producto: '.$product->name);
         }
     }
 
@@ -89,7 +89,7 @@ final readonly class CreateInvoiceItemAction
         $stockForWorkspace = $product->getStockForWorkspace($invoice->workspace);
 
         if (! $stockForWorkspace instanceof \App\Models\ProductStock) {
-            throw new InsufficientStockException('No stock record found for product: ' . $product->name);
+            throw new InsufficientStockException('No stock record found for product: '.$product->name);
         }
 
         $stockForWorkspace->decrementStock($item['quantity']);

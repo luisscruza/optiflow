@@ -67,8 +67,8 @@ final class InvoiceController extends Controller
                 'search' => $request->get('search'),
                 'status' => $request->get('status'),
             ],
-            'bankAccounts' => Inertia::optional(fn() => BankAccount::onlyActive()->with('currency')->orderBy('name')->get()),
-            'paymentMethods' => Inertia::optional(fn(): array => PaymentMethod::options()),
+            'bankAccounts' => Inertia::optional(fn () => BankAccount::onlyActive()->with('currency')->orderBy('name')->get()),
+            'paymentMethods' => Inertia::optional(fn (): array => PaymentMethod::options()),
         ]);
     }
 
@@ -91,7 +91,7 @@ final class InvoiceController extends Controller
             ->get()
             ->map(function ($contact) {
                 $phone = $contact->phone_primary ?? null;
-                $contact->name = "{$contact->name}" . ($phone ? " ({$phone})" : '');
+                $contact->name = "{$contact->name}".($phone ? " ({$phone})" : '');
 
                 return $contact;
             });
@@ -128,7 +128,7 @@ final class InvoiceController extends Controller
             ->orderBy('name')
             ->get()
             ->groupBy('type')
-            ->mapWithKeys(fn($taxes, $type): array => [
+            ->mapWithKeys(fn ($taxes, $type): array => [
                 $type => [
                     'label' => TaxType::tryFrom($type)?->label() ?? $type,
                     'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,
@@ -272,7 +272,7 @@ final class InvoiceController extends Controller
             ->orderBy('name')
             ->get()
             ->groupBy('type')
-            ->mapWithKeys(fn($taxes, $type): array => [
+            ->mapWithKeys(fn ($taxes, $type): array => [
                 $type => [
                     'label' => TaxType::tryFrom($type)?->label() ?? $type,
                     'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,

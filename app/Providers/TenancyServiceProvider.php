@@ -110,12 +110,10 @@ final class TenancyServiceProvider extends ServiceProvider
     {
         $this->bootEvents();
         $this->mapRoutes();
-        
+
         $this->makeTenancyMiddlewareHighestPriority();
         $this->allowSuperAdmin();
         $this->setupImpersonator();
-
-
 
         // Configure TenantAssetsController to use the correct tenancy middleware
         TenantAssetsController::$tenancyMiddleware = Middleware\InitializeTenancyByDomainOrSubdomain::class;
@@ -123,9 +121,9 @@ final class TenancyServiceProvider extends ServiceProvider
 
     private function allowSuperAdmin(): void
     {
-       if (! $this->isRunningOnTenant()) {
-           return;
-       }
+        if (! $this->isRunningOnTenant()) {
+            return;
+        }
 
         Gate::before(function ($user) {
             return in_array($user->business_role, [UserRole::Owner, UserRole::Admin]) ? true : null;
@@ -147,10 +145,10 @@ final class TenancyServiceProvider extends ServiceProvider
         if (app()->runningInConsole()) {
             return false;
         }
-        
+
         if (in_array(request()->getHost(), config('tenancy.central_domains'), true)) {
-        return false;
-    }
+            return false;
+        }
 
         return true;
     }

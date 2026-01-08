@@ -21,8 +21,28 @@ enum TaxType: string
     public static function options(): array
     {
         return collect(self::cases())
-            ->mapWithKeys(fn(self $type): array => [$type->value => $type->label()])
+            ->mapWithKeys(fn (self $type): array => [$type->value => $type->label()])
             ->all();
+    }
+
+    /**
+     * Get all exclusive tax types.
+     *
+     * @return array<int, self>
+     */
+    public static function exclusiveTypes(): array
+    {
+        return array_filter(self::cases(), fn (self $type): bool => $type->isExclusive());
+    }
+
+    /**
+     * Get all accumulative tax types.
+     *
+     * @return array<int, self>
+     */
+    public static function accumulativeTypes(): array
+    {
+        return array_filter(self::cases(), fn (self $type): bool => $type->isAccumulative());
     }
 
     /**
@@ -61,25 +81,5 @@ enum TaxType: string
     public function isAccumulative(): bool
     {
         return ! $this->isExclusive();
-    }
-
-    /**
-     * Get all exclusive tax types.
-     *
-     * @return array<int, self>
-     */
-    public static function exclusiveTypes(): array
-    {
-        return array_filter(self::cases(), fn(self $type): bool => $type->isExclusive());
-    }
-
-    /**
-     * Get all accumulative tax types.
-     *
-     * @return array<int, self>
-     */
-    public static function accumulativeTypes(): array
-    {
-        return array_filter(self::cases(), fn(self $type): bool => $type->isAccumulative());
     }
 }

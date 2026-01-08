@@ -117,7 +117,7 @@ final class Tax extends Model
     protected function ratePercentage(): Attribute
     {
         return Attribute::make(
-            get: fn(): string => $this->rate . '%'
+            get: fn (): string => $this->rate.'%'
         );
     }
 

@@ -23,7 +23,7 @@ final class TaxFactory extends Factory
         $rate = fake()->randomElement($rates);
 
         return [
-            'name' => 'IVA ' . $rate . '%',
+            'name' => 'IVA '.$rate.'%',
             'type' => fake()->randomElement(TaxType::cases()),
             'rate' => $rate,
             'is_default' => false,
@@ -35,7 +35,7 @@ final class TaxFactory extends Factory
      */
     public function default(): static
     {
-        return $this->state(fn(array $attributes): array => [
+        return $this->state(fn (array $attributes): array => [
             'is_default' => true,
         ]);
     }
@@ -45,8 +45,8 @@ final class TaxFactory extends Factory
      */
     public function withRate(float $rate): static
     {
-        return $this->state(fn(array $attributes): array => [
-            'name' => 'IVA ' . $rate . '%',
+        return $this->state(fn (array $attributes): array => [
+            'name' => 'IVA '.$rate.'%',
             'rate' => $rate,
         ]);
     }
@@ -56,7 +56,7 @@ final class TaxFactory extends Factory
      */
     public function ofType(TaxType $type): static
     {
-        return $this->state(fn(array $attributes): array => [
+        return $this->state(fn (array $attributes): array => [
             'type' => $type,
         ]);
     }

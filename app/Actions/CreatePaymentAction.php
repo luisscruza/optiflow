@@ -180,9 +180,9 @@ final readonly class CreatePaymentAction
         $lastNumber = 0;
         if ($lastPayment && ! empty($lastPayment->getAttribute('payment_number'))) {
             $paymentNumber = $lastPayment->getAttribute('payment_number');
-            $lastNumber = (int) substr($paymentNumber, 4);
+            $lastNumber = (int) mb_substr($paymentNumber, 4);
         }
 
-        return 'PAG-' . mb_str_pad((string) ($lastNumber + 1), 6, '0', STR_PAD_LEFT);
+        return 'PAG-'.mb_str_pad((string) ($lastNumber + 1), 6, '0', STR_PAD_LEFT);
     }
 }

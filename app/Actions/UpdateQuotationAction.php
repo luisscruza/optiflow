@@ -42,7 +42,7 @@ final class UpdateQuotationAction
                     $this->updateNumerator($documentSubtype, $data['ncf']);
                 }
 
-                $items = array_filter($data['items'] ?? [], fn(array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
+                $items = array_filter($data['items'] ?? [], fn (array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
                     $item['quantity'] > 0);
 
                 $this->processItemChanges($quotation, $originalItems, $items);
@@ -51,7 +51,7 @@ final class UpdateQuotationAction
             });
         } catch (Throwable $e) {
 
-            return new QuotationResult(error: 'Error actualizando la cotización: ' . $e->getMessage());
+            return new QuotationResult(error: 'Error actualizando la cotización: '.$e->getMessage());
         }
     }
 
@@ -145,7 +145,7 @@ final class UpdateQuotationAction
         }
 
         // Remove items that are no longer present
-        $itemsToRemove = $originalItems->reject(fn($item): bool => in_array($item->id, $processedIds));
+        $itemsToRemove = $originalItems->reject(fn ($item): bool => in_array($item->id, $processedIds));
 
         foreach ($itemsToRemove as $item) {
             $this->removeQuotationItem($item);

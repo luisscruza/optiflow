@@ -115,7 +115,7 @@ final class QuotationController extends Controller
             ->orderBy('name')
             ->get()
             ->groupBy('type')
-            ->mapWithKeys(fn($taxes, $type): array => [
+            ->mapWithKeys(fn ($taxes, $type): array => [
                 $type => [
                     'label' => TaxType::tryFrom($type)?->label() ?? $type,
                     'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,
@@ -220,7 +220,7 @@ final class QuotationController extends Controller
             ->orderBy('name')
             ->get()
             ->groupBy('type')
-            ->mapWithKeys(fn($taxesGroup, $type): array => [
+            ->mapWithKeys(fn ($taxesGroup, $type): array => [
                 $type => [
                     'label' => TaxType::tryFrom($type)?->label() ?? $type,
                     'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,

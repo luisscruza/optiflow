@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Enums\BusinessPermission;
-use App\Enums\UserRole;
 use App\Http\Middleware\SetWorkspaceContext;
 use App\Models\User;
-use App\Support\Impersonator;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 final class AppServiceProvider extends ServiceProvider
@@ -55,6 +51,4 @@ final class AppServiceProvider extends ServiceProvider
             SubstituteBindings::class,
         );
     }
-
-
 }
