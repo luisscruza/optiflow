@@ -109,8 +109,13 @@ export default function ReportShow({ report, filters, columns, summary, data, ap
     };
 
     const handleExport = () => {
-        // TODO: Implement export functionality
-        console.log('Export report');
+        const params = new URLSearchParams();
+        Object.entries(filterValues).forEach(([key, value]) => {
+            if (value) {
+                params.append(key, value);
+            }
+        });
+        window.location.href = `/reports/${report.type}/export?${params.toString()}`;
     };
 
     const getActiveFilters = () => {

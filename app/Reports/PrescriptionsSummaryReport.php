@@ -14,6 +14,8 @@ use App\Models\Prescription;
 use App\Models\Workspace;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PrescriptionsSummaryReport implements ReportContract
 {
@@ -394,5 +396,62 @@ class PrescriptionsSummaryReport implements ReportContract
         }
 
         return 'pending_payment';
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    public function toExcel(array $filters = []): BinaryFileResponse
+    {
+        return Excel::download(
+            new class($this, $filters) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings {
+                public function __construct(
+                    private PrescriptionsSummaryReport $report,
+                    private array $filters
+                ) {}
+
+                public function collection()
+                {
+                    $data = $this->report->data($this->filters);
+
+                    // Flatten complex data structures for Excel
+                    return collect($data)->map(function ($row) {
+                        return [
+                            'workspace_name' => $row['workspace_name'],
+                            'patient_name' => $row['patient_name'],
+                            'optometrist_name' => $row['optometrist_name'],
+                            'od_esfera' => $row['prescription_data']['od']['esfera'] ?? '',
+                            'od_cilindro' => $row['prescription_data']['od']['cilindro'] ?? '',
+                            'od_eje' => $row['prescription_data']['od']['eje'] ?? '',
+                            'od_add' => $row['prescription_data']['od']['add'] ?? '',
+                            'oi_esfera' => $row['prescription_data']['oi']['esfera'] ?? '',
+                            'oi_cilindro' => $row['prescription_data']['oi']['cilindro'] ?? '',
+                            'oi_eje' => $row['prescription_data']['oi']['eje'] ?? '',
+                            'oi_add' => $row['prescription_data']['oi']['add'] ?? '',
+                            'prescription_date' => $row['prescription_date'],
+                        ];
+                    });
+                }
+
+                public function headings(): array
+                {
+                    return [
+                        'Sucursal',
+                        'Paciente',
+                        'Optometrista',
+                        'OD Esfera',
+                        'OD Cilindro',
+                        'OD Eje',
+                        'OD Add',
+                        'OI Esfera',
+                        'OI Cilindro',
+                        'OI Eje',
+                        'OI Add',
+                        'Fecha',
+                    ];
+                }
+            },
+            'resumen-recetas-' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 }

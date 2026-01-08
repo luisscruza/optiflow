@@ -11,6 +11,8 @@ use App\Models\Invoice;
 use App\Models\Workspace;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -233,5 +235,44 @@ final readonly class CustomerSalesReport implements ReportContract
         }
 
         return $query;
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    public function toExcel(array $filters = []): BinaryFileResponse
+    {
+        return Excel::download(
+            new class($this, $filters) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings {
+                public function __construct(
+                    private CustomerSalesReport $report,
+                    private array $filters
+                ) {}
+
+                public function collection()
+                {
+                    $data = $this->report->data($this->filters);
+                    $columns = $this->report->columns();
+
+                    // Map data to only include the columns defined in the report
+                    return collect($data)->map(function ($row) use ($columns) {
+                        $mapped = [];
+                        foreach ($columns as $column) {
+                            $mapped[$column->key] = $row[$column->key] ?? '';
+                        }
+                        return $mapped;
+                    });
+                }
+
+                public function headings(): array
+                {
+                    return array_map(
+                        fn($column) => $column->label,
+                        $this->report->columns()
+                    );
+                }
+            },
+            'ventas-por-cliente-' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 }

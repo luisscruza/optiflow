@@ -11,6 +11,8 @@ use App\Models\Invoice;
 use App\Models\Workspace;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Illuminate\Support\Facades\Auth;
 
 final readonly class GeneralSalesReport implements ReportContract
@@ -258,5 +260,53 @@ final readonly class GeneralSalesReport implements ReportContract
         }
 
         return $query;
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    public function toExcel(array $filters = []): BinaryFileResponse
+    {
+        return Excel::download(
+            new class($this, $filters) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings {
+                public function __construct(
+                    private GeneralSalesReport $report,
+                    private array $filters
+                ) {}
+
+                public function collection()
+                {
+                    $data = $this->report->data($this->filters);
+                    $columns = $this->report->columns();
+
+                    // Map data to only include the columns defined in the report
+                    return collect($data)->map(function ($row) use ($columns) {
+                        $mapped = [];
+                        foreach ($columns as $column) {
+                            $value = $row[$column->key] ?? '';
+
+                            // Handle special column types
+                            if ($column->type === 'badge' && is_array($value)) {
+                                $mapped[$column->key] = $value['label'] ?? $value['value'] ?? '';
+                            } elseif ($column->type === 'currency') {
+                                $mapped[$column->key] = $value;
+                            } else {
+                                $mapped[$column->key] = $value;
+                            }
+                        }
+                        return $mapped;
+                    });
+                }
+
+                public function headings(): array
+                {
+                    return array_map(
+                        fn($column) => $column->label,
+                        $this->report->columns()
+                    );
+                }
+            },
+            'ventas-generales-' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 }

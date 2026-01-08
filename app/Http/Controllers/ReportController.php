@@ -18,6 +18,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 final class ReportController extends Controller
 {
@@ -101,6 +102,26 @@ final class ReportController extends Controller
             'data' => $results,
             'appliedFilters' => $filters,
         ]);
+    }
+
+    public function export(string $type, Request $request): BinaryFileResponse
+    {
+        $reportType = ReportType::from($type);
+        $reportImplementation = $this->getReportImplementation($reportType);
+
+        $filterDefinitions = $reportImplementation->filters();
+
+        $defaultFilters = [];
+        foreach ($filterDefinitions as $filter) {
+            if ($filter->default !== null) {
+                $defaultFilters[$filter->name] = $filter->default;
+            }
+        }
+
+        $requestFilters = $request->only(['workspace_id', 'start_date', 'end_date', 'customer_id', 'salesman_id', 'optometrist_id', 'status', 'search']);
+        $filters = array_merge($defaultFilters, array_filter($requestFilters, fn($v) => $v !== null && $v !== ''));
+
+        return $reportImplementation->toExcel($filters);
     }
 
     private function getReportImplementation(ReportType $type): ReportContract
