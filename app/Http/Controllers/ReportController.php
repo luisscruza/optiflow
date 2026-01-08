@@ -8,12 +8,16 @@ use App\Contracts\ReportContract;
 use App\Enums\ReportGroup;
 use App\Enums\ReportType;
 use App\Models\Report;
+use App\Reports\CustomerSalesReport;
 use App\Reports\GeneralSalesReport;
+use App\Reports\ProductSalesReport;
+use App\Reports\SalesmanSalesReport;
+use Exception;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class ReportController extends Controller
+final class ReportController extends Controller
 {
     public function index(): Response
     {
@@ -59,8 +63,17 @@ class ReportController extends Controller
         // Get the report implementation
         $reportImplementation = $this->getReportImplementation($reportType);
 
-        // Get filters from request
-        $filters = $request->only(['workspace_id', 'start_date', 'end_date', 'customer_id', 'status', 'search']);
+        $filterDefinitions = $reportImplementation->filters();
+
+        $defaultFilters = [];
+        foreach ($filterDefinitions as $filter) {
+            if ($filter->default !== null) {
+                $defaultFilters[$filter->name] = $filter->default;
+            }
+        }
+
+        $requestFilters = $request->only(['workspace_id', 'start_date', 'end_date', 'customer_id', 'salesman_id', 'status', 'search']);
+        $filters = array_merge($defaultFilters, array_filter($requestFilters, fn($v) => $v !== null && $v !== ''));
 
         // Execute the report
         $results = $reportImplementation->execute($filters, $request->integer('per_page', 15));
@@ -76,7 +89,7 @@ class ReportController extends Controller
             ],
             'filters' => array_map(
                 fn($filter) => $filter->toArray(),
-                $reportImplementation->filters()
+                $filterDefinitions
             ),
             'columns' => array_map(
                 fn($column) => $column->toArray(),
@@ -92,7 +105,10 @@ class ReportController extends Controller
     {
         return match ($type) {
             ReportType::GeneralSales => new GeneralSalesReport,
-            default => throw new \Exception('Report not implemented'),
+            ReportType::SalesByProduct => new ProductSalesReport,
+            ReportType::SalesByCustomer => new CustomerSalesReport,
+            ReportType::SalesBySalesman => new SalesmanSalesReport,
+            default => throw new Exception('Report not implemented'),
         };
     }
 }

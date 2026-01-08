@@ -12,6 +12,7 @@ final readonly class ReportColumn
         public string $type = 'text',
         public bool $sortable = false,
         public ?string $align = null,
+        public ?string $href = null,
     ) {}
 
     /**
@@ -27,6 +28,7 @@ final readonly class ReportColumn
             'type' => $this->type,
             'sortable' => $this->sortable,
             'align' => $this->align,
+            'href' => $this->href,
         ];
     }
 }

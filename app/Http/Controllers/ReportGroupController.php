@@ -9,7 +9,7 @@ use App\Models\Report;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class ReportGroupController extends Controller
+final class ReportGroupController extends Controller
 {
     public function show(string $group): Response
     {
@@ -19,7 +19,7 @@ class ReportGroupController extends Controller
             ->where('group', $reportGroup)
             ->where('is_active', true)
             ->get()
-            ->map(fn($report) => [
+            ->map(fn ($report) => [
                 'id' => $report->id,
                 'type' => $report->type->value,
                 'name' => $report->name,

@@ -8,7 +8,7 @@ use App\Enums\ReportType;
 use App\Models\Report;
 use Illuminate\Database\Seeder;
 
-class ReportSeeder extends Seeder
+final class ReportSeeder extends Seeder
 {
     /**
      * Run the database seeds.

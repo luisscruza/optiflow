@@ -77,7 +77,7 @@ export default function ReportsGroup({ group, reports }: Props) {
                         {reports.map((report) => (
                             <Button key={report.id} asChild variant="outline" className="h-auto p-0">
                                 <Link href={`/reports/${report.type}`}>
-                                    <Card className="w-full border-0 shadow-none">
+                                    <Card className="w-full border-0 shadow-none text-wrap">
                                         <CardHeader className="space-y-3">
                                             <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${colorClass}`}>
                                                 <Icon className="h-5 w-5" />

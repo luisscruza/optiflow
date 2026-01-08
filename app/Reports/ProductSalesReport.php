@@ -7,22 +7,23 @@ namespace App\Reports;
 use App\Contracts\ReportContract;
 use App\DTOs\ReportColumn;
 use App\DTOs\ReportFilter;
-use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Workspace;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
-final readonly class GeneralSalesReport implements ReportContract
+final readonly class ProductSalesReport implements ReportContract
 {
     public function name(): string
     {
-        return 'Ventas generales';
+        return 'Ventas por producto/servicio';
     }
 
     public function description(): string
     {
-        return 'Revisa el desempeño de tus ventas para crear estrategias comerciales.';
+        return 'Analiza el rendimiento de tus productos y servicios para optimizar tu inventario.';
     }
 
     /**
@@ -46,7 +47,7 @@ final readonly class GeneralSalesReport implements ReportContract
                 name: 'search',
                 label: 'Buscar',
                 type: 'search',
-                placeholder: 'Buscar por cliente o número de documento',
+                placeholder: 'Buscar por nombre o SKU del producto',
             ),
             new ReportFilter(
                 name: 'workspace_id',
@@ -95,38 +96,35 @@ final readonly class GeneralSalesReport implements ReportContract
     {
         return [
             new ReportColumn(
-                key: 'document_number',
-                label: 'Número de documento',
+                key: 'product_name',
+                label: 'Producto/Servicio',
+                type: 'text',
+                sortable: true,
+                href: '/products/{product_id}',
+            ),
+            new ReportColumn(
+                key: 'sku',
+                label: 'SKU',
                 type: 'text',
                 sortable: true,
             ),
             new ReportColumn(
-                key: 'customer_name',
-                label: 'Cliente',
-                type: 'text',
+                key: 'quantity',
+                label: 'Cantidad vendida',
+                type: 'number',
                 sortable: true,
-            ),
-            new ReportColumn(
-                key: 'status',
-                label: 'Estado',
-                type: 'badge',
-                sortable: true,
-            ),
-            new ReportColumn(
-                key: 'issue_date',
-                label: 'Fecha de creación',
-                type: 'date',
-                sortable: true,
+                align: 'right',
             ),
             new ReportColumn(
                 key: 'subtotal_amount',
                 label: 'Antes de impuestos',
                 type: 'currency',
+                sortable: true,
                 align: 'right',
             ),
             new ReportColumn(
                 key: 'total_amount',
-                label: 'Total de la factura',
+                label: 'Total',
                 type: 'currency',
                 sortable: true,
                 align: 'right',
@@ -140,15 +138,15 @@ final readonly class GeneralSalesReport implements ReportContract
     public function query(array $filters = []): Builder
     {
         return $this->baseQuery($filters)
-            ->with(['contact', 'payments'])
             ->select([
-                'invoices.id',
-                'invoices.document_number',
-                'invoices.issue_date',
-                'invoices.subtotal_amount',
-                'invoices.total_amount',
-                'invoices.contact_id',
-            ]);
+                'products.id',
+                'products.name as product_name',
+                'products.sku',
+                DB::raw('SUM(invoice_items.quantity) as quantity'),
+                DB::raw('SUM(invoice_items.subtotal) as subtotal_amount'),
+                DB::raw('SUM(invoice_items.total) as total_amount'),
+            ])
+            ->groupBy('products.id', 'products.name', 'products.sku');
     }
 
     /**
@@ -157,16 +155,16 @@ final readonly class GeneralSalesReport implements ReportContract
     public function execute(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         return $this->query($filters)
-            ->orderBy('issue_date', 'desc')
+            ->orderByDesc('total_amount')
             ->paginate($perPage)
-            ->through(fn(Invoice $invoice) => [
-                'id' => $invoice->id,
-                'document_number' => $invoice->document_number,
-                'customer_name' => $invoice->contact?->name ?? 'Sin cliente',
-                'status' => $invoice->status_config,
-                'issue_date' => $invoice->issue_date->format('d/m/Y'),
-                'subtotal_amount' => $invoice->subtotal_amount,
-                'total_amount' => $invoice->total_amount,
+            ->through(fn($item) => [
+                'id' => $item->id,
+                'product_id' => $item->id,
+                'product_name' => $item->product_name,
+                'sku' => $item->sku,
+                'quantity' => (float) $item->quantity,
+                'subtotal_amount' => (float) $item->subtotal_amount,
+                'total_amount' => (float) $item->total_amount,
             ]);
     }
 
@@ -177,15 +175,16 @@ final readonly class GeneralSalesReport implements ReportContract
     public function data(array $filters = []): array
     {
         return $this->query($filters)
-            ->orderBy('issue_date', 'desc')
+            ->orderByDesc('total_amount')
             ->get()
-            ->map(fn(Invoice $invoice) => [
-                'id' => $invoice->id,
-                'document_number' => $invoice->document_number,
-                'customer_name' => $invoice->contact?->name ?? 'Sin cliente',
-                'status' => $invoice->status->label(),
-                'issue_date' => $invoice->issue_date->format('d/m/Y'),
-                'total_amount' => $invoice->total_amount,
+            ->map(fn($item) => [
+                'id' => $item->id,
+                'product_id' => $item->id,
+                'product_name' => $item->product_name,
+                'sku' => $item->sku,
+                'quantity' => (float) $item->quantity,
+                'subtotal_amount' => (float) $item->subtotal_amount,
+                'total_amount' => (float) $item->total_amount,
             ])
             ->toArray();
     }
@@ -198,18 +197,19 @@ final readonly class GeneralSalesReport implements ReportContract
     {
         $totals = $this->baseQuery($filters)
             ->selectRaw('
-                COUNT(*) as total_invoices,
-                COALESCE(SUM(subtotal_amount), 0) as subtotal,
-                COALESCE(SUM(tax_amount), 0) as taxes,
-                COALESCE(SUM(total_amount), 0) as total
+                COUNT(DISTINCT products.id) as total_products,
+                COALESCE(SUM(invoice_items.quantity), 0) as total_quantity,
+                COALESCE(SUM(invoice_items.subtotal), 0) as subtotal,
+                COALESCE(SUM(invoice_items.tax_amount), 0) as taxes,
+                COALESCE(SUM(invoice_items.total), 0) as total
             ')
             ->first();
 
         return [
-            ['key' => 'total_invoices', 'label' => 'Facturas', 'value' => (int) $totals->total_invoices, 'type' => 'number'],
+            ['key' => 'total_products', 'label' => 'Productos/Servicios', 'value' => (int) $totals->total_products, 'type' => 'number'],
+            ['key' => 'total_quantity', 'label' => 'Cantidad vendida', 'value' => (float) $totals->total_quantity, 'type' => 'number'],
             ['key' => 'subtotal', 'label' => 'Antes de impuestos', 'value' => (float) $totals->subtotal, 'type' => 'currency'],
-            ['key' => 'taxes', 'label' => 'Impuestos', 'value' => (float) $totals->taxes, 'type' => 'currency'],
-            ['key' => 'total', 'label' => 'Después de impuestos', 'value' => (float) $totals->total, 'type' => 'currency'],
+            ['key' => 'total', 'label' => 'Total', 'value' => (float) $totals->total, 'type' => 'currency'],
         ];
     }
 
@@ -222,37 +222,38 @@ final readonly class GeneralSalesReport implements ReportContract
     {
         $userWorkspaceIds = Auth::user()?->workspaces->pluck('id')->toArray() ?? [];
 
-        $query = Invoice::query()->withoutGlobalScopes();
+        $query = InvoiceItem::query()
+            ->withoutGlobalScopes()
+            ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
+            ->join('products', 'invoice_items.product_id', '=', 'products.id');
 
         // Filter by workspace - if not specified, show all user's workspaces
         if (! empty($filters['workspace_id']) && $filters['workspace_id'] !== 'all') {
-            $query->where('workspace_id', $filters['workspace_id']);
+            $query->where('invoices.workspace_id', $filters['workspace_id']);
         } else {
-            $query->whereIn('workspace_id', $userWorkspaceIds);
+            $query->whereIn('invoices.workspace_id', $userWorkspaceIds);
         }
 
         if (! empty($filters['start_date'])) {
-            $query->where('issue_date', '>=', $filters['start_date']);
+            $query->where('invoices.issue_date', '>=', $filters['start_date']);
         }
 
         if (! empty($filters['end_date'])) {
-            $query->where('issue_date', '<=', $filters['end_date']);
+            $query->where('invoices.issue_date', '<=', $filters['end_date']);
         }
 
         if (! empty($filters['customer_id'])) {
-            $query->where('contact_id', $filters['customer_id']);
+            $query->where('invoices.contact_id', $filters['customer_id']);
         }
 
         if (! empty($filters['status']) && $filters['status'] !== 'all') {
-            $query->where('status', $filters['status']);
+            $query->where('invoices.status', $filters['status']);
         }
 
         if (! empty($filters['search'])) {
             $query->where(function ($q) use ($filters) {
-                $q->where('document_number', 'like', '%' . $filters['search'] . '%')
-                    ->orWhereHas('contact', function ($q) use ($filters) {
-                        $q->where('name', 'like', '%' . $filters['search'] . '%');
-                    });
+                $q->where('products.name', 'like', '%' . $filters['search'] . '%')
+                    ->orWhere('products.sku', 'like', '%' . $filters['search'] . '%');
             });
         }
 

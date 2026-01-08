@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Concerns\BelongsToWorkspace;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property int $id
- * @property int $workspace_id
  * @property string $name
  * @property string $surname
  * @property int|null $user_id
@@ -20,12 +18,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property \Carbon\CarbonImmutable|null $updated_at
  * @property-read string $full_name
  * @property-read User|null $user
- * @property-read Workspace $workspace
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Invoice> $invoices
  * @property-read int|null $invoices_count
  *
  * @method static \Database\Factories\SalesmanFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Salesman forWorkspace(\App\Models\Workspace|int $workspace)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Salesman newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Salesman newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Salesman query()
@@ -35,15 +31,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Salesman whereSurname($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Salesman whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Salesman whereUserId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Salesman whereWorkspaceId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Salesman withoutWorkspaceScope()
  *
  * @mixin \Eloquent
  */
 final class Salesman extends Model
 {
     /** @use HasFactory<\Database\Factories\SalesmanFactory> */
-    use BelongsToWorkspace, HasFactory;
+    use HasFactory;
 
     protected $appends = ['full_name'];
 
@@ -73,7 +67,7 @@ final class Salesman extends Model
     protected function fullName(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
         return \Illuminate\Database\Eloquent\Casts\Attribute::make(
-            get: fn (): string => $this->name.' '.$this->surname
+            get: fn(): string => $this->name . ' ' . $this->surname
         );
     }
 }

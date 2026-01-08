@@ -12,17 +12,18 @@ use App\Models\Workspace;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
-final readonly class GeneralSalesReport implements ReportContract
+final readonly class CustomerSalesReport implements ReportContract
 {
     public function name(): string
     {
-        return 'Ventas generales';
+        return 'Ventas por clientes';
     }
 
     public function description(): string
     {
-        return 'Revisa el desempeño de tus ventas para crear estrategias comerciales.';
+        return 'Analiza el comportamiento de compra de tus clientes para mejorar tu estrategia comercial.';
     }
 
     /**
@@ -46,7 +47,7 @@ final readonly class GeneralSalesReport implements ReportContract
                 name: 'search',
                 label: 'Buscar',
                 type: 'search',
-                placeholder: 'Buscar por cliente o número de documento',
+                placeholder: 'Buscar por nombre del cliente',
             ),
             new ReportFilter(
                 name: 'workspace_id',
@@ -66,13 +67,6 @@ final readonly class GeneralSalesReport implements ReportContract
                 label: 'Fecha de fin',
                 type: 'date',
                 default: $endOfMonth,
-            ),
-            new ReportFilter(
-                name: 'customer_id',
-                label: 'Cliente',
-                type: 'select',
-                options: [],
-                hidden: true,
             ),
             new ReportFilter(
                 name: 'status',
@@ -95,38 +89,29 @@ final readonly class GeneralSalesReport implements ReportContract
     {
         return [
             new ReportColumn(
-                key: 'document_number',
-                label: 'Número de documento',
-                type: 'text',
-                sortable: true,
-            ),
-            new ReportColumn(
                 key: 'customer_name',
                 label: 'Cliente',
                 type: 'text',
                 sortable: true,
+                href: '/contacts/{contact_id}',
             ),
             new ReportColumn(
-                key: 'status',
-                label: 'Estado',
-                type: 'badge',
+                key: 'invoice_count',
+                label: 'Número de facturas',
+                type: 'number',
                 sortable: true,
-            ),
-            new ReportColumn(
-                key: 'issue_date',
-                label: 'Fecha de creación',
-                type: 'date',
-                sortable: true,
+                align: 'right',
             ),
             new ReportColumn(
                 key: 'subtotal_amount',
                 label: 'Antes de impuestos',
                 type: 'currency',
+                sortable: true,
                 align: 'right',
             ),
             new ReportColumn(
                 key: 'total_amount',
-                label: 'Total de la factura',
+                label: 'Después de impuestos',
                 type: 'currency',
                 sortable: true,
                 align: 'right',
@@ -140,15 +125,14 @@ final readonly class GeneralSalesReport implements ReportContract
     public function query(array $filters = []): Builder
     {
         return $this->baseQuery($filters)
-            ->with(['contact', 'payments'])
             ->select([
-                'invoices.id',
-                'invoices.document_number',
-                'invoices.issue_date',
-                'invoices.subtotal_amount',
-                'invoices.total_amount',
-                'invoices.contact_id',
-            ]);
+                'contacts.id',
+                'contacts.name as customer_name',
+                DB::raw('COUNT(invoices.id) as invoice_count'),
+                DB::raw('SUM(invoices.subtotal_amount) as subtotal_amount'),
+                DB::raw('SUM(invoices.total_amount) as total_amount'),
+            ])
+            ->groupBy('contacts.id', 'contacts.name');
     }
 
     /**
@@ -157,16 +141,15 @@ final readonly class GeneralSalesReport implements ReportContract
     public function execute(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         return $this->query($filters)
-            ->orderBy('issue_date', 'desc')
+            ->orderByDesc('total_amount')
             ->paginate($perPage)
-            ->through(fn(Invoice $invoice) => [
-                'id' => $invoice->id,
-                'document_number' => $invoice->document_number,
-                'customer_name' => $invoice->contact?->name ?? 'Sin cliente',
-                'status' => $invoice->status_config,
-                'issue_date' => $invoice->issue_date->format('d/m/Y'),
-                'subtotal_amount' => $invoice->subtotal_amount,
-                'total_amount' => $invoice->total_amount,
+            ->through(fn($item) => [
+                'id' => $item->id,
+                'contact_id' => $item->id,
+                'customer_name' => $item->customer_name,
+                'invoice_count' => (int) $item->invoice_count,
+                'subtotal_amount' => (float) $item->subtotal_amount,
+                'total_amount' => (float) $item->total_amount,
             ]);
     }
 
@@ -177,15 +160,15 @@ final readonly class GeneralSalesReport implements ReportContract
     public function data(array $filters = []): array
     {
         return $this->query($filters)
-            ->orderBy('issue_date', 'desc')
+            ->orderByDesc('total_amount')
             ->get()
-            ->map(fn(Invoice $invoice) => [
-                'id' => $invoice->id,
-                'document_number' => $invoice->document_number,
-                'customer_name' => $invoice->contact?->name ?? 'Sin cliente',
-                'status' => $invoice->status->label(),
-                'issue_date' => $invoice->issue_date->format('d/m/Y'),
-                'total_amount' => $invoice->total_amount,
+            ->map(fn($item) => [
+                'id' => $item->id,
+                'contact_id' => $item->id,
+                'customer_name' => $item->customer_name,
+                'invoice_count' => (int) $item->invoice_count,
+                'subtotal_amount' => (float) $item->subtotal_amount,
+                'total_amount' => (float) $item->total_amount,
             ])
             ->toArray();
     }
@@ -198,17 +181,17 @@ final readonly class GeneralSalesReport implements ReportContract
     {
         $totals = $this->baseQuery($filters)
             ->selectRaw('
-                COUNT(*) as total_invoices,
-                COALESCE(SUM(subtotal_amount), 0) as subtotal,
-                COALESCE(SUM(tax_amount), 0) as taxes,
-                COALESCE(SUM(total_amount), 0) as total
+                COUNT(DISTINCT contacts.id) as total_customers,
+                COUNT(invoices.id) as total_invoices,
+                COALESCE(SUM(invoices.subtotal_amount), 0) as subtotal,
+                COALESCE(SUM(invoices.total_amount), 0) as total
             ')
             ->first();
 
         return [
-            ['key' => 'total_invoices', 'label' => 'Facturas', 'value' => (int) $totals->total_invoices, 'type' => 'number'],
+            ['key' => 'total_customers', 'label' => 'Total de clientes', 'value' => (int) $totals->total_customers, 'type' => 'number'],
+            ['key' => 'total_invoices', 'label' => 'Total de facturas', 'value' => (int) $totals->total_invoices, 'type' => 'number'],
             ['key' => 'subtotal', 'label' => 'Antes de impuestos', 'value' => (float) $totals->subtotal, 'type' => 'currency'],
-            ['key' => 'taxes', 'label' => 'Impuestos', 'value' => (float) $totals->taxes, 'type' => 'currency'],
             ['key' => 'total', 'label' => 'Después de impuestos', 'value' => (float) $totals->total, 'type' => 'currency'],
         ];
     }
@@ -222,38 +205,31 @@ final readonly class GeneralSalesReport implements ReportContract
     {
         $userWorkspaceIds = Auth::user()?->workspaces->pluck('id')->toArray() ?? [];
 
-        $query = Invoice::query()->withoutGlobalScopes();
+        $query = Invoice::query()
+            ->withoutGlobalScopes()
+            ->join('contacts', 'invoices.contact_id', '=', 'contacts.id');
 
         // Filter by workspace - if not specified, show all user's workspaces
         if (! empty($filters['workspace_id']) && $filters['workspace_id'] !== 'all') {
-            $query->where('workspace_id', $filters['workspace_id']);
+            $query->where('invoices.workspace_id', $filters['workspace_id']);
         } else {
-            $query->whereIn('workspace_id', $userWorkspaceIds);
+            $query->whereIn('invoices.workspace_id', $userWorkspaceIds);
         }
 
         if (! empty($filters['start_date'])) {
-            $query->where('issue_date', '>=', $filters['start_date']);
+            $query->where('invoices.issue_date', '>=', $filters['start_date']);
         }
 
         if (! empty($filters['end_date'])) {
-            $query->where('issue_date', '<=', $filters['end_date']);
-        }
-
-        if (! empty($filters['customer_id'])) {
-            $query->where('contact_id', $filters['customer_id']);
+            $query->where('invoices.issue_date', '<=', $filters['end_date']);
         }
 
         if (! empty($filters['status']) && $filters['status'] !== 'all') {
-            $query->where('status', $filters['status']);
+            $query->where('invoices.status', $filters['status']);
         }
 
         if (! empty($filters['search'])) {
-            $query->where(function ($q) use ($filters) {
-                $q->where('document_number', 'like', '%' . $filters['search'] . '%')
-                    ->orWhereHas('contact', function ($q) use ($filters) {
-                        $q->where('name', 'like', '%' . $filters['search'] . '%');
-                    });
-            });
+            $query->where('contacts.name', 'like', '%' . $filters['search'] . '%');
         }
 
         return $query;

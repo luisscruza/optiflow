@@ -14,15 +14,15 @@ enum ReportType: string
     case SalesBySalesman = 'sales_by_salesman';
     case CustomerAccountStatement = 'customer_account_statement';
 
-        // Prescriptions Reports
+    // Prescriptions Reports
     case PrescriptionsSummary = 'prescriptions_summary';
     case PrescriptionsByDoctor = 'prescriptions_by_doctor';
 
-        // Workflow Reports
+    // Workflow Reports
     case WorkflowSummary = 'workflow_summary';
     case PendingJobs = 'pending_jobs';
 
-        // Inventory Reports
+    // Inventory Reports
     case StockLevels = 'stock_levels';
     case StockMovements = 'stock_movements';
     case LowStockAlert = 'low_stock_alert';

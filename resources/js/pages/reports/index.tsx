@@ -98,7 +98,7 @@ export default function ReportsIndex({ groupStats, recentReports }: Props) {
                                 return (
                                     <Button key={stat.value} asChild variant="outline" className="h-auto p-0">
                                         <Link href={`/reports/group/${stat.value}`}>
-                                            <Card className="w-full border-0 shadow-none">
+                                            <Card className="text-wrap w-full border-0 shadow-none">
                                                 <CardHeader className="space-y-4">
                                                     <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${colorClass}`}>
                                                         <Icon className="h-6 w-6" />
@@ -127,7 +127,7 @@ export default function ReportsIndex({ groupStats, recentReports }: Props) {
                                 return (
                                     <Button key={report.id} asChild variant="outline" className="h-auto p-0">
                                         <Link href={`/reports/${report.type}`}>
-                                            <Card className="w-full border-0 shadow-none">
+                                            <Card className="text-wrap w-full border-0 shadow-none">
                                                 <CardHeader className="space-y-3">
                                                     <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${colorClass}`}>
                                                         <Icon className="h-5 w-5" />

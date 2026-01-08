@@ -197,6 +197,17 @@ final class Invoice extends Model implements Commentable
         });
     }
 
+    public function updatePaymentStatus(): void
+    {
+        if ($this->payments()->sum('amount') >= $this->total_amount) {
+            $this->update(['status' => InvoiceStatus::Paid->value]);
+        } elseif ($this->payments()->sum('amount') > 0) {
+            $this->update(['status' => InvoiceStatus::PartiallyPaid->value]);
+        } else {
+            $this->update(['status' => InvoiceStatus::PendingPayment->value]);
+        }
+    }
+
     /**
      * Get the status attribute.
      *

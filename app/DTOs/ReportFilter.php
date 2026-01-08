@@ -13,6 +13,7 @@ final readonly class ReportFilter
         public mixed $default = null,
         public ?array $options = null,
         public ?string $placeholder = null,
+        public bool $hidden = false,
     ) {}
 
     /**
@@ -29,6 +30,7 @@ final readonly class ReportFilter
             'default' => $this->default,
             'options' => $this->options,
             'placeholder' => $this->placeholder,
+            'hidden' => $this->hidden,
         ];
     }
 }

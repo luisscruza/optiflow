@@ -26,7 +26,11 @@ final readonly class CreatePaymentAction
             $account = BankAccount::query()->findOrFail($data['bank_account_id']);
 
             if ($paymentType === PaymentType::InvoicePayment) {
-                return $this->createInvoicePayment($invoice, $data, $account);
+                $payment = $this->createInvoicePayment($invoice, $data, $account);
+
+                $invoice->updatePaymentStatus();
+
+                return $payment;
             }
 
             return $this->createOtherIncomePayment($data, $account);
