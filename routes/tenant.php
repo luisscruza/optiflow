@@ -31,6 +31,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImportController;
 use App\Http\Controllers\QuickProductCreate;
 use App\Http\Controllers\QuotationController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReportGroupController;
 use App\Http\Controllers\SalesmanController;
 use App\Http\Controllers\SetDefaultDocumentSubtypeController;
 use App\Http\Controllers\StockAdjustmentController;
@@ -71,7 +73,7 @@ Route::middleware([
     InitializeTenancyBySubdomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function (): void {
-    Route::get('/', fn () => redirect()->route('dashboard'))->name('home');
+    Route::get('/', fn() => redirect()->route('dashboard'))->name('home');
 
     Route::prefix('invitations')->name('invitations.')->group(function (): void {
         Route::get('{token}', [WorkspaceInvitationController::class, 'show'])->name('show');
@@ -158,7 +160,7 @@ Route::middleware([
             Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
             Route::patch('document-subtypes/{documentSubtype}/set-default', SetDefaultDocumentSubtypeController::class)->name('document-subtypes.set-default');
 
-            Route::get('inventory', fn () => Inertia::render('inventory/index'))->name('inventory.index');
+            Route::get('inventory', fn() => Inertia::render('inventory/index'))->name('inventory.index');
 
             Route::resource('stock-adjustments', StockAdjustmentController::class)->only(['index', 'create', 'store', 'show'])->parameters([
                 'stock-adjustments' => 'product',
@@ -182,6 +184,11 @@ Route::middleware([
             Route::resource('prescriptions', PrescriptionController::class);
             Route::get('prescriptions/{prescription}/pdf', DownloadPrescriptionController::class)->name('prescriptions.pdf');
 
+            // Reports routes
+            Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+            Route::get('reports/group/{group}', [ReportGroupController::class, 'show'])->name('reports.group');
+            Route::get('reports/{type}', [ReportController::class, 'show'])->name('reports.show');
+
             // Workflow routes (Kanban for lens processing)
             Route::resource('workflows', WorkflowController::class);
             Route::post('workflows/{workflow}/stages', [WorkflowStageController::class, 'store'])->name('workflows.stages.store');
@@ -198,6 +205,6 @@ Route::middleware([
         });
     });
 
-    require __DIR__.'/settings.php';
-    require __DIR__.'/auth.php';
+    require __DIR__ . '/settings.php';
+    require __DIR__ . '/auth.php';
 });
