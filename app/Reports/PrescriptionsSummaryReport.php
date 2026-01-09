@@ -190,10 +190,26 @@ class PrescriptionsSummaryReport implements ReportContract
     /**
      * @param  array<string, mixed>  $filters
      */
-    public function execute(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    public function execute(array $filters = [], int $perPage = 15, ?string $sortBy = null, string $sortDirection = 'desc'): LengthAwarePaginator
     {
-        return $this->query($filters)
-            ->orderByDesc('prescriptions.created_at')
+        $query = $this->query($filters);
+
+        $sortColumn = match ($sortBy) {
+            'workspace_name' => 'workspaces.name',
+            'patient_name' => 'contacts.name',
+            'optometrist_name' => 'optometrist.name',
+            'prescription_date' => 'prescriptions.created_at',
+            default => 'prescriptions.created_at',
+        };
+
+        if ($sortBy === 'patient_name') {
+            $query->leftJoin('contacts', 'prescriptions.patient_id', '=', 'contacts.id');
+        } elseif ($sortBy === 'optometrist_name') {
+            $query->leftJoin('contacts as optometrist', 'prescriptions.optometrist_id', '=', 'optometrist.id');
+        }
+
+        return $query
+            ->orderBy($sortColumn, $sortDirection)
             ->paginate($perPage)
             ->through(function (Prescription $prescription) use ($filters) {
                 return [

@@ -154,10 +154,21 @@ final readonly class ProductSalesReport implements ReportContract
     /**
      * @param  array<string, mixed>  $filters
      */
-    public function execute(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    public function execute(array $filters = [], int $perPage = 15, ?string $sortBy = null, string $sortDirection = 'desc'): LengthAwarePaginator
     {
-        return $this->query($filters)
-            ->orderByDesc('total_amount')
+        $query = $this->query($filters);
+
+        $sortColumn = match ($sortBy) {
+            'product_name' => 'product_name',
+            'sku' => 'sku',
+            'quantity' => 'quantity',
+            'subtotal_amount' => 'subtotal_amount',
+            'total_amount' => 'total_amount',
+            default => 'total_amount',
+        };
+
+        return $query
+            ->orderBy($sortColumn, $sortDirection)
             ->paginate($perPage)
             ->through(fn($item) => [
                 'id' => $item->id,

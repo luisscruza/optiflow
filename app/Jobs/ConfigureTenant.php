@@ -143,6 +143,7 @@ final class ConfigureTenant implements ShouldQueue
             'is_system_account' => false,
             'is_active' => true,
             'balance' => 0,
+            'description' => 'Cuenta de caja general creada por defecto',
         ]);
     }
 

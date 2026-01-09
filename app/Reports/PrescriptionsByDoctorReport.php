@@ -147,10 +147,22 @@ final readonly class PrescriptionsByDoctorReport implements ReportContract
     /**
      * @param  array<string, mixed>  $filters
      */
-    public function execute(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    public function execute(array $filters = [], int $perPage = 15, ?string $sortBy = null, string $sortDirection = 'desc'): LengthAwarePaginator
     {
-        return $this->query($filters)
-            ->orderByDesc('prescriptions.created_at')
+        $query = $this->query($filters);
+
+        $sortColumn = match ($sortBy) {
+            'patient_name' => 'contacts.name',
+            'prescription_date' => 'prescriptions.created_at',
+            default => 'prescriptions.created_at',
+        };
+
+        if ($sortBy === 'patient_name') {
+            $query->leftJoin('contacts', 'prescriptions.patient_id', '=', 'contacts.id');
+        }
+
+        return $query
+            ->orderBy($sortColumn, $sortDirection)
             ->paginate($perPage)
             ->through(fn(Prescription $prescription) => [
                 'id' => $prescription->id,

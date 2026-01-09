@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
-import { ChevronDown, Download, Filter, Search, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, Download, Filter, Search, X } from 'lucide-react';
 import { useState } from 'react';
 import { DateRange } from 'react-day-picker';
 
@@ -67,6 +67,8 @@ interface Props {
     summary: SummaryItem[];
     data: PaginatedData<Record<string, unknown>>;
     appliedFilters: Record<string, string>;
+    sortBy: string | null;
+    sortDirection: 'asc' | 'desc';
 }
 
 const breadcrumbs = (reportName: string, groupLabel: string, groupValue: string): BreadcrumbItem[] => [
@@ -84,10 +86,31 @@ const breadcrumbs = (reportName: string, groupLabel: string, groupValue: string)
     },
 ];
 
-export default function ReportShow({ report, filters, columns, summary, data, appliedFilters }: Props) {
+export default function ReportShow({ report, filters, columns, summary, data, appliedFilters, sortBy, sortDirection }: Props) {
     const { format: formatCurrency } = useCurrency();
     const [filterValues, setFilterValues] = useState<Record<string, string>>(appliedFilters);
     const [searchQuery, setSearchQuery] = useState(appliedFilters.search || '');
+    const [currentSortBy, setCurrentSortBy] = useState<string | null>(sortBy);
+    const [currentSortDirection, setCurrentSortDirection] = useState<'asc' | 'desc'>(sortDirection);
+
+    const handleSort = (columnKey: string) => {
+        const column = columns.find((c) => c.key === columnKey);
+        if (!column?.sortable) return;
+
+        let newDirection: 'asc' | 'desc' = 'asc';
+        if (currentSortBy === columnKey) {
+            newDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+        }
+
+        setCurrentSortBy(columnKey);
+        setCurrentSortDirection(newDirection);
+
+        router.get(
+            `/reports/${report.type}`,
+            { ...filterValues, sort_by: columnKey, sort_direction: newDirection },
+            { preserveState: true, preserveScroll: true },
+        );
+    };
 
     const handleFilterChange = (name: string, value: string) => {
         const newFilters = { ...filterValues, [name]: value };
@@ -519,8 +542,27 @@ export default function ReportShow({ report, filters, columns, summary, data, ap
                                 <TableHeader>
                                     <TableRow>
                                         {columns.map((column) => (
-                                            <TableHead key={column.key} className={column.align === 'right' ? 'text-right' : ''}>
-                                                {column.label}
+                                            <TableHead
+                                                key={column.key}
+                                                className={`${column.align === 'right' ? 'text-right' : ''} ${column.sortable ? 'cursor-pointer select-none hover:bg-muted/50' : ''}`}
+                                                onClick={() => column.sortable && handleSort(column.key)}
+                                            >
+                                                <div className={`flex items-center gap-1 ${column.align === 'right' ? 'justify-end' : ''}`}>
+                                                    {column.label}
+                                                    {column.sortable && (
+                                                        <span className="ml-1">
+                                                            {currentSortBy === column.key ? (
+                                                                currentSortDirection === 'asc' ? (
+                                                                    <ArrowUp className="h-4 w-4" />
+                                                                ) : (
+                                                                    <ArrowDown className="h-4 w-4" />
+                                                                )
+                                                            ) : (
+                                                                <ArrowUpDown className="h-4 w-4 text-muted-foreground/50" />
+                                                            )}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </TableHead>
                                         ))}
                                     </TableRow>

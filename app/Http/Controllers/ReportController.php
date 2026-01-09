@@ -78,8 +78,12 @@ final class ReportController extends Controller
         $requestFilters = $request->only(['workspace_id', 'start_date', 'end_date', 'customer_id', 'salesman_id', 'optometrist_id', 'status', 'search']);
         $filters = array_merge($defaultFilters, array_filter($requestFilters, fn($v) => $v !== null && $v !== ''));
 
+        // Get sort parameters
+        $sortBy = $request->string('sort_by')->toString() ?: null;
+        $sortDirection = $request->string('sort_direction', 'desc')->toString();
+
         // Execute the report
-        $results = $reportImplementation->execute($filters, $request->integer('per_page', 15));
+        $results = $reportImplementation->execute($filters, $request->integer('per_page', 15), $sortBy, $sortDirection);
 
         return Inertia::render('reports/show', [
             'report' => [
@@ -101,6 +105,8 @@ final class ReportController extends Controller
             'summary' => $reportImplementation->summary($filters),
             'data' => $results,
             'appliedFilters' => $filters,
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
         ]);
     }
 
