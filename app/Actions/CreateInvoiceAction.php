@@ -6,6 +6,7 @@ namespace App\Actions;
 
 use App\DTOs\InvoiceResult;
 use App\Enums\InvoiceStatus;
+use App\Enums\PaymentType;
 use App\Exceptions\InsufficientStockException;
 use App\Models\DocumentSubtype;
 use App\Models\Invoice;
@@ -65,6 +66,7 @@ final readonly class CreateInvoiceAction
                     'amount' => $data['payment_amount'],
                     'payment_date' => $data['payment_date'] ?? now()->toDateTimeString(),
                     'payment_method' => $data['payment_method'],
+                    'payment_type' => PaymentType::InvoicePayment->value,
                     'notes' => $data['payment_notes'] ?? null,
                 ]);
             }
