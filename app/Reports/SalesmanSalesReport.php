@@ -114,11 +114,11 @@ final readonly class SalesmanSalesReport implements ReportContract
                 sortable: true,
             ),
             new ReportColumn(
-                key: 'invoice_count',
+                key: 'invoices',
                 label: 'Número de facturas',
-                type: 'number',
-                sortable: true,
-                align: 'right',
+                type: 'invoice_list',
+                sortable: false,
+                align: 'center',
             ),
             new ReportColumn(
                 key: 'paid_amount',
@@ -171,7 +171,6 @@ final readonly class SalesmanSalesReport implements ReportContract
         // Apply sorting
         $sortColumn = match ($sortBy) {
             'salesman_name' => 'salesman_name',
-            'invoice_count' => 'invoice_count',
             'paid_amount' => 'paid_amount',
             'subtotal_amount' => 'subtotal_amount',
             'total_amount' => 'total_amount',
@@ -181,15 +180,17 @@ final readonly class SalesmanSalesReport implements ReportContract
         return $query
             ->orderBy($sortColumn, $sortDirection)
             ->paginate($perPage)
-            ->through(fn($item) => [
-                'id' => $item->id,
-                'salesman_id' => $item->id,
-                'salesman_name' => $item->salesman_name,
-                'invoice_count' => (int) $item->invoice_count,
-                'paid_amount' => (float) $item->paid_amount,
-                'subtotal_amount' => (float) $item->subtotal_amount,
-                'total_amount' => (float) $item->total_amount,
-            ]);
+            ->through(function ($item) use ($filters) {
+                return [
+                    'id' => $item->id,
+                    'salesman_id' => $item->id,
+                    'salesman_name' => $item->salesman_name,
+                    'invoices' => $this->getSalesmanInvoices($item->id, $filters),
+                    'paid_amount' => (float) $item->paid_amount,
+                    'subtotal_amount' => (float) $item->subtotal_amount,
+                    'total_amount' => (float) $item->total_amount,
+                ];
+            });
     }
 
     /**
@@ -284,6 +285,58 @@ final readonly class SalesmanSalesReport implements ReportContract
         }
 
         return $query;
+    }
+
+    /**
+     * Get invoices for a salesman within the filtered date range.
+     *
+     * @param  array<string, mixed>  $filters
+     * @return array<int, array<string, mixed>>
+     */
+    private function getSalesmanInvoices(int $salesmanId, array $filters = []): array
+    {
+        $userWorkspaceIds = Auth::user()?->workspaces->pluck('id')->toArray() ?? [];
+
+        $query = Invoice::query()
+            ->join('invoice_salesman', 'invoices.id', '=', 'invoice_salesman.invoice_id')
+            ->join('workspaces', 'invoices.workspace_id', '=', 'workspaces.id')
+            ->where('invoice_salesman.salesman_id', $salesmanId);
+
+        // Filter by workspace
+        if (! empty($filters['workspace_id']) && $filters['workspace_id'] !== 'all') {
+            $query->where('invoices.workspace_id', $filters['workspace_id']);
+        } else {
+            $query->whereIn('invoices.workspace_id', $userWorkspaceIds);
+        }
+
+        // Apply date range filter
+        if (! empty($filters['start_date'])) {
+            $query->where('invoices.issue_date', '>=', $filters['start_date']);
+        }
+
+        if (! empty($filters['end_date'])) {
+            $query->where('invoices.issue_date', '<=', $filters['end_date']);
+        }
+
+        // Apply status filter
+        if (! empty($filters['status']) && $filters['status'] !== 'all') {
+            $query->where('invoices.status', $filters['status']);
+        }
+
+        return $query
+            ->select('invoices.id', 'invoices.document_number', 'invoices.total_amount', 'invoices.issue_date', 'workspaces.name as workspace_name')
+            ->orderByDesc('invoices.issue_date')
+            ->get()
+            ->map(function (Invoice $invoice) {
+                return [
+                    'id' => $invoice->id,
+                    'document_number' => $invoice->document_number,
+                    'total_amount' => $invoice->total_amount,
+                    'issue_date' => $invoice->issue_date->format('d/m/Y'),
+                    'workspace_name' => $invoice->workspace_name,
+                ];
+            })
+            ->toArray();
     }
 
     /**

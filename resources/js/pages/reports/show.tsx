@@ -321,6 +321,57 @@ export default function ReportShow({ report, filters, columns, summary, data, ap
                 }
                 break;
             }
+            case 'invoice_list': {
+                const invoiceList = value as Array<{
+                    id: number;
+                    document_number: string;
+                    total_amount: number;
+                    issue_date: string;
+                    workspace_name?: string;
+                }>;
+                if (!invoiceList || invoiceList.length === 0) {
+                    content = <span className="text-sm text-muted-foreground">0</span>;
+                } else {
+                    content = (
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="link" className="h-auto p-0 font-semibold">
+                                    {invoiceList.length}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-96" align="center">
+                                <div className="space-y-2">
+                                    <h4 className="text-sm font-semibold">Facturas ({invoiceList.length})</h4>
+                                    <div className="max-h-[300px] space-y-2 overflow-y-auto">
+                                        {invoiceList.map((invoice) => (
+                                            <Link
+                                                key={invoice.id}
+                                                href={`/invoices/${invoice.id}`}
+                                                className="flex items-center justify-between rounded-md border bg-card p-2 text-xs transition-colors hover:bg-accent"
+                                            >
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="font-medium text-primary">{invoice.document_number}</span>
+                                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                                        <span>{invoice.issue_date}</span>
+                                                        {invoice.workspace_name && (
+                                                            <>
+                                                                <span>·</span>
+                                                                <span>{invoice.workspace_name}</span>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <span className="font-medium">{formatCurrency(invoice.total_amount)}</span>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                    );
+                }
+                break;
+            }
             default:
                 content = String(value);
         }
