@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tables\Filters;
 
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
 
 abstract class Filter
@@ -19,6 +20,8 @@ abstract class Filter
     protected bool $isInline = false;
 
     protected ?string $placeholder = null;
+
+    protected ?Closure $queryCallback = null;
 
     public function __construct(string $name, ?string $label = null)
     {
@@ -59,6 +62,13 @@ abstract class Filter
     public function placeholder(string $placeholder): static
     {
         $this->placeholder = $placeholder;
+
+        return $this;
+    }
+
+    public function query(Closure $callback): static
+    {
+        $this->queryCallback = $callback;
 
         return $this;
     }

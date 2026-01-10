@@ -37,6 +37,12 @@ final class BooleanFilter extends Filter
             return;
         }
 
+        if ($this->queryCallback) {
+            ($this->queryCallback)($query, $value);
+
+            return;
+        }
+
         $query->where($this->name, $value === '1' || $value === 'true' || $value === true);
     }
 
