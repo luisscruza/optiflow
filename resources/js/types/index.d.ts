@@ -554,6 +554,37 @@ export interface Invoice {
     salesmen?: Salesman[];
 }
 
+export interface Quotation {
+    id: number;
+    workspace_id: number;
+    contact_id: number;
+    document_subtype_id: number;
+    status:
+        | 'converted'
+        | 'draft'
+        | 'non_converted'
+        | 'sent';
+    document_number: string;
+    issue_date: string;
+    due_date: string;
+    total_amount: number;
+    subtotal_amount: number;
+    tax_amount: number;
+    discount_amount: number;
+    notes?: string | null;
+    created_by: number;
+    currency_id: number;
+    created_at: string;
+    updated_at: string;
+    contact: Contact;
+    document_subtype: DocumentSubtype;
+    created_by_user?: User;
+    items?: DocumentItem[];
+    status_config: InvoiceStatusConfig;
+    payment_term: string;
+    comments?: CommentData[];
+}
+
 import type { PaymentLine, PaymentWithholding } from './accounting';
 
 export interface Payment {

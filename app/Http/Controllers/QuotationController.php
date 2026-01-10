@@ -16,6 +16,7 @@ use App\Models\ProductStock;
 use App\Models\Quotation;
 use App\Models\Tax;
 use App\Models\User;
+use App\Tables\QuotationsTable;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,34 +34,10 @@ final class QuotationController extends Controller
      */
     public function index(Request $request, #[CurrentUser()] User $user): Response
     {
-        abort_unless($user->can(Permission::QuotationsView), 403);
-
-        $query = Quotation::query()
-            ->with(['contact', 'documentSubtype'])
-            ->orderBy('created_at', 'desc');
-
-        if ($request->filled('search')) {
-            $search = $request->get('search');
-            $query->where(function ($q) use ($search): void {
-                $q->where('document_number', 'like', "%{$search}%")
-                    ->orWhereHas('contact', function ($contactQuery) use ($search): void {
-                        $contactQuery->where('name', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->get('status'));
-        }
-
-        $quotations = $query->paginate(15)->withQueryString();
+       abort_unless($user->can(Permission::QuotationsView), 403);
 
         return Inertia::render('quotations/index', [
-            'quotations' => $quotations,
-            'filters' => [
-                'search' => $request->get('search'),
-                'status' => $request->get('status'),
-            ],
+            'quotations' => QuotationsTable::make($request),
         ]);
     }
 

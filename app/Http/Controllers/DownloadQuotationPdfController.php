@@ -5,17 +5,19 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Invoice;
+use App\Models\Quotation;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 final class DownloadQuotationPdfController extends Controller
 {
     /**
      * Handle the incoming request.
      */
-    public function __invoke(Invoice $quotation): Response
+    public function __invoke(Quotation $quotation): BinaryFileResponse
     {
-        // Load necessary relationships
+
         $quotation->load([
             'contact',
             'documentSubtype',
@@ -31,6 +33,13 @@ final class DownloadQuotationPdfController extends Controller
         // Generate filename
         $filename = "cotizacion-{$quotation->document_number}.pdf";
 
-        return $pdf->stream($filename);
+           $filePath = storage_path("app/quotations/{$filename}");
+
+        if (! file_exists(dirname($filePath))) {
+            mkdir(dirname($filePath), 0755, true);
+        }
+        $pdf->save($filePath);
+       
+        return response()->download($filePath, $filename)->deleteFileAfterSend(true);
     }
 }

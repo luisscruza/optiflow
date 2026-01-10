@@ -3,7 +3,8 @@
 import { Link, router } from '@inertiajs/react';
 import axios from 'axios';
 import { format, parseISO } from 'date-fns';
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, DollarSign, Download, Edit, Eye, FileText, Filter, MoreHorizontal, Printer, Search, Send, Trash2, X, XCircle } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, Filter, MoreHorizontal, Search, X } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import * as React from 'react';
 import { useCallback, useState } from 'react';
 import { DateRange } from 'react-day-picker';
@@ -70,6 +71,7 @@ export interface TableAction {
     prefetch?: boolean;
     tooltip?: string;
     download?: boolean;
+    method?: 'get' | 'post';
 }
 
 export interface BulkAction {
@@ -145,19 +147,24 @@ interface StatusConfig {
 }
 
 // ============================================================================
-// Icon mapping
+// Dynamic Icon Component
 // ============================================================================
 
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-    eye: Eye,
-    edit: Edit,
-    trash: Trash2,
-    dollar: DollarSign,
-    download: Download,
-    printer: Printer,
-    send: Send,
-    file: FileText,
-    cancel: XCircle,
+const DynamicIcon: React.FC<{ name: string; className?: string }> = ({ name, className }) => {
+    // Convert kebab-case to PascalCase (e.g., 'refresh-cw' -> 'RefreshCw')
+    const iconName = name
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('');
+
+    const IconComponent = (LucideIcons as Record<string, React.ComponentType<{ className?: string }>>)[iconName];
+
+    if (!IconComponent) {
+        console.warn(`Icon "${name}" (${iconName}) not found in lucide-react`);
+        return null;
+    }
+
+    return <IconComponent className={className} />;
 };
 
 // ============================================================================
@@ -461,8 +468,21 @@ export function DataTable<T = Record<string, unknown>>({
                 return;
             }
 
+            // Handle delete action
             if (action.name === 'delete' && action.href) {
                 router.delete(action.href);
+                return;
+            }
+
+            // Handle POST actions
+            if (action.href && action.method === 'post') {
+                router.post(action.href, {}, { preserveScroll: true });
+                return;
+            }
+
+            // Handle GET actions with href
+            if (action.href && action.method === 'get') {
+                router.get(action.href, {}, { preserveScroll: true });
                 return;
             }
 
@@ -501,6 +521,28 @@ export function DataTable<T = Record<string, unknown>>({
                 },
                 onError: () => {
                     setIsDeleting(false);
+                },
+            });
+            return;
+        }
+
+        // Handle POST actions
+        if (action.href && action.method === 'post') {
+            router.post(action.href, {}, { 
+                preserveScroll: true,
+                onFinish: () => {
+                    setConfirmationDialog({ open: false, action: null, row: null });
+                },
+            });
+            return;
+        }
+
+        // Handle GET actions
+        if (action.href && action.method === 'get') {
+            router.get(action.href, {}, { 
+                preserveScroll: true,
+                onFinish: () => {
+                    setConfirmationDialog({ open: false, action: null, row: null });
                 },
             });
             return;
@@ -666,8 +708,7 @@ export function DataTable<T = Record<string, unknown>>({
                         <div className="flex items-center justify-end gap-1">
                             {/* Inline actions as separate buttons */}
                             {inlineActions.map((action) => {
-                                const IconComponent = action.icon ? iconMap[action.icon] : null;
-                                const button = action.isCustom || action.name === 'delete' || !action.href ? (
+                                const button = action.isCustom || action.name === 'delete' || !action.href || action.method === 'post' ? (
                                     <Button
                                         key={action.name}
                                         variant="ghost"
@@ -675,18 +716,18 @@ export function DataTable<T = Record<string, unknown>>({
                                         onClick={() => handleActionClick(action, row)}
                                         className={action.color === 'danger' ? 'text-red-600 hover:text-red-700 dark:text-red-400' : undefined}
                                     >
-                                        {IconComponent && <IconComponent className="h-4 w-4" />}
+                                        {action.icon && <DynamicIcon name={action.icon} className="h-4 w-4" />}
                                     </Button>
                                 ) : action.download ? (
                                     <Button key={action.name} variant="ghost" size="sm" asChild>
                                         <a href={action.href} target={action.target} download>
-                                            {IconComponent && <IconComponent className="h-4 w-4" />}
+                                            {action.icon && <DynamicIcon name={action.icon} className="h-4 w-4" />}
                                         </a>
                                     </Button>
                                 ) : (
                                     <Button key={action.name} variant="ghost" size="sm" asChild>
                                         <Link href={action.href} target={action.target} prefetch={action.prefetch}>
-                                            {IconComponent && <IconComponent className="h-4 w-4" />}
+                                            {action.icon && <DynamicIcon name={action.icon} className="h-4 w-4" />}
                                         </Link>
                                     </Button>
                                 );
@@ -713,10 +754,8 @@ export function DataTable<T = Record<string, unknown>>({
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
                                         {dropdownActions.map((action) => {
-                                            const IconComponent = action.icon ? iconMap[action.icon] : null;
-
-                                            // Custom actions or delete actions use onClick
-                                            if (action.isCustom || action.name === 'delete' || !action.href) {
+                                            // Custom actions, delete actions, or POST actions use onClick
+                                            if (action.isCustom || action.name === 'delete' || !action.href || action.method === 'post') {
                                                 return (
                                                     <DropdownMenuItem
                                                         key={action.name}
@@ -724,7 +763,7 @@ export function DataTable<T = Record<string, unknown>>({
                                                         className={action.color === 'danger' ? 'text-red-600 dark:text-red-400' : undefined}
                                                         title={action.tooltip}
                                                     >
-                                                        {IconComponent && <IconComponent className="mr-2 h-4 w-4" />}
+                                                        {action.icon && <DynamicIcon name={action.icon} className="mr-2 h-4 w-4" />}
                                                         <span className="flex flex-col">
                                                             <span>{action.label}</span>
                                                             {action.tooltip && (
@@ -740,7 +779,7 @@ export function DataTable<T = Record<string, unknown>>({
                                                 return (
                                                     <DropdownMenuItem key={action.name} asChild title={action.tooltip}>
                                                         <a href={action.href} target={action.target} download>
-                                                            {IconComponent && <IconComponent className="mr-2 h-4 w-4" />}
+                                                            {action.icon && <DynamicIcon name={action.icon} className="mr-2 h-4 w-4" />}
                                                             <span className="flex flex-col">
                                                                 <span>{action.label}</span>
                                                                 {action.tooltip && (
@@ -756,7 +795,7 @@ export function DataTable<T = Record<string, unknown>>({
                                             return (
                                                 <DropdownMenuItem key={action.name} asChild title={action.tooltip}>
                                                     <Link href={action.href} target={action.target} prefetch={action.prefetch}>
-                                                        {IconComponent && <IconComponent className="mr-2 h-4 w-4" />}
+                                                        {action.icon && <DynamicIcon name={action.icon} className="mr-2 h-4 w-4" />}
                                                         <span className="flex flex-col">
                                                             <span>{action.label}</span>
                                                             {action.tooltip && (
@@ -838,7 +877,6 @@ export function DataTable<T = Record<string, unknown>>({
                                 {bulkActions
                                     .filter((action) => !action.permission || can(action.permission as Permission))
                                     .map((action) => {
-                                        const Icon = iconMap[action.icon || 'circle'];
                                         return (
                                             <Button
                                                 key={action.name}
@@ -851,7 +889,7 @@ export function DataTable<T = Record<string, unknown>>({
                                                     action.color === 'primary' && 'bg-teal-600 hover:bg-teal-700 text-white',
                                                 )}
                                             >
-                                                <Icon className="h-4 w-4" />
+                                                {action.icon && <DynamicIcon name={action.icon} className="h-4 w-4" />}
                                                 {action.label}
                                             </Button>
                                         );

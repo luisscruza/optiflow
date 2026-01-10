@@ -43,6 +43,8 @@ class Action
 
     protected bool $download = false;
 
+    protected string $method = 'get';
+
     public function __construct(string $name, ?string $label = null)
     {
         $this->name = $name;
@@ -68,9 +70,10 @@ class Action
         return $this;
     }
 
-    public function href(string $href): static
+    public function href(string $href, string $method = 'get'): static
     {
         $this->href = $href;
+        $this->method = strtolower($method);
 
         return $this;
     }
@@ -184,7 +187,7 @@ class Action
         }
 
         if ($this->href) {
-            return preg_replace_callback('/\{(\w+)\}/', fn ($matches) => data_get($record, $matches[1]), $this->href);
+            return preg_replace_callback('/\{(\w+)\}/', fn($matches) => data_get($record, $matches[1]), $this->href);
         }
 
         return null;
@@ -212,6 +215,7 @@ class Action
             'prefetch' => $this->prefetch,
             'tooltip' => $this->tooltip,
             'download' => $this->download,
+            'method' => $this->method,
         ];
     }
 }
