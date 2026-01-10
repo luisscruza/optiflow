@@ -23,6 +23,7 @@ use App\Models\Quotation;
 use App\Models\Salesman;
 use App\Models\Tax;
 use App\Models\User;
+use App\Tables\InvoicesTable;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,35 +43,10 @@ final class InvoiceController extends Controller
     {
         abort_unless($user->can(Permission::InvoicesView), 403);
 
-        $query = Invoice::query()
-            ->with(['contact', 'documentSubtype'])
-            ->orderBy('issue_date', 'desc')
-            ->orderBy('created_at', 'desc');
-
-        if ($request->filled('search')) {
-            $search = $request->get('search');
-            $query->where(function ($q) use ($search): void {
-                $q->where('document_number', 'like', "%{$search}%")
-                    ->orWhereHas('contact', function ($contactQuery) use ($search): void {
-                        $contactQuery->where('name', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->get('status'));
-        }
-
-        $invoices = $query->paginate(30)->withQueryString();
-
         return Inertia::render('invoices/index', [
-            'invoices' => $invoices,
-            'filters' => [
-                'search' => $request->get('search'),
-                'status' => $request->get('status'),
-            ],
-            'bankAccounts' => Inertia::optional(fn() => BankAccount::onlyActive()->with('currency')->orderBy('name')->get()),
-            'paymentMethods' => Inertia::optional(fn(): array => PaymentMethod::options()),
+            'invoices' => InvoicesTable::make($request),
+            'bankAccounts' => Inertia::optional(fn () => BankAccount::onlyActive()->with('currency')->orderBy('name')->get()),
+            'paymentMethods' => Inertia::optional(fn (): array => PaymentMethod::options()),
         ]);
     }
 
@@ -93,7 +69,7 @@ final class InvoiceController extends Controller
             ->get()
             ->map(function ($contact) {
                 $phone = $contact->phone_primary ?? null;
-                $contact->name = "{$contact->name}" . ($phone ? " ({$phone})" : '');
+                $contact->name = "{$contact->name}".($phone ? " ({$phone})" : '');
 
                 return $contact;
             });
@@ -130,7 +106,7 @@ final class InvoiceController extends Controller
             ->orderBy('name')
             ->get()
             ->groupBy('type')
-            ->mapWithKeys(fn($taxes, $type): array => [
+            ->mapWithKeys(fn ($taxes, $type): array => [
                 $type => [
                     'label' => TaxType::tryFrom($type)?->label() ?? $type,
                     'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,
@@ -143,7 +119,7 @@ final class InvoiceController extends Controller
             ->orderBy('name')
             ->orderBy('surname')
             ->get()
-            ->map(fn($salesman) => [
+            ->map(fn ($salesman) => [
                 'id' => $salesman->id,
                 'name' => $salesman->name,
                 'surname' => $salesman->surname,
@@ -238,9 +214,9 @@ final class InvoiceController extends Controller
         // Collect field labels from all auditable models
         $fieldLabels = collect([
             $invoice->getActivityFieldLabels(),
-            ...$invoice->items->map(fn($item) => $item->getActivityFieldLabels()),
-            ...$invoice->payments->map(fn($payment) => $payment->getActivityFieldLabels()),
-        ])->reduce(fn($carry, $labels) => array_merge($carry, $labels), []);
+            ...$invoice->items->map(fn ($item) => $item->getActivityFieldLabels()),
+            ...$invoice->payments->map(fn ($payment) => $payment->getActivityFieldLabels()),
+        ])->reduce(fn ($carry, $labels) => array_merge($carry, $labels), []);
 
         // Get bank accounts and payment methods for payment registration
         $bankAccounts = BankAccount::onlyActive()->with('currency')->get();
@@ -320,7 +296,7 @@ final class InvoiceController extends Controller
             ->orderBy('name')
             ->get()
             ->groupBy('type')
-            ->mapWithKeys(fn($taxes, $type): array => [
+            ->mapWithKeys(fn ($taxes, $type): array => [
                 $type => [
                     'label' => TaxType::tryFrom($type)?->label() ?? $type,
                     'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,
@@ -333,7 +309,7 @@ final class InvoiceController extends Controller
             ->orderBy('name')
             ->orderBy('surname')
             ->get()
-            ->map(fn($salesman) => [
+            ->map(fn ($salesman) => [
                 'id' => $salesman->id,
                 'name' => $salesman->name,
                 'surname' => $salesman->surname,
@@ -381,12 +357,12 @@ final class InvoiceController extends Controller
     {
         abort_unless($user->can(Permission::InvoicesDelete), 403);
 
-        // For now, we'll only allow deleting draft invoices
-        if ($invoice->status !== 'draft') {
-            return redirect()->back()->withErrors(['error' => 'Solo se pueden eliminar facturas en borrador.']);
+        if (! $invoice->canBeDeleted()) {
+            return redirect()->route('invoices.index')
+                ->with('error', 'La factura no se puede eliminar porque tiene pagos registrados.');
         }
 
-        $invoice->delete();
+        $invoice->update(['status' => InvoiceStatus::Deleted->value]);
 
         return redirect()->route('invoices.index')
             ->with('success', 'Factura eliminada exitosamente.');

@@ -203,7 +203,7 @@ final class Invoice extends Model implements Auditable, Commentable
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
-            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+            ->setDescriptionForEvent(fn (string $eventName) => match ($eventName) {
                 'created' => 'Factura creada',
                 'updated' => 'Factura actualizada',
                 'deleted' => 'Factura eliminada',
@@ -230,6 +230,30 @@ final class Invoice extends Model implements Auditable, Commentable
     }
 
     /**
+     * Determine if the invoice can be deleted.
+     */
+    public function canBeDeleted(): bool
+    {
+        return ! in_array($this->status, [InvoiceStatus::Paid, InvoiceStatus::PartiallyPaid, InvoiceStatus::Deleted]);
+    }
+
+    /**
+     * Determine if the invoice can be edited.
+     */
+    public function canBeEdited(): bool
+    {
+        return ! in_array($this->status, [InvoiceStatus::Paid, InvoiceStatus::PartiallyPaid, InvoiceStatus::Deleted, InvoiceStatus::Cancelled]);
+    }
+
+    /**
+     * Determine if the invoice can register a payment.
+     */
+    public function canRegisterPayment(): bool
+    {
+        return ! in_array($this->status, [InvoiceStatus::Paid, InvoiceStatus::Deleted, InvoiceStatus::Cancelled, InvoiceStatus::Draft]);
+    }
+
+    /**
      * Scope to filter by status.
      */
     #[Scope]
@@ -240,29 +264,12 @@ final class Invoice extends Model implements Auditable, Commentable
 
     /**
      * Get the status attribute.
-     */
-    protected function status(): \Illuminate\Database\Eloquent\Casts\Attribute
-    {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function (): InvoiceStatus {
-            if ($this->payments()->sum('amount') >= $this->total_amount) {
-                return InvoiceStatus::Paid;
-            }
-            if ($this->payments()->sum('amount') > 0) {
-                return InvoiceStatus::PartiallyPaid;
-            }
-
-            return InvoiceStatus::PendingPayment;
-        });
-    }
-
-    /**
-     * Get the status attribute.
      *
      * @return array<string, mixed>
      */
     protected function statusConfig(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn(): array => [
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn (): array => [
             'value' => $this->status->value,
             'label' => $this->status->label(),
             'variant' => $this->status->badgeVariant(),
@@ -275,7 +282,7 @@ final class Invoice extends Model implements Auditable, Commentable
      */
     protected function amountDue(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn(): float|int => max(0, $this->total_amount - $this->payments()->sum('amount')));
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn (): float|int => max(0, $this->total_amount - $this->payments()->sum('amount')));
     }
 
     /**
@@ -287,6 +294,7 @@ final class Invoice extends Model implements Auditable, Commentable
             'issue_date' => 'date',
             'due_date' => 'date',
             'total_amount' => 'decimal:2',
+            'status' => InvoiceStatus::class,
         ];
     }
 }

@@ -233,7 +233,7 @@ final class Payment extends Model implements Auditable
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
-            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+            ->setDescriptionForEvent(fn (string $eventName) => match ($eventName) {
                 'created' => 'Pago registrado',
                 'updated' => 'Pago actualizado',
                 'deleted' => 'Pago eliminado',
