@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\HasActivityLog;
+use App\Contracts\Auditable;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
@@ -11,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\LogOptions;
 
 /**
  * @property int $id
@@ -49,10 +52,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @mixin \Eloquent
  */
-final class Payment extends Model
+final class Payment extends Model implements Auditable
 {
     /** @use HasFactory<\Database\Factories\PaymentFactory> */
-    use HasFactory;
+    use HasActivityLog, HasFactory;
 
     protected $appends = [
         'status_config',
@@ -204,6 +207,63 @@ final class Payment extends Model
             $this->withholding_amount = $this->withholdings->sum('amount');
             $this->amount = round($this->subtotal_amount + $this->tax_amount - $this->withholding_amount, 2);
         }
+    }
+
+    /**
+     * Get the activity log options for this model.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'payment_type',
+                'payment_number',
+                'bank_account_id',
+                'currency_id',
+                'invoice_id',
+                'contact_id',
+                'payment_date',
+                'payment_method',
+                'amount',
+                'subtotal_amount',
+                'tax_amount',
+                'withholding_amount',
+                'status',
+                'note',
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+                'created' => 'Pago registrado',
+                'updated' => 'Pago actualizado',
+                'deleted' => 'Pago eliminado',
+                default => "Pago {$eventName}",
+            });
+    }
+
+    /**
+     * Get human-readable field names for activity log display.
+     *
+     * @return array<string, string>
+     */
+    public function getActivityFieldLabels(): array
+    {
+        return [
+            'payment_type' => 'Tipo de pago',
+            'payment_number' => 'Número de pago',
+            'bank_account_id' => 'Cuenta bancaria',
+            'currency_id' => 'Moneda',
+            'invoice_id' => 'Factura',
+            'contact_id' => 'Contacto',
+            'payment_date' => 'Fecha de pago',
+            'payment_method' => 'Método de pago',
+            'amount' => 'Monto',
+            'subtotal_amount' => 'Subtotal',
+            'tax_amount' => 'Impuestos',
+            'withholding_amount' => 'Retenciones',
+            'status' => 'Estado',
+            'note' => 'Nota',
+        ];
     }
 
     protected function casts(): array

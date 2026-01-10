@@ -71,13 +71,13 @@ final class ImportInvoice extends Command
             $csv->setHeaderOffset(0);
 
             $records = iterator_to_array($csv->getRecords());
-            $this->info('Found ' . count($records) . ' CSV rows to process');
+            $this->info('Found '.count($records).' CSV rows to process');
 
             // Don't clean all records upfront - we'll clean as we process them
 
             // Group records by document_number
             $groupedRecords = $this->groupRecordsByDocumentNumber($records);
-            $this->info('Grouped into ' . count($groupedRecords) . ' invoices');
+            $this->info('Grouped into '.count($groupedRecords).' invoices');
 
             // Limit the number of invoices to import
             $groupedRecords = array_slice($groupedRecords, 0, $limit, true);
@@ -103,7 +103,7 @@ final class ImportInvoice extends Command
                         }
                     } catch (Exception $e) {
                         $skipped++;
-                        $errors[] = "Document {$documentNumber}: " . $e->getMessage();
+                        $errors[] = "Document {$documentNumber}: ".$e->getMessage();
                     }
 
                     $progressBar->advance();
@@ -125,13 +125,13 @@ final class ImportInvoice extends Command
                 }
 
                 if (count($errors) > 10) {
-                    $this->warn('... and ' . (count($errors) - 10) . ' more errors');
+                    $this->warn('... and '.(count($errors) - 10).' more errors');
                 }
             }
 
             return self::SUCCESS;
         } catch (Exception $e) {
-            $this->error('Import failed: ' . $e->getMessage());
+            $this->error('Import failed: '.$e->getMessage());
 
             return self::FAILURE;
         }
@@ -182,7 +182,7 @@ final class ImportInvoice extends Command
 
         if (! $contact) {
             // Try partial match
-            $contact = Contact::query()->where('name', 'like', '%' . $contactName . '%')->first();
+            $contact = Contact::query()->where('name', 'like', '%'.$contactName.'%')->first();
         }
 
         if (! $contact) {
@@ -275,7 +275,7 @@ final class ImportInvoice extends Command
 
         // Finally try partial name match
         if (! $product && ($productName !== '' && $productName !== '0')) {
-            $product = Product::query()->where('name', 'like', '%' . $productName . '%')->first();
+            $product = Product::query()->where('name', 'like', '%'.$productName.'%')->first();
         }
 
         // Create product if it doesn't exist
@@ -287,7 +287,7 @@ final class ImportInvoice extends Command
 
             // Ensure SKU is unique
             while (Product::query()->where('sku', $sku)->exists()) {
-                $sku = $baseSku . '-' . $counter;
+                $sku = $baseSku.'-'.$counter;
                 $counter++;
             }
 
@@ -541,7 +541,7 @@ final class ImportInvoice extends Command
         // Fallback to product name slug
         $slug = Str::slug($productName);
         if (mb_strlen($slug) > 50) {
-            $slug = mb_substr($slug, 0, 47) . '...';
+            $slug = mb_substr($slug, 0, 47).'...';
         }
 
         return mb_strtoupper($slug);

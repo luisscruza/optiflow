@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Concerns\BelongsToWorkspace;
+use App\Concerns\HasActivityLog;
 use App\Concerns\HasComments;
+use App\Contracts\Auditable;
 use App\Contracts\Commentable;
 use App\Enums\InvoiceStatus;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -15,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\LogOptions;
 
 /**
  * @property int $id
@@ -89,10 +92,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @mixin \Eloquent
  */
-final class Invoice extends Model implements Commentable
+final class Invoice extends Model implements Auditable, Commentable
 {
     /** @use HasFactory<\Database\Factories\InvoiceFactory> */
-    use BelongsToWorkspace, HasComments, HasFactory;
+    use BelongsToWorkspace, HasActivityLog, HasComments, HasFactory;
 
     protected $appends = [
         'amount_due',
@@ -171,6 +174,61 @@ final class Invoice extends Model implements Commentable
         return $this->belongsToMany(Salesman::class, 'invoice_salesman');
     }
 
+    public function updatePaymentStatus(): void
+    {
+        if ($this->payments()->sum('amount') >= $this->total_amount) {
+            $this->update(['status' => InvoiceStatus::Paid->value]);
+        } elseif ($this->payments()->sum('amount') > 0) {
+            $this->update(['status' => InvoiceStatus::PartiallyPaid->value]);
+        } else {
+            $this->update(['status' => InvoiceStatus::PendingPayment->value]);
+        }
+    }
+
+    /**
+     * Get the activity log options for this model.
+     * Only track meaningful changes, not calculated fields.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'contact_id',
+                'document_subtype_id',
+                'document_number',
+                'issue_date',
+                'due_date',
+                'payment_term',
+                'notes',
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+                'created' => 'Factura creada',
+                'updated' => 'Factura actualizada',
+                'deleted' => 'Factura eliminada',
+                default => "Factura {$eventName}",
+            });
+    }
+
+    /**
+     * Get human-readable field names for activity log display.
+     *
+     * @return array<string, string>
+     */
+    public function getActivityFieldLabels(): array
+    {
+        return [
+            'contact_id' => 'Cliente',
+            'document_subtype_id' => 'Tipo de documento',
+            'document_number' => 'Número',
+            'issue_date' => 'Fecha de emisión',
+            'due_date' => 'Fecha de vencimiento',
+            'payment_term' => 'Plazo de pago',
+            'notes' => 'Notas',
+        ];
+    }
+
     /**
      * Scope to filter by status.
      */
@@ -197,17 +255,6 @@ final class Invoice extends Model implements Commentable
         });
     }
 
-    public function updatePaymentStatus(): void
-    {
-        if ($this->payments()->sum('amount') >= $this->total_amount) {
-            $this->update(['status' => InvoiceStatus::Paid->value]);
-        } elseif ($this->payments()->sum('amount') > 0) {
-            $this->update(['status' => InvoiceStatus::PartiallyPaid->value]);
-        } else {
-            $this->update(['status' => InvoiceStatus::PendingPayment->value]);
-        }
-    }
-
     /**
      * Get the status attribute.
      *
@@ -215,7 +262,7 @@ final class Invoice extends Model implements Commentable
      */
     protected function statusConfig(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn (): array => [
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn(): array => [
             'value' => $this->status->value,
             'label' => $this->status->label(),
             'variant' => $this->status->badgeVariant(),
@@ -228,7 +275,7 @@ final class Invoice extends Model implements Commentable
      */
     protected function amountDue(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn (): float|int => max(0, $this->total_amount - $this->payments()->sum('amount')));
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn(): float|int => max(0, $this->total_amount - $this->payments()->sum('amount')));
     }
 
     /**

@@ -69,7 +69,6 @@ interface ReportContract
      * Export the report to Excel.
      *
      * @param  array<string, mixed>  $filters
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
      */
     public function toExcel(array $filters = []): \Symfony\Component\HttpFoundation\BinaryFileResponse;
 }

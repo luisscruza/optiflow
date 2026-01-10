@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { usePermissions } from '@/hooks/use-permissions';
 
+import { ActivityLogTimeline } from '@/components/ActivityLogTimeline';
 import { CommentList } from '@/components/CommentList';
 import { PaymentRegistrationModal } from '@/components/payment-registration-modal';
 import { Badge } from '@/components/ui/badge';
@@ -11,16 +12,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
-import { BankAccount, Invoice, Payment, type BreadcrumbItem, type SharedData } from '@/types';
+import { ActivityLog, BankAccount, Invoice, Payment, type BreadcrumbItem, type SharedData } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 interface Props {
     invoice: Invoice;
+    activities: ActivityLog[];
+    activityFieldLabels: Record<string, string>;
     bankAccounts: BankAccount[];
     paymentMethods: Record<string, string>;
 }
 
-export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: Props) {
+export default function ShowInvoice({ invoice, activities, activityFieldLabels, bankAccounts, paymentMethods }: Props) {
     const { format: formatCurrency } = useCurrency();
     const { auth } = usePage<SharedData>().props;
     const { can } = usePermissions();
@@ -628,6 +631,14 @@ export default function ShowInvoice({ invoice, bankAccounts, paymentMethods }: P
                         currentUser={auth.user}
                         title="Comentarios de la factura"
                         className="mb-8"
+                    />
+
+                    {/* Activity Log Timeline */}
+                    <ActivityLogTimeline
+                        activities={activities}
+                        fieldLabels={activityFieldLabels}
+                        title="Historial de cambios"
+                        description="Registro detallado de todas las modificaciones realizadas a esta factura"
                     />
 
                     {/* Action Buttons */}

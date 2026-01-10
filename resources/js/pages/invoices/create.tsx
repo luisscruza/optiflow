@@ -7,7 +7,7 @@ import { EditNcfModal } from '@/components/invoices/edit-ncf-modal';
 import QuickProductModal from '@/components/products/quick-product-modal';
 import { TaxMultiSelect, type SelectedTax } from '@/components/taxes/tax-multi-select';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -589,343 +589,309 @@ export default function CreateInvoice({
             <Head title={pageTitle} />
 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                <div>
-                    <div className="mb-6">
-                        <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
-                            <CardContent className="px-6 py-6">
-                                <div className="flex items-start justify-between">
-                                    {/* Company Info */}
-                                    <div className="space-y-1">
-                                        <h1 className="text-2xl font-bold text-gray-900">Centro Óptico Visión Integral</h1>
-                                        <p className="text-sm text-gray-600">RNC o Cédula: 130382573</p>
-                                        <p className="text-sm text-gray-600">info@covi.com.do</p>
+                <form onSubmit={handleSubmit}>
+                    {/* All-in-One Invoice Card */}
+                    <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
+                        <CardContent className="px-6 py-6">
+                            {/* Enhanced Header - Invoice Style */}
+                            <div className="mb-8 flex items-start justify-between border-b border-gray-200 pb-6">
+                                {/* Company Info */}
+                                <div className="space-y-1">
+                                    <h1 className="text-2xl font-bold text-gray-900">Centro Óptico Visión Integral</h1>
+                                    <p className="text-sm text-gray-600">RNC o Cédula: 130382573</p>
+                                    <p className="text-sm text-gray-600">info@covi.com.do</p>
+                                </div>
+
+                                {/* Invoice Details */}
+                                <div className="space-y-1 text-right">
+                                    <div className="flex items-center justify-end gap-2">
+                                        <span className="text-sm font-medium text-gray-600">NCF</span>
+                                        <span className="rounded bg-gray-100 px-2 py-1 font-mono text-sm">{data.ncf || 'N/A'}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowNcfModal(true)}
+                                            disabled={!data.document_subtype_id}
+                                            className="text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+                                            title="Editar NCF manualmente"
+                                        >
+                                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                                                />
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    {/* Document Subtype Selection */}
+                                    <div className="flex flex-col justify-end space-y-3">
+                                        <Label className="gap-1 text-sm font-medium text-gray-900">
+                                            Tipo de documento
+                                            <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Select value={data.document_subtype_id?.toString() || ''} onValueChange={handleDocumentSubtypeChange}>
+                                            <SelectTrigger
+                                                className={`h-8 text-xs ${errors.document_subtype_id ? 'border-red-300' : 'border-gray-300'}`}
+                                            >
+                                                <SelectValue placeholder="Seleccionar tipo" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {documentSubtypes.map((subtype) => (
+                                                    <SelectItem key={subtype.id} value={subtype.id.toString()}>
+                                                        {subtype.name} ({subtype.prefix})
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.document_subtype_id && <p className="text-sm text-red-600">{errors.document_subtype_id}</p>}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Customer and Document Details */}
+                            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+                                {/* Left Column - Customer Details */}
+                                <div className="space-y-6">
+                                    <div className="space-y-3">
+                                        <Label className="flex items-center gap-1 text-sm font-medium text-gray-900">
+                                            Contacto
+                                            <span className="text-red-500">*</span>
+                                        </Label>
+                                        <div className="flex gap-2">
+                                            <SearchableSelect
+                                                options={contactOptions}
+                                                value={data.contact_id?.toString() || ''}
+                                                onValueChange={handleContactSelect}
+                                                placeholder="Buscar contacto..."
+                                                searchPlaceholder="Escribir para buscar..."
+                                                emptyText="No se encontró ningún contacto."
+                                                noEmptyAction={
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => setShowContactModal(true)}
+                                                        className="text-primary hover:bg-primary/10"
+                                                    >
+                                                        <Plus className="mr-1 h-4 w-4" />
+                                                        Crear nuevo contacto
+                                                    </Button>
+                                                }
+                                                className="flex-1"
+                                                triggerClassName={`h-10 ${errors.contact_id ? 'border-red-300 ring-red-500/20' : 'border-gray-300'}`}
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setShowContactModal(true)}
+                                                className="h-10 border-gray-300 px-3 text-primary hover:bg-primary/10"
+                                            >
+                                                <Plus className="mr-1 h-4 w-4" />
+                                                Nuevo contacto
+                                            </Button>
+                                        </div>
+                                        {errors.contact_id && <p className="text-sm text-red-600">{errors.contact_id}</p>}
                                     </div>
 
-                                    {/* Invoice Details */}
-                                    <div className="space-y-1 text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <span className="text-sm font-medium text-gray-600">NCF</span>
-                                            <span className="rounded bg-gray-100 px-2 py-1 font-mono text-sm">{data.ncf || 'N/A'}</span>
+                                    <div className="space-y-3">
+                                        <Label className="text-sm font-medium text-gray-900">RNC o Cédula</Label>
+                                        <div className="relative">
+                                            <Input
+                                                value={selectedContact?.identification_number || ''}
+                                                placeholder="RNC o número de cédula"
+                                                className="h-10 border-gray-300"
+                                                readOnly
+                                                disabled
+                                            />
                                             <button
                                                 type="button"
-                                                onClick={() => setShowNcfModal(true)}
-                                                disabled={!data.document_subtype_id}
-                                                className="text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
-                                                title="Editar NCF manualmente"
+                                                className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                                             >
                                                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path
                                                         strokeLinecap="round"
                                                         strokeLinejoin="round"
                                                         strokeWidth={2}
-                                                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                                                    />
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                                     />
                                                 </svg>
                                             </button>
                                         </div>
-                                        {/* Document Subtype Selection */}
-                                        <div className="flex flex-col justify-end space-y-3">
-                                            <Label className="gap-1 text-sm font-medium text-gray-900">
-                                                Tipo de documento
-                                                <span className="text-red-500">*</span>
-                                            </Label>
-                                            <Select value={data.document_subtype_id?.toString() || ''} onValueChange={handleDocumentSubtypeChange}>
-                                                <SelectTrigger
-                                                    className={`h-8 text-xs ${errors.document_subtype_id ? 'border-red-300' : 'border-gray-300'}`}
-                                                >
-                                                    <SelectValue placeholder="Seleccionar tipo" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {documentSubtypes.map((subtype) => (
-                                                        <SelectItem key={subtype.id} value={subtype.id.toString()}>
-                                                            {subtype.name} ({subtype.prefix})
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            {errors.document_subtype_id && <p className="text-sm text-red-600">{errors.document_subtype_id}</p>}
-                                        </div>
                                     </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-8">
-                        {/* Customer and Document Details - Cleaner Layout */}
-                        <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
-                            <CardContent className="px-6 py-6">
-                                <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-                                    {/* Left Column - Customer Details */}
-                                    <div className="space-y-6">
-                                        <div className="space-y-3">
-                                            <Label className="flex items-center gap-1 text-sm font-medium text-gray-900">
-                                                Contacto
-                                                <span className="text-red-500">*</span>
-                                            </Label>
-                                            <div className="flex gap-2">
-                                                <SearchableSelect
-                                                    options={contactOptions}
-                                                    value={data.contact_id?.toString() || ''}
-                                                    onValueChange={handleContactSelect}
-                                                    placeholder="Buscar contacto..."
-                                                    searchPlaceholder="Escribir para buscar..."
-                                                    emptyText="No se encontró ningún contacto."
-                                                    noEmptyAction={
-                                                        <Button
-                                                            type="button"
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => setShowContactModal(true)}
-                                                            className="text-primary hover:bg-primary/10"
+                                    <div className="space-y-3">
+                                        <Label className="text-sm font-medium text-gray-900">Teléfono</Label>
+                                        <Input
+                                            value={selectedContact?.phone_primary || ''}
+                                            placeholder="Número de teléfono"
+                                            className="h-10 border-gray-300"
+                                            readOnly
+                                            disabled
+                                        />
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <Label className="text-sm font-medium text-gray-900">Vendedores</Label>
+                                        <SearchableSelect
+                                            options={salesmen.map((salesman) => ({
+                                                value: salesman.id.toString(),
+                                                label: salesman.full_name,
+                                            }))}
+                                            value={data.salesmen_ids.length > 0 ? data.salesmen_ids[0].toString() : ''}
+                                            onValueChange={(value) => {
+                                                if (value) {
+                                                    const salesmanId = parseInt(value);
+                                                    if (!data.salesmen_ids.includes(salesmanId)) {
+                                                        setData('salesmen_ids', [...data.salesmen_ids, salesmanId]);
+                                                    }
+                                                }
+                                            }}
+                                            placeholder="Seleccionar vendedor..."
+                                            searchPlaceholder="Buscar vendedor..."
+                                            emptyText="No se encontró ningún vendedor."
+                                            className="flex-1"
+                                            triggerClassName="h-10 border-gray-300"
+                                        />
+                                        {data.salesmen_ids.length > 0 && (
+                                            <div className="flex flex-wrap gap-2">
+                                                {data.salesmen_ids.map((salesmanId) => {
+                                                    const salesman = salesmen.find((s) => s.id === salesmanId);
+                                                    if (!salesman) return null;
+                                                    return (
+                                                        <div
+                                                            key={salesmanId}
+                                                            className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary"
                                                         >
-                                                            <Plus className="mr-1 h-4 w-4" />
-                                                            Crear nuevo contacto
-                                                        </Button>
-                                                    }
-                                                    className="flex-1"
-                                                    triggerClassName={`h-10 ${errors.contact_id ? 'border-red-300 ring-red-500/20' : 'border-gray-300'}`}
-                                                />
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => setShowContactModal(true)}
-                                                    className="h-10 border-gray-300 px-3 text-primary hover:bg-primary/10"
-                                                >
-                                                    <Plus className="mr-1 h-4 w-4" />
-                                                    Nuevo contacto
-                                                </Button>
-                                            </div>
-                                            {errors.contact_id && <p className="text-sm text-red-600">{errors.contact_id}</p>}
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <Label className="text-sm font-medium text-gray-900">RNC o Cédula</Label>
-                                            <div className="relative">
-                                                <Input
-                                                    value={selectedContact?.identification_number || ''}
-                                                    placeholder="RNC o número de cédula"
-                                                    className="h-10 border-gray-300"
-                                                    readOnly
-                                                    disabled
-                                                />
-                                                <button
-                                                    type="button"
-                                                    className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                                >
-                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <Label className="text-sm font-medium text-gray-900">Teléfono</Label>
-                                            <Input
-                                                value={selectedContact?.phone_primary || ''}
-                                                placeholder="Número de teléfono"
-                                                className="h-10 border-gray-300"
-                                                readOnly
-                                                disabled
-                                            />
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <Label className="text-sm font-medium text-gray-900">Vendedores</Label>
-                                            <SearchableSelect
-                                                options={salesmen.map((salesman) => ({
-                                                    value: salesman.id.toString(),
-                                                    label: salesman.full_name,
-                                                }))}
-                                                value={data.salesmen_ids.length > 0 ? data.salesmen_ids[0].toString() : ''}
-                                                onValueChange={(value) => {
-                                                    if (value) {
-                                                        const salesmanId = parseInt(value);
-                                                        if (!data.salesmen_ids.includes(salesmanId)) {
-                                                            setData('salesmen_ids', [...data.salesmen_ids, salesmanId]);
-                                                        }
-                                                    }
-                                                }}
-                                                placeholder="Seleccionar vendedor..."
-                                                searchPlaceholder="Buscar vendedor..."
-                                                emptyText="No se encontró ningún vendedor."
-                                                className="flex-1"
-                                                triggerClassName="h-10 border-gray-300"
-                                            />
-                                            {data.salesmen_ids.length > 0 && (
-                                                <div className="flex flex-wrap gap-2">
-                                                    {data.salesmen_ids.map((salesmanId) => {
-                                                        const salesman = salesmen.find((s) => s.id === salesmanId);
-                                                        if (!salesman) return null;
-                                                        return (
-                                                            <div
-                                                                key={salesmanId}
-                                                                className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary"
+                                                            {salesman.full_name}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setData(
+                                                                        'salesmen_ids',
+                                                                        data.salesmen_ids.filter((id) => id !== salesmanId),
+                                                                    );
+                                                                }}
+                                                                className="ml-1 text-primary hover:text-primary/80"
                                                             >
-                                                                {salesman.full_name}
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        setData(
-                                                                            'salesmen_ids',
-                                                                            data.salesmen_ids.filter((id) => id !== salesmanId),
-                                                                        );
-                                                                    }}
-                                                                    className="ml-1 text-primary hover:text-primary/80"
-                                                                >
-                                                                    ×
-                                                                </button>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Right Column - Invoice Details */}
-                                    <div className="space-y-6">
-                                        <div className="space-y-3">
-                                            <Label className="flex items-center gap-1 text-sm font-medium text-gray-900">
-                                                Fecha
-                                                <span className="text-red-500">*</span>
-                                            </Label>
-                                            <div className="relative">
-                                                <Input
-                                                    type="date"
-                                                    value={data.issue_date}
-                                                    onChange={(e) => handleIssueDateChange(e.target.value)}
-                                                    className={`h-10 border-gray-300 ${errors.issue_date ? 'border-red-300' : ''}`}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                                >
-                                                    ×
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="absolute top-1/2 right-8 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                                >
-                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                        />
-                                                    </svg>
-                                                </button>
+                                                                ×
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
-                                            {errors.issue_date && <p className="text-sm text-red-600">{errors.issue_date}</p>}
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <Label className="text-sm font-medium text-gray-900">Plazo de pago</Label>
-                                            <Select value={data.payment_term} onValueChange={handlePaymentTermChange}>
-                                                <SelectTrigger className="h-10 border-gray-300">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="manual">Vencimiento manual</SelectItem>
-                                                    <SelectItem value="7days">7 días</SelectItem>
-                                                    <SelectItem value="15days">15 días</SelectItem>
-                                                    <SelectItem value="30days">30 días</SelectItem>
-                                                    <SelectItem value="45days">45 días</SelectItem>
-                                                    <SelectItem value="60days">60 días</SelectItem>
-                                                    <SelectItem value="90days">90 días</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <Label className="flex items-center gap-1 text-sm font-medium text-gray-900">
-                                                Vencimiento
-                                                <span className="text-red-500">*</span>
-                                            </Label>
-                                            <div className="relative">
-                                                <Input
-                                                    type="date"
-                                                    value={data.due_date}
-                                                    min={data.issue_date}
-                                                    onChange={(e) => handleDueDateChange(e.target.value)}
-                                                    className={`h-10 border-gray-300 ${errors.due_date ? 'border-red-300' : ''}`}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                                >
-                                                    ×
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="absolute top-1/2 right-8 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                                >
-                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                            {errors.due_date && <p className="text-sm text-red-600">{errors.due_date}</p>}
-                                            {data.due_date && data.issue_date && data.due_date < data.issue_date && (
-                                                <p className="text-sm text-red-600">
-                                                    La fecha de vencimiento no puede ser anterior a la fecha de emisión
-                                                </p>
-                                            )}
-                                        </div>
+                                        )}
                                     </div>
                                 </div>
-                            </CardContent>
-                        </Card>
 
-                        {/* Invoice Items - Enhanced */}
-                        <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
-                            <CardHeader className="bg-gray-50/50 px-6 py-5">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
-                                                <ShoppingCart className="h-4 w-4" />
-                                            </div>
-                                            Líneas de productos
-                                        </CardTitle>
-                                        <CardDescription className="mt-1 text-sm text-gray-600">
-                                            Agrega los productos o servicios incluidos en esta factura.
-                                        </CardDescription>
-                                    </div>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={addItem}
-                                        className="flex items-center gap-2 border-primary bg-background text-primary hover:border-primary hover:bg-primary/10"
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                        Agregar línea
-                                    </Button>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="px-6 py-6">
+                                {/* Right Column - Invoice Details */}
                                 <div className="space-y-6">
-                                    {/* Enhanced Table Header */}
+                                    <div className="space-y-3">
+                                        <Label className="flex items-center gap-1 text-sm font-medium text-gray-900">
+                                            Fecha
+                                            <span className="text-red-500">*</span>
+                                        </Label>
+                                        <div className="relative">
+                                            <Input
+                                                type="date"
+                                                value={data.issue_date}
+                                                onChange={(e) => handleIssueDateChange(e.target.value)}
+                                                className={`h-10 border-gray-300 ${errors.issue_date ? 'border-red-300' : ''}`}
+                                            />
+                                            <button
+                                                type="button"
+                                                className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                            >
+                                                ×
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="absolute top-1/2 right-8 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                            >
+                                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        {errors.issue_date && <p className="text-sm text-red-600">{errors.issue_date}</p>}
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <Label className="text-sm font-medium text-gray-900">Plazo de pago</Label>
+                                        <Select value={data.payment_term} onValueChange={handlePaymentTermChange}>
+                                            <SelectTrigger className="h-10 border-gray-300">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="manual">Vencimiento manual</SelectItem>
+                                                <SelectItem value="7days">7 días</SelectItem>
+                                                <SelectItem value="15days">15 días</SelectItem>
+                                                <SelectItem value="30days">30 días</SelectItem>
+                                                <SelectItem value="45days">45 días</SelectItem>
+                                                <SelectItem value="60days">60 días</SelectItem>
+                                                <SelectItem value="90days">90 días</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <Label className="flex items-center gap-1 text-sm font-medium text-gray-900">
+                                            Vencimiento
+                                            <span className="text-red-500">*</span>
+                                        </Label>
+                                        <div className="relative">
+                                            <Input
+                                                type="date"
+                                                value={data.due_date}
+                                                min={data.issue_date}
+                                                onChange={(e) => handleDueDateChange(e.target.value)}
+                                                className={`h-10 border-gray-300 ${errors.due_date ? 'border-red-300' : ''}`}
+                                            />
+                                            <button
+                                                type="button"
+                                                className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                            >
+                                                ×
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="absolute top-1/2 right-8 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                            >
+                                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        {errors.due_date && <p className="text-sm text-red-600">{errors.due_date}</p>}
+                                        {data.due_date && data.issue_date && data.due_date < data.issue_date && (
+                                            <p className="text-sm text-red-600">
+                                                La fecha de vencimiento no puede ser anterior a la fecha de emisión
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Invoice Items Section */}
+                            <div className="mt-8 border-t border-gray-200 pt-8">
+                                <div className="space-y-6">
                                     <div className="hidden gap-3 rounded-lg border bg-gray-50 px-4 py-3 text-xs font-semibold tracking-wider text-gray-700 uppercase lg:grid lg:grid-cols-12">
                                         <div className="col-span-2">Producto</div>
                                         <div className="col-span-2">Descripción</div>
@@ -936,15 +902,12 @@ export default function CreateInvoice({
                                         <div className="col-span-1 text-right">Total</div>
                                         <div className="col-span-2"></div>
                                     </div>
-
-                                    {/* Enhanced Items */}
                                     <div className="space-y-4">
                                         {data.items.map((item, index) => (
                                             <div
                                                 key={item.id}
                                                 className="relative rounded-xl border border-gray-200 bg-gray-50/50 p-4 lg:border-0 lg:bg-transparent lg:p-0"
                                             >
-                                                {/* Mobile/Small screen layout */}
                                                 <div className="space-y-4 lg:hidden">
                                                     <div className="flex items-center justify-between">
                                                         <h4 className="text-sm font-medium text-gray-900">Línea {index + 1}</h4>
@@ -1311,6 +1274,18 @@ export default function CreateInvoice({
                                                 </div>
                                             </div>
                                         ))}
+                                                   <div className="mb-6 flex items-center justify-between">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={addItem}
+                                        className="flex items-center gap-2 border-primary bg-background text-primary hover:border-primary hover:bg-primary/10"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                        Agregar línea
+                                    </Button>
+                                </div>
                                     </div>
 
                                     {/* Enhanced Totals */}
@@ -1345,23 +1320,21 @@ export default function CreateInvoice({
                                         </div>
                                     </div>
                                 </div>
-                            </CardContent>
-                        </Card>
+                            </div>
 
-                        {/* Immediate Payment Section */}
-                        <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
-                            <CardHeader className="bg-gray-50/50 px-6 py-5">
-                                <div className="flex items-center justify-between">
+                            {/* Immediate Payment Section */}
+                            <div className="mt-8 border-t border-gray-200 pt-8">
+                                <div className="mb-6 flex items-center justify-between">
                                     <div>
-                                        <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
+                                        <h3 className="flex items-center gap-3 text-lg font-semibold text-gray-900">
                                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
                                                 <CreditCard className="h-4 w-4" />
                                             </div>
                                             Registrar pago inmediato
-                                        </CardTitle>
-                                        <CardDescription className="mt-1 text-sm text-gray-600">
+                                        </h3>
+                                        <p className="mt-1 text-sm text-gray-600">
                                             Si el cliente paga de inmediato, registra el pago junto con la factura.
-                                        </CardDescription>
+                                        </p>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <Checkbox
@@ -1380,10 +1353,8 @@ export default function CreateInvoice({
                                         </Label>
                                     </div>
                                 </div>
-                            </CardHeader>
 
-                            {data.register_payment && (
-                                <CardContent className="px-6 py-6">
+                                {data.register_payment && (
                                     <div className="space-y-6">
                                         {/* Invoice Summary */}
                                         <div className="rounded-lg border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-5 shadow-sm">
@@ -1517,24 +1488,21 @@ export default function CreateInvoice({
                                             </div>
                                         </div>
                                     </div>
-                                </CardContent>
-                            )}
-                        </Card>
+                                )}
+                            </div>
 
-                        {/* Notes - Enhanced */}
-                        <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
-                            <CardHeader className="bg-gray-50/50 px-6 py-5">
-                                <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
-                                        <FileText className="h-4 w-4" />
-                                    </div>
-                                    Notas adicionales
-                                </CardTitle>
-                                <CardDescription className="mt-1 text-sm text-gray-600">
-                                    Información adicional que aparecerá en la factura (opcional).
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="px-6 py-6">
+                            {/* Notes Section */}
+                            <div className="mt-8 border-t border-gray-200 pt-8">
+                                <div className="mb-6">
+                                    <h3 className="flex items-center gap-3 text-lg font-semibold text-gray-900">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
+                                            <FileText className="h-4 w-4" />
+                                        </div>
+                                        Notas adicionales
+                                    </h3>
+                                    <p className="mt-1 text-sm text-gray-600">Información adicional que aparecerá en la factura (opcional).</p>
+                                </div>
+
                                 <div className="space-y-3">
                                     <Label htmlFor="notes" className="text-sm font-medium text-gray-900">
                                         Notas o comentarios
@@ -1549,45 +1517,45 @@ export default function CreateInvoice({
                                     />
                                     <p className="text-xs text-gray-500">Estas notas aparecerán al final de la factura</p>
                                 </div>
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                        {/* Enhanced Actions */}
-                        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="lg"
-                                asChild
-                                className="border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50"
-                            >
-                                <a href="/invoices" className="flex items-center justify-center gap-2">
-                                    Cancelar
-                                </a>
-                            </Button>
-                            <Button
-                                type="submit"
-                                size="lg"
-                                disabled={processing || !ncf || !data.contact_id || data.items.length === 0}
-                                className={`flex min-w-[160px] items-center justify-center gap-2 ${
-                                    processing || !ncf ? 'bg-gray-400 hover:bg-gray-400' : 'bg-primary hover:bg-primary/90'
-                                }`}
-                            >
-                                {processing ? (
-                                    <>
-                                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                                        Guardando...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="h-4 w-4" />
-                                        Guardar factura
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    </form>
-                </div>
+                    {/* Actions */}
+                    <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="lg"
+                            asChild
+                            className="border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50"
+                        >
+                            <a href="/invoices" className="flex items-center justify-center gap-2">
+                                Cancelar
+                            </a>
+                        </Button>
+                        <Button
+                            type="submit"
+                            size="lg"
+                            disabled={processing || !ncf || !data.contact_id || data.items.length === 0}
+                            className={`flex min-w-[160px] items-center justify-center gap-2 ${
+                                processing || !ncf ? 'bg-gray-400 hover:bg-gray-400' : 'bg-primary hover:bg-primary/90'
+                            }`}
+                        >
+                            {processing ? (
+                                <>
+                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                                    Guardando...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="h-4 w-4" />
+                                    Guardar factura
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </form>
             </div>
 
             <QuickContactModal

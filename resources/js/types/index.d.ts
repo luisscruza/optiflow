@@ -47,6 +47,29 @@ export interface CommentData {
     comments?: CommentData[];
 }
 
+export interface ActivityLog {
+    id: number;
+    log_name: string | null;
+    description: string;
+    subject_type: string;
+    subject_id: number;
+    event: string;
+    causer_id: number | null;
+    causer_type: string | null;
+    properties: {
+        attributes?: Record<string, any>;
+        old?: Record<string, any>;
+    };
+    batch_uuid: string | null;
+    created_at: string;
+    updated_at: string;
+    causer?: {
+        id: number;
+        name: string;
+        email: string;
+    };
+}
+
 export interface BankAccount {
     id: number;
     name: string;

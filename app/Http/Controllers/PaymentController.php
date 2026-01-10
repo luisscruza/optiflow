@@ -138,7 +138,7 @@ final class PaymentController extends Controller
         $payment = $action->handle($invoice, $validatedData);
 
         return redirect()
-            ->route('payments.show', $payment)
+            ->back()
             ->with('success', 'Pago registrado correctamente.');
     }
 
@@ -218,7 +218,7 @@ final class PaymentController extends Controller
         $action->handle($payment, $request->validated());
 
         return redirect()
-            ->route('payments.show', $payment)
+            ->back()
             ->with('success', 'Pago actualizado correctamente.');
     }
 
@@ -232,7 +232,7 @@ final class PaymentController extends Controller
         $action->handle($payment);
 
         return redirect()
-            ->route('payments.index')
+            ->back()
             ->with('success', 'Pago anulado correctamente.');
     }
 }

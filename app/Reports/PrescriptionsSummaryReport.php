@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-class PrescriptionsSummaryReport implements ReportContract
+final class PrescriptionsSummaryReport implements ReportContract
 {
     public function name(): string
     {
@@ -43,7 +43,7 @@ class PrescriptionsSummaryReport implements ReportContract
                 options: Workspace::query()
                     ->orderBy('name')
                     ->get()
-                    ->map(fn(Workspace $workspace) => [
+                    ->map(fn (Workspace $workspace) => [
                         'value' => (string) $workspace->id,
                         'label' => $workspace->name,
                     ])
@@ -59,7 +59,7 @@ class PrescriptionsSummaryReport implements ReportContract
                     ->optometrists()
                     ->orderBy('name')
                     ->get()
-                    ->map(fn(Contact $contact) => [
+                    ->map(fn (Contact $contact) => [
                         'value' => (string) $contact->id,
                         'label' => $contact->name,
                     ])
@@ -152,44 +152,6 @@ class PrescriptionsSummaryReport implements ReportContract
     /**
      * @param  array<string, mixed>  $filters
      */
-    private function baseQuery(array $filters = []): Builder
-    {
-        $query = Prescription::query()
-            ->with(['patient', 'optometrist'])
-            ->join('workspaces', 'prescriptions.workspace_id', '=', 'workspaces.id');
-
-        // Filter by workspace
-        if (! empty($filters['workspace_id']) && $filters['workspace_id'] !== 'all') {
-            $query->where('prescriptions.workspace_id', $filters['workspace_id']);
-        }
-
-        // Filter by optometrist
-        if (! empty($filters['optometrist_id']) && $filters['optometrist_id'] !== 'all') {
-            $query->where('prescriptions.optometrist_id', $filters['optometrist_id']);
-        }
-
-        // Filter by date range
-        if (! empty($filters['start_date'])) {
-            $query->whereDate('prescriptions.created_at', '>=', $filters['start_date']);
-        }
-
-        if (! empty($filters['end_date'])) {
-            $query->whereDate('prescriptions.created_at', '<=', $filters['end_date']);
-        }
-
-        // Search by patient name
-        if (! empty($filters['search'])) {
-            $query->whereHas('patient', function (Builder $q) use ($filters) {
-                $q->where('name', 'like', '%' . $filters['search'] . '%');
-            });
-        }
-
-        return $query->select('prescriptions.*', 'workspaces.name as workspace_name');
-    }
-
-    /**
-     * @param  array<string, mixed>  $filters
-     */
     public function execute(array $filters = [], int $perPage = 15, ?string $sortBy = null, string $sortDirection = 'desc'): LengthAwarePaginator
     {
         $query = $this->query($filters);
@@ -253,7 +215,7 @@ class PrescriptionsSummaryReport implements ReportContract
         return $this->query($filters)
             ->orderByDesc('prescriptions.created_at')
             ->get()
-            ->map(fn(Prescription $prescription) => [
+            ->map(fn (Prescription $prescription) => [
                 'id' => $prescription->id,
                 'prescription_id' => $prescription->id,
                 'workspace_id' => $prescription->workspace_id,
@@ -317,7 +279,7 @@ class PrescriptionsSummaryReport implements ReportContract
         // Search by patient name
         if (! empty($filters['search'])) {
             $query->whereHas('patient', function (Builder $q) use ($filters) {
-                $q->where('name', 'like', '%' . $filters['search'] . '%');
+                $q->where('name', 'like', '%'.$filters['search'].'%');
             });
         }
 
@@ -352,6 +314,102 @@ class PrescriptionsSummaryReport implements ReportContract
                 'type' => 'number',
             ],
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    public function toExcel(array $filters = []): BinaryFileResponse
+    {
+        return Excel::download(
+            new class($this, $filters) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings
+            {
+                public function __construct(
+                    private PrescriptionsSummaryReport $report,
+                    private array $filters
+                ) {}
+
+                public function collection()
+                {
+                    $data = $this->report->data($this->filters);
+
+                    // Flatten complex data structures for Excel
+                    return collect($data)->map(function ($row) {
+                        return [
+                            'workspace_name' => $row['workspace_name'],
+                            'patient_name' => $row['patient_name'],
+                            'optometrist_name' => $row['optometrist_name'],
+                            'od_esfera' => $row['prescription_data']['od']['esfera'] ?? '',
+                            'od_cilindro' => $row['prescription_data']['od']['cilindro'] ?? '',
+                            'od_eje' => $row['prescription_data']['od']['eje'] ?? '',
+                            'od_add' => $row['prescription_data']['od']['add'] ?? '',
+                            'oi_esfera' => $row['prescription_data']['oi']['esfera'] ?? '',
+                            'oi_cilindro' => $row['prescription_data']['oi']['cilindro'] ?? '',
+                            'oi_eje' => $row['prescription_data']['oi']['eje'] ?? '',
+                            'oi_add' => $row['prescription_data']['oi']['add'] ?? '',
+                            'prescription_date' => $row['prescription_date'],
+                        ];
+                    });
+                }
+
+                public function headings(): array
+                {
+                    return [
+                        'Sucursal',
+                        'Paciente',
+                        'Optometrista',
+                        'OD Esfera',
+                        'OD Cilindro',
+                        'OD Eje',
+                        'OD Add',
+                        'OI Esfera',
+                        'OI Cilindro',
+                        'OI Eje',
+                        'OI Add',
+                        'Fecha',
+                    ];
+                }
+            },
+            'resumen-recetas-'.now()->format('Y-m-d').'.xlsx'
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    private function baseQuery(array $filters = []): Builder
+    {
+        $query = Prescription::query()
+            ->with(['patient', 'optometrist'])
+            ->join('workspaces', 'prescriptions.workspace_id', '=', 'workspaces.id');
+
+        // Filter by workspace
+        if (! empty($filters['workspace_id']) && $filters['workspace_id'] !== 'all') {
+            $query->where('prescriptions.workspace_id', $filters['workspace_id']);
+        }
+
+        // Filter by optometrist
+        if (! empty($filters['optometrist_id']) && $filters['optometrist_id'] !== 'all') {
+            $query->where('prescriptions.optometrist_id', $filters['optometrist_id']);
+        }
+
+        // Filter by date range
+        if (! empty($filters['start_date'])) {
+            $query->whereDate('prescriptions.created_at', '>=', $filters['start_date']);
+        }
+
+        if (! empty($filters['end_date'])) {
+            $query->whereDate('prescriptions.created_at', '<=', $filters['end_date']);
+        }
+
+        // Search by patient name
+        if (! empty($filters['search'])) {
+            $query->whereHas('patient', function (Builder $q) use ($filters) {
+                $q->where('name', 'like', '%'.$filters['search'].'%');
+            });
+        }
+
+        return $query->select('prescriptions.*', 'workspaces.name as workspace_name');
     }
 
     /**
@@ -412,62 +470,5 @@ class PrescriptionsSummaryReport implements ReportContract
         }
 
         return 'pending_payment';
-    }
-
-    /**
-     * @param  array<string, mixed>  $filters
-     */
-    public function toExcel(array $filters = []): BinaryFileResponse
-    {
-        return Excel::download(
-            new class($this, $filters) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings {
-                public function __construct(
-                    private PrescriptionsSummaryReport $report,
-                    private array $filters
-                ) {}
-
-                public function collection()
-                {
-                    $data = $this->report->data($this->filters);
-
-                    // Flatten complex data structures for Excel
-                    return collect($data)->map(function ($row) {
-                        return [
-                            'workspace_name' => $row['workspace_name'],
-                            'patient_name' => $row['patient_name'],
-                            'optometrist_name' => $row['optometrist_name'],
-                            'od_esfera' => $row['prescription_data']['od']['esfera'] ?? '',
-                            'od_cilindro' => $row['prescription_data']['od']['cilindro'] ?? '',
-                            'od_eje' => $row['prescription_data']['od']['eje'] ?? '',
-                            'od_add' => $row['prescription_data']['od']['add'] ?? '',
-                            'oi_esfera' => $row['prescription_data']['oi']['esfera'] ?? '',
-                            'oi_cilindro' => $row['prescription_data']['oi']['cilindro'] ?? '',
-                            'oi_eje' => $row['prescription_data']['oi']['eje'] ?? '',
-                            'oi_add' => $row['prescription_data']['oi']['add'] ?? '',
-                            'prescription_date' => $row['prescription_date'],
-                        ];
-                    });
-                }
-
-                public function headings(): array
-                {
-                    return [
-                        'Sucursal',
-                        'Paciente',
-                        'Optometrista',
-                        'OD Esfera',
-                        'OD Cilindro',
-                        'OD Eje',
-                        'OD Add',
-                        'OI Esfera',
-                        'OI Cilindro',
-                        'OI Eje',
-                        'OI Add',
-                        'Fecha',
-                    ];
-                }
-            },
-            'resumen-recetas-' . now()->format('Y-m-d') . '.xlsx'
-        );
     }
 }

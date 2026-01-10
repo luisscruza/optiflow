@@ -43,7 +43,7 @@ final class ReportController extends Controller
             ->where('is_active', true)
             ->limit(4)
             ->get()
-            ->map(fn($report) => [
+            ->map(fn ($report) => [
                 'id' => $report->id,
                 'type' => $report->type->value,
                 'name' => $report->name,
@@ -76,7 +76,7 @@ final class ReportController extends Controller
         }
 
         $requestFilters = $request->only(['workspace_id', 'start_date', 'end_date', 'customer_id', 'salesman_id', 'optometrist_id', 'status', 'search']);
-        $filters = array_merge($defaultFilters, array_filter($requestFilters, fn($v) => $v !== null && $v !== ''));
+        $filters = array_merge($defaultFilters, array_filter($requestFilters, fn ($v) => $v !== null && $v !== ''));
 
         // Get sort parameters
         $sortBy = $request->string('sort_by')->toString() ?: null;
@@ -95,11 +95,11 @@ final class ReportController extends Controller
                 'groupLabel' => $report->group->label(),
             ],
             'filters' => array_map(
-                fn($filter) => $filter->toArray(),
+                fn ($filter) => $filter->toArray(),
                 $filterDefinitions
             ),
             'columns' => array_map(
-                fn($column) => $column->toArray(),
+                fn ($column) => $column->toArray(),
                 $reportImplementation->columns()
             ),
             'summary' => $reportImplementation->summary($filters),
@@ -125,7 +125,7 @@ final class ReportController extends Controller
         }
 
         $requestFilters = $request->only(['workspace_id', 'start_date', 'end_date', 'customer_id', 'salesman_id', 'optometrist_id', 'status', 'search']);
-        $filters = array_merge($defaultFilters, array_filter($requestFilters, fn($v) => $v !== null && $v !== ''));
+        $filters = array_merge($defaultFilters, array_filter($requestFilters, fn ($v) => $v !== null && $v !== ''));
 
         return $reportImplementation->toExcel($filters);
     }

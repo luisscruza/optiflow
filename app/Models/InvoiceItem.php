@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\HasActivityLog;
+use App\Contracts\Auditable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\Activitylog\LogOptions;
 
 /**
  * @property int $id
@@ -62,9 +65,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  *
  * @mixin \Eloquent
  */
-final class InvoiceItem extends Model
+final class InvoiceItem extends Model implements Auditable
 {
-    use HasFactory;
+    use HasActivityLog, HasFactory;
 
     /**
      * Get the document that owns this item.
@@ -106,6 +109,46 @@ final class InvoiceItem extends Model
         return $this->belongsToMany(Tax::class, 'invoice_item_tax')
             ->withPivot(['rate', 'amount'])
             ->withTimestamps();
+    }
+
+    /**
+     * Get the activity log options for this model.
+     * Only track user-editable fields, not calculated ones.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'quantity',
+                'unit_price',
+                'discount_rate',
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(function (string $eventName): string {
+                $productName = $this->product?->name ?? 'Producto';
+
+                return match ($eventName) {
+                    'created' => "Añadido: {$productName}",
+                    'updated' => "Modificado: {$productName}",
+                    'deleted' => "Eliminado: {$productName}",
+                    default => "{$productName} {$eventName}",
+                };
+            });
+    }
+
+    /**
+     * Get human-readable field names for activity log display.
+     *
+     * @return array<string, string>
+     */
+    public function getActivityFieldLabels(): array
+    {
+        return [
+            'quantity' => 'Cantidad',
+            'unit_price' => 'Precio',
+            'discount_rate' => 'Descuento (%)',
+        ];
     }
 
     /**

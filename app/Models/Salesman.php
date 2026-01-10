@@ -67,7 +67,7 @@ final class Salesman extends Model
     protected function fullName(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
         return \Illuminate\Database\Eloquent\Casts\Attribute::make(
-            get: fn(): string => $this->name . ' ' . $this->surname
+            get: fn (): string => $this->name.' '.$this->surname
         );
     }
 }

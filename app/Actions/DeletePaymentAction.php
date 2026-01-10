@@ -20,6 +20,10 @@ final readonly class DeletePaymentAction
 
             $payment->delete();
 
+            if ($payment->invoice) {
+                $payment->invoice->updatePaymentStatus();
+            }
+
             RecalculateBankAccount::dispatch($bankAccount);
         });
     }

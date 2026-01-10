@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\CreateInvoiceAction;
 use App\Actions\UpdateInvoiceAction;
+use App\Enums\InvoiceStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\Permission;
 use App\Enums\QuotationStatus;
@@ -68,8 +69,8 @@ final class InvoiceController extends Controller
                 'search' => $request->get('search'),
                 'status' => $request->get('status'),
             ],
-            'bankAccounts' => Inertia::optional(fn () => BankAccount::onlyActive()->with('currency')->orderBy('name')->get()),
-            'paymentMethods' => Inertia::optional(fn (): array => PaymentMethod::options()),
+            'bankAccounts' => Inertia::optional(fn() => BankAccount::onlyActive()->with('currency')->orderBy('name')->get()),
+            'paymentMethods' => Inertia::optional(fn(): array => PaymentMethod::options()),
         ]);
     }
 
@@ -92,7 +93,7 @@ final class InvoiceController extends Controller
             ->get()
             ->map(function ($contact) {
                 $phone = $contact->phone_primary ?? null;
-                $contact->name = "{$contact->name}".($phone ? " ({$phone})" : '');
+                $contact->name = "{$contact->name}" . ($phone ? " ({$phone})" : '');
 
                 return $contact;
             });
@@ -129,7 +130,7 @@ final class InvoiceController extends Controller
             ->orderBy('name')
             ->get()
             ->groupBy('type')
-            ->mapWithKeys(fn ($taxes, $type): array => [
+            ->mapWithKeys(fn($taxes, $type): array => [
                 $type => [
                     'label' => TaxType::tryFrom($type)?->label() ?? $type,
                     'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,
@@ -142,7 +143,7 @@ final class InvoiceController extends Controller
             ->orderBy('name')
             ->orderBy('surname')
             ->get()
-            ->map(fn ($salesman) => [
+            ->map(fn($salesman) => [
                 'id' => $salesman->id,
                 'name' => $salesman->name,
                 'surname' => $salesman->surname,
@@ -214,6 +215,33 @@ final class InvoiceController extends Controller
             'salesmen',
         ]);
 
+        // Get activity logs for the invoice, its items, and related payments (using morph map values)
+        $activities = \Spatie\Activitylog\Models\Activity::query()
+            ->where(function ($query) use ($invoice) {
+                $query->where(function ($q) use ($invoice) {
+                    $q->where('subject_type', 'invoice')
+                        ->where('subject_id', $invoice->id);
+                })
+                    ->orWhere(function ($q) use ($invoice) {
+                        $q->where('subject_type', 'invoice_item')
+                            ->whereIn('subject_id', $invoice->items->pluck('id'));
+                    })
+                    ->orWhere(function ($q) use ($invoice) {
+                        $q->where('subject_type', 'payment')
+                            ->whereIn('subject_id', $invoice->payments->pluck('id'));
+                    });
+            })
+            ->with('causer')
+            ->orderBy('created_at')
+            ->get();
+
+        // Collect field labels from all auditable models
+        $fieldLabels = collect([
+            $invoice->getActivityFieldLabels(),
+            ...$invoice->items->map(fn($item) => $item->getActivityFieldLabels()),
+            ...$invoice->payments->map(fn($payment) => $payment->getActivityFieldLabels()),
+        ])->reduce(fn($carry, $labels) => array_merge($carry, $labels), []);
+
         // Get bank accounts and payment methods for payment registration
         $bankAccounts = BankAccount::onlyActive()->with('currency')->get();
         $paymentMethods = [
@@ -227,6 +255,8 @@ final class InvoiceController extends Controller
 
         return Inertia::render('invoices/show', [
             'invoice' => $invoice,
+            'activities' => $activities,
+            'activityFieldLabels' => $fieldLabels,
             'bankAccounts' => $bankAccounts,
             'paymentMethods' => $paymentMethods,
         ]);
@@ -235,9 +265,13 @@ final class InvoiceController extends Controller
     /**
      * Show the form for editing the specified invoice.
      */
-    public function edit(Request $request, Invoice $invoice, #[CurrentUser] User $user): Response
+    public function edit(Request $request, Invoice $invoice, #[CurrentUser] User $user): Response|RedirectResponse
     {
         abort_unless($user->can(Permission::InvoicesEdit), 403);
+
+        if ($invoice->status !== InvoiceStatus::PendingPayment) {
+            return redirect()->back()->with('error', 'Esta factura tiene un pago registrado. Para editarla, primero elimina los pagos asociados.');
+        }
 
         $currentWorkspace = Context::get('workspace');
 
@@ -286,7 +320,7 @@ final class InvoiceController extends Controller
             ->orderBy('name')
             ->get()
             ->groupBy('type')
-            ->mapWithKeys(fn ($taxes, $type): array => [
+            ->mapWithKeys(fn($taxes, $type): array => [
                 $type => [
                     'label' => TaxType::tryFrom($type)?->label() ?? $type,
                     'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,
@@ -299,7 +333,7 @@ final class InvoiceController extends Controller
             ->orderBy('name')
             ->orderBy('surname')
             ->get()
-            ->map(fn ($salesman) => [
+            ->map(fn($salesman) => [
                 'id' => $salesman->id,
                 'name' => $salesman->name,
                 'surname' => $salesman->surname,

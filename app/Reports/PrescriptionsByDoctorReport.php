@@ -12,10 +12,10 @@ use App\Models\Prescription;
 use App\Models\Workspace;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 final readonly class PrescriptionsByDoctorReport implements ReportContract
 {
@@ -35,7 +35,7 @@ final readonly class PrescriptionsByDoctorReport implements ReportContract
     public function filters(): array
     {
         $workspaceOptions = Auth::user()->workspaces
-            ->map(fn(Workspace $workspace) => [
+            ->map(fn (Workspace $workspace) => [
                 'value' => (string) $workspace->id,
                 'label' => $workspace->name,
             ])
@@ -45,7 +45,7 @@ final readonly class PrescriptionsByDoctorReport implements ReportContract
             ->optometrists()
             ->orderBy('name')
             ->get()
-            ->map(fn(Contact $optometrist) => [
+            ->map(fn (Contact $optometrist) => [
                 'value' => (string) $optometrist->id,
                 'label' => $optometrist->name,
             ])
@@ -164,7 +164,7 @@ final readonly class PrescriptionsByDoctorReport implements ReportContract
         return $query
             ->orderBy($sortColumn, $sortDirection)
             ->paginate($perPage)
-            ->through(fn(Prescription $prescription) => [
+            ->through(fn (Prescription $prescription) => [
                 'id' => $prescription->id,
                 'prescription_id' => $prescription->id,
                 'patient_id' => $prescription->patient_id,
@@ -202,7 +202,7 @@ final readonly class PrescriptionsByDoctorReport implements ReportContract
         return $this->query($filters)
             ->orderByDesc('prescriptions.created_at')
             ->get()
-            ->map(fn(Prescription $prescription) => [
+            ->map(fn (Prescription $prescription) => [
                 'id' => $prescription->id,
                 'prescription_id' => $prescription->id,
                 'patient_id' => $prescription->patient_id,
@@ -254,6 +254,60 @@ final readonly class PrescriptionsByDoctorReport implements ReportContract
     }
 
     /**
+     * @param  array<string, mixed>  $filters
+     */
+    public function toExcel(array $filters = []): BinaryFileResponse
+    {
+        return Excel::download(
+            new class($this, $filters) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings
+            {
+                public function __construct(
+                    private PrescriptionsByDoctorReport $report,
+                    private array $filters
+                ) {}
+
+                public function collection()
+                {
+                    $data = $this->report->data($this->filters);
+
+                    // Flatten complex data structures for Excel
+                    return collect($data)->map(function ($row) {
+                        return [
+                            'patient_name' => $row['patient_name'],
+                            'od_esfera' => $row['prescription_data']['od']['esfera'] ?? '',
+                            'od_cilindro' => $row['prescription_data']['od']['cilindro'] ?? '',
+                            'od_eje' => $row['prescription_data']['od']['eje'] ?? '',
+                            'od_add' => $row['prescription_data']['od']['add'] ?? '',
+                            'oi_esfera' => $row['prescription_data']['oi']['esfera'] ?? '',
+                            'oi_cilindro' => $row['prescription_data']['oi']['cilindro'] ?? '',
+                            'oi_eje' => $row['prescription_data']['oi']['eje'] ?? '',
+                            'oi_add' => $row['prescription_data']['oi']['add'] ?? '',
+                            'prescription_date' => $row['prescription_date'],
+                        ];
+                    });
+                }
+
+                public function headings(): array
+                {
+                    return [
+                        'Paciente',
+                        'OD Esfera',
+                        'OD Cilindro',
+                        'OD Eje',
+                        'OD Add',
+                        'OI Esfera',
+                        'OI Cilindro',
+                        'OI Eje',
+                        'OI Add',
+                        'Fecha',
+                    ];
+                }
+            },
+            'recetas-por-doctor-'.now()->format('Y-m-d').'.xlsx'
+        );
+    }
+
+    /**
      * Get patient invoices within the period
      *
      * @param  array<string, mixed>  $filters
@@ -273,7 +327,7 @@ final readonly class PrescriptionsByDoctorReport implements ReportContract
         }
 
         return $query->get()
-            ->map(fn($invoice) => [
+            ->map(fn ($invoice) => [
                 'id' => $invoice->id,
                 'document_number' => $invoice->document_number,
                 'total_amount' => (float) $invoice->total_amount,
@@ -335,63 +389,10 @@ final readonly class PrescriptionsByDoctorReport implements ReportContract
 
         if (! empty($filters['search'])) {
             $query->whereHas('patient', function ($q) use ($filters) {
-                $q->where('name', 'like', '%' . $filters['search'] . '%');
+                $q->where('name', 'like', '%'.$filters['search'].'%');
             });
         }
 
         return $query;
-    }
-
-    /**
-     * @param  array<string, mixed>  $filters
-     */
-    public function toExcel(array $filters = []): BinaryFileResponse
-    {
-        return Excel::download(
-            new class($this, $filters) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings {
-                public function __construct(
-                    private PrescriptionsByDoctorReport $report,
-                    private array $filters
-                ) {}
-
-                public function collection()
-                {
-                    $data = $this->report->data($this->filters);
-
-                    // Flatten complex data structures for Excel
-                    return collect($data)->map(function ($row) {
-                        return [
-                            'patient_name' => $row['patient_name'],
-                            'od_esfera' => $row['prescription_data']['od']['esfera'] ?? '',
-                            'od_cilindro' => $row['prescription_data']['od']['cilindro'] ?? '',
-                            'od_eje' => $row['prescription_data']['od']['eje'] ?? '',
-                            'od_add' => $row['prescription_data']['od']['add'] ?? '',
-                            'oi_esfera' => $row['prescription_data']['oi']['esfera'] ?? '',
-                            'oi_cilindro' => $row['prescription_data']['oi']['cilindro'] ?? '',
-                            'oi_eje' => $row['prescription_data']['oi']['eje'] ?? '',
-                            'oi_add' => $row['prescription_data']['oi']['add'] ?? '',
-                            'prescription_date' => $row['prescription_date'],
-                        ];
-                    });
-                }
-
-                public function headings(): array
-                {
-                    return [
-                        'Paciente',
-                        'OD Esfera',
-                        'OD Cilindro',
-                        'OD Eje',
-                        'OD Add',
-                        'OI Esfera',
-                        'OI Cilindro',
-                        'OI Eje',
-                        'OI Add',
-                        'Fecha',
-                    ];
-                }
-            },
-            'recetas-por-doctor-' . now()->format('Y-m-d') . '.xlsx'
-        );
     }
 }

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\BusinessUserController;
 use App\Http\Controllers\BusinessUserInvitationController;
@@ -73,7 +74,7 @@ Route::middleware([
     InitializeTenancyBySubdomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function (): void {
-    Route::get('/', fn() => redirect()->route('dashboard'))->name('home');
+    Route::get('/', fn () => redirect()->route('dashboard'))->name('home');
 
     Route::prefix('invitations')->name('invitations.')->group(function (): void {
         Route::get('{token}', [WorkspaceInvitationController::class, 'show'])->name('show');
@@ -115,6 +116,9 @@ Route::middleware([
         Route::middleware(HasWorkspace::class)->group(function (): void {
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
             Route::post('/dashboard/layout', [DashboardLayoutController::class, 'store'])->name('dashboard.layout.store');
+
+            Route::get('activities', [ActivityLogController::class, 'index'])->name('activities.index');
+            Route::get('activities/{model}/{id}', [ActivityLogController::class, 'show'])->name('activities.show');
 
             Route::get('configuration', [ConfigurationController::class, 'index'])->name('configuration.index');
 
@@ -160,7 +164,7 @@ Route::middleware([
             Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
             Route::patch('document-subtypes/{documentSubtype}/set-default', SetDefaultDocumentSubtypeController::class)->name('document-subtypes.set-default');
 
-            Route::get('inventory', fn() => Inertia::render('inventory/index'))->name('inventory.index');
+            Route::get('inventory', fn () => Inertia::render('inventory/index'))->name('inventory.index');
 
             Route::resource('stock-adjustments', StockAdjustmentController::class)->only(['index', 'create', 'store', 'show'])->parameters([
                 'stock-adjustments' => 'product',
@@ -206,6 +210,6 @@ Route::middleware([
         });
     });
 
-    require __DIR__ . '/settings.php';
-    require __DIR__ . '/auth.php';
+    require __DIR__.'/settings.php';
+    require __DIR__.'/auth.php';
 });

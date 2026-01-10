@@ -12,10 +12,10 @@ use App\Models\Salesman;
 use App\Models\Workspace;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 final readonly class SalesmanSalesReport implements ReportContract
 {
@@ -35,7 +35,7 @@ final readonly class SalesmanSalesReport implements ReportContract
     public function filters(): array
     {
         $workspaceOptions = Auth::user()->workspaces
-            ->map(fn(Workspace $workspace) => [
+            ->map(fn (Workspace $workspace) => [
                 'value' => (string) $workspace->id,
                 'label' => $workspace->name,
             ])
@@ -44,7 +44,7 @@ final readonly class SalesmanSalesReport implements ReportContract
         $salesmanOptions = Salesman::query()
             ->orderBy('name')
             ->get()
-            ->map(fn(Salesman $salesman) => [
+            ->map(fn (Salesman $salesman) => [
                 'value' => (string) $salesman->id,
                 'label' => $salesman->full_name,
             ])
@@ -202,7 +202,7 @@ final readonly class SalesmanSalesReport implements ReportContract
         return $this->query($filters)
             ->orderByDesc('total_amount')
             ->get()
-            ->map(fn($item) => [
+            ->map(fn ($item) => [
                 'id' => $item->id,
                 'salesman_id' => $item->id,
                 'salesman_name' => $item->salesman_name,
@@ -236,6 +236,47 @@ final readonly class SalesmanSalesReport implements ReportContract
             ['key' => 'paid', 'label' => 'Pagado', 'value' => (float) $totals->paid, 'type' => 'currency'],
             ['key' => 'total', 'label' => 'Total', 'value' => (float) $totals->total, 'type' => 'currency'],
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    public function toExcel(array $filters = []): BinaryFileResponse
+    {
+        return Excel::download(
+            new class($this, $filters) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings
+            {
+                public function __construct(
+                    private SalesmanSalesReport $report,
+                    private array $filters
+                ) {}
+
+                public function collection()
+                {
+                    $data = $this->report->data($this->filters);
+                    $columns = $this->report->columns();
+
+                    // Map data to only include the columns defined in the report
+                    return collect($data)->map(function ($row) use ($columns) {
+                        $mapped = [];
+                        foreach ($columns as $column) {
+                            $mapped[$column->key] = $row[$column->key] ?? '';
+                        }
+
+                        return $mapped;
+                    });
+                }
+
+                public function headings(): array
+                {
+                    return array_map(
+                        fn ($column) => $column->label,
+                        $this->report->columns()
+                    );
+                }
+            },
+            'ventas-por-vendedor-'.now()->format('Y-m-d').'.xlsx'
+        );
     }
 
     /**
@@ -278,9 +319,9 @@ final readonly class SalesmanSalesReport implements ReportContract
 
         if (! empty($filters['search'])) {
             $query->where(function ($q) use ($filters) {
-                $q->where('salesmen.name', 'like', '%' . $filters['search'] . '%')
-                    ->orWhere('salesmen.surname', 'like', '%' . $filters['search'] . '%')
-                    ->orWhereRaw("CONCAT(salesmen.name, ' ', salesmen.surname) like ?", ['%' . $filters['search'] . '%']);
+                $q->where('salesmen.name', 'like', '%'.$filters['search'].'%')
+                    ->orWhere('salesmen.surname', 'like', '%'.$filters['search'].'%')
+                    ->orWhereRaw("CONCAT(salesmen.name, ' ', salesmen.surname) like ?", ['%'.$filters['search'].'%']);
             });
         }
 
@@ -337,44 +378,5 @@ final readonly class SalesmanSalesReport implements ReportContract
                 ];
             })
             ->toArray();
-    }
-
-    /**
-     * @param  array<string, mixed>  $filters
-     */
-    public function toExcel(array $filters = []): BinaryFileResponse
-    {
-        return Excel::download(
-            new class($this, $filters) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings {
-                public function __construct(
-                    private SalesmanSalesReport $report,
-                    private array $filters
-                ) {}
-
-                public function collection()
-                {
-                    $data = $this->report->data($this->filters);
-                    $columns = $this->report->columns();
-
-                    // Map data to only include the columns defined in the report
-                    return collect($data)->map(function ($row) use ($columns) {
-                        $mapped = [];
-                        foreach ($columns as $column) {
-                            $mapped[$column->key] = $row[$column->key] ?? '';
-                        }
-                        return $mapped;
-                    });
-                }
-
-                public function headings(): array
-                {
-                    return array_map(
-                        fn($column) => $column->label,
-                        $this->report->columns()
-                    );
-                }
-            },
-            'ventas-por-vendedor-' . now()->format('Y-m-d') . '.xlsx'
-        );
     }
 }

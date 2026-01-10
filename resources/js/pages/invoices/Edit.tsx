@@ -7,7 +7,7 @@ import { EditNcfModal } from '@/components/invoices/edit-ncf-modal';
 import QuickProductModal from '@/components/products/quick-product-modal';
 import { type SelectedTax, TaxMultiSelect } from '@/components/taxes/tax-multi-select';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/searchable-select';
@@ -571,13 +571,14 @@ export default function EditInvoice({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar factura ${invoice.document_number}`} />
 
-            <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                    {/* Enhanced Header - Invoice Style */}
-                    <div className="mb-6">
+            <div className="bg-gray-100">
+                <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                    <form onSubmit={handleSubmit}>
+                        {/* All-in-One Invoice Card */}
                         <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
                             <CardContent className="px-6 py-6">
-                                <div className="flex items-start justify-between">
+                                {/* Enhanced Header - Invoice Style */}
+                                <div className="mb-8 flex items-start justify-between border-b border-gray-200 pb-6">
                                     {/* Company Info */}
                                     <div className="space-y-1">
                                         <h1 className="text-2xl font-bold text-gray-900">Centro Óptico Visión Integral</h1>
@@ -638,14 +639,8 @@ export default function EditInvoice({
                                         </div>
                                     </div>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-8">
-                        {/* Customer and Document Details - Cleaner Layout */}
-                        <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
-                            <CardContent className="px-6 py-6">
+                                {/* Customer and Document Details */}
                                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
                                     {/* Left Column - Customer Details */}
                                     <div className="space-y-6">
@@ -897,83 +892,221 @@ export default function EditInvoice({
                                         </div>
                                     </div>
                                 </div>
-                            </CardContent>
-                        </Card>
 
-                        {/* Invoice Items - Enhanced */}
-                        <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
-                            <CardHeader className="bg-gray-50/50 px-6 py-5">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
-                                                <ShoppingCart className="h-4 w-4" />
-                                            </div>
-                                            Líneas de productos
-                                        </CardTitle>
-                                        <CardDescription className="mt-1 text-sm text-gray-600">
-                                            Modifica los productos o servicios incluidos en esta factura.
-                                        </CardDescription>
-                                    </div>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={addItem}
-                                        className="flex items-center gap-2 border-blue-200 bg-blue-50 text-blue-700 hover:border-blue-300 hover:bg-blue-100"
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                        Agregar línea
-                                    </Button>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="px-6 py-6">
-                                <div className="space-y-6">
-                                    {/* Enhanced Table Header */}
-                                    <div className="hidden gap-3 rounded-lg border bg-gray-50 px-4 py-3 text-xs font-semibold tracking-wider text-gray-700 uppercase lg:grid lg:grid-cols-14">
-                                        <div className="col-span-2">Producto</div>
-                                        <div className="col-span-2">Descripción</div>
-                                        <div className="col-span-1 text-center">Cant.</div>
-                                        <div className="col-span-1 text-right">Precio unit.</div>
-                                        <div className="col-span-1 text-right">Desc. (%)</div>
-                                        <div className="col-span-2 text-right">Impuestos</div>
-                                        <div className="col-span-1 text-right">Subtotal</div>
-                                        <div className="col-span-2 text-right">Total</div>
-                                        <div className="col-span-1"></div>
+                                {/* Invoice Items Section */}
+                                <div className="mt-8 border-t border-gray-200 pt-8">
+                                    <div className="mb-6 flex items-center justify-between">
+                                        <div>
+                                            <h3 className="flex items-center gap-3 text-lg font-semibold text-gray-900">
+                                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+                                                    <ShoppingCart className="h-4 w-4" />
+                                                </div>
+                                                Líneas de productos
+                                            </h3>
+                                            <p className="mt-1 text-sm text-gray-600">
+                                                Modifica los productos o servicios incluidos en esta factura.
+                                            </p>
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={addItem}
+                                            className="flex items-center gap-2 border-blue-200 bg-blue-50 text-blue-700 hover:border-blue-300 hover:bg-blue-100"
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                            Agregar línea
+                                        </Button>
                                     </div>
 
-                                    {/* Enhanced Items */}
-                                    <div className="space-y-4">
-                                        {data.items.map((item, index) => (
-                                            <div
-                                                key={item.id}
-                                                className="relative rounded-xl border border-gray-200 bg-gray-50/50 p-4 lg:border-0 lg:bg-transparent lg:p-0"
-                                            >
-                                                {/* Mobile/Small screen layout */}
-                                                <div className="space-y-4 lg:hidden">
-                                                    <div className="flex items-center justify-between">
-                                                        <h4 className="text-sm font-medium text-gray-900">Línea {index + 1}</h4>
-                                                        {data.items.length > 1 && (
-                                                            <Button
-                                                                type="button"
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() => removeItem(item.id)}
-                                                                className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                                                            >
-                                                                Eliminar
-                                                            </Button>
-                                                        )}
+                                    <div className="space-y-6">
+                                        {/* Enhanced Table Header */}
+                                        <div className="hidden gap-3 rounded-lg border bg-gray-50 px-4 py-3 text-xs font-semibold tracking-wider text-gray-700 uppercase lg:grid lg:grid-cols-14">
+                                            <div className="col-span-2">Producto</div>
+                                            <div className="col-span-2">Descripción</div>
+                                            <div className="col-span-1 text-center">Cant.</div>
+                                            <div className="col-span-1 text-right">Precio unit.</div>
+                                            <div className="col-span-1 text-right">Desc. (%)</div>
+                                            <div className="col-span-2 text-right">Impuestos</div>
+                                            <div className="col-span-1 text-right">Subtotal</div>
+                                            <div className="col-span-2 text-right">Total</div>
+                                            <div className="col-span-1"></div>
+                                        </div>
+
+                                        {/* Enhanced Items */}
+                                        <div className="space-y-4">
+                                            {data.items.map((item, index) => (
+                                                <div
+                                                    key={item.id}
+                                                    className="relative rounded-xl border border-gray-200 bg-gray-50/50 p-4 lg:border-0 lg:bg-transparent lg:p-0"
+                                                >
+                                                    {/* Mobile/Small screen layout */}
+                                                    <div className="space-y-4 lg:hidden">
+                                                        <div className="flex items-center justify-between">
+                                                            <h4 className="text-sm font-medium text-gray-900">Línea {index + 1}</h4>
+                                                            {data.items.length > 1 && (
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => removeItem(item.id)}
+                                                                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                                                                >
+                                                                    Eliminar
+                                                                </Button>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="space-y-3">
+                                                            <div>
+                                                                <Label className="text-xs font-medium text-gray-700">Producto</Label>
+                                                                <SearchableSelect
+                                                                    options={getProductOptions()}
+                                                                    value={item.product_id?.toString() || ''}
+                                                                    onValueChange={(value: string) => handleProductSelect(item.id, value)}
+                                                                    placeholder="Seleccionar producto"
+                                                                    searchPlaceholder="Buscar producto..."
+                                                                    emptyText="No se encontró ningún producto."
+                                                                    footerAction={
+                                                                        <Button
+                                                                            type="button"
+                                                                            variant="outline"
+                                                                            size="sm"
+                                                                            onClick={() => {
+                                                                                setActiveProductItemId(item.id);
+                                                                                setShowProductModal(true);
+                                                                            }}
+                                                                            className="w-full text-primary hover:bg-primary/10"
+                                                                        >
+                                                                            <Plus className="mr-1 h-4 w-4" />
+                                                                            Crear producto
+                                                                        </Button>
+                                                                    }
+                                                                    className="mt-1"
+                                                                    triggerClassName="h-10"
+                                                                />
+                                                            </div>
+
+                                                            <div>
+                                                                <Label className="text-xs font-medium text-gray-700">Descripción</Label>
+                                                                <Input
+                                                                    placeholder="Descripción..."
+                                                                    value={item.description || ''}
+                                                                    onChange={(e) => updateItem(item.id, 'description', e.target.value)}
+                                                                    className="mt-1"
+                                                                    disabled={!item.product_id}
+                                                                />
+                                                            </div>
+
+                                                            <div className="grid grid-cols-2 gap-3">
+                                                                <div>
+                                                                    <Label className="text-xs font-medium text-gray-700">Cantidad</Label>
+                                                                    <Input
+                                                                        type="number"
+                                                                        min="1"
+                                                                        step="1"
+                                                                        value={item.quantity?.toString() || '1'}
+                                                                        onChange={(e) =>
+                                                                            updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)
+                                                                        }
+                                                                        className="mt-1 text-center"
+                                                                        disabled={!item.product_id}
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <Label className="text-xs font-medium text-gray-700">Precio unitario</Label>
+                                                                    <Input
+                                                                        type="number"
+                                                                        min="0"
+                                                                        step="0.01"
+                                                                        value={item.unit_price?.toString() || '0'}
+                                                                        onChange={(e) =>
+                                                                            updateItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)
+                                                                        }
+                                                                        className="mt-1 text-right"
+                                                                        disabled={!item.product_id}
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="grid grid-cols-2 gap-3">
+                                                                <div>
+                                                                    <Label className="text-xs font-medium text-gray-700">Descuento (%)</Label>
+                                                                    <Input
+                                                                        type="number"
+                                                                        min="0"
+                                                                        max="100"
+                                                                        step="0.01"
+                                                                        value={item.discount_rate?.toString() || '0'}
+                                                                        onChange={(e) =>
+                                                                            updateItem(item.id, 'discount_rate', parseFloat(e.target.value) || 0)
+                                                                        }
+                                                                        className="mt-1 text-right"
+                                                                        disabled={!item.product_id}
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <Label className="text-xs font-medium text-gray-700">Impuestos</Label>
+                                                                    <div className="mt-1">
+                                                                        <TaxMultiSelect
+                                                                            taxesGroupedByType={taxesGroupedByType}
+                                                                            selectedTaxes={item.taxes}
+                                                                            onSelectionChange={(taxes) => updateItem(item.id, 'taxes', taxes)}
+                                                                            taxableAmount={item.quantity * item.unit_price - item.discount_amount}
+                                                                            disabled={!item.product_id}
+                                                                            placeholder="Sin impuesto"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="grid grid-cols-2 gap-3">
+                                                                <div>
+                                                                    <Label className="text-xs font-medium text-gray-700">Subtotal</Label>
+                                                                    <Input
+                                                                        value={formatCurrency((item.quantity || 0) * (item.unit_price || 0))}
+                                                                        disabled
+                                                                        className="mt-1 bg-gray-50 text-right"
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <Label className="text-xs font-medium text-gray-700">Total de línea</Label>
+                                                                    <Input
+                                                                        value={formatCurrency(item.total)}
+                                                                        disabled
+                                                                        className="mt-1 bg-gray-50 text-right font-semibold"
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Stock warning for mobile */}
+                                                            {(() => {
+                                                                const stockWarning = getStockWarning(item);
+                                                                if (!stockWarning) return null;
+                                                                return (
+                                                                    <div
+                                                                        className={`rounded border px-2 py-1 text-xs ${
+                                                                            stockWarning.type === 'error'
+                                                                                ? 'border-red-200 bg-red-50 text-red-600'
+                                                                                : 'border-yellow-200 bg-yellow-50 text-yellow-600'
+                                                                        }`}
+                                                                    >
+                                                                        {stockWarning.message}
+                                                                    </div>
+                                                                );
+                                                            })()}
+                                                        </div>
                                                     </div>
 
-                                                    <div className="space-y-3">
-                                                        <div>
-                                                            <Label className="text-xs font-medium text-gray-700">Producto</Label>
+                                                    {/* Desktop layout */}
+                                                    <div className="hidden items-center gap-3 border-b border-gray-100 py-3 last:border-b-0 lg:grid lg:grid-cols-14">
+                                                        {/* Product selection */}
+                                                        <div className="col-span-2">
                                                             <SearchableSelect
                                                                 options={getProductOptions()}
                                                                 value={item.product_id?.toString() || ''}
                                                                 onValueChange={(value: string) => handleProductSelect(item.id, value)}
-                                                                placeholder="Seleccionar producto"
+                                                                placeholder="Seleccionar..."
                                                                 searchPlaceholder="Buscar producto..."
                                                                 emptyText="No se encontró ningún producto."
                                                                 footerAction={
@@ -991,335 +1124,196 @@ export default function EditInvoice({
                                                                         Crear producto
                                                                     </Button>
                                                                 }
-                                                                className="mt-1"
-                                                                triggerClassName="h-10"
+                                                                triggerClassName="h-9 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
                                                             />
                                                         </div>
 
-                                                        <div>
-                                                            <Label className="text-xs font-medium text-gray-700">Descripción</Label>
+                                                        {/* Description */}
+                                                        <div className="col-span-2">
                                                             <Input
                                                                 placeholder="Descripción..."
                                                                 value={item.description || ''}
                                                                 onChange={(e) => updateItem(item.id, 'description', e.target.value)}
-                                                                className="mt-1"
+                                                                className="h-9 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
                                                                 disabled={!item.product_id}
                                                             />
                                                         </div>
 
-                                                        <div className="grid grid-cols-2 gap-3">
-                                                            <div>
-                                                                <Label className="text-xs font-medium text-gray-700">Cantidad</Label>
-                                                                <Input
-                                                                    type="number"
-                                                                    min="1"
-                                                                    step="1"
-                                                                    value={item.quantity?.toString() || '1'}
-                                                                    onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
-                                                                    className="mt-1 text-center"
-                                                                    disabled={!item.product_id}
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <Label className="text-xs font-medium text-gray-700">Precio unitario</Label>
-                                                                <Input
-                                                                    type="number"
-                                                                    min="0"
-                                                                    step="0.01"
-                                                                    value={item.unit_price?.toString() || '0'}
-                                                                    onChange={(e) =>
-                                                                        updateItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)
-                                                                    }
-                                                                    className="mt-1 text-right"
-                                                                    disabled={!item.product_id}
-                                                                />
-                                                            </div>
+                                                        {/* Quantity with stock warning */}
+                                                        <div className="relative col-span-1">
+                                                            <Input
+                                                                type="number"
+                                                                min="1"
+                                                                step="1"
+                                                                value={item.quantity?.toString() || '1'}
+                                                                onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                                                                className="h-9 border-gray-200 text-center focus:border-blue-500 focus:ring-blue-500/20"
+                                                                disabled={!item.product_id}
+                                                            />
+                                                            {(() => {
+                                                                const stockWarning = getStockWarning(item);
+                                                                if (!stockWarning) return null;
+                                                                return (
+                                                                    <div className="absolute top-full right-0 left-0 z-10 mt-1">
+                                                                        <div
+                                                                            className={`rounded border px-2 py-1 text-xs shadow-sm ${
+                                                                                stockWarning.type === 'error'
+                                                                                    ? 'border-red-200 bg-red-50 text-red-600'
+                                                                                    : 'border-yellow-200 bg-yellow-50 text-yellow-600'
+                                                                            }`}
+                                                                        >
+                                                                            {stockWarning.message}
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })()}
                                                         </div>
 
-                                                        <div className="grid grid-cols-2 gap-3">
-                                                            <div>
-                                                                <Label className="text-xs font-medium text-gray-700">Descuento (%)</Label>
-                                                                <Input
-                                                                    type="number"
-                                                                    min="0"
-                                                                    max="100"
-                                                                    step="0.01"
-                                                                    value={item.discount_rate?.toString() || '0'}
-                                                                    onChange={(e) =>
-                                                                        updateItem(item.id, 'discount_rate', parseFloat(e.target.value) || 0)
-                                                                    }
-                                                                    className="mt-1 text-right"
-                                                                    disabled={!item.product_id}
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <Label className="text-xs font-medium text-gray-700">Impuestos</Label>
-                                                                <div className="mt-1">
-                                                                    <TaxMultiSelect
-                                                                        taxesGroupedByType={taxesGroupedByType}
-                                                                        selectedTaxes={item.taxes}
-                                                                        onSelectionChange={(taxes) => updateItem(item.id, 'taxes', taxes)}
-                                                                        taxableAmount={item.quantity * item.unit_price - item.discount_amount}
-                                                                        disabled={!item.product_id}
-                                                                        placeholder="Sin impuesto"
-                                                                    />
-                                                                </div>
-                                                            </div>
+                                                        {/* Unit price */}
+                                                        <div className="col-span-1">
+                                                            <Input
+                                                                type="number"
+                                                                min="0"
+                                                                step="0.01"
+                                                                value={item.unit_price?.toString() || '0'}
+                                                                onChange={(e) => updateItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)}
+                                                                className="h-9 border-gray-200 text-right focus:border-blue-500 focus:ring-blue-500/20"
+                                                                disabled={!item.product_id}
+                                                            />
                                                         </div>
 
-                                                        <div className="grid grid-cols-2 gap-3">
-                                                            <div>
-                                                                <Label className="text-xs font-medium text-gray-700">Subtotal</Label>
-                                                                <Input
-                                                                    value={formatCurrency((item.quantity || 0) * (item.unit_price || 0))}
-                                                                    disabled
-                                                                    className="mt-1 bg-gray-50 text-right"
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <Label className="text-xs font-medium text-gray-700">Total de línea</Label>
-                                                                <Input
-                                                                    value={formatCurrency(item.total)}
-                                                                    disabled
-                                                                    className="mt-1 bg-gray-50 text-right font-semibold"
-                                                                />
-                                                            </div>
+                                                        {/* Discount rate */}
+                                                        <div className="col-span-1">
+                                                            <Input
+                                                                type="number"
+                                                                min="0"
+                                                                max="100"
+                                                                step="0.01"
+                                                                value={item.discount_rate?.toString() || '0'}
+                                                                onChange={(e) =>
+                                                                    updateItem(item.id, 'discount_rate', parseFloat(e.target.value) || 0)
+                                                                }
+                                                                className="h-9 border-gray-200 text-right focus:border-blue-500 focus:ring-blue-500/20"
+                                                                disabled={!item.product_id}
+                                                            />
                                                         </div>
 
-                                                        {/* Stock warning for mobile */}
-                                                        {(() => {
-                                                            const stockWarning = getStockWarning(item);
-                                                            if (!stockWarning) return null;
-                                                            return (
-                                                                <div
-                                                                    className={`rounded border px-2 py-1 text-xs ${
-                                                                        stockWarning.type === 'error'
-                                                                            ? 'border-red-200 bg-red-50 text-red-600'
-                                                                            : 'border-yellow-200 bg-yellow-50 text-yellow-600'
-                                                                    }`}
-                                                                >
-                                                                    {stockWarning.message}
-                                                                </div>
-                                                            );
-                                                        })()}
-                                                    </div>
-                                                </div>
+                                                        {/* Tax Multi-Select */}
+                                                        <div className="col-span-2">
+                                                            <TaxMultiSelect
+                                                                taxesGroupedByType={taxesGroupedByType}
+                                                                selectedTaxes={item.taxes}
+                                                                onSelectionChange={(taxes) => updateItem(item.id, 'taxes', taxes)}
+                                                                taxableAmount={item.quantity * item.unit_price - item.discount_amount}
+                                                                disabled={!item.product_id}
+                                                                placeholder="—"
+                                                                className="h-9"
+                                                            />
+                                                        </div>
 
-                                                {/* Desktop layout */}
-                                                <div className="hidden items-center gap-3 border-b border-gray-100 py-3 last:border-b-0 lg:grid lg:grid-cols-14">
-                                                    {/* Product selection */}
-                                                    <div className="col-span-2">
-                                                        <SearchableSelect
-                                                            options={getProductOptions()}
-                                                            value={item.product_id?.toString() || ''}
-                                                            onValueChange={(value: string) => handleProductSelect(item.id, value)}
-                                                            placeholder="Seleccionar..."
-                                                            searchPlaceholder="Buscar producto..."
-                                                            emptyText="No se encontró ningún producto."
-                                                            footerAction={
+                                                        {/* Subtotal (quantity × unit_price, no discount/tax) */}
+                                                        <div className="col-span-1">
+                                                            <Input
+                                                                value={formatCurrency((item.quantity || 0) * (item.unit_price || 0))}
+                                                                disabled
+                                                                className="h-9 border-gray-200 bg-gray-50 text-right text-gray-700"
+                                                            />
+                                                        </div>
+
+                                                        {/* Total */}
+                                                        <div className="col-span-2">
+                                                            <Input
+                                                                value={formatCurrency(item.total)}
+                                                                disabled
+                                                                className="h-9 border-gray-200 bg-gray-50 text-right font-semibold text-gray-900"
+                                                            />
+                                                        </div>
+
+                                                        {/* Actions */}
+                                                        <div className="col-span-1 flex justify-end">
+                                                            {data.items.length > 1 && (
                                                                 <Button
                                                                     type="button"
-                                                                    variant="outline"
+                                                                    variant="ghost"
                                                                     size="sm"
-                                                                    onClick={() => {
-                                                                        setActiveProductItemId(item.id);
-                                                                        setShowProductModal(true);
-                                                                    }}
-                                                                    className="w-full text-primary hover:bg-primary/10"
+                                                                    onClick={() => removeItem(item.id)}
+                                                                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
                                                                 >
-                                                                    <Plus className="mr-1 h-4 w-4" />
-                                                                    Crear producto
+                                                                    Eliminar
                                                                 </Button>
-                                                            }
-                                                            triggerClassName="h-9 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
-                                                        />
-                                                    </div>
-
-                                                    {/* Description */}
-                                                    <div className="col-span-2">
-                                                        <Input
-                                                            placeholder="Descripción..."
-                                                            value={item.description || ''}
-                                                            onChange={(e) => updateItem(item.id, 'description', e.target.value)}
-                                                            className="h-9 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
-                                                            disabled={!item.product_id}
-                                                        />
-                                                    </div>
-
-                                                    {/* Quantity with stock warning */}
-                                                    <div className="relative col-span-1">
-                                                        <Input
-                                                            type="number"
-                                                            min="1"
-                                                            step="1"
-                                                            value={item.quantity?.toString() || '1'}
-                                                            onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
-                                                            className="h-9 border-gray-200 text-center focus:border-blue-500 focus:ring-blue-500/20"
-                                                            disabled={!item.product_id}
-                                                        />
-                                                        {(() => {
-                                                            const stockWarning = getStockWarning(item);
-                                                            if (!stockWarning) return null;
-                                                            return (
-                                                                <div className="absolute top-full right-0 left-0 z-10 mt-1">
-                                                                    <div
-                                                                        className={`rounded border px-2 py-1 text-xs shadow-sm ${
-                                                                            stockWarning.type === 'error'
-                                                                                ? 'border-red-200 bg-red-50 text-red-600'
-                                                                                : 'border-yellow-200 bg-yellow-50 text-yellow-600'
-                                                                        }`}
-                                                                    >
-                                                                        {stockWarning.message}
-                                                                    </div>
-                                                                </div>
-                                                            );
-                                                        })()}
-                                                    </div>
-
-                                                    {/* Unit price */}
-                                                    <div className="col-span-1">
-                                                        <Input
-                                                            type="number"
-                                                            min="0"
-                                                            step="0.01"
-                                                            value={item.unit_price?.toString() || '0'}
-                                                            onChange={(e) => updateItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)}
-                                                            className="h-9 border-gray-200 text-right focus:border-blue-500 focus:ring-blue-500/20"
-                                                            disabled={!item.product_id}
-                                                        />
-                                                    </div>
-
-                                                    {/* Discount rate */}
-                                                    <div className="col-span-1">
-                                                        <Input
-                                                            type="number"
-                                                            min="0"
-                                                            max="100"
-                                                            step="0.01"
-                                                            value={item.discount_rate?.toString() || '0'}
-                                                            onChange={(e) => updateItem(item.id, 'discount_rate', parseFloat(e.target.value) || 0)}
-                                                            className="h-9 border-gray-200 text-right focus:border-blue-500 focus:ring-blue-500/20"
-                                                            disabled={!item.product_id}
-                                                        />
-                                                    </div>
-
-                                                    {/* Tax Multi-Select */}
-                                                    <div className="col-span-2">
-                                                        <TaxMultiSelect
-                                                            taxesGroupedByType={taxesGroupedByType}
-                                                            selectedTaxes={item.taxes}
-                                                            onSelectionChange={(taxes) => updateItem(item.id, 'taxes', taxes)}
-                                                            taxableAmount={item.quantity * item.unit_price - item.discount_amount}
-                                                            disabled={!item.product_id}
-                                                            placeholder="—"
-                                                            className="h-9"
-                                                        />
-                                                    </div>
-
-                                                    {/* Subtotal (quantity × unit_price, no discount/tax) */}
-                                                    <div className="col-span-1">
-                                                        <Input
-                                                            value={formatCurrency((item.quantity || 0) * (item.unit_price || 0))}
-                                                            disabled
-                                                            className="h-9 border-gray-200 bg-gray-50 text-right text-gray-700"
-                                                        />
-                                                    </div>
-
-                                                    {/* Total */}
-                                                    <div className="col-span-2">
-                                                        <Input
-                                                            value={formatCurrency(item.total)}
-                                                            disabled
-                                                            className="h-9 border-gray-200 bg-gray-50 text-right font-semibold text-gray-900"
-                                                        />
-                                                    </div>
-
-                                                    {/* Actions */}
-                                                    <div className="col-span-1 flex justify-end">
-                                                        {data.items.length > 1 && (
-                                                            <Button
-                                                                type="button"
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() => removeItem(item.id)}
-                                                                className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                                                            >
-                                                                Eliminar
-                                                            </Button>
-                                                        )}
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
-                                    </div>
+                                            ))}
+                                        </div>
 
-                                    {/* Enhanced Totals */}
-                                    <div className="border-t border-gray-200 pt-6">
-                                        <div className="flex justify-end">
-                                            <div className="w-full max-w-sm space-y-3">
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <span className="text-gray-600">Subtotal:</span>
-                                                    <span className="font-medium text-gray-900">{formatCurrency(data.subtotal)}</span>
-                                                </div>
-                                                {data.discount_total > 0 && (
+                                        {/* Enhanced Totals */}
+                                        <div className="border-t border-gray-200 pt-6">
+                                            <div className="flex justify-end">
+                                                <div className="w-full max-w-sm space-y-3">
                                                     <div className="flex items-center justify-between text-sm">
-                                                        <span className="text-gray-600">Descuentos:</span>
-                                                        <span className="font-medium text-gray-900">-{formatCurrency(data.discount_total)}</span>
+                                                        <span className="text-gray-600">Subtotal:</span>
+                                                        <span className="font-medium text-gray-900">{formatCurrency(data.subtotal)}</span>
                                                     </div>
-                                                )}
-                                                {getTaxBreakdown().length > 0 && (
-                                                    <div className="space-y-2 border-t border-gray-100 pt-2">
-                                                        {getTaxBreakdown().map((tax) => (
-                                                            <div key={tax.name} className="flex items-center justify-between text-sm">
-                                                                <span className="text-gray-600">{tax.name}:</span>
-                                                                <span className="font-medium text-gray-900">+{formatCurrency(tax.amount)}</span>
-                                                            </div>
-                                                        ))}
+                                                    {data.discount_total > 0 && (
+                                                        <div className="flex items-center justify-between text-sm">
+                                                            <span className="text-gray-600">Descuentos:</span>
+                                                            <span className="font-medium text-gray-900">-{formatCurrency(data.discount_total)}</span>
+                                                        </div>
+                                                    )}
+                                                    {getTaxBreakdown().length > 0 && (
+                                                        <div className="space-y-2 border-t border-gray-100 pt-2">
+                                                            {getTaxBreakdown().map((tax) => (
+                                                                <div key={tax.name} className="flex items-center justify-between text-sm">
+                                                                    <span className="text-gray-600">{tax.name}:</span>
+                                                                    <span className="font-medium text-gray-900">+{formatCurrency(tax.amount)}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    <div className="flex items-center justify-between border-t border-gray-200 pt-3 text-lg font-bold">
+                                                        <span className="text-gray-900">Total:</span>
+                                                        <span className="text-blue-600">{formatCurrency(data.total)}</span>
                                                     </div>
-                                                )}
-                                                <div className="flex items-center justify-between border-t border-gray-200 pt-3 text-lg font-bold">
-                                                    <span className="text-gray-900">Total:</span>
-                                                    <span className="text-blue-600">{formatCurrency(data.total)}</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </CardContent>
-                        </Card>
 
-                        {/* Notes - Enhanced */}
-                        <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
-                            <CardHeader className="bg-gray-50/50 px-6 py-5">
-                                <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
-                                        <FileText className="h-4 w-4" />
+                                {/* Notes Section */}
+                                <div className="mt-8 border-t border-gray-200 pt-8">
+                                    <div className="mb-6">
+                                        <h3 className="flex items-center gap-3 text-lg font-semibold text-gray-900">
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
+                                                <FileText className="h-4 w-4" />
+                                            </div>
+                                            Notas adicionales
+                                        </h3>
+                                        <p className="mt-1 text-sm text-gray-600">Información adicional que aparecerá en la factura (opcional).</p>
                                     </div>
-                                    Notas adicionales
-                                </CardTitle>
-                                <CardDescription className="mt-1 text-sm text-gray-600">
-                                    Información adicional que aparecerá en la factura (opcional).
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="px-6 py-6">
-                                <div className="space-y-3">
-                                    <Label htmlFor="notes" className="text-sm font-medium text-gray-900">
-                                        Notas o comentarios
-                                    </Label>
-                                    <Textarea
-                                        id="notes"
-                                        placeholder="Ej: Términos de pago, instrucciones especiales, agradecimientos..."
-                                        value={data.notes}
-                                        onChange={(e) => setData('notes', e.target.value)}
-                                        rows={4}
-                                        className="resize-none border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
-                                    />
-                                    <p className="text-xs text-gray-500">Estas notas aparecerán al final de la factura</p>
+
+                                    <div className="space-y-3">
+                                        <Label htmlFor="notes" className="text-sm font-medium text-gray-900">
+                                            Notas o comentarios
+                                        </Label>
+                                        <Textarea
+                                            id="notes"
+                                            placeholder="Ej: Términos de pago, instrucciones especiales, agradecimientos..."
+                                            value={data.notes}
+                                            onChange={(e) => setData('notes', e.target.value)}
+                                            rows={4}
+                                            className="resize-none border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
+                                        />
+                                        <p className="text-xs text-gray-500">Estas notas aparecerán al final de la factura</p>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
-                        {/* Enhanced Actions */}
-                        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+
+                        {/* Actions */}
+                        <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                             <Button
                                 type="button"
                                 variant="outline"
