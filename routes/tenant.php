@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\BulkDownloadInvoicePdfController;
+use App\Http\Controllers\BulkDownloadQuotationPdfController;
 use App\Http\Controllers\BusinessUserController;
 use App\Http\Controllers\BusinessUserInvitationController;
 use App\Http\Controllers\BusinessUserWorkspaceController;
@@ -161,6 +162,7 @@ Route::middleware([
 
             Route::resource('quotations', QuotationController::class);
             Route::get('quotations/{quotation}/pdf', DownloadQuotationPdfController::class)->name('quotations.pdf');
+            Route::post('quotations/bulk/pdf', BulkDownloadQuotationPdfController::class)->name('quotations.bulk.pdf');
             Route::post('quotations/{quotation}/convert-to-invoice', ConvertQuotationToInvoiceController::class)->name('quotations.convert-to-invoice');
 
             Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
