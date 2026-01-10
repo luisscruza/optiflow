@@ -39,7 +39,6 @@ enum QuotationStatus: string
         };
     }
 
-
     /**
      * Get the badge variant for the document type.
      */

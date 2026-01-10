@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, Building2, Calendar, CreditCard, Edit, FileText, Plus, Printer, ShoppingCart, Trash2 } from 'lucide-react';
+import { ArrowLeft, Building2, Calendar, CreditCard, DownloadCloud, Edit, FileText, Mail, Phone, Plus, Printer, ShoppingCart, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { usePermissions } from '@/hooks/use-permissions';
@@ -110,6 +110,63 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                    <div className="flex gap-3 mb-4">
+                           {can('edit invoices') && (
+                                <Button size="sm" asChild className="flex items-center justify-center gap-2 bg-gray-50 text-gray-800 border-gray-300 hover:bg-gray-100 hover:border-gray-300 border">
+                                    <Link prefetch href={`/invoices/${invoice.id}/edit`}>
+                                        <Edit className="h-4 w-4" />
+                                        Editar factura
+                                    </Link>
+                                </Button>
+                            )}
+                            {can('delete invoices') && invoice.status === 'draft' && (
+                                <Button className="flex items-center justify-center gap-2 bg-gray-50 text-gray-800 border-gray-300 hover:bg-gray-100 hover:border-gray-300 border">
+                                    <Link href={`/invoices/${invoice.id}`} method="delete" as="button">
+                                        <Trash2 className="h-4 w-4" />
+                                        Eliminar
+                                    </Link>
+                                </Button>
+                            )}
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                asChild
+                                className="flex items-center justify-center gap-2 bg-gray-50 text-gray-800 border-gray-300 hover:bg-gray-100 hover:border-gray-300 border"
+                            >
+                                <a href={`/invoices/${invoice.id}/pdf-stream`} target="_blank" rel="noopener noreferrer">
+                                <Printer className="h-4 w-4" />
+                                Imprimir
+                                </a>
+                            </Button>
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                asChild
+                                className="flex items-center justify-center gap-2 bg-gray-50 text-gray-800 border-gray-300 hover:bg-gray-100 hover:border-gray-300 border"
+                            >
+                                <a href={`/invoices/${invoice.id}/pdf`}>
+                                <DownloadCloud className="h-4 w-4" />
+                                Descargar PDF
+                                </a>
+                            </Button>
+
+                            {invoice.amount_due > 0 && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                        setSelectedPayment(null);
+                                        setIsPaymentModalOpen(true);
+                                    }}
+                                className="flex items-center justify-center gap-2 bg-gray-50 text-gray-800 border-gray-300 hover:bg-gray-100 hover:border-gray-300 border"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    Registrar pago
+                                </Button>
+                            )}
+                        </div>
                     {/* Enhanced Header - Invoice Style */}
                     <div className="mb-6">
                         <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
@@ -640,66 +697,6 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                         title="Historial de cambios"
                         description="Registro detallado de todas las modificaciones realizadas a esta factura"
                     />
-
-                    {/* Action Buttons */}
-                    <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-                        <Button
-                            variant="outline"
-                            size="lg"
-                            asChild
-                            className="border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50"
-                        >
-                            <Link href="/invoices" className="flex items-center justify-center gap-2">
-                                <ArrowLeft className="h-4 w-4" />
-                                Volver a facturas
-                            </Link>
-                        </Button>
-
-                        <div className="flex gap-3">
-                            {can('delete invoices') && invoice.status === 'draft' && (
-                                <Button variant="destructive" size="lg" asChild className="flex items-center justify-center gap-2">
-                                    <Link href={`/invoices/${invoice.id}`} method="delete" as="button">
-                                        <Trash2 className="h-4 w-4" />
-                                        Eliminar
-                                    </Link>
-                                </Button>
-                            )}
-
-                            {invoice.amount_due > 0 && (
-                                <Button
-                                    variant="outline"
-                                    size="lg"
-                                    onClick={() => {
-                                        setSelectedPayment(null);
-                                        setIsPaymentModalOpen(true);
-                                    }}
-                                    className="flex items-center justify-center gap-2 border-green-200 bg-green-50 text-green-700 hover:border-green-300 hover:bg-green-100"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                    Registrar pago
-                                </Button>
-                            )}
-
-                            <Button
-                                variant="outline"
-                                size="lg"
-                                className="flex items-center justify-center gap-2 border-blue-200 bg-blue-50 text-blue-700 hover:border-blue-300 hover:bg-blue-100"
-                                onClick={() => window.print()}
-                            >
-                                <Printer className="h-4 w-4" />
-                                Imprimir
-                            </Button>
-
-                            {can('edit invoices') && (
-                                <Button size="lg" asChild className="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90">
-                                    <Link prefetch href={`/invoices/${invoice.id}/edit`}>
-                                        <Edit className="h-4 w-4" />
-                                        Editar factura
-                                    </Link>
-                                </Button>
-                            )}
-                        </div>
-                    </div>
                 </div>
             </div>
 

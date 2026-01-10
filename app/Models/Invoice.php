@@ -96,7 +96,7 @@ use Spatie\Activitylog\LogOptions;
 final class Invoice extends Model implements Auditable, Commentable
 {
     /** @use HasFactory<\Database\Factories\InvoiceFactory> */
-    use BelongsToWorkspace, HasActivityLog, HasComments, HasFactory, HasBadge;
+    use BelongsToWorkspace, HasActivityLog, HasBadge, HasComments, HasFactory;
 
     protected $appends = [
         'amount_due',

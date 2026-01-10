@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\CompanyDetail;
-use App\Models\Invoice;
 use App\Models\Quotation;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;

@@ -40,6 +40,7 @@ use App\Http\Controllers\SalesmanController;
 use App\Http\Controllers\SetDefaultDocumentSubtypeController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockTransferController;
+use App\Http\Controllers\StreamInvoicePdfController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\WorkflowController;
 use App\Http\Controllers\WorkflowJobController;
@@ -150,6 +151,8 @@ Route::middleware([
             Route::resource('invoices', InvoiceController::class);
             Route::get('invoices/create/quotation/{quotation}', CreateInvoiceFromQuotationController::class)->name('invoices.create-from-quotation');
             Route::get('invoices/{invoice}/pdf', DownloadInvoicePdfController::class)->name('invoices.pdf');
+            Route::get('invoices/{invoice}/pdf-stream', StreamInvoicePdfController::class)->name('invoices.pdf-stream');
+
             Route::post('invoices/bulk/pdf', BulkDownloadInvoicePdfController::class)->name('invoices.bulk.pdf');
 
             Route::post('payments', [PaymentController::class, 'store'])->name('payments.store');

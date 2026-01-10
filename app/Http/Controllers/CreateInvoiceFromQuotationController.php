@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\PaymentMethod;
 use App\Enums\Permission;
+use App\Enums\TaxType;
 use App\Models\BankAccount;
 use App\Models\CompanyDetail;
 use App\Models\Contact;
@@ -13,6 +14,8 @@ use App\Models\DocumentSubtype;
 use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\Quotation;
+use App\Models\Salesman;
+use App\Models\Tax;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +32,7 @@ final class CreateInvoiceFromQuotationController extends Controller
     {
         abort_unless($user->can(Permission::InvoicesCreate), 403);
 
-        $quotation->load(['contact', 'documentSubtype', 'items.product']);
+        $quotation->load(['contact', 'documentSubtype', 'items.product', 'items.taxes']);
 
         $currentWorkspace = Context::get('workspace');
 
@@ -83,7 +86,33 @@ final class CreateInvoiceFromQuotationController extends Controller
             'tax_rate' => $item->tax_rate ?? 0,
             'tax_amount' => $item->tax_amount ?? 0,
             'total' => $item->total,
+            'taxes' => $item->taxes->map(fn ($tax) => [
+                'id' => $tax->id,
+                'name' => $tax->name,
+                'type' => $tax->type,
+                'rate' => $tax->pivot->rate,
+                'amount' => $tax->pivot->amount,
+            ])->values()->all(),
         ])->values()->all();
+
+        // Group taxes by type for the multi-select component
+        $taxesGroupedByType = Tax::query()
+            ->orderBy('is_default', 'desc')
+            ->orderBy('name')
+            ->get()
+            ->groupBy('type')
+            ->mapWithKeys(fn ($taxes, $type): array => [
+                $type => [
+                    'label' => TaxType::tryFrom($type)?->label() ?? $type,
+                    'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,
+                    'taxes' => $taxes->toArray(),
+                ],
+            ])
+            ->toArray();
+
+        $salesmen = Salesman::query()
+            ->orderBy('name')
+            ->get();
 
         return Inertia::render('invoices/create', [
             'documentSubtypes' => $documentSubtypes,
@@ -96,6 +125,8 @@ final class CreateInvoiceFromQuotationController extends Controller
             'defaultNote' => CompanyDetail::getByKey('terms_conditions'),
             'bankAccounts' => BankAccount::onlyActive()->with('currency')->orderBy('name')->get(),
             'paymentMethods' => PaymentMethod::options(),
+            'taxesGroupedByType' => $taxesGroupedByType,
+            'salesmen' => $salesmen,
             'fromQuotation' => [
                 'id' => $quotation->id,
                 'document_number' => $quotation->document_number,

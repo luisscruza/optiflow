@@ -1,8 +1,9 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { Building2, FileText, Plus, Save, ShoppingCart } from 'lucide-react';
+import { AlertTriangle, Building2, FileText, Plus, Save, ShoppingCart, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
+import { type SelectedTax, TaxMultiSelect } from '@/components/taxes/tax-multi-select';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,7 +12,7 @@ import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/s
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Contact, type Product, type Workspace } from '@/types';
+import { type BreadcrumbItem, type Contact, type Product, type TaxesGroupedByType, type Workspace } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -40,7 +41,7 @@ interface QuotationItem {
     unit_price: number;
     discount_rate: number;
     discount_amount: number;
-    tax_rate: number;
+    taxes: SelectedTax[];
     tax_amount: number;
     total: number;
 }
@@ -88,10 +89,15 @@ interface Quotation {
         unit_price: number;
         discount_rate: number;
         discount_amount: number;
-        tax_rate: number;
         tax_amount: number;
         total: number;
         product?: Product;
+        taxes?: Array<{
+            id: number;
+            name: string;
+            type: string;
+            pivot: { rate: number; amount: number };
+        }>;
     }>;
 }
 
@@ -102,9 +108,10 @@ interface Props {
     products: Product[];
     currentWorkspace?: Workspace | null;
     availableWorkspaces?: Workspace[];
+    taxesGroupedByType: TaxesGroupedByType;
 }
 
-export default function EditQuotation({ quotation, documentSubtypes, customers, products, currentWorkspace, availableWorkspaces }: Props) {
+export default function EditQuotation({ quotation, documentSubtypes, customers, products, currentWorkspace, availableWorkspaces, taxesGroupedByType }: Props) {
     const [itemId, setItemId] = useState(
         quotation.items.length > 0 ? Math.max(...quotation.items.map((item) => parseInt(item.id.toString()))) + 1 : 1,
     );
@@ -136,7 +143,15 @@ export default function EditQuotation({ quotation, documentSubtypes, customers, 
             unit_price: item.unit_price || 0,
             discount_rate: item.discount_rate || 0,
             discount_amount: item.discount_amount || 0,
-            tax_rate: item.tax_rate || 0,
+            taxes: item.taxes
+                ? item.taxes.map((tax) => ({
+                      id: tax.id,
+                      name: tax.name,
+                      type: tax.type,
+                      rate: tax.pivot.rate,
+                      amount: tax.pivot.amount,
+                  }))
+                : [],
             tax_amount: item.tax_amount || 0,
             total: item.total || 0,
         }));
@@ -242,7 +257,7 @@ export default function EditQuotation({ quotation, documentSubtypes, customers, 
                 unit_price: 0,
                 discount_rate: 0,
                 discount_amount: 0,
-                tax_rate: 0,
+                taxes: [],
                 tax_amount: 0,
                 total: 0,
             },
@@ -260,6 +275,29 @@ export default function EditQuotation({ quotation, documentSubtypes, customers, 
         }
     };
 
+    // Helper function to recalculate item totals based on taxes array
+    const recalculateItemTotals = (item: QuotationItem): QuotationItem => {
+        const lineSubtotal = item.quantity * item.unit_price;
+        const discountAmount = lineSubtotal * (item.discount_rate / 100);
+        const discountedSubtotal = lineSubtotal - discountAmount;
+
+        // Calculate total tax from all selected taxes
+        let totalTaxAmount = 0;
+        const updatedTaxes = item.taxes.map((tax) => {
+            const taxAmount = discountedSubtotal * (tax.rate / 100);
+            totalTaxAmount += taxAmount;
+            return { ...tax, amount: taxAmount };
+        });
+
+        return {
+            ...item,
+            discount_amount: discountAmount,
+            taxes: updatedTaxes,
+            tax_amount: totalTaxAmount,
+            total: discountedSubtotal + totalTaxAmount,
+        };
+    };
+
     // Update item data
     const updateItem = (itemId: string, field: keyof QuotationItem, value: any) => {
         const updatedItems = data.items.map((item) => {
@@ -267,12 +305,8 @@ export default function EditQuotation({ quotation, documentSubtypes, customers, 
                 const updatedItem = { ...item, [field]: value };
 
                 // Recalculate item totals
-                if (field === 'quantity' || field === 'unit_price' || field === 'discount_rate' || field === 'tax_rate') {
-                    const lineSubtotal = updatedItem.quantity * updatedItem.unit_price;
-                    updatedItem.discount_amount = lineSubtotal * (updatedItem.discount_rate / 100);
-                    const discountedSubtotal = lineSubtotal - updatedItem.discount_amount;
-                    updatedItem.tax_amount = discountedSubtotal * (updatedItem.tax_rate / 100);
-                    updatedItem.total = discountedSubtotal + updatedItem.tax_amount; // Line total with tax
+                if (field === 'quantity' || field === 'unit_price' || field === 'discount_rate' || field === 'taxes') {
+                    return recalculateItemTotals(updatedItem);
                 }
 
                 return updatedItem;
@@ -355,28 +389,35 @@ export default function EditQuotation({ quotation, documentSubtypes, customers, 
         }
     };
 
-    // Handle product selection
+    // Handle product selection - Fixed to prevent clearing
     const handleProductSelect = (itemId: string, productId: string) => {
         const product = products.find((p) => p.id === parseInt(productId));
         if (product) {
             const updatedItems = data.items.map((item) => {
                 if (item.id === itemId) {
+                    // Set default taxes from product
+                    const initialTaxes: SelectedTax[] = product.default_tax
+                        ? [
+                              {
+                                  id: product.default_tax.id,
+                                  name: product.default_tax.name,
+                                  type: product.default_tax.type,
+                                  rate: product.default_tax.rate,
+                                  amount: 0,
+                              },
+                          ]
+                        : [];
+
                     const updatedItem = {
                         ...item,
                         product_id: product.id,
                         description: product.name,
                         unit_price: product.price,
-                        tax_rate: product.default_tax ? product.default_tax.rate : item.tax_rate,
+                        taxes: initialTaxes,
                     };
 
-                    // Recalculate totals
-                    const lineSubtotal = updatedItem.quantity * updatedItem.unit_price;
-                    updatedItem.discount_amount = lineSubtotal * (updatedItem.discount_rate / 100);
-                    const discountedSubtotal = lineSubtotal - updatedItem.discount_amount;
-                    updatedItem.tax_amount = discountedSubtotal * (updatedItem.tax_rate / 100);
-                    updatedItem.total = discountedSubtotal + updatedItem.tax_amount; // Line total with tax
-
-                    return updatedItem;
+                    // Recalculate totals with new taxes
+                    return recalculateItemTotals(updatedItem);
                 }
                 return item;
             });
@@ -406,6 +447,20 @@ export default function EditQuotation({ quotation, documentSubtypes, customers, 
             tax_amount: taxAmount,
             total,
         }));
+    };
+
+    // Calculate tax breakdown by type (for display in totals)
+    const getTaxBreakdown = (): Array<{ name: string; amount: number }> => {
+        const taxMap = new Map<string, number>();
+
+        data.items.forEach((item) => {
+            item.taxes.forEach((tax) => {
+                const currentAmount = taxMap.get(tax.name) || 0;
+                taxMap.set(tax.name, currentAmount + tax.amount);
+            });
+        });
+
+        return Array.from(taxMap.entries()).map(([name, amount]) => ({ name, amount }));
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -749,16 +804,16 @@ export default function EditQuotation({ quotation, documentSubtypes, customers, 
                             <CardContent className="px-6 py-6">
                                 <div className="space-y-6">
                                     {/* Enhanced Table Header */}
-                                    <div className="hidden gap-3 rounded-lg border bg-gray-50 px-4 py-3 text-xs font-semibold tracking-wider text-gray-700 uppercase lg:grid lg:grid-cols-14">
+                                    <div className="hidden gap-3 rounded-lg border bg-gray-50 px-4 py-3 text-xs font-semibold tracking-wider text-gray-700 uppercase lg:grid lg:grid-cols-15">
                                         <div className="col-span-2">Producto</div>
                                         <div className="col-span-2">Descripción</div>
                                         <div className="col-span-1 text-center">Cant.</div>
                                         <div className="col-span-1 text-right">Precio unit.</div>
                                         <div className="col-span-1 text-right">Desc. (%)</div>
-                                        <div className="col-span-1 text-right">Tax (%)</div>
+                                        <div className="col-span-2">Impuestos</div>
                                         <div className="col-span-2 text-right">Subtotal</div>
                                         <div className="col-span-2 text-right">Total</div>
-                                        <div className="col-span-1"></div>
+                                        <div className="col-span-2"></div>
                                     </div>
 
                                     {/* Enhanced Items */}
@@ -839,35 +894,30 @@ export default function EditQuotation({ quotation, documentSubtypes, customers, 
                                                             </div>
                                                         </div>
 
-                                                        <div className="grid grid-cols-2 gap-3">
-                                                            <div>
-                                                                <Label className="text-xs font-medium text-gray-700">Descuento (%)</Label>
-                                                                <Input
-                                                                    type="number"
-                                                                    min="0"
-                                                                    max="100"
-                                                                    step="0.01"
-                                                                    value={item.discount_rate?.toString() || '0'}
-                                                                    onChange={(e) =>
-                                                                        updateItem(item.id, 'discount_rate', parseFloat(e.target.value) || 0)
-                                                                    }
-                                                                    className="mt-1 text-right"
-                                                                    disabled={!item.product_id}
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <Label className="text-xs font-medium text-gray-700">Impuesto (%)</Label>
-                                                                <Input
-                                                                    type="number"
-                                                                    min="0"
-                                                                    max="100"
-                                                                    step="0.01"
-                                                                    value={item.tax_rate?.toString() || '0'}
-                                                                    onChange={(e) => updateItem(item.id, 'tax_rate', parseFloat(e.target.value) || 0)}
-                                                                    className="mt-1 text-right"
-                                                                    disabled={!item.product_id}
-                                                                />
-                                                            </div>
+                                                        <div>
+                                                            <Label className="text-xs font-medium text-gray-700">Descuento (%)</Label>
+                                                            <Input
+                                                                type="number"
+                                                                min="0"
+                                                                max="100"
+                                                                step="0.01"
+                                                                value={item.discount_rate?.toString() || '0'}
+                                                                onChange={(e) =>
+                                                                    updateItem(item.id, 'discount_rate', parseFloat(e.target.value) || 0)
+                                                                }
+                                                                className="mt-1 text-right"
+                                                                disabled={!item.product_id}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <Label className="text-xs font-medium text-gray-700">Impuestos</Label>
+                                                            <TaxMultiSelect
+                                                                taxesGroupedByType={taxesGroupedByType}
+                                                                selectedTaxes={item.taxes}
+                                                                onChange={(taxes) => updateItem(item.id, 'taxes', taxes)}
+                                                                disabled={!item.product_id}
+                                                                className="mt-1"
+                                                            />
                                                         </div>
 
                                                         <div className="grid grid-cols-2 gap-3">
@@ -909,7 +959,7 @@ export default function EditQuotation({ quotation, documentSubtypes, customers, 
                                                 </div>
 
                                                 {/* Desktop layout */}
-                                                <div className="hidden items-center gap-3 border-b border-gray-100 py-3 last:border-b-0 lg:grid lg:grid-cols-14">
+                                                <div className="hidden items-center gap-3 border-b border-gray-100 py-3 last:border-b-0 lg:grid lg:grid-cols-15">
                                                     {/* Product selection */}
                                                     <div className="col-span-2">
                                                         <SearchableSelect
@@ -991,16 +1041,12 @@ export default function EditQuotation({ quotation, documentSubtypes, customers, 
                                                         />
                                                     </div>
 
-                                                    {/* Tax rate */}
-                                                    <div className="col-span-1">
-                                                        <Input
-                                                            type="number"
-                                                            min="0"
-                                                            max="100"
-                                                            step="0.01"
-                                                            value={item.tax_rate?.toString() || '0'}
-                                                            onChange={(e) => updateItem(item.id, 'tax_rate', parseFloat(e.target.value) || 0)}
-                                                            className="h-9 border-gray-200 text-right focus:border-blue-500 focus:ring-blue-500/20"
+                                                    {/* Taxes multi-select */}
+                                                    <div className="col-span-2">
+                                                        <TaxMultiSelect
+                                                            taxesGroupedByType={taxesGroupedByType}
+                                                            selectedTaxes={item.taxes}
+                                                            onChange={(taxes) => updateItem(item.id, 'taxes', taxes)}
                                                             disabled={!item.product_id}
                                                         />
                                                     </div>
@@ -1024,7 +1070,7 @@ export default function EditQuotation({ quotation, documentSubtypes, customers, 
                                                     </div>
 
                                                     {/* Actions */}
-                                                    <div className="col-span-1 flex justify-end">
+                                                    <div className="col-span-2 flex justify-end">
                                                         {data.items.length > 1 && (
                                                             <Button
                                                                 type="button"
@@ -1056,13 +1102,22 @@ export default function EditQuotation({ quotation, documentSubtypes, customers, 
                                                         <span className="font-medium text-gray-900">-{formatCurrency(data.discount_total)}</span>
                                                     </div>
                                                 )}
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <span className="text-gray-600">Impuestos:</span>
-                                                    <span className="font-medium text-gray-900">+{formatCurrency(data.tax_amount)}</span>
-                                                </div>
+                                                {/* Show tax breakdown by type */}
+                                                {getTaxBreakdown().map((tax) => (
+                                                    <div key={tax.name} className="flex items-center justify-between text-sm">
+                                                        <span className="text-gray-600">{tax.name}:</span>
+                                                        <span className="font-medium text-gray-900">+{formatCurrency(tax.amount)}</span>
+                                                    </div>
+                                                ))}
+                                                {getTaxBreakdown().length === 0 && data.tax_amount > 0 && (
+                                                    <div className="flex items-center justify-between text-sm">
+                                                        <span className="text-gray-600">Impuestos:</span>
+                                                        <span className="font-medium text-gray-900">+{formatCurrency(data.tax_amount)}</span>
+                                                    </div>
+                                                )}
                                                 <div className="flex items-center justify-between border-t border-gray-200 pt-3 text-lg font-bold">
                                                     <span className="text-gray-900">Total:</span>
-                                                    <span className="text-blue-600">{formatCurrency(data.total)}</span>
+                                                    <span className="text-blue-600">{formatCurrency(data.total)}</span></span>
                                                 </div>
                                             </div>
                                         </div>

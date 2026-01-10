@@ -157,7 +157,7 @@ final class QuotationController extends Controller
     {
         abort_unless($user->can(Permission::QuotationsEdit), 403);
 
-        $quotation->load(['contact', 'documentSubtype', 'items.product', 'items.tax']);
+        $quotation->load(['contact', 'documentSubtype', 'items.product', 'items.taxes']);
 
         $documentSubtypes = DocumentSubtype::query()
             ->active()
