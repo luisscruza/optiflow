@@ -41,6 +41,8 @@ class Action
 
     protected ?string $tooltip = null;
 
+    protected bool $download = false;
+
     public function __construct(string $name, ?string $label = null)
     {
         $this->name = $name;
@@ -159,6 +161,13 @@ class Action
         return $this;
     }
 
+    public function download(bool $download = true): static
+    {
+        $this->download = $download;
+
+        return $this;
+    }
+
     public function isVisible(Model $record): bool
     {
         if ($this->visibleWhen) {
@@ -202,6 +211,7 @@ class Action
             'target' => $this->target,
             'prefetch' => $this->prefetch,
             'tooltip' => $this->tooltip,
+            'download' => $this->download,
         ];
     }
 }
