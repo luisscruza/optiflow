@@ -20,10 +20,6 @@ final class SelectFilter extends Filter
             $this->options = collect($options::cases())
                 ->mapWithKeys(fn ($case) => [$case->value => method_exists($case, 'label') ? $case->label() : $case->name])
                 ->toArray();
-        } elseif ($options instanceof BackedEnum) {
-            $this->options = collect($options::cases())
-                ->mapWithKeys(fn ($case) => [$case->value => method_exists($case, 'label') ? $case->label() : $case->name])
-                ->toArray();
         } else {
             $this->options = $options;
         }
