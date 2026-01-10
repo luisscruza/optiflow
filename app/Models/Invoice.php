@@ -270,7 +270,7 @@ final class Invoice extends Model implements Auditable, Commentable
     protected function statusConfig(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
         return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn (): array => [
-            'value' => $this->status->value,
+            'value' => $this->status,
             'label' => $this->status->label(),
             'variant' => $this->status->badgeVariant(),
             'className' => $this->status->badgeClassName(),

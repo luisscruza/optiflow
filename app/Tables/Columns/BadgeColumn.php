@@ -49,7 +49,6 @@ final class BadgeColumn extends Column
     {
         $rawValue = data_get($record, $this->name);
 
-        // Check if the model has a status_config accessor
         $configAccessor = str($this->name)->append('_config')->camel()->toString();
         if (method_exists($record, 'get'.ucfirst($configAccessor).'Attribute') || $record->$configAccessor) {
             return $record->$configAccessor;

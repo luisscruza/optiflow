@@ -25,7 +25,7 @@ abstract class Table implements Arrayable, JsonSerializable
 
     protected int $perPage = 30;
 
-    protected array $perPageOptions = [15, 30, 50, 100];
+    protected array $perPageOptions = [5, 15, 30, 50, 100];
 
     protected array $with = [];
 
@@ -245,12 +245,14 @@ abstract class Table implements Arrayable, JsonSerializable
         foreach ($this->filters() as $filter) {
             if ($filter instanceof DateRangeFilter) {
                 // Split date range into two date filters for frontend compatibility
+                $baseDefinition = $filter->getDefinition();
                 $definitions[] = [
                     'name' => $filter->getStartName(),
                     'label' => $filter->getLabel(),
                     'type' => 'date',
                     'default' => $filter->getDefault(),
                     'hidden' => $filter->isHidden(),
+                    'inline' => $baseDefinition['inline'] ?? false,
                 ];
                 $definitions[] = [
                     'name' => $filter->getEndName(),
@@ -258,6 +260,7 @@ abstract class Table implements Arrayable, JsonSerializable
                     'type' => 'date',
                     'default' => $filter->getDefault(),
                     'hidden' => $filter->isHidden(),
+                    'inline' => $baseDefinition['inline'] ?? false,
                 ];
             } else {
                 $definitions[] = $filter->getDefinition();

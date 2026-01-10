@@ -16,6 +16,8 @@ abstract class Filter
 
     protected bool $hidden = false;
 
+    protected bool $isInline = false;
+
     protected ?string $placeholder = null;
 
     public function __construct(string $name, ?string $label = null)
@@ -43,6 +45,13 @@ abstract class Filter
     public function hidden(bool $hidden = true): static
     {
         $this->hidden = $hidden;
+
+        return $this;
+    }
+
+    public function inline(bool $inline = true): static
+    {
+        $this->isInline = $inline;
 
         return $this;
     }
@@ -83,6 +92,7 @@ abstract class Filter
             'default' => $this->default,
             'hidden' => $this->hidden,
             'placeholder' => $this->placeholder,
+            'inline' => $this->isInline,
         ];
     }
 }

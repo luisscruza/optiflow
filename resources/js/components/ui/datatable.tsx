@@ -24,6 +24,7 @@ import { Paginator } from './paginator';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './table';
+import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 
 // ============================================================================
 // Types
@@ -35,7 +36,9 @@ export interface TableColumn {
     type: string;
     sortable: boolean;
     align?: 'left' | 'center' | 'right';
-    className?: string;
+    headerClassName?: string;
+    cellClassName?: string;
+    tooltip?: string;
 }
 
 export interface TableFilter {
@@ -46,6 +49,7 @@ export interface TableFilter {
     options?: Array<{ value: string; label: string }>;
     placeholder?: string;
     hidden?: boolean;
+    inline?: boolean;
 }
 
 export interface TableAction {
@@ -62,6 +66,7 @@ export interface TableAction {
     isInline?: boolean;
     target?: string;
     prefetch?: boolean;
+    tooltip?: string;
 }
 
 export interface TableResource<T = Record<string, unknown>> {
@@ -166,10 +171,27 @@ export function DataTable<T = Record<string, unknown>>({
     const [currentSortDirection, setCurrentSortDirection] = useState<'asc' | 'desc'>(sortDirection);
     const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
-    // Initialize date range from applied filters
+    // Get filters by type and visibility
+    const searchFilter = filters.find((f) => f.type === 'search');
+    const inlineSelectFilters = filters.filter((f) => f.type === 'select' && f.inline && !f.hidden);
+    const popoverSelectFilters = filters.filter((f) => f.type === 'select' && !f.inline && !f.hidden);
+    const hiddenFilters = filters.filter((f) => f.type === 'select' && f.hidden);
+    // Check for any date range filters (fields ending with _start and _end)
+    const dateRangeFilters = filters.filter((f) => f.type === 'date' && f.name.endsWith('_start'));
+    const inlineDateRangeFilters = dateRangeFilters.filter((f) => f.inline);
+    const popoverDateRangeFilters = dateRangeFilters.filter((f) => !f.inline);
+    const hasDateRangeFilter = dateRangeFilters.length > 0;
+
+    // Initialize date range from applied filters (support dynamic date range filter names)
     const getInitialDateRange = useCallback((): DateRange | undefined => {
-        const start = appliedFilters.start_date;
-        const end = appliedFilters.end_date;
+        if (dateRangeFilters.length === 0) return undefined;
+        
+        const dateRangeFilter = dateRangeFilters[0];
+        const startName = dateRangeFilter.name;
+        const endName = startName.replace('_start', '_end');
+        
+        const start = appliedFilters[startName];
+        const end = appliedFilters[endName];
         if (start || end) {
             return {
                 from: start ? parseISO(start) : undefined,
@@ -177,7 +199,7 @@ export function DataTable<T = Record<string, unknown>>({
             };
         }
         return undefined;
-    }, [appliedFilters.start_date, appliedFilters.end_date]);
+    }, [appliedFilters, dateRangeFilters]);
 
     const [dateRange, setDateRange] = useState<DateRange | undefined>(getInitialDateRange());
 
@@ -188,12 +210,6 @@ export function DataTable<T = Record<string, unknown>>({
         row: T | null;
     }>({ open: false, action: null, row: null });
     const [isDeleting, setIsDeleting] = useState(false);
-
-    // Get filters by type and visibility
-    const searchFilter = filters.find((f) => f.type === 'search');
-    const visibleFilters = filters.filter((f) => f.type === 'select' && !f.hidden);
-    const hiddenFilters = filters.filter((f) => f.type === 'select' && f.hidden);
-    const hasDateRangeFilter = filters.some((f) => f.name === 'start_date' || f.name === 'end_date');
 
     const navigateWithFilters = useCallback(
         (newFilters: Record<string, string>, options?: { sortBy?: string; sortDirection?: 'asc' | 'desc' }) => {
@@ -256,16 +272,22 @@ export function DataTable<T = Record<string, unknown>>({
 
     const handleDateRangeChange = useCallback(
         (range: DateRange | undefined) => {
+            if (dateRangeFilters.length === 0) return;
+            
+            const dateRangeFilter = dateRangeFilters[0];
+            const startName = dateRangeFilter.name;
+            const endName = startName.replace('_start', '_end');
+            
             setDateRange(range);
             const newFilters = {
                 ...filterValues,
-                start_date: range?.from ? format(range.from, 'yyyy-MM-dd') : '',
-                end_date: range?.to ? format(range.to, 'yyyy-MM-dd') : '',
+                [startName]: range?.from ? format(range.from, 'yyyy-MM-dd') : '',
+                [endName]: range?.to ? format(range.to, 'yyyy-MM-dd') : '',
             };
             setFilterValues(newFilters);
             navigateWithFilters(newFilters);
         },
-        [filterValues, navigateWithFilters],
+        [filterValues, navigateWithFilters, dateRangeFilters],
     );
 
     const handleExport = useCallback(() => {
@@ -300,23 +322,31 @@ export function DataTable<T = Record<string, unknown>>({
             if (filter.type === 'search') {
                 displayValue = `"${value}"`;
             } else if (filter.type === 'date') {
-                if (filter.name === 'start_date' || filter.name === 'end_date') {
-                    const startDate = filterValues.start_date;
-                    const endDate = filterValues.end_date;
-                    const startDefault = filters.find((f) => f.name === 'start_date')?.default;
-                    const endDefault = filters.find((f) => f.name === 'end_date')?.default;
+                // Check if this is part of a date range (ends with _start)
+                if (filter.name.endsWith('_start')) {
+                    const startName = filter.name;
+                    const endName = filter.name.replace('_start', '_end');
+                    const startDate = filterValues[startName];
+                    const endDate = filterValues[endName];
+                    const startFilter = filters.find((f) => f.name === startName);
+                    const endFilter = filters.find((f) => f.name === endName);
+                    const startDefault = startFilter?.default;
+                    const endDefault = endFilter?.default;
 
                     if (startDate && endDate && (startDate !== startDefault || endDate !== endDefault)) {
                         displayValue = `${format(parseISO(startDate), 'd MMM yyyy')} - ${format(parseISO(endDate), 'd MMM yyyy')}`;
                         active.push({
-                            name: 'date_range',
-                            label: 'Periodo',
+                            name: startName,
+                            label: filter.label,
                             displayValue,
                             isDateRange: true,
                         });
-                        processedFilters.add('start_date');
-                        processedFilters.add('end_date');
+                        processedFilters.add(startName);
+                        processedFilters.add(endName);
                     }
+                    return;
+                } else if (filter.name.endsWith('_end')) {
+                    // Skip _end filters, they're processed with _start
                     return;
                 }
                 displayValue = format(parseISO(value), 'd MMM yyyy');
@@ -341,11 +371,14 @@ export function DataTable<T = Record<string, unknown>>({
         (filterName: string) => {
             const newFilters = { ...filterValues };
 
-            if (filterName === 'date_range') {
-                const startDateFilter = filters.find((f) => f.name === 'start_date');
-                const endDateFilter = filters.find((f) => f.name === 'end_date');
-                newFilters.start_date = (startDateFilter?.default as string) || '';
-                newFilters.end_date = (endDateFilter?.default as string) || '';
+            // Check if this is a date range filter (ends with _start)
+            if (filterName.endsWith('_start')) {
+                const startName = filterName;
+                const endName = filterName.replace('_start', '_end');
+                const startDateFilter = filters.find((f) => f.name === startName);
+                const endDateFilter = filters.find((f) => f.name === endName);
+                newFilters[startName] = (startDateFilter?.default as string) || '';
+                newFilters[endName] = (endDateFilter?.default as string) || '';
                 setDateRange(undefined);
             } else {
                 const filter = filters.find((f) => f.name === filterName);
@@ -500,28 +533,34 @@ export function DataTable<T = Record<string, unknown>>({
                             {/* Inline actions as separate buttons */}
                             {inlineActions.map((action) => {
                                 const IconComponent = action.icon ? iconMap[action.icon] : null;
-
-                                if (action.isCustom || action.name === 'delete' || !action.href) {
-                                    return (
-                                        <Button
-                                            key={action.name}
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleActionClick(action, row)}
-                                            className={action.color === 'danger' ? 'text-red-600 hover:text-red-700 dark:text-red-400' : undefined}
-                                        >
-                                            {IconComponent && <IconComponent className="h-4 w-4" />}
-                                        </Button>
-                                    );
-                                }
-
-                                return (
+                                const button = action.isCustom || action.name === 'delete' || !action.href ? (
+                                    <Button
+                                        key={action.name}
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleActionClick(action, row)}
+                                        className={action.color === 'danger' ? 'text-red-600 hover:text-red-700 dark:text-red-400' : undefined}
+                                    >
+                                        {IconComponent && <IconComponent className="h-4 w-4" />}
+                                    </Button>
+                                ) : (
                                     <Button key={action.name} variant="ghost" size="sm" asChild>
                                         <Link href={action.href} target={action.target} prefetch={action.prefetch}>
                                             {IconComponent && <IconComponent className="h-4 w-4" />}
                                         </Link>
                                     </Button>
                                 );
+
+                                if (action.tooltip) {
+                                    return (
+                                        <Tooltip key={action.name}>
+                                            <TooltipTrigger asChild>{button}</TooltipTrigger>
+                                            <TooltipContent>{action.tooltip}</TooltipContent>
+                                        </Tooltip>
+                                    );
+                                }
+
+                                return button;
                             })}
 
                             {/* Dropdown actions if any */}
@@ -543,19 +582,30 @@ export function DataTable<T = Record<string, unknown>>({
                                                         key={action.name}
                                                         onClick={() => handleActionClick(action, row)}
                                                         className={action.color === 'danger' ? 'text-red-600 dark:text-red-400' : undefined}
+                                                        title={action.tooltip}
                                                     >
                                                         {IconComponent && <IconComponent className="mr-2 h-4 w-4" />}
-                                                        {action.label}
+                                                        <span className="flex flex-col">
+                                                            <span>{action.label}</span>
+                                                            {action.tooltip && (
+                                                                <span className="text-xs text-muted-foreground">{action.tooltip}</span>
+                                                            )}
+                                                        </span>
                                                     </DropdownMenuItem>
                                                 );
                                             }
 
                                             // Regular actions with href use Link
                                             return (
-                                                <DropdownMenuItem key={action.name} asChild>
+                                                <DropdownMenuItem key={action.name} asChild title={action.tooltip}>
                                                     <Link href={action.href} target={action.target} prefetch={action.prefetch}>
                                                         {IconComponent && <IconComponent className="mr-2 h-4 w-4" />}
-                                                        {action.label}
+                                                        <span className="flex flex-col">
+                                                            <span>{action.label}</span>
+                                                            {action.tooltip && (
+                                                                <span className="text-xs text-muted-foreground">{action.tooltip}</span>
+                                                            )}
+                                                        </span>
                                                     </Link>
                                                 </DropdownMenuItem>
                                             );
@@ -586,116 +636,148 @@ export function DataTable<T = Record<string, unknown>>({
     );
 
     const activeFilters = getActiveFilters();
-    const hasFilters = filters.length > 0;
     const hasActiveFilters = activeFilters.length > 0;
+    const allPopoverSelectFilters = [...popoverSelectFilters, ...hiddenFilters];
+    const hasPopoverFilters = allPopoverSelectFilters.length > 0 || popoverDateRangeFilters.length > 0;
+    const hasInlineFilters = inlineSelectFilters.length > 0 || inlineDateRangeFilters.length > 0;
 
     return (
         <div className={cn('space-y-4', className)}>
-            {/* Top Filter Bar */}
-            {hasFilters && (
-                <div className="flex flex-wrap items-center gap-3">
-                    {/* Date Range Picker */}
-                    {hasDateRangeFilter && (
-                        <DateRangePicker value={dateRange} onChange={handleDateRangeChange} placeholder="Seleccionar fechas" />
+            {/* Header Actions */}
+            {headerActions && (
+                <div className="flex items-center gap-2">
+                    {headerActions}
+
+                    {/* Export Button */}
+                    {exportUrl && (
+                        <Button variant="outline" onClick={handleExport} className="gap-2">
+                            <Download className="h-4 w-4" />
+                            {exportLabel}
+                        </Button>
                     )}
-
-                    {/* Visible Filters */}
-                    {visibleFilters.map((filter) => (
-                        <Select
-                            key={filter.name}
-                            value={filterValues[filter.name] || ''}
-                            onValueChange={(value) => handleFilterChange(filter.name, value)}
-                        >
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder={filter.label} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">{allLabel}</SelectItem>
-                                {filter.options?.map((option) => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                        {option.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    ))}
-
-                    {/* Hidden Filters Popover */}
-                    {hiddenFilters.length > 0 && (
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button variant="outline" className="gap-2">
-                                    <Filter className="h-4 w-4" />
-                                    {moreFiltersLabel}
-                                    {Object.keys(filterValues).filter(
-                                        (key) => hiddenFilters.some((f) => f.name === key) && filterValues[key] && filterValues[key] !== 'all',
-                                    ).length > 0 && (
-                                        <Badge variant="secondary" className="ml-1 h-5 min-w-5 rounded-full px-1.5">
-                                            {
-                                                Object.keys(filterValues).filter(
-                                                    (key) =>
-                                                        hiddenFilters.some((f) => f.name === key) &&
-                                                        filterValues[key] &&
-                                                        filterValues[key] !== 'all',
-                                                ).length
-                                            }
-                                        </Badge>
-                                    )}
-                                    <ChevronDown className="h-4 w-4" />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-80" align="start">
-                                <div className="grid gap-4">
-                                    <div className="space-y-2">
-                                        <h4 className="font-medium leading-none">Filtros</h4>
-                                        <p className="text-sm text-muted-foreground">Configura los filtros adicionales.</p>
-                                    </div>
-                                    <div className="grid gap-4">
-                                        {hiddenFilters.map((filter) => (
-                                            <div key={filter.name} className="grid gap-2">
-                                                <Label htmlFor={filter.name}>{filter.label}</Label>
-                                                <Select
-                                                    value={filterValues[filter.name] || ''}
-                                                    onValueChange={(value) => handleFilterChange(filter.name, value)}
-                                                >
-                                                    <SelectTrigger id={filter.name}>
-                                                        <SelectValue placeholder={`Seleccionar ${filter.label.toLowerCase()}`} />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="all">{allLabel}</SelectItem>
-                                                        {filter.options?.map((option) => (
-                                                            <SelectItem key={option.value} value={option.value}>
-                                                                {option.label}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </PopoverContent>
-                        </Popover>
-                    )}
-
-                    {/* Header Actions */}
-                    <div className="ml-auto flex items-center gap-2">
-                        {headerActions}
-
-                        {/* Export Button */}
-                        {exportUrl && (
-                            <Button variant="outline" onClick={handleExport} className="gap-2">
-                                <Download className="h-4 w-4" />
-                                {exportLabel}
-                            </Button>
-                        )}
-                    </div>
                 </div>
             )}
 
             {/* Data Table Card */}
             <Card>
                 <CardContent className="p-0">
+                    {/* Table Header with Search and Filters */}
+                    <div className="flex flex-wrap items-center gap-3 border-b p-4">
+                        {/* Search */}
+                        {searchFilter && (
+                            <div className="relative max-w-xs flex-1">
+                                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    type="search"
+                                    placeholder={searchFilter.placeholder || searchFilter.label}
+                                    className="pl-9"
+                                    value={searchQuery}
+                                    onChange={(e) => handleSearch(e.target.value)}
+                                />
+                            </div>
+                        )}
+
+                        {/* Inline Date Range Filters */}
+                        {inlineDateRangeFilters.map((filter) => (
+                            <DateRangePicker
+                                key={filter.name}
+                                value={dateRange}
+                                onChange={handleDateRangeChange}
+                                placeholder={filter.placeholder || filter.label}
+                            />
+                        ))}
+
+                        {/* Inline Select Filters */}
+                        {inlineSelectFilters.map((filter) => (
+                            <Select
+                                key={filter.name}
+                                value={filterValues[filter.name] || ''}
+                                onValueChange={(value) => handleFilterChange(filter.name, value)}
+                            >
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder={filter.label} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{allLabel}</SelectItem>
+                                    {filter.options?.map((option) => (
+                                        <SelectItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        ))}
+
+                        {/* Filters Button */}
+                        {hasPopoverFilters && (
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="outline" className="gap-2">
+                                        <Filter className="h-4 w-4" />
+                                        Filtrar
+                                        {hasActiveFilters && (
+                                            <Badge variant="secondary" className="ml-1 h-5 min-w-5 rounded-full px-1.5">
+                                                {activeFilters.length}
+                                            </Badge>
+                                        )}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-80" align="end">
+                                    <div className="grid gap-4">
+                                        <div className="space-y-2">
+                                            <h4 className="font-medium leading-none">Filtrar Por</h4>
+                                            <p className="text-sm text-muted-foreground">Configura los filtros para la tabla.</p>
+                                        </div>
+                                        <div className="grid gap-4">
+                                            {/* Popover Date Range Filters */}
+                                            {popoverDateRangeFilters.map((filter) => (
+                                                <div key={filter.name} className="grid gap-2">
+                                                    <Label>{filter.label}</Label>
+                                                    <DateRangePicker
+                                                        value={dateRange}
+                                                        onChange={handleDateRangeChange}
+                                                        placeholder="Seleccionar fechas"
+                                                    />
+                                                </div>
+                                            ))}
+
+                                            {/* Popover Select Filters */}
+                                            {allPopoverSelectFilters.map((filter) => (
+                                                <div key={filter.name} className="grid gap-2">
+                                                    <Label htmlFor={filter.name}>{filter.label}</Label>
+                                                    <Select
+                                                        value={filterValues[filter.name] || ''}
+                                                        onValueChange={(value) => handleFilterChange(filter.name, value)}
+                                                    >
+                                                        <SelectTrigger id={filter.name}>
+                                                            <SelectValue placeholder={`Seleccionar ${filter.label.toLowerCase()}`} />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="all">{allLabel}</SelectItem>
+                                                            {filter.options?.map((option) => (
+                                                                <SelectItem key={option.value} value={option.value}>
+                                                                    {option.label}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                        )}
+
+                        {/* Export Button */}
+                        {exportUrl && !headerActions && (
+                            <Button variant="outline" onClick={handleExport} className="gap-2">
+                                <Download className="h-4 w-4" />
+                                {exportLabel}
+                            </Button>
+                        )}
+                    </div>
+
                     {/* Active Filters */}
                     {hasActiveFilters && (
                         <div className="flex flex-wrap items-center gap-2 border-b bg-muted/30 p-4">
@@ -725,60 +807,58 @@ export function DataTable<T = Record<string, unknown>>({
                         </div>
                     )}
 
-                    {/* Table Header with Search */}
-                    {searchFilter && (
-                        <div className="flex items-center gap-4 border-b p-4">
-                            <div className="relative max-w-xs flex-1">
-                                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    type="search"
-                                    placeholder={searchFilter.placeholder || searchFilter.label}
-                                    className="pl-9"
-                                    value={searchQuery}
-                                    onChange={(e) => handleSearch(e.target.value)}
-                                />
-                            </div>
-                        </div>
-                    )}
-
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                {columns.map((column) => (
-                                    <TableHead
-                                        key={column.key}
-                                        className={cn(
-                                            column.align === 'right' && 'text-right',
-                                            column.align === 'center' && 'text-center',
-                                            column.sortable && 'cursor-pointer select-none hover:bg-muted/50',
-                                            column.className,
-                                        )}
-                                        onClick={() => column.sortable && handleSort(column.key)}
-                                    >
-                                        <div
+                                {columns.map((column) => {
+                                    const header = (
+                                        <TableHead
+                                            key={column.key}
                                             className={cn(
-                                                'flex items-center gap-1',
-                                                column.align === 'right' && 'justify-end',
-                                                column.align === 'center' && 'justify-center',
+                                                'group',
+                                                column.align === 'right' && 'text-right',
+                                                column.align === 'center' && 'text-center',
+                                                column.sortable && 'cursor-pointer select-none hover:bg-muted/50',
+                                                column.headerClassName,
                                             )}
+                                            onClick={() => column.sortable && handleSort(column.key)}
                                         >
-                                            {column.label}
-                                            {column.sortable && (
-                                                <span className="ml-1">
-                                                    {currentSortBy === column.key ? (
-                                                        currentSortDirection === 'asc' ? (
-                                                            <ArrowUp className="h-4 w-4" />
+                                            <div
+                                                className={cn(
+                                                    'flex items-center gap-1',
+                                                    column.align === 'right' && 'justify-end',
+                                                    column.align === 'center' && 'justify-center',
+                                                )}
+                                            >
+                                                {column.label}
+                                                {column.sortable && (
+                                                    <span className="ml-1">
+                                                        {currentSortBy === column.key ? (
+                                                            currentSortDirection === 'asc' ? (
+                                                                <ArrowUp className="h-4 w-4" />
+                                                            ) : (
+                                                                <ArrowDown className="h-4 w-4" />
+                                                            )
                                                         ) : (
-                                                            <ArrowDown className="h-4 w-4" />
-                                                        )
-                                                    ) : (
-                                                        <ArrowUpDown className="h-4 w-4 text-muted-foreground/50" />
-                                                    )}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </TableHead>
-                                ))}
+                                                            <ArrowUpDown className="h-4 w-4 text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100" />
+                                                        )}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </TableHead>
+                                    );
+
+                                    if (column.tooltip) {
+                                        return (
+                                            <Tooltip key={column.key}>
+                                                <TooltipTrigger asChild>{header}</TooltipTrigger>
+                                                <TooltipContent>{column.tooltip}</TooltipContent>
+                                            </Tooltip>
+                                        );
+                                    }
+
+                                    return header;
+                                })}
                                 {rowActions && <TableHead className="text-right">Acciones</TableHead>}
                             </TableRow>
                         </TableHeader>
@@ -818,7 +898,7 @@ export function DataTable<T = Record<string, unknown>>({
                                                     className={cn(
                                                         column.align === 'right' && 'text-right',
                                                         column.align === 'center' && 'text-center',
-                                                        column.className,
+                                                        column.cellClassName,
                                                     )}
                                                 >
                                                     {renderCellContent(row, column)}
@@ -837,12 +917,11 @@ export function DataTable<T = Record<string, unknown>>({
                             )}
                         </TableBody>
                     </Table>
+                         {/* Pagination */}
+            {data.data.length > 0 && <Paginator className='border-b-0 border-l-0 border-r-0 rounded-none mt-6 pt-8 border-t' data={data} perPageOptions={resource.perPageOptions} />}
+
                 </CardContent>
             </Card>
-
-            {/* Pagination */}
-            {data.data.length > 0 && <Paginator data={data} />}
-
             {/* Confirmation Dialog */}
             <Dialog
                 open={confirmationDialog.open}

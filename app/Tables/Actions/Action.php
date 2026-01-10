@@ -39,6 +39,8 @@ class Action
 
     protected bool $prefetch = false;
 
+    protected ?string $tooltip = null;
+
     public function __construct(string $name, ?string $label = null)
     {
         $this->name = $name;
@@ -150,6 +152,13 @@ class Action
         return $this;
     }
 
+    public function tooltip(string $tooltip): static
+    {
+        $this->tooltip = $tooltip;
+
+        return $this;
+    }
+
     public function isVisible(Model $record): bool
     {
         if ($this->visibleWhen) {
@@ -166,7 +175,7 @@ class Action
         }
 
         if ($this->href) {
-            return preg_replace_callback('/\{(\w+)\}/', fn($matches) => data_get($record, $matches[1]), $this->href);
+            return preg_replace_callback('/\{(\w+)\}/', fn ($matches) => data_get($record, $matches[1]), $this->href);
         }
 
         return null;
@@ -192,6 +201,7 @@ class Action
             'isInline' => $this->isInline,
             'target' => $this->target,
             'prefetch' => $this->prefetch,
+            'tooltip' => $this->tooltip,
         ];
     }
 }

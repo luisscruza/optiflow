@@ -14,6 +14,8 @@ use App\Tables\Columns\BadgeColumn;
 use App\Tables\Columns\CurrencyColumn;
 use App\Tables\Columns\DateColumn;
 use App\Tables\Columns\TextColumn;
+use App\Tables\Filters\BooleanFilter;
+use App\Tables\Filters\DateRangeFilter;
 use App\Tables\Filters\SearchFilter;
 use App\Tables\Filters\SelectFilter;
 
@@ -32,9 +34,9 @@ final class InvoicesTable extends Table
     public function columns(): array
     {
         return [
-            TextColumn::make('id', '# Interno')
+            TextColumn::make('id', '#')
                 ->sortable()
-                ->className('w-20 text-gray-500'),
+                ->cellClassName('w-20 text-gray-500'),
 
             TextColumn::make('document_number', 'NCF/Número')
                 ->sortable(),
@@ -52,7 +54,7 @@ final class InvoicesTable extends Table
 
             CurrencyColumn::make('amount_due', 'Por cobrar')
                 ->sortable()
-                ->className('font-medium'),
+                ->headerClassName('font-medium'),
 
             BadgeColumn::make('status', 'Estado')
                 ->sortable(),
@@ -64,6 +66,7 @@ final class InvoicesTable extends Table
                         ->href('/invoices/{id}/pdf')
                         ->permission('view invoices'),
                     Action::make('payment', 'Registrar pago')
+                        ->tooltip('Registrar pago')
                         ->icon('dollar')
                         ->handler('openPaymentModal')
                         ->visibleWhen(fn(Invoice $invoice) => $invoice->canRegisterPayment())
@@ -93,7 +96,13 @@ final class InvoicesTable extends Table
 
             SelectFilter::make('status', 'Estado')
                 ->options(InvoiceStatus::class)
-                ->default('all'),
+                ->default('all')
+                ->inline(),
+
+            BooleanFilter::make('overdue', 'Vencidas'),
+            
+
+            DateRangeFilter::make('issue_date', 'Fecha de creación'),
         ];
     }
 }

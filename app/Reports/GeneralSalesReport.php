@@ -151,6 +151,7 @@ final readonly class GeneralSalesReport implements ReportContract
                 'invoices.subtotal_amount',
                 'invoices.total_amount',
                 'invoices.contact_id',
+                'invoices.status',
             ]);
     }
 

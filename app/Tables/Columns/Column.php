@@ -28,7 +28,11 @@ abstract class Column
 
     protected ?Closure $formatUsing = null;
 
-    protected ?string $className = null;
+    protected ?string $headerClassName = null;
+
+    protected ?string $cellClassName = null;
+
+    protected ?string $tooltip = null;
 
     public function __construct(string $name, ?string $label = null)
     {
@@ -100,9 +104,23 @@ abstract class Column
         return $this;
     }
 
-    public function className(string $className): static
+    public function headerClassName(string $headerClassName): static
     {
-        $this->className = $className;
+        $this->headerClassName = $headerClassName;
+
+        return $this;
+    }
+
+      public function cellClassName(string $cellClassName): static
+    {
+        $this->cellClassName = $cellClassName;
+
+        return $this;
+    }
+
+    public function tooltip(string $tooltip): static
+    {
+        $this->tooltip = $tooltip;
 
         return $this;
     }
@@ -176,7 +194,9 @@ abstract class Column
             'type' => $this->getType(),
             'sortable' => $this->sortable,
             'align' => $this->align,
-            'className' => $this->className,
+            'headerClassName' => $this->headerClassName,
+            'cellClassName' => $this->cellClassName,
+            'tooltip' => $this->tooltip,
         ];
     }
 }
