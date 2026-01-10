@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Concerns\BelongsToWorkspace;
 use App\Concerns\HasActivityLog;
+use App\Concerns\HasBadge;
 use App\Concerns\HasComments;
 use App\Contracts\Auditable;
 use App\Contracts\Commentable;
@@ -95,7 +96,7 @@ use Spatie\Activitylog\LogOptions;
 final class Invoice extends Model implements Auditable, Commentable
 {
     /** @use HasFactory<\Database\Factories\InvoiceFactory> */
-    use BelongsToWorkspace, HasActivityLog, HasComments, HasFactory;
+    use BelongsToWorkspace, HasActivityLog, HasComments, HasFactory, HasBadge;
 
     protected $appends = [
         'amount_due',
@@ -260,21 +261,6 @@ final class Invoice extends Model implements Auditable, Commentable
     protected function withStatus(Builder $query, string $status): void
     {
         $query->where('status', $status);
-    }
-
-    /**
-     * Get the status attribute.
-     *
-     * @return array<string, mixed>
-     */
-    protected function statusConfig(): \Illuminate\Database\Eloquent\Casts\Attribute
-    {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn (): array => [
-            'value' => $this->status,
-            'label' => $this->status->label(),
-            'variant' => $this->status->badgeVariant(),
-            'className' => $this->status->badgeClassName(),
-        ]);
     }
 
     /**

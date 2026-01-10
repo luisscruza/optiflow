@@ -11,6 +11,7 @@ use App\Tables\Actions\BulkAction;
 use App\Tables\Actions\DeleteAction;
 use App\Tables\Actions\EditAction;
 use App\Tables\Columns\ActionColumn;
+use App\Tables\Columns\BadgeColumn;
 use App\Tables\Columns\CurrencyColumn;
 use App\Tables\Columns\DateColumn;
 use App\Tables\Columns\TextColumn;
@@ -49,6 +50,9 @@ final class QuotationsTable extends Table
                 ->sortable(),
 
             CurrencyColumn::make('total_amount', 'Total')
+                ->sortable(),
+
+            BadgeColumn::make('status', 'Estado')
                 ->sortable(),
 
             ActionColumn::make()

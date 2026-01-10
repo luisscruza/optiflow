@@ -33,9 +33,36 @@ enum QuotationStatus: string
     {
         return match ($this) {
             self::Draft => 'Borrador',
-            self::Converted => 'Convertido',
-            self::NonConverted => 'No Convertido',
+            self::Converted => 'Facturada',
+            self::NonConverted => 'Sin facturar',
             self::Cancelled => 'Cancelado',
+        };
+    }
+
+
+    /**
+     * Get the badge variant for the document type.
+     */
+    public function badgeVariant(): string
+    {
+        return match ($this) {
+            self::Draft => 'outline',
+            self::Converted => 'default',
+            self::NonConverted => 'secondary',
+            self::Cancelled => 'destructive',
+        };
+    }
+
+    /**
+     * Get the badge class name for the document type.
+     */
+    public function badgeClassName(): string
+    {
+        return match ($this) {
+            self::Draft => 'bg-yellow-100 text-yellow-800',
+            self::Converted => 'bg-green-100 text-green-800',
+            self::NonConverted => 'bg-yellow-200 text-gray-800',
+            self::Cancelled => 'bg-red-100 text-red-800',
         };
     }
 }
