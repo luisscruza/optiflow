@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace App\Tables;
 
-use App\Enums\InvoiceStatus;
 use App\Enums\QuotationStatus;
-use App\Models\Invoice;
 use App\Models\Quotation;
 use App\Tables\Actions\Action;
 use App\Tables\Actions\BulkAction;
 use App\Tables\Actions\DeleteAction;
 use App\Tables\Actions\EditAction;
 use App\Tables\Columns\ActionColumn;
-use App\Tables\Columns\BadgeColumn;
 use App\Tables\Columns\CurrencyColumn;
 use App\Tables\Columns\DateColumn;
 use App\Tables\Columns\TextColumn;
-use App\Tables\Filters\BooleanFilter;
 use App\Tables\Filters\DateRangeFilter;
 use App\Tables\Filters\SearchFilter;
 use App\Tables\Filters\SelectFilter;
@@ -73,13 +69,13 @@ final class QuotationsTable extends Table
                         ->color('success')
                         ->icon('refresh-cw')
                         ->href('/quotations/{id}/convert-to-invoice', 'post')
-                        ->visibleWhen(fn(Quotation $record) => $record->status !== QuotationStatus::Converted)
+                        ->visibleWhen(fn (Quotation $record) => $record->status !== QuotationStatus::Converted)
                         ->permission('create invoices'),
 
                     DeleteAction::make()
                         ->href('/quotations/{id}')
                         ->permission('delete quotations')
-                        ->visibleWhen(fn(Quotation $record) => $record->status !== QuotationStatus::Converted)
+                        ->visibleWhen(fn (Quotation $record) => $record->status !== QuotationStatus::Converted)
                         ->requiresConfirmation('¿Está seguro de que desea eliminar esta cotización? Esta acción no se puede deshacer.'),
                 ]),
         ];

@@ -71,19 +71,19 @@ final class InvoicesTable extends Table
                         ->tooltip('Registrar pago')
                         ->icon('dollar')
                         ->handler('openPaymentModal')
-                        ->visibleWhen(fn(Invoice $invoice) => $invoice->canRegisterPayment())
+                        ->visibleWhen(fn (Invoice $invoice) => $invoice->canRegisterPayment())
                         ->permission('create payments')
                         ->inline(),
 
                     EditAction::make()
                         ->href('/invoices/{id}/edit')
-                        ->visibleWhen(fn(Invoice $invoice) => $invoice->canBeEdited())
+                        ->visibleWhen(fn (Invoice $invoice) => $invoice->canBeEdited())
                         ->permission('edit invoices'),
 
                     DeleteAction::make()
                         ->href('/invoices/{id}')
                         ->permission('delete invoices')
-                        ->visibleWhen(fn(Invoice $invoice) => $invoice->canBeDeleted())
+                        ->visibleWhen(fn (Invoice $invoice) => $invoice->canBeDeleted())
                         ->requiresConfirmation('¿Está seguro de que desea eliminar esta factura? Esta acción no se puede deshacer.'),
                 ]),
         ];
@@ -123,4 +123,3 @@ final class InvoicesTable extends Table
         ];
     }
 }
-

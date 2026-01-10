@@ -35,7 +35,7 @@ final class BulkDownloadInvoicePdfController extends Controller
         }
 
         $company = CompanyDetail::getAll();
-        $tempDir = storage_path('app/temp/bulk-invoices-' . uniqid());
+        $tempDir = storage_path('app/temp/bulk-invoices-'.uniqid());
 
         if (! file_exists($tempDir)) {
             mkdir($tempDir, 0755, true);
@@ -52,14 +52,14 @@ final class BulkDownloadInvoicePdfController extends Controller
                 ])->setPaper('a4', 'portrait');
 
                 $filename = "factura-{$invoice->document_number}.pdf";
-                $filePath = $tempDir . '/' . $filename;
+                $filePath = $tempDir.'/'.$filename;
                 $pdf->save($filePath);
                 $pdfFiles[] = $filePath;
             }
 
             // Create ZIP
-            $zipFilename = 'facturas-' . date('Y-m-d-His') . '.zip';
-            $zipPath = storage_path('app/temp/' . $zipFilename);
+            $zipFilename = 'facturas-'.date('Y-m-d-His').'.zip';
+            $zipPath = storage_path('app/temp/'.$zipFilename);
 
             $zip = new ZipArchive;
             if ($zip->open($zipPath, ZipArchive::CREATE) === true) {

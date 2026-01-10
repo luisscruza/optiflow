@@ -34,7 +34,7 @@ final class QuotationController extends Controller
      */
     public function index(Request $request, #[CurrentUser()] User $user): Response
     {
-       abort_unless($user->can(Permission::QuotationsView), 403);
+        abort_unless($user->can(Permission::QuotationsView), 403);
 
         return Inertia::render('quotations/index', [
             'quotations' => QuotationsTable::make($request),

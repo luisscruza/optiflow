@@ -73,7 +73,7 @@ class Action
     public function href(string $href, string $method = 'get'): static
     {
         $this->href = $href;
-        $this->method = strtolower($method);
+        $this->method = mb_strtolower($method);
 
         return $this;
     }
@@ -187,7 +187,7 @@ class Action
         }
 
         if ($this->href) {
-            return preg_replace_callback('/\{(\w+)\}/', fn($matches) => data_get($record, $matches[1]), $this->href);
+            return preg_replace_callback('/\{(\w+)\}/', fn ($matches) => data_get($record, $matches[1]), $this->href);
         }
 
         return null;
