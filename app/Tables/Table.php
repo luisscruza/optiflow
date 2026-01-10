@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tables;
 
+use App\Tables\Actions\BulkAction;
 use App\Tables\Columns\Column;
 use App\Tables\Filters\DateRangeFilter;
 use App\Tables\Filters\Filter;
@@ -32,6 +33,8 @@ abstract class Table implements Arrayable, JsonSerializable
     protected ?string $rowHref = null;
 
     protected bool $rowPrefetch = false;
+
+    protected bool $selectable = false;
 
     protected ?Request $request = null;
 
@@ -66,6 +69,16 @@ abstract class Table implements Arrayable, JsonSerializable
     }
 
     /**
+     * Define the bulk actions for the table.
+     *
+     * @return array<BulkAction>
+     */
+    public function bulkActions(): array
+    {
+        return [];
+    }
+
+    /**
      * Set eager loading relationships.
      */
     public function with(array $relations): static
@@ -91,9 +104,10 @@ abstract class Table implements Arrayable, JsonSerializable
     public function toArray(): array
     {
         $paginator = $this->getData();
+        $bulkActions = $this->bulkActions();
 
         return [
-            'data' => $paginator->through(fn(Model $record) => $this->transformRecord($record)),
+            'data' => $paginator->through(fn (Model $record) => $this->transformRecord($record)),
             'columns' => $this->getColumnDefinitions(),
             'filters' => $this->getFilterDefinitions(),
             'appliedFilters' => $this->getAppliedFilters(),
@@ -103,6 +117,8 @@ abstract class Table implements Arrayable, JsonSerializable
             'perPageOptions' => $this->perPageOptions,
             'rowHref' => $this->rowHref,
             'rowPrefetch' => $this->rowPrefetch,
+            'selectable' => $this->selectable || count($bulkActions) > 0,
+            'bulkActions' => array_map(fn (BulkAction $action) => $action->toArray(), $bulkActions),
         ];
     }
 
@@ -166,7 +182,7 @@ abstract class Table implements Arrayable, JsonSerializable
             return;
         }
 
-        $column = collect($this->columns())->first(fn(Column $col) => $col->getName() === $sortBy && $col->isSortable());
+        $column = collect($this->columns())->first(fn (Column $col) => $col->getName() === $sortBy && $col->isSortable());
 
         if ($column) {
             $column->applySort($query, $sortDirection === 'asc' ? 'asc' : 'desc');
@@ -216,7 +232,7 @@ abstract class Table implements Arrayable, JsonSerializable
             // Include href if column has one
             $href = $column->getHref($record);
             if ($href) {
-                $row[$column->getName() . '_href'] = $href;
+                $row[$column->getName().'_href'] = $href;
             }
         }
 
@@ -229,8 +245,8 @@ abstract class Table implements Arrayable, JsonSerializable
     protected function getColumnDefinitions(): array
     {
         return collect($this->columns())
-            ->reject(fn(Column $column) => $column->isHidden())
-            ->map(fn(Column $column) => $column->getDefinition())
+            ->reject(fn (Column $column) => $column->isHidden())
+            ->map(fn (Column $column) => $column->getDefinition())
             ->values()
             ->toArray();
     }

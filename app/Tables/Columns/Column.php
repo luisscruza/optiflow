@@ -111,7 +111,7 @@ abstract class Column
         return $this;
     }
 
-      public function cellClassName(string $cellClassName): static
+    public function cellClassName(string $cellClassName): static
     {
         $this->cellClassName = $cellClassName;
 

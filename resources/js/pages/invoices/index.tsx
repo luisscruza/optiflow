@@ -75,7 +75,7 @@ export default function InvoicesIndex({ invoices, bankAccounts = [], paymentMeth
                                 <Button asChild>
                                     <Link href="/invoices/create">
                                         <Plus className="mr-2 h-4 w-4" />
-                                        Crear primera factura
+                                        Crear factura
                                     </Link>
                                 </Button>
                             </div>

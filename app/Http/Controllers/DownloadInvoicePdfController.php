@@ -7,14 +7,14 @@ namespace App\Http\Controllers;
 use App\Models\CompanyDetail;
 use App\Models\Invoice;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 final class DownloadInvoicePdfController extends Controller
 {
     /**
      * Handle the incoming request.
      */
-    public function __invoke(Invoice $invoice): Response
+    public function __invoke(Invoice $invoice): BinaryFileResponse
     {
         $invoice->load([
             'contact',
@@ -30,6 +30,13 @@ final class DownloadInvoicePdfController extends Controller
 
         $filename = "factura-{$invoice->document_number}.pdf";
 
-        return $pdf->stream($filename);
+        $filePath = storage_path("app/invoices/{$filename}");
+
+        if (! file_exists(dirname($filePath))) {
+            mkdir(dirname($filePath), 0755, true);
+        }
+        $pdf->save($filePath);
+
+        return response()->download($filePath, $filename)->deleteFileAfterSend(true);
     }
 }

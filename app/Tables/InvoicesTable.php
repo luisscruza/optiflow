@@ -7,6 +7,7 @@ namespace App\Tables;
 use App\Enums\InvoiceStatus;
 use App\Models\Invoice;
 use App\Tables\Actions\Action;
+use App\Tables\Actions\BulkAction;
 use App\Tables\Actions\DeleteAction;
 use App\Tables\Actions\EditAction;
 use App\Tables\Columns\ActionColumn;
@@ -61,9 +62,10 @@ final class InvoicesTable extends Table
 
             ActionColumn::make()
                 ->actions([
-                    Action::make('print', 'Imprimir')
-                        ->icon('printer')
+                    Action::make('print', 'Descargar PDF')
+                        ->icon('download')
                         ->href('/invoices/{id}/pdf')
+                        ->download()
                         ->permission('view invoices'),
                     Action::make('payment', 'Registrar pago')
                         ->tooltip('Registrar pago')
@@ -99,10 +101,26 @@ final class InvoicesTable extends Table
                 ->default('all')
                 ->inline(),
 
-            BooleanFilter::make('overdue', 'Vencidas'),
-            
+            BooleanFilter::make('overdue', 'Vencidas')
+                ->query(function ($query, $value) {
+                    if ($value === '1' || $value === 'true' || $value === true) {
+                        $query->where('status', '!=', InvoiceStatus::Paid->value)
+                            ->where('due_date', '<=', now());
+                    }
+                }),
 
             DateRangeFilter::make('issue_date', 'Fecha de creación'),
         ];
     }
+
+    public function bulkActions(): array
+    {
+        return [
+            BulkAction::make('download', 'Descargar PDF')
+                ->icon('file')
+                ->href('/invoices/bulk/pdf')
+                ->permission('view invoices'),
+        ];
+    }
 }
+

@@ -1,8 +1,9 @@
 'use client';
 
 import { Link, router } from '@inertiajs/react';
+import axios from 'axios';
 import { format, parseISO } from 'date-fns';
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, DollarSign, Download, Edit, Eye, Filter, MoreHorizontal, Printer, Search, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, DollarSign, Download, Edit, Eye, FileText, Filter, MoreHorizontal, Printer, Search, Send, Trash2, X, XCircle } from 'lucide-react';
 import * as React from 'react';
 import { useCallback, useState } from 'react';
 import { DateRange } from 'react-day-picker';
@@ -15,6 +16,7 @@ import { useCurrency } from '@/utils/currency';
 import { Badge } from './badge';
 import { Button } from './button';
 import { Card, CardContent } from './card';
+import { Checkbox } from './checkbox';
 import { DateRangePicker } from './date-range-picker';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './dropdown-menu';
@@ -67,6 +69,19 @@ export interface TableAction {
     target?: string;
     prefetch?: boolean;
     tooltip?: string;
+    download?: boolean;
+}
+
+export interface BulkAction {
+    name: string;
+    label: string;
+    icon?: string;
+    color?: string;
+    requiresConfirmation?: boolean;
+    confirmationMessage?: string;
+    permission?: string;
+    handler?: string;
+    href?: string;
 }
 
 export interface TableResource<T = Record<string, unknown>> {
@@ -79,6 +94,8 @@ export interface TableResource<T = Record<string, unknown>> {
     perPage: number;
     perPageOptions: number[];
     rowHref?: string | null;
+    selectable?: boolean;
+    bulkActions?: BulkAction[];
 }
 
 export interface DataTableProps<T = Record<string, unknown>> {
@@ -116,6 +133,8 @@ export interface DataTableProps<T = Record<string, unknown>> {
     onAction?: (action: string, row: T) => void;
     /** Handler functions for custom actions */
     handlers?: Record<string, (row: T) => void>;
+    /** Handler functions for bulk actions */
+    bulkHandlers?: Record<string, (selectedIds: (string | number)[]) => void>;
 }
 
 interface StatusConfig {
@@ -136,6 +155,9 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
     dollar: DollarSign,
     download: Download,
     printer: Printer,
+    send: Send,
+    file: FileText,
+    cancel: XCircle,
 };
 
 // ============================================================================
@@ -160,16 +182,22 @@ export function DataTable<T = Record<string, unknown>>({
     searchDebounce = 500,
     onAction,
     handlers = {},
+    bulkHandlers = {},
 }: DataTableProps<T>) {
     const { format: formatCurrency } = useCurrency();
     const { can } = usePermissions();
-    const { data, columns, filters, appliedFilters, sortBy, sortDirection, rowHref } = resource;
+    const { data, columns, filters, appliedFilters, sortBy, sortDirection, rowHref, selectable, bulkActions = [] } = resource;
 
     const [filterValues, setFilterValues] = useState<Record<string, string>>(appliedFilters);
     const [searchQuery, setSearchQuery] = useState(appliedFilters.search || '');
     const [currentSortBy, setCurrentSortBy] = useState<string | null>(sortBy);
     const [currentSortDirection, setCurrentSortDirection] = useState<'asc' | 'desc'>(sortDirection);
     const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+    const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
+    const isAllSelected = data.data.length > 0 && selectedIds.length === data.data.length;
+    const isSomeSelected = selectedIds.length > 0 && selectedIds.length < data.data.length;
+    const hasSelection = selectedIds.length > 0;
 
     // Get filters by type and visibility
     const searchFilter = filters.find((f) => f.type === 'search');
@@ -210,6 +238,13 @@ export function DataTable<T = Record<string, unknown>>({
         row: T | null;
     }>({ open: false, action: null, row: null });
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // Bulk action confirmation dialog state
+    const [bulkConfirmationDialog, setBulkConfirmationDialog] = useState<{
+        open: boolean;
+        action: BulkAction | null;
+    }>({ open: false, action: null });
+    const [isBulkProcessing, setIsBulkProcessing] = useState(false);
 
     const navigateWithFilters = useCallback(
         (newFilters: Record<string, string>, options?: { sortBy?: string; sortDirection?: 'asc' | 'desc' }) => {
@@ -477,6 +512,105 @@ export function DataTable<T = Record<string, unknown>>({
         setConfirmationDialog({ open: false, action: null, row: null });
     }, [confirmationDialog, onAction, handlers]);
 
+    // Selection handlers
+    const toggleSelectAll = useCallback(() => {
+        if (isAllSelected) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(data.data.map((row: T, index: number) => getRowKey(row, index)));
+        }
+    }, [data.data, getRowKey, isAllSelected]);
+
+    const toggleSelectRow = useCallback(
+        (rowKey: string | number) => {
+            setSelectedIds((prev) =>
+                prev.includes(rowKey) ? prev.filter((id) => id !== rowKey) : [...prev, rowKey],
+            );
+        },
+        [],
+    );
+
+    const clearSelection = useCallback(() => {
+        setSelectedIds([]);
+    }, []);
+
+    // Bulk action handlers
+    const executeBulkAction = useCallback(
+        (action: BulkAction) => {
+            // Handle custom bulk actions with registered handler
+            if (action.handler && bulkHandlers[action.handler]) {
+                setIsBulkProcessing(true);
+                Promise.resolve(bulkHandlers[action.handler](selectedIds)).finally(() => {
+                    setIsBulkProcessing(false);
+                    clearSelection();
+                    setBulkConfirmationDialog({ open: false, action: null });
+                });
+                return;
+            }
+
+            // Handle bulk actions with href
+            if (action.href) {
+                setIsBulkProcessing(true);
+                
+                axios.post(action.href, { ids: selectedIds }, { 
+                    responseType: 'blob',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                })
+                    .then((response) => {
+                        // Extract filename from Content-Disposition header
+                        const contentDisposition = response.headers['content-disposition'];
+                        let filename = 'download.zip';
+                        
+                        if (contentDisposition) {
+                            const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+                            if (filenameMatch && filenameMatch[1]) {
+                                filename = filenameMatch[1];
+                            }
+                        }
+                        
+                        // Create a download link and trigger it
+                        const url = window.URL.createObjectURL(new Blob([response.data]));
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(url);
+                        
+                        setIsBulkProcessing(false);
+                        clearSelection();
+                        setBulkConfirmationDialog({ open: false, action: null });
+                    })
+                    .catch((error) => {
+                        console.error('Bulk action error:', error);
+                        setIsBulkProcessing(false);
+                        setBulkConfirmationDialog({ open: false, action: null });
+                    });
+            }
+        },
+        [bulkHandlers, selectedIds, clearSelection],
+    );
+
+    const handleBulkAction = useCallback(
+        (action: BulkAction) => {
+            if (action.requiresConfirmation) {
+                setBulkConfirmationDialog({ open: true, action });
+                return;
+            }
+            executeBulkAction(action);
+        },
+        [executeBulkAction],
+    );
+
+    const handleConfirmBulkAction = useCallback(() => {
+        const { action } = bulkConfirmationDialog;
+        if (!action) return;
+        executeBulkAction(action);
+    }, [bulkConfirmationDialog, executeBulkAction]);
+
     const renderCellContent = useCallback(
         (row: T, column: TableColumn) => {
             const rowData = row as Record<string, unknown>;
@@ -543,6 +677,12 @@ export function DataTable<T = Record<string, unknown>>({
                                     >
                                         {IconComponent && <IconComponent className="h-4 w-4" />}
                                     </Button>
+                                ) : action.download ? (
+                                    <Button key={action.name} variant="ghost" size="sm" asChild>
+                                        <a href={action.href} target={action.target} download>
+                                            {IconComponent && <IconComponent className="h-4 w-4" />}
+                                        </a>
+                                    </Button>
                                 ) : (
                                     <Button key={action.name} variant="ghost" size="sm" asChild>
                                         <Link href={action.href} target={action.target} prefetch={action.prefetch}>
@@ -591,6 +731,23 @@ export function DataTable<T = Record<string, unknown>>({
                                                                 <span className="text-xs text-muted-foreground">{action.tooltip}</span>
                                                             )}
                                                         </span>
+                                                    </DropdownMenuItem>
+                                                );
+                                            }
+
+                                            // Download actions use regular anchor tags
+                                            if (action.download) {
+                                                return (
+                                                    <DropdownMenuItem key={action.name} asChild title={action.tooltip}>
+                                                        <a href={action.href} target={action.target} download>
+                                                            {IconComponent && <IconComponent className="mr-2 h-4 w-4" />}
+                                                            <span className="flex flex-col">
+                                                                <span>{action.label}</span>
+                                                                {action.tooltip && (
+                                                                    <span className="text-xs text-muted-foreground">{action.tooltip}</span>
+                                                                )}
+                                                            </span>
+                                                        </a>
                                                     </DropdownMenuItem>
                                                 );
                                             }
@@ -661,8 +818,50 @@ export function DataTable<T = Record<string, unknown>>({
             {/* Data Table Card */}
             <Card>
                 <CardContent className="p-0">
-                    {/* Table Header with Search and Filters */}
-                    <div className="flex flex-wrap items-center gap-3 border-b p-4">
+                    {/* Bulk Actions Bar */}
+                    {hasSelection ? (
+                        <div className="flex items-center justify-between border-b bg-teal-50 p-4 dark:bg-teal-950/20">
+                            <div className="flex items-center gap-4">
+                                <span className="text-sm font-medium text-teal-900 dark:text-teal-100">
+                                    {selectedIds.length} seleccionado{selectedIds.length !== 1 ? 's' : ''}
+                                </span>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={clearSelection}
+                                    className="h-7 text-xs text-teal-700 hover:text-teal-900 dark:text-teal-300 dark:hover:text-teal-100"
+                                >
+                                    Limpiar selección
+                                </Button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {bulkActions
+                                    .filter((action) => !action.permission || can(action.permission as Permission))
+                                    .map((action) => {
+                                        const Icon = iconMap[action.icon || 'circle'];
+                                        return (
+                                            <Button
+                                                key={action.name}
+                                                variant={action.color === 'danger' ? 'destructive' : 'default'}
+                                                size="sm"
+                                                onClick={() => handleBulkAction(action)}
+                                                disabled={isBulkProcessing}
+                                                className={cn(
+                                                    'gap-2',
+                                                    action.color === 'primary' && 'bg-teal-600 hover:bg-teal-700 text-white',
+                                                )}
+                                            >
+                                                <Icon className="h-4 w-4" />
+                                                {action.label}
+                                            </Button>
+                                        );
+                                    })}
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Table Header with Search and Filters */}
+                            <div className="flex flex-wrap items-center gap-3 border-b p-4">
                         {/* Search */}
                         {searchFilter && (
                             <div className="relative max-w-xs flex-1">
@@ -806,10 +1005,21 @@ export function DataTable<T = Record<string, unknown>>({
                             </Button>
                         </div>
                     )}
+                        </>
+                    )}
 
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                {selectable && (
+                                    <TableHead className="w-[50px]">
+                                        <Checkbox
+                                            checked={isAllSelected}
+                                            onCheckedChange={toggleSelectAll}
+                                            aria-label="Seleccionar todo"
+                                        />
+                                    </TableHead>
+                                )}
                                 {columns.map((column) => {
                                     const header = (
                                         <TableHead
@@ -869,11 +1079,17 @@ export function DataTable<T = Record<string, unknown>>({
                                     const href = rowHref
                                         ? rowHref.replace(/\{(\w+)\}/g, (_, key) => String(rowData[key] ?? ''))
                                         : null;
+                                    const rowKey = getRowKey(row, index);
+                                    const isSelected = selectedIds.includes(rowKey);
 
                                     return (
                                         <TableRow
-                                            key={getRowKey(row, index)}
-                                            className={href ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50' : undefined}
+                                            key={rowKey}
+                                            className={cn(
+                                                href && 'cursor-pointer',
+                                                href && !isSelected && 'hover:bg-gray-50 dark:hover:bg-gray-800/50',
+                                                isSelected && 'bg-teal-50 dark:bg-teal-950/20',
+                                            )}
                                             onClick={
                                                 href
                                                     ? (e) => {
@@ -892,6 +1108,15 @@ export function DataTable<T = Record<string, unknown>>({
                                                     : undefined
                                             }
                                         >
+                                            {selectable && (
+                                                <TableCell className="w-[50px]">
+                                                    <Checkbox
+                                                        checked={isSelected}
+                                                        onCheckedChange={() => toggleSelectRow(rowKey)}
+                                                        aria-label={`Seleccionar fila ${index + 1}`}
+                                                    />
+                                                </TableCell>
+                                            )}
                                             {columns.map((column) => (
                                                 <TableCell
                                                     key={column.key}
@@ -910,7 +1135,7 @@ export function DataTable<T = Record<string, unknown>>({
                                 })
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={columns.length + (rowActions ? 1 : 0)} className="h-24 text-center">
+                                    <TableCell colSpan={columns.length + (rowActions ? 1 : 0) + (selectable ? 1 : 0)} className="h-24 text-center">
                                         {emptyState || emptyMessage}
                                     </TableCell>
                                 </TableRow>
@@ -952,6 +1177,42 @@ export function DataTable<T = Record<string, unknown>>({
                             disabled={isDeleting}
                         >
                             {isDeleting ? 'Procesando...' : 'Confirmar'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Bulk Confirmation Dialog */}
+            <Dialog
+                open={bulkConfirmationDialog.open}
+                onOpenChange={(open) => {
+                    if (!open && !isBulkProcessing) {
+                        setBulkConfirmationDialog({ open: false, action: null });
+                    }
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Confirmar acción masiva</DialogTitle>
+                        <DialogDescription>
+                            {bulkConfirmationDialog.action?.confirmationMessage ||
+                                `¿Estás seguro de que deseas realizar esta acción en ${selectedIds.length} elemento${selectedIds.length !== 1 ? 's' : ''}?`}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setBulkConfirmationDialog({ open: false, action: null })}
+                            disabled={isBulkProcessing}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant={bulkConfirmationDialog.action?.color === 'danger' ? 'destructive' : 'default'}
+                            onClick={handleConfirmBulkAction}
+                            disabled={isBulkProcessing}
+                        >
+                            {isBulkProcessing ? 'Procesando...' : 'Confirmar'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
