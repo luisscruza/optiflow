@@ -18,8 +18,8 @@ final class DateRangeFilter extends Filter
     public function __construct(string $name, ?string $label = null)
     {
         parent::__construct($name, $label);
-        $this->startName = $name . '_start';
-        $this->endName = $name . '_end';
+        $this->startName = $name.'_start';
+        $this->endName = $name.'_end';
     }
 
     /**
