@@ -1,11 +1,12 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, Building2, Calendar, CreditCard, DownloadCloud, Edit, FileText, Mail, Phone, Plus, Printer, ShoppingCart, Trash2 } from 'lucide-react';
+import { Building2, Calendar, CreditCard, DownloadCloud, Edit, FileText, Plus, Printer, ShoppingCart, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { usePermissions } from '@/hooks/use-permissions';
 
 import { ActivityLogTimeline } from '@/components/ActivityLogTimeline';
 import { CommentList } from '@/components/CommentList';
+import { CompanyHeader } from '@/components/company-header';
 import { PaymentRegistrationModal } from '@/components/payment-registration-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -110,74 +111,100 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                    <div className="flex gap-3 mb-4">
-                           {can('edit invoices') && (
-                                <Button size="sm" asChild className="flex items-center justify-center gap-2 bg-gray-50 text-gray-800 border-gray-300 hover:bg-gray-100 hover:border-gray-300 border">
-                                    <Link prefetch href={`/invoices/${invoice.id}/edit`}>
-                                        <Edit className="h-4 w-4" />
-                                        Editar factura
-                                    </Link>
-                                </Button>
-                            )}
-                            {can('delete invoices') && invoice.status === 'draft' && (
-                                <Button className="flex items-center justify-center gap-2 bg-gray-50 text-gray-800 border-gray-300 hover:bg-gray-100 hover:border-gray-300 border">
-                                    <Link href={`/invoices/${invoice.id}`} method="delete" as="button">
-                                        <Trash2 className="h-4 w-4" />
-                                        Eliminar
-                                    </Link>
-                                </Button>
-                            )}
-
+                    <div className="mb-4 flex gap-3">
+                        {can('edit invoices') && (
                             <Button
-                                variant="outline"
                                 size="sm"
                                 asChild
-                                className="flex items-center justify-center gap-2 bg-gray-50 text-gray-800 border-gray-300 hover:bg-gray-100 hover:border-gray-300 border"
+                                className="flex items-center justify-center gap-2 border border-gray-300 bg-gray-50 text-gray-800 hover:border-gray-300 hover:bg-gray-100"
                             >
-                                <a href={`/invoices/${invoice.id}/pdf-stream`} target="_blank" rel="noopener noreferrer">
+                                <Link prefetch href={`/invoices/${invoice.id}/edit`}>
+                                    <Edit className="h-4 w-4" />
+                                    Editar factura
+                                </Link>
+                            </Button>
+                        )}
+                        {can('delete invoices') && invoice.status === 'draft' && (
+                            <Button className="flex items-center justify-center gap-2 border border-gray-300 bg-gray-50 text-gray-800 hover:border-gray-300 hover:bg-gray-100">
+                                <Link href={`/invoices/${invoice.id}`} method="delete" as="button">
+                                    <Trash2 className="h-4 w-4" />
+                                    Eliminar
+                                </Link>
+                            </Button>
+                        )}
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className="flex items-center justify-center gap-2 border border-gray-300 bg-gray-50 text-gray-800 hover:border-gray-300 hover:bg-gray-100"
+                        >
+                            <a href={`/invoices/${invoice.id}/pdf-stream`} target="_blank" rel="noopener noreferrer">
                                 <Printer className="h-4 w-4" />
                                 Imprimir
-                                </a>
-                            </Button>
+                            </a>
+                        </Button>
 
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className="flex items-center justify-center gap-2 border border-gray-300 bg-gray-50 text-gray-800 hover:border-gray-300 hover:bg-gray-100"
+                        >
+                            <a href={`/invoices/${invoice.id}/pdf`}>
+                                <DownloadCloud className="h-4 w-4" />
+                                Descargar PDF
+                            </a>
+                        </Button>
+
+                        {invoice.amount_due > 0 && (
                             <Button
                                 variant="outline"
                                 size="sm"
-                                asChild
-                                className="flex items-center justify-center gap-2 bg-gray-50 text-gray-800 border-gray-300 hover:bg-gray-100 hover:border-gray-300 border"
+                                onClick={() => {
+                                    setSelectedPayment(null);
+                                    setIsPaymentModalOpen(true);
+                                }}
+                                className="flex items-center justify-center gap-2 border border-gray-300 bg-gray-50 text-gray-800 hover:border-gray-300 hover:bg-gray-100"
                             >
-                                <a href={`/invoices/${invoice.id}/pdf`}>
-                                <DownloadCloud className="h-4 w-4" />
-                                Descargar PDF
-                                </a>
+                                <Plus className="h-4 w-4" />
+                                Registrar pago
                             </Button>
+                        )}
+                    </div>
 
-                            {invoice.amount_due > 0 && (
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                                        setSelectedPayment(null);
-                                        setIsPaymentModalOpen(true);
-                                    }}
-                                className="flex items-center justify-center gap-2 bg-gray-50 text-gray-800 border-gray-300 hover:bg-gray-100 hover:border-gray-300 border"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                    Registrar pago
-                                </Button>
-                            )}
-                        </div>
+                    {/* Payment Summary Card */}
+                    <Card className="mb-6 border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
+                        <CardContent className="px-6 py-4">
+                            <div className="grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                                {/* Total Value */}
+                                <div className="space-y-1 px-4 py-3 sm:py-0">
+                                    <p className="text-sm font-medium text-gray-600">Valor total</p>
+                                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(invoice.total_amount)}</p>
+                                </div>
+
+                                {/* Amount Collected */}
+                                <div className="space-y-1 px-4 py-3 sm:py-0">
+                                    <p className="text-sm font-medium text-gray-600">Cobrado</p>
+                                    <p className="text-2xl font-bold text-teal-600">{formatCurrency(invoice.amount_paid)}</p>
+                                </div>
+
+                                {/* Amount Due */}
+                                <div className="space-y-1 px-4 py-3 sm:py-0">
+                                    <p className="text-sm font-medium text-gray-600">Por cobrar</p>
+                                    <p className="text-2xl font-bold text-orange-600">{formatCurrency(invoice.amount_due)}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     {/* Enhanced Header - Invoice Style */}
                     <div className="mb-6">
                         <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
                             <CardContent className="px-6 py-6">
                                 <div className="flex items-start justify-between">
                                     {/* Company Info */}
-                                    <div className="space-y-1">
-                                        <h1 className="text-2xl font-bold text-gray-900">Centro Óptico Visión Integral</h1>
-                                        <p className="text-sm text-gray-600">RNC o Cédula: 130382573</p>
-                                        <p className="text-sm text-gray-600">info@covi.com.do</p>
-                                    </div>
+                                    <CompanyHeader />
 
                                     {/* Invoice Details */}
                                     <div className="space-y-1 text-right">
