@@ -12,6 +12,7 @@ use App\Models\Mastertable;
 use App\Models\MastertableItem;
 use App\Models\Prescription;
 use App\Models\User;
+use App\Tables\PrescriptionsTable;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -68,27 +69,8 @@ final class PrescriptionController extends Controller
     {
         abort_unless($user->can(Permission::PrescriptionsView), 403);
 
-        $workspace = Context::get('workspace');
-
-        $query = Prescription::query()
-            ->with(['patient', 'optometrist', 'workspace'])
-            ->where('workspace_id', $workspace->id)
-            ->orderBy('created_at', 'desc');
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-
-            // Search by patient name or ID
-            $query->whereHas('patient', function ($q) use ($search): void {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('identification_number', 'like', "%{$search}%");
-            });
-        }
-
-        $prescriptions = $query->paginate(15)->withQueryString();
-
         return inertia('prescriptions/index', [
-            'prescriptions' => $prescriptions,
+            'prescriptions' => PrescriptionsTable::make($request),
         ]);
     }
 

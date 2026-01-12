@@ -1,17 +1,11 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { Edit, Eye, Filter, Plus, Search, Trash2 } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
 
 import { usePermissions } from '@/hooks/use-permissions';
-import { useState } from 'react';
-
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Paginator } from '@/components/ui/paginator';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DataTable, type TableResource } from '@/components/ui/datatable';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type PaginatedPrescriptions, type PrescriptionFilters } from '@/types';
+import { Prescription, type BankAccount, type BreadcrumbItem, type Quotation } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -21,44 +15,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 interface Props {
-    prescriptions: PaginatedPrescriptions;
-    filters?: PrescriptionFilters & { type?: string };
+    prescriptions: TableResource<Prescription>;
+    bankAccounts?: BankAccount[];
+    paymentMethods?: Record<string, string>;
 }
 
-export default function PrescriptionsIndex({ prescriptions, filters = {} }: Props) {
+export default function PrescriptionsIndex({ prescriptions}: Props) {
     const { can } = usePermissions();
-    const [search, setSearch] = useState(filters?.search || '');
-    const [showQuickModal, setShowQuickModal] = useState(false);
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        router.get(
-            '/prescriptions',
-            { search },
-            {
-                preserveState: true,
-                replace: true,
-            },
-        );
-    };
-
-    const handleClearFilters = () => {
-        setSearch('');
-        router.get(
-            '/prescriptions',
-            {},
-            {
-                preserveState: true,
-                replace: true,
-            },
-        );
-    };
-
-    const handleDelete = (prescriptionId: number) => {
-        if (confirm('¿Estás seguro de que deseas eliminar esta receta?')) {
-            router.delete(`/prescriptions/${prescriptionId}`);
-        }
-    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -68,158 +31,40 @@ export default function PrescriptionsIndex({ prescriptions, filters = {} }: Prop
                 <div className="mb-8 flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Recetas</h1>
-                        <p className="text-gray-600 dark:text-gray-400">Gestiona las recetas de tus pacientes y su información óptica.</p>
+                        <p className="text-gray-600 dark:text-gray-400">Gestiona las recetas de tus pacientes.</p>
                     </div>
 
                     {can('create prescriptions') && (
-                        <div className="flex space-x-3">
+                        <Button asChild className="bg-primary hover:bg-primary/90">
                             <Link href="/prescriptions/create">
-                                <Button
-                                    variant="outline"
-                                    className="border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900/20 dark:text-gray-300"
-                                >
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Nueva receta
-                                </Button>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Nueva receta
                             </Link>
-                        </div>
+                        </Button>
                     )}
                 </div>
 
-                {/* Search and Filters */}
-                <Card className="mb-8">
-                    <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                            <Filter className="h-5 w-5" />
-                            <span>Filtros</span>
-                        </CardTitle>
-                        <CardDescription>Filtra recetas por paciente, sucursal o fecha</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSearch} className="flex gap-4">
-                            <div className="flex-1">
-                                <Input
-                                    type="text"
-                                    placeholder="Buscar por paciente, sucursal o ID..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="w-full"
-                                />
-                            </div>
-
-                            <Button type="submit">
-                                <Search className="mr-2 h-4 w-4" />
-                                Buscar
-                            </Button>
-                            <Button variant="outline" onClick={handleClearFilters}>
-                                Limpiar
-                            </Button>
-                        </form>
-                    </CardContent>
-                </Card>
-
-                {/* prescriptions Table */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Lista de recetas</CardTitle>
-                        <CardDescription>
-                            {prescriptions.total === 0
-                                ? 'No se encontraron recetas.'
-                                : `Mostrando ${prescriptions.from} - ${prescriptions.to} de ${prescriptions.total} recetas`}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {prescriptions.data.length === 0 ? (
+                <DataTable<Prescription>
+                    resource={prescriptions}
+                    baseUrl="/prescriptions"
+                    getRowKey={(prescription) => prescription.id}
+                    emptyMessage="No se encontraron recetas"
+                    emptyState={
+                        can('create prescriptions') ? (
                             <div className="py-8 text-center">
                                 <div className="mb-4 text-gray-500 dark:text-gray-400">No se encontraron recetas</div>
-                                {can('create prescriptions') && (
-                                    <Button asChild>
-                                        <Link href="/prescriptions/create">
-                                            <Plus className="mr-2 h-4 w-4" />
-                                            Crear primera receta
-                                        </Link>
-                                    </Button>
-                                )}
+                                <Button asChild>
+                                    <Link href="/prescriptions/create">
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Crear receta
+                                    </Link>
+                                </Button>
                             </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>ID</TableHead>
-                                            <TableHead>Paciente</TableHead>
-                                            <TableHead>Fecha</TableHead>
-                                            <TableHead>Sucursal</TableHead>
-                                            <TableHead className="text-right">Acciones</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {prescriptions.data.map((prescription) => (
-                                            <TableRow key={prescription.id}>
-                                                <TableCell>
-                                                    <div className="font-medium">{prescription.id}</div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="font-medium">{prescription.patient?.name || 'Sin paciente'}</div>
-                                                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                                                        {prescription.patient?.identification_number || ''}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                                                        {new Date(prescription.created_at).toLocaleDateString()}
-                                                        <span className="text-xs font-semibold italic"> ({prescription.human_readable_date})</span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="text-sm">{prescription.workspace?.name || 'No asignada'}</div>
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="sm">
-                                                                Acciones
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            {can('view prescriptions') && (
-                                                                <DropdownMenuItem asChild>
-                                                                    <Link href={`/prescriptions/${prescription.id}`}>
-                                                                        <Eye className="mr-2 h-4 w-4" />
-                                                                        Ver detalles
-                                                                    </Link>
-                                                                </DropdownMenuItem>
-                                                            )}
-                                                            {can('edit prescriptions') && (
-                                                                <DropdownMenuItem asChild>
-                                                                    <Link href={`/prescriptions/${prescription.id}/edit`}>
-                                                                        <Edit className="mr-2 h-4 w-4" />
-                                                                        Editar
-                                                                    </Link>
-                                                                </DropdownMenuItem>
-                                                            )}
-                                                            {can('delete prescriptions') && (
-                                                                <DropdownMenuItem
-                                                                    onClick={() => handleDelete(prescription.id)}
-                                                                    className="text-red-600 dark:text-red-400"
-                                                                >
-                                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                                    Eliminar
-                                                                </DropdownMenuItem>
-                                                            )}
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                        )}
-
-                        <Paginator data={prescriptions} />
-                    </CardContent>
-                </Card>
+                        ) : undefined
+                    }
+                    handlers={{
+                    }}
+                />
             </div>
         </AppLayout>
     );
