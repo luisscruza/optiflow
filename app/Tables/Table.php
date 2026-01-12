@@ -229,10 +229,16 @@ abstract class Table implements Arrayable, JsonSerializable
 
             $row[$column->getName()] = $column->getValue($record);
 
-            // Include href if column has one
             $href = $column->getHref($record);
+
             if ($href) {
                 $row[$column->getName().'_href'] = $href;
+            }
+
+            $tooltip = $column->getCellTooltip($record);
+
+            if ($tooltip) {
+                $row[$column->getName().'_tooltip'] = $tooltip;
             }
         }
 

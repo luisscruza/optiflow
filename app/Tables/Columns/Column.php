@@ -34,6 +34,8 @@ abstract class Column
 
     protected ?string $tooltip = null;
 
+    protected ?Closure $cellTooltip = null;
+
     public function __construct(string $name, ?string $label = null)
     {
         $this->name = $name;
@@ -118,6 +120,13 @@ abstract class Column
         return $this;
     }
 
+    public function cellTooltip(string|Closure $tooltip): static
+    {
+        $this->cellTooltip = $tooltip;
+
+        return $this;
+    }
+
     public function tooltip(string $tooltip): static
     {
         $this->tooltip = $tooltip;
@@ -163,6 +172,15 @@ abstract class Column
         }
 
         return $value;
+    }
+
+    public function getCellTooltip(Model $record): ?string
+    {
+        if ($this->cellTooltip instanceof Closure) {
+            return (string) call_user_func($this->cellTooltip, $record);
+        }
+
+        return (string) $this->tooltip;
     }
 
     public function getHref(Model $record): ?string

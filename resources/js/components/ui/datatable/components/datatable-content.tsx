@@ -96,6 +96,7 @@ export function DataTableContent<T>({
                 );
             }
 
+
             return content;
         },
         [formatCurrency, onActionClick],
@@ -204,18 +205,33 @@ export function DataTableContent<T>({
                                         />
                                     </TableCell>
                                 )}
-                                {columns.map((column) => (
-                                    <TableCell
-                                        key={column.key}
-                                        className={cn(
-                                            column.align === 'right' && 'text-right',
-                                            column.align === 'center' && 'text-center',
-                                            column.cellClassName,
-                                        )}
-                                    >
-                                        {renderCellContent(row, column)}
-                                    </TableCell>
-                                ))}
+                                {columns.map((column) => {
+                                    const rowData = row as Record<string, unknown>;
+                                    const cellTooltip = rowData[`${column.key}_tooltip`] as string | undefined;
+                                    const cellContent = renderCellContent(row, column);
+
+                                    return (
+                                        <TableCell
+                                            key={column.key}
+                                            className={cn(
+                                                column.align === 'right' && 'text-right',
+                                                column.align === 'center' && 'text-center',
+                                                column.cellClassName,
+                                            )}
+                                        >
+                                            {cellTooltip ? (
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <div className="cursor-help">{cellContent}</div>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>{cellTooltip}</TooltipContent>
+                                                </Tooltip>
+                                            ) : (
+                                                cellContent
+                                            )}
+                                        </TableCell>
+                                    );
+                                })}
                                 {rowActions && <TableCell className="text-right">{rowActions(row)}</TableCell>}
                             </TableRow>
                         );

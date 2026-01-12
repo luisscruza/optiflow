@@ -42,7 +42,9 @@ final class InvoicesTable extends Table
             TextColumn::make('document_number', 'NCF/Número')
                 ->sortable(),
 
-            TextColumn::make('contact.name', 'Cliente'),
+            TextColumn::make('contact.name', 'Cliente')
+                ->cellClassName('max-w-32 font-bold truncate')
+                ->cellTooltip(fn (Invoice $invoice) => $invoice->contact->name),
 
             DateColumn::make('issue_date', 'Creación')
                 ->sortable(),
@@ -62,23 +64,28 @@ final class InvoicesTable extends Table
 
             ActionColumn::make()
                 ->actions([
+                    Action::make('print', 'Ver factura')
+                        ->icon('eye')
+                        ->href('/invoices/{id}/')
+                        ->permission('view invoices'),
+
+                    EditAction::make()
+                        ->href('/invoices/{id}/edit')
+                        ->permission('edit invoices'),
+
                     Action::make('print', 'Descargar PDF')
                         ->icon('download')
                         ->href('/invoices/{id}/pdf')
                         ->download()
                         ->permission('view invoices'),
+
                     Action::make('payment', 'Registrar pago')
                         ->tooltip('Registrar pago')
-                        ->icon('dollar')
+                        ->icon('receipt')
                         ->handler('openPaymentModal')
                         ->visibleWhen(fn (Invoice $invoice) => $invoice->canRegisterPayment())
                         ->permission('create payments')
                         ->inline(),
-
-                    EditAction::make()
-                        ->href('/invoices/{id}/edit')
-                        ->visibleWhen(fn (Invoice $invoice) => $invoice->canBeEdited())
-                        ->permission('edit invoices'),
 
                     DeleteAction::make()
                         ->href('/invoices/{id}')
