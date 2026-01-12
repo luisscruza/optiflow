@@ -423,14 +423,8 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100 text-green-600">
-                                                <CreditCard className="h-4 w-4" />
-                                            </div>
                                             Pagos recibidos
                                         </CardTitle>
-                                        <CardDescription className="mt-1 text-sm text-gray-600">
-                                            Historial de pagos registrados para esta factura.
-                                        </CardDescription>
                                     </div>
                                     {invoice.amount_due > 0 && can('create payments') && (
                                         <Button
@@ -584,33 +578,15 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                         </Card>
                     )}
 
-                    {/* No Payments Yet Section */}
                     {(!invoice.payments || invoice.payments.length === 0) && invoice.amount_due > 0 && (
                         <Card className="mb-8 border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
                             <CardHeader className="bg-gray-50/50 px-6 py-5">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 text-orange-600">
-                                                <CreditCard className="h-4 w-4" />
-                                            </div>
-                                            Pagos pendientes
+                                            Pagos recibidos
                                         </CardTitle>
-                                        <CardDescription className="mt-1 text-sm text-gray-600">
-                                            Esta factura aún no tiene pagos registrados.
-                                        </CardDescription>
                                     </div>
-                                    <Button
-                                        onClick={() => {
-                                            setSelectedPayment(null);
-                                            setIsPaymentModalOpen(true);
-                                        }}
-                                        size="sm"
-                                        className="flex items-center gap-2"
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                        Registrar primer pago
-                                    </Button>
                                 </div>
                             </CardHeader>
                             <CardContent className="px-6 py-6">
@@ -618,10 +594,7 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                     <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-100">
                                         <CreditCard className="h-8 w-8 text-orange-600" />
                                     </div>
-                                    <h3 className="mb-2 text-lg font-medium text-gray-900">Sin pagos registrados</h3>
-                                    <p className="mb-4 text-gray-600">
-                                        Monto pendiente: <span className="font-semibold text-orange-600">{formatCurrency(invoice.amount_due)}</span>
-                                    </p>
+                                    <h3 className="mb-2 text-lg font-medium text-gray-900">Tu venta aún no tiene pagos recibidos</h3>
                                     <Button
                                         onClick={() => {
                                             setSelectedPayment(null);
@@ -662,7 +635,6 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                         commentableType="Invoice"
                         commentableId={invoice.id}
                         currentUser={auth.user}
-                        title="Comentarios de la factura"
                         className="mb-8"
                     />
 

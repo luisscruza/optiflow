@@ -140,6 +140,7 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
                 rows={rows}
                 disabled={disabled}
                 className={cn("resize-none", className)}
+                maxLength={240}
             />
             
             {showSuggestions && (
@@ -175,6 +176,9 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
                     ))}
                 </div>
             )}
+            <div className="absolute bottom-1 right-2 text-xs text-gray-500">
+            {value.length}/240
+            </div>
         </div>
     );
 };

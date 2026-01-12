@@ -87,11 +87,7 @@ export const CommentList: React.FC<CommentListProps> = ({
                         ))}
                     </div>
                 ) : (
-                    <div className="border-t py-8 text-center text-gray-500">
-                        <MessageCircle className="mx-auto mb-3 h-12 w-12 text-gray-300" />
-                        <p>No hay comentarios aún.</p>
-                        <p className="text-sm">Sé el primero en comentar.</p>
-                    </div>
+                   <></>
                 )}
             </CardContent>
         </Card>
