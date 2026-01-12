@@ -126,8 +126,7 @@ export const DataTableFilters: React.FC<DataTableFiltersProps> = ({
                         <PopoverContent className="w-80" align="end">
                             <div className="grid gap-4">
                                 <div className="space-y-2">
-                                    <h4 className="font-medium leading-none">Filtrar Por</h4>
-                                    <p className="text-sm text-muted-foreground">Configura los filtros para la tabla.</p>
+                                    <h4 className="font-medium leading-none">Filtrar por</h4>
                                 </div>
                                 <div className="grid gap-4">
                                     {/* Popover Date Range Filters */}

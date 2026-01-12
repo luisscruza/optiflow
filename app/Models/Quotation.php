@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Concerns\BelongsToWorkspace;
-use App\Concerns\HasBadge;
 use App\Enums\QuotationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -80,7 +79,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 final class Quotation extends Model
 {
-    use BelongsToWorkspace, HasBadge;
+    use BelongsToWorkspace;
 
     /**
      * Get the contact for this quotation.

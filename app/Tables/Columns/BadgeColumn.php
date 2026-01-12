@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tables\Columns;
 
+use BackedEnum;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 
@@ -49,21 +50,26 @@ final class BadgeColumn extends Column
     {
         $rawValue = data_get($record, $this->name);
 
-        $configAccessor = str($this->name)->append('_config')->camel()->toString();
-        if (method_exists($record, 'get'.ucfirst($configAccessor).'Attribute') || $record->$configAccessor) {
-            return $record->$configAccessor;
+        if ($record->{$this->name} instanceof BackedEnum) {
+            return [
+                'value' => $record->{$this->name}->value,
+                'label' => $record->{$this->name}->label(),
+                'variant' => $record->{$this->name}->badgeVariant(),
+                'className' => $record->{$this->name}->badgeClassName(),
+            ];
         }
-
-        // Build badge config manually
         $label = $this->getDisplayLabel($rawValue, $record);
         $color = $this->getColor($rawValue, $record);
+        $variant = $this->mapColorToVariant($color);
+        $className = $this->getColorClassName($color);
 
         return [
             'value' => $rawValue,
             'label' => $label,
-            'variant' => $this->mapColorToVariant($color),
-            'className' => $this->getColorClassName($color),
+            'variant' => $variant,
+            'className' => $className,
         ];
+
     }
 
     public function getType(): string

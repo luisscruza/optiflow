@@ -14,6 +14,7 @@ use App\Http\Requests\CreateContactRequest;
 use App\Http\Requests\UpdateContactRequest;
 use App\Models\Contact;
 use App\Models\User;
+use App\Tables\ContactsTable;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,31 +30,8 @@ final class ContactController extends Controller
     {
         abort_unless($user->can(Permission::ContactsView), 403);
 
-        $query = Contact::query()
-            ->with(['primaryAddress'])
-            ->orderBy('name');
-
-        if ($request->has('type') && in_array($request->type, ContactType::values(), true)) {
-            $query->where('contact_type', $request->type);
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search): void {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('identification_number', 'like', "%{$search}%");
-            });
-        }
-
-        $contacts = $query->paginate(15)->withQueryString();
-
         return Inertia::render('contacts/index', [
-            'contacts' => $contacts,
-            'filters' => [
-                'search' => $request->search,
-                'type' => $request->type,
-            ],
+            'contacts' => ContactsTable::make($request),
         ]);
     }
 
@@ -66,14 +44,14 @@ final class ContactController extends Controller
 
         return Inertia::render('contacts/create', [
             'identification_types' => collect(IdentificationType::cases())
-                ->map(fn ($type): array => [
+                ->map(fn($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])
                 ->values()
                 ->toArray(),
             'contact_types' => collect(ContactType::cases())
-                ->map(fn ($type): array => [
+                ->map(fn($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])
@@ -126,14 +104,14 @@ final class ContactController extends Controller
         return Inertia::render('contacts/edit', [
             'contact' => $contact,
             'identification_types' => collect(IdentificationType::cases())
-                ->map(fn ($type): array => [
+                ->map(fn($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])
                 ->values()
                 ->toArray(),
             'contact_types' => collect(ContactType::cases())
-                ->map(fn ($type): array => [
+                ->map(fn($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])

@@ -266,6 +266,7 @@ final class Contact extends Model implements Commentable
             'credit_limit' => 'decimal:2',
             'birth_date' => 'immutable_date',
             'gender' => Gender::class,
+            'contact_type' => ContactType::class,
         ];
     }
 }

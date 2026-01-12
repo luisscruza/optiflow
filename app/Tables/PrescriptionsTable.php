@@ -40,7 +40,6 @@ final class PrescriptionsTable extends Table
 
             TextColumn::make('workspace.name', 'Sucursal'),
 
-
             ActionColumn::make()
                 ->actions([
                     Action::make('print', 'Descargar PDF')
