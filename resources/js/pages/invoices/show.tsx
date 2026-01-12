@@ -198,56 +198,23 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                         </CardContent>
                     </Card>
 
-                    {/* Enhanced Header - Invoice Style */}
-                    <div className="mb-6">
-                        <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
-                            <CardContent className="px-6 py-6">
-                                <div className="flex items-start justify-between">
-                                    {/* Company Info */}
-                                    <CompanyHeader />
-
-                                    {/* Invoice Details */}
-                                    <div className="space-y-1 text-right">
-                                        <h2 className="text-xl font-bold text-gray-900">Factura No. {invoice.document_number}</h2>
-                                        <div className="flex items-center justify-end gap-2">{getStatusBadge(invoice.status)}</div>
-                                        <div className="flex flex-col justify-end space-y-3">
-                                            <div className="text-sm text-gray-600">
-                                                <div className="grid grid-cols-2 gap-2 text-right">
-                                                    <span className="font-medium">Fecha de emisión:</span>
-                                                    <span>{formatDate(invoice.issue_date)}</span>
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-2 text-right">
-                                                    <span className="font-medium">Fecha de vencimiento:</span>
-                                                    <span>{formatDate(invoice.due_date)}</span>
-                                                </div>
-                                                {invoice.document_number && (
-                                                    <div className="grid grid-cols-2 gap-2 text-right">
-                                                        <span className="font-medium">NCF:</span>
-                                                        <span className="font-mono text-xs">{invoice.document_number}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Customer and Document Details - Read Only */}
                     <Card className="mb-8 border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
                         <CardContent className="px-6 py-6">
+                            {/* Header Section */}
+                            <div className="mb-8 flex items-start justify-between border-b border-gray-200 pb-6">
+                                {/* Company Info */}
+                                <CompanyHeader />
+
+                                {/* Invoice Header */}
+                                <div className="space-y-1 text-right">
+                                    <h2 className="text-xl font-bold text-gray-900">Factura No. {invoice.document_number}</h2>
+                                    <div className="flex items-center justify-end gap-2">{getStatusBadge(invoice.status)}</div>
+                                </div>
+                            </div>
+
                             <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-                                {/* Left Column - Customer Details */}
                                 <div className="space-y-6">
                                     <div className="space-y-3">
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-                                                <Building2 className="h-4 w-4" />
-                                            </div>
-                                            <h3 className="text-lg font-semibold text-gray-900">Información del cliente</h3>
-                                        </div>
-
                                         <div className="space-y-3 rounded-lg bg-gray-50 p-4">
                                             <div>
                                                 <Label className="text-sm font-medium text-gray-700">Cliente</Label>
@@ -296,20 +263,17 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                     </div>
                                 </div>
 
-                                {/* Right Column - Invoice Details */}
                                 <div className="space-y-6">
                                     <div className="space-y-3">
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100 text-green-600">
-                                                <FileText className="h-4 w-4" />
-                                            </div>
-                                            <h3 className="text-lg font-semibold text-gray-900">Detalles de la factura</h3>
-                                        </div>
-
                                         <div className="space-y-3 rounded-lg bg-gray-50 p-4">
                                             <div>
-                                                <Label className="text-sm font-medium text-gray-700">Tipo de documento</Label>
-                                                <p className="mt-1 text-sm text-gray-900">{invoice.document_subtype.name}</p>
+                                                <Label className="text-sm font-medium text-gray-700">Creación</Label>
+                                                <p className="mt-1 text-sm text-gray-900">{formatDate(invoice.issue_date)}</p>
+                                            </div>
+
+                                            <div>
+                                                <Label className="text-sm font-medium text-gray-700">Fecha de vencimiento</Label>
+                                                <p className="mt-1 text-sm text-gray-900">{formatDate(invoice.due_date)}</p>
                                             </div>
 
                                             <div>
@@ -330,23 +294,6 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                 </div>
                             </div>
                         </CardContent>
-                    </Card>
-
-                    {/* Invoice Items - Read Only */}
-                    <Card className="mb-8 border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
-                        <CardHeader className="bg-gray-50/50 px-6 py-5">
-                            <div>
-                                <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 text-orange-600">
-                                        <ShoppingCart className="h-4 w-4" />
-                                    </div>
-                                    Artículos de la factura
-                                </CardTitle>
-                                <CardDescription className="mt-1 text-sm text-gray-600">
-                                    Lista de productos y servicios incluidos en esta factura.
-                                </CardDescription>
-                            </div>
-                        </CardHeader>
                         <CardContent className="px-6 py-6">
                             <div className="space-y-6">
                                 {/* Headers - Desktop - Using overflow for wider tables */}
@@ -466,6 +413,8 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                             </div>
                         </CardContent>
                     </Card>
+
+
 
                     {/* Payments Section */}
                     {invoice.payments && invoice.payments.length > 0 && (
