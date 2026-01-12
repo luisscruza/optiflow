@@ -13,6 +13,7 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use App\Models\Tax;
 use App\Models\User;
+use App\Tables\ProductsTable;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,37 +31,8 @@ final class ProductController extends Controller
     {
         abort_unless($user->can(Permission::ProductsView), 403);
 
-        $query = Product::query()
-            ->with(['defaultTax', 'stockInCurrentWorkspace'])
-            ->orderBy('created_at', 'desc');
-
-        if ($search = $request->get('search')) {
-            $query->where(function ($q) use ($search): void {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('sku', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->get('track_stock') !== null) {
-            $query->where('track_stock', $request->boolean('track_stock'));
-        }
-
-        if ($request->get('low_stock')) {
-            $query->whereHas('stockInCurrentWorkspace', function ($q): void {
-                $q->whereColumn('quantity', '<=', 'minimum_quantity');
-            });
-        }
-
-        if ($request->get('tax_id')) {
-            $query->where('default_tax_id', $request->get('tax_id'));
-        }
-
-        $products = $query->paginate(15)->withQueryString();
-
         return Inertia::render('products/index', [
-            'products' => $products,
-            'filters' => $request->only(['search', 'track_stock', 'low_stock']),
+            'products' => ProductsTable::make($request),
         ]);
     }
 
