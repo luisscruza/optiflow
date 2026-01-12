@@ -15,6 +15,8 @@ export interface TableColumn {
     tooltip?: string;
 }
 
+export type RenderCellFn<T> = (columnKey: string, value: unknown, row: T) => React.ReactNode | undefined;
+
 // ============================================================================
 // Filter Types
 // ============================================================================
@@ -131,6 +133,8 @@ export interface DataTableProps<T = Record<string, unknown>> {
     handlers?: Record<string, (row: T) => void>;
     /** Handler functions for bulk actions */
     bulkHandlers?: Record<string, (selectedIds: (string | number)[]) => void>;
+    /** Custom cell renderer function */
+    renderCell?: RenderCellFn<T>;
 }
 
 // ============================================================================

@@ -8,7 +8,7 @@ import { Badge } from '../../badge';
 import { Checkbox } from '../../checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../tooltip';
-import { type StatusConfig, type TableAction, type TableColumn } from '../types';
+import { type RenderCellFn, type StatusConfig, type TableAction, type TableColumn } from '../types';
 
 import { DataTableRowActions } from './datatable-row-actions';
 
@@ -30,6 +30,7 @@ interface DataTableContentProps<T> {
     rowActions?: (row: T) => React.ReactNode;
     formatCurrency: (value: number) => string;
     onActionClick: (action: TableAction, row: T) => void;
+    renderCell?: RenderCellFn<T>;
 }
 
 export function DataTableContent<T>({
@@ -50,12 +51,30 @@ export function DataTableContent<T>({
     rowActions,
     formatCurrency,
     onActionClick,
+    renderCell,
 }: DataTableContentProps<T>) {
     const renderCellContent = React.useCallback(
         (row: T, column: TableColumn): React.ReactNode => {
             const rowData = row as Record<string, unknown>;
             const value = rowData[column.key];
             const href = rowData[`${column.key}_href`] as string | undefined;
+
+            // Try custom renderer first
+            if (renderCell) {
+                const customContent = renderCell(column.key, value, row);
+                if (customContent !== undefined) {
+                    // If custom renderer returns content, use it
+                    if (href && column.type !== 'actions') {
+                        return (
+                            <Link href={href} className="font-medium text-primary hover:underline">
+                                {customContent}
+                            </Link>
+                        );
+                    }
+                    return customContent;
+                }
+            }
+
             let content: React.ReactNode;
 
             switch (column.type) {
@@ -99,7 +118,7 @@ export function DataTableContent<T>({
 
             return content;
         },
-        [formatCurrency, onActionClick],
+        [formatCurrency, onActionClick, renderCell],
     );
 
     return (

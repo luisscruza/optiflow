@@ -39,6 +39,7 @@ export function DataTable<T = Record<string, unknown>>({
     onAction,
     handlers = {},
     bulkHandlers = {},
+    renderCell,
 }: DataTableProps<T>) {
     const { format: formatCurrency } = useCurrency();
     const { data, columns, filters, appliedFilters, sortBy, sortDirection, rowHref, selectable, bulkActions = [] } = resource;
@@ -187,6 +188,7 @@ export function DataTable<T = Record<string, unknown>>({
                         rowActions={rowActions}
                         formatCurrency={formatCurrency}
                         onActionClick={handleActionClick}
+                        renderCell={renderCell}
                     />
 
                     {/* Pagination */}
