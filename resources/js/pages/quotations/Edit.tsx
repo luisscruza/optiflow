@@ -1117,7 +1117,7 @@ export default function EditQuotation({ quotation, documentSubtypes, customers, 
                                                 )}
                                                 <div className="flex items-center justify-between border-t border-gray-200 pt-3 text-lg font-bold">
                                                     <span className="text-gray-900">Total:</span>
-                                                    <span className="text-blue-600">{formatCurrency(data.total)}</span></span>
+                                                    <span className="text-blue-600">{formatCurrency(data.total)}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1156,6 +1156,7 @@ export default function EditQuotation({ quotation, documentSubtypes, customers, 
                                 </div>
                             </CardContent>
                         </Card>
+
                         {/* Enhanced Actions */}
                         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                             <Button
