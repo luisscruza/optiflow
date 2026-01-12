@@ -58,7 +58,7 @@ final class ProductController extends Controller
         $product = $action->handle(Auth::user(), $request->validated());
 
         return redirect()->route('products.show', $product)
-            ->with('success', 'Product created successfully.');
+            ->with('success', 'Producto creado correctamente.');
     }
 
     /**
@@ -100,7 +100,7 @@ final class ProductController extends Controller
         $product = $action->handle($product, $request->validated());
 
         return redirect()->route('products.show', $product)
-            ->with('success', 'Product updated successfully.');
+            ->with('success', 'Producto actualizado correctamente.');
     }
 
     /**
@@ -114,7 +114,7 @@ final class ProductController extends Controller
             $action->handle($product);
 
             return redirect()->route('products.index')
-                ->with('success', 'Product deleted successfully.');
+                ->with('success', 'Producto eliminado correctamente.');
         } catch (InvalidArgumentException $e) {
             return redirect()->back()
                 ->with('error', $e->getMessage());

@@ -25,6 +25,6 @@ final class QuickProductCreate extends Controller
         session()->flash('newly_created_product', $product);
 
         return redirect()->back()
-            ->with('success', 'Product created successfully.');
+            ->with('success', 'Product creado correctamente.');
     }
 }

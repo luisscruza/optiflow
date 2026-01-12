@@ -42,7 +42,7 @@ final class TaxController extends Controller
             ->orderBy('name')
             ->get()
             ->groupBy('type')
-            ->mapWithKeys(fn ($taxes, $type): array => [
+            ->mapWithKeys(fn($taxes, $type): array => [
                 $type => [
                     'label' => TaxType::tryFrom($type)?->label() ?? $type,
                     'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,
@@ -79,7 +79,7 @@ final class TaxController extends Controller
 
         return redirect()
             ->route('taxes.index')
-            ->with('success', 'Tax created successfully.');
+            ->with('success', 'Impuesto creado correctamente.');
     }
 
     /**
@@ -116,7 +116,7 @@ final class TaxController extends Controller
 
         return redirect()
             ->route('taxes.index')
-            ->with('success', 'Tax updated successfully.');
+            ->with('success', 'Impuesto actualizado correctamente.');
     }
 
     /**
@@ -129,7 +129,7 @@ final class TaxController extends Controller
 
             return redirect()
                 ->route('taxes.index')
-                ->with('success', 'Tax deleted successfully.');
+                ->with('success', 'Impuesto eliminado correctamente.');
         } catch (InvalidArgumentException $e) {
             return redirect()
                 ->route('taxes.index')
