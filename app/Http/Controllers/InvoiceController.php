@@ -185,9 +185,7 @@ final class InvoiceController extends Controller
             'items.taxes',
             'payments.bankAccount',
             'payments.currency',
-            'comments.commentator',
-            'comments.comments.commentator',
-            'comments.comments.comments.commentator',
+            'comments',
             'salesmen',
         ]);
 

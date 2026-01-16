@@ -13,12 +13,14 @@ trait HasComments
 {
     /**
      * Return all comments for this model.
+     * Automatically eager loads nested comments recursively (infinite depth).
      *
      * @return MorphMany<Comment, $this>
      */
     public function comments(): MorphMany
     {
-        return $this->morphMany(Comment::class, 'commentable');
+        return $this->morphMany(Comment::class, 'commentable')
+            ->with(['commentator', 'comments']);
     }
 
     /**

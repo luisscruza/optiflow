@@ -45,7 +45,7 @@ final class WorkflowJobController extends Controller
             'invoice.payments',
             'prescription.patient',
             'prescription.optometrist',
-            'comments.commentator',
+            'comments',
             'media',
         ]);
 

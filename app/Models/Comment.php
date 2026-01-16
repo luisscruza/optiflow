@@ -65,4 +65,16 @@ final class Comment extends Model implements Commentable
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    /**
+     * Override comments relationship to recursively load all nested comments.
+     * This enables infinite depth comment threads.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany<Comment, $this>
+     */
+    public function comments(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(self::class, 'commentable')
+            ->with(['commentator', 'comments']);
+    }
 }
