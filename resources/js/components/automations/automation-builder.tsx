@@ -17,12 +17,13 @@ import '@xyflow/react/dist/style.css';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { GitBranch, Plus, Redo2, Save, Undo2 } from 'lucide-react';
+import { GitBranch, MessageCircle, Plus, Redo2, Save, Undo2 } from 'lucide-react';
 import { NodeInspector } from './node-inspector';
 import { ConditionNode } from './nodes/condition-node';
 import { TelegramNode } from './nodes/telegram-node';
 import { TriggerNode } from './nodes/trigger-node';
 import { WebhookNode } from './nodes/webhook-node';
+import { WhatsappNode } from './nodes/whatsapp-node';
 
 export type AutomationNodeData = {
     label: string;
@@ -55,6 +56,7 @@ const nodeTypes: NodeTypes = {
     trigger: TriggerNode,
     webhook: WebhookNode,
     telegram: TelegramNode,
+    whatsapp: WhatsappNode,
     condition: ConditionNode,
 };
 
@@ -77,10 +79,18 @@ type TelegramBotOption = {
     default_chat_id: string | null;
 };
 
+type WhatsappAccountOption = {
+    id: string;
+    name: string;
+    display_phone_number: string | null;
+    business_account_id: string | null;
+};
+
 interface AutomationBuilderProps {
     workflows: WorkflowOption[];
     templateVariables: TemplateVariable[];
     telegramBots?: TelegramBotOption[];
+    whatsappAccounts?: WhatsappAccountOption[];
     initialNodes?: AutomationNode[];
     initialEdges?: AutomationEdge[];
     onSave: (nodes: AutomationNode[], edges: AutomationEdge[], name: string, isActive: boolean) => void;
@@ -111,6 +121,7 @@ export function AutomationBuilder({
     workflows,
     templateVariables,
     telegramBots = [],
+    whatsappAccounts = [],
     initialNodes,
     initialEdges,
     onSave,
@@ -413,6 +424,27 @@ export function AutomationBuilder({
         setNodes((nds) => [...nds, newNode]);
     }, [recordSnapshot, setNodes]);
 
+    const addWhatsappNode = useCallback(() => {
+        recordSnapshot();
+        const newNode: AutomationNode = {
+            id: `whatsapp-${Date.now()}`,
+            type: 'whatsapp',
+            position: { x: 400, y: 500 },
+            data: {
+                label: 'WhatsApp Message',
+                nodeType: 'whatsapp.send_message',
+                config: {
+                    whatsapp_account_id: '',
+                    action: 'send_message',
+                    to: '',
+                    message: '',
+                    preview_url: false,
+                },
+            },
+        };
+        setNodes((nds) => [...nds, newNode]);
+    }, [recordSnapshot, setNodes]);
+
     const addConditionNode = useCallback(() => {
         recordSnapshot();
         const newNode: AutomationNode = {
@@ -569,6 +601,10 @@ export function AutomationBuilder({
                             <Plus className="mr-1 h-4 w-4" />
                             Telegram
                         </Button>
+                        <Button size="sm" variant="outline" onClick={addWhatsappNode}>
+                            <MessageCircle className="mr-1 h-4 w-4" />
+                            WhatsApp
+                        </Button>
                     </Panel>
 
                     <Panel position="top-right" className="flex items-center gap-3">
@@ -605,6 +641,7 @@ export function AutomationBuilder({
                 workflows={workflows}
                 templateVariables={templateVariables}
                 telegramBots={telegramBots}
+                whatsappAccounts={whatsappAccounts}
                 onUpdateConfig={updateNodeConfig}
                 onDelete={deleteNode}
             />

@@ -28,6 +28,13 @@ type TelegramBotOption = {
     default_chat_id: string | null;
 };
 
+type WhatsappAccountOption = {
+    id: string;
+    name: string;
+    display_phone_number: string | null;
+    business_account_id: string | null;
+};
+
 type Trigger = {
     workflow_id: string;
     workflow_stage_id: string;
@@ -50,6 +57,7 @@ interface Props {
     };
     templateVariables?: TemplateVariable[];
     telegramBots?: TelegramBotOption[];
+    whatsappAccounts?: WhatsappAccountOption[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -73,6 +81,10 @@ function buildInitialNodes(definition: Props['definition'], trigger: Trigger): A
                 case 'telegram.send_message':
                     nodeType = 'telegram';
                     label = 'Telegram Message';
+                    break;
+                case 'whatsapp.send_message':
+                    nodeType = 'whatsapp';
+                    label = 'WhatsApp Message';
                     break;
                 case 'logic.condition':
                     nodeType = 'condition';
@@ -130,7 +142,7 @@ function buildInitialEdges(definition: Props['definition']): AutomationEdge[] {
     }));
 }
 
-export default function AutomationsEdit({ automation, trigger, workflows, definition, templateVariables, telegramBots }: Props) {
+export default function AutomationsEdit({ automation, trigger, workflows, definition, templateVariables, telegramBots, whatsappAccounts }: Props) {
     const initialNodes = buildInitialNodes(definition, trigger);
     const initialEdges = buildInitialEdges(definition);
 
@@ -183,6 +195,7 @@ export default function AutomationsEdit({ automation, trigger, workflows, defini
                     workflows={workflows}
                     templateVariables={templateVariables ?? []}
                     telegramBots={telegramBots ?? []}
+                    whatsappAccounts={whatsappAccounts ?? []}
                     initialNodes={initialNodes}
                     initialEdges={initialEdges}
                     onSave={handleSave}

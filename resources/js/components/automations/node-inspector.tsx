@@ -27,16 +27,32 @@ type TelegramBotOption = {
     default_chat_id: string | null;
 };
 
+type WhatsappAccountOption = {
+    id: string;
+    name: string;
+    display_phone_number: string | null;
+    business_account_id: string | null;
+};
+
 interface NodeInspectorProps {
     node: AutomationNode | null;
     workflows: WorkflowOption[];
     templateVariables: TemplateVariable[];
     telegramBots?: TelegramBotOption[];
+    whatsappAccounts?: WhatsappAccountOption[];
     onUpdateConfig: (nodeId: string, config: Record<string, unknown>) => void;
     onDelete: (nodeId: string) => void;
 }
 
-export function NodeInspector({ node, workflows, templateVariables, telegramBots = [], onUpdateConfig, onDelete }: NodeInspectorProps) {
+export function NodeInspector({
+    node,
+    workflows,
+    templateVariables,
+    telegramBots = [],
+    whatsappAccounts = [],
+    onUpdateConfig,
+    onDelete,
+}: NodeInspectorProps) {
     if (!node) {
         return (
             <div className="w-80 rounded-lg border bg-card p-4">
@@ -61,6 +77,7 @@ export function NodeInspector({ node, workflows, templateVariables, telegramBots
     const isTrigger = node.data.nodeType === 'workflow.stage_entered';
     const isWebhook = node.data.nodeType === 'http.webhook';
     const isTelegram = node.data.nodeType === 'telegram.send_message';
+    const isWhatsapp = node.data.nodeType === 'whatsapp.send_message';
     const isCondition = node.data.nodeType === 'logic.condition';
 
     return (
@@ -77,6 +94,15 @@ export function NodeInspector({ node, workflows, templateVariables, telegramBots
 
                 {isTelegram && (
                     <TelegramConfig node={node} templateVariables={templateVariables} telegramBots={telegramBots} onUpdateConfig={onUpdateConfig} />
+                )}
+
+                {isWhatsapp && (
+                    <WhatsappConfig
+                        node={node}
+                        templateVariables={templateVariables}
+                        whatsappAccounts={whatsappAccounts}
+                        onUpdateConfig={onUpdateConfig}
+                    />
                 )}
 
                 {isCondition && <ConditionConfig node={node} templateVariables={templateVariables} onUpdateConfig={onUpdateConfig} />}
@@ -508,6 +534,275 @@ function ConditionConfig({
                             onClick={() => onUpdateConfig(node.id, { field: v.token })}
                             title={v.description}
                         >
+                            {v.token}
+                        </span>
+                    ))}
+                </div>
+            </div>
+        </>
+    );
+}
+
+function WhatsappConfig({
+    node,
+    templateVariables,
+    whatsappAccounts,
+    onUpdateConfig,
+}: {
+    node: AutomationNode;
+    templateVariables: TemplateVariable[];
+    whatsappAccounts: WhatsappAccountOption[];
+    onUpdateConfig: (nodeId: string, config: Record<string, unknown>) => void;
+}) {
+    type TemplateParam = {
+        name: string;
+        type: string;
+        component: string;
+        example?: string;
+        positional?: boolean;
+        button_index?: number;
+        button_text?: string;
+    };
+
+    type WhatsappTemplate = {
+        name: string;
+        language: string;
+        category?: string;
+        parameter_format?: string;
+        parameters: TemplateParam[];
+    };
+
+    const [templates, setTemplates] = useState<WhatsappTemplate[]>([]);
+    const [loadingTemplates, setLoadingTemplates] = useState(false);
+
+    const selectedAccountId = String(node.data.config.whatsapp_account_id || '');
+    const selectedAccount = whatsappAccounts.find((a) => a.id === selectedAccountId);
+    const action = String(node.data.config.action || 'send_message');
+    const selectedTemplateName = String(node.data.config.template_name || '');
+    const selectedTemplate = templates.find((t) => t.name === selectedTemplateName);
+    const templateParams = (node.data.config.template_params as Record<string, string>) || {};
+
+    const fetchTemplates = async (accountId: string) => {
+        if (!accountId) return;
+
+        setLoadingTemplates(true);
+        try {
+            const response = await fetch(`/whatsapp-accounts/${accountId}/templates`);
+            if (response.ok) {
+                const data = await response.json();
+                setTemplates(data.templates || []);
+            }
+        } catch {
+            console.error('Failed to fetch templates');
+        } finally {
+            setLoadingTemplates(false);
+        }
+    };
+
+    const handleAccountChange = (accountId: string) => {
+        onUpdateConfig(node.id, { whatsapp_account_id: accountId });
+        if (action === 'send_template') {
+            fetchTemplates(accountId);
+        }
+    };
+
+    const handleActionChange = (newAction: string) => {
+        onUpdateConfig(node.id, { action: newAction });
+        if (newAction === 'send_template' && selectedAccountId) {
+            fetchTemplates(selectedAccountId);
+        }
+    };
+
+    const handleTemplateSelect = (templateName: string) => {
+        const template = templates.find((t) => t.name === templateName);
+        onUpdateConfig(node.id, {
+            template_name: templateName,
+            template_language: template?.language || 'es',
+            template_params: {}, // Reset params when template changes
+        });
+    };
+
+    const handleParamChange = (paramName: string, value: string) => {
+        const newParams = { ...templateParams, [paramName]: value };
+        onUpdateConfig(node.id, { template_params: newParams });
+    };
+
+    return (
+        <>
+            <div className="rounded-md border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950">
+                <p className="text-xs font-medium text-green-800 dark:text-green-200">
+                    📱 Envía mensajes por WhatsApp Business Cloud API. Puedes usar variables de plantilla en los campos.
+                </p>
+            </div>
+
+            <div className="space-y-2">
+                <Label>Cuenta de WhatsApp</Label>
+                <Select value={selectedAccountId} onValueChange={handleAccountChange}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar cuenta" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {whatsappAccounts.map((account) => (
+                            <SelectItem key={account.id} value={account.id}>
+                                {account.name} {account.display_phone_number && `(${account.display_phone_number})`}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                {whatsappAccounts.length === 0 && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400">
+                        No hay cuentas configuradas.{' '}
+                        <a href="/whatsapp-accounts" className="underline">
+                            Configura una cuenta
+                        </a>
+                    </p>
+                )}
+            </div>
+
+            <div className="space-y-2">
+                <Label>Acción</Label>
+                <Select value={action} onValueChange={handleActionChange}>
+                    <SelectTrigger>
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="send_message">Enviar mensaje</SelectItem>
+                        <SelectItem value="send_template">Enviar plantilla</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            <div className="space-y-2">
+                <Label>Número de destino (To)</Label>
+                <Input
+                    value={String(node.data.config.to || '')}
+                    onChange={(e) => onUpdateConfig(node.id, { to: e.target.value })}
+                    placeholder="{{contact.phone}} o +1234567890"
+                />
+                <p className="text-xs text-muted-foreground">Número con código de país, sin espacios ni signos</p>
+            </div>
+
+            {action === 'send_message' && (
+                <>
+                    <div className="space-y-2">
+                        <Label>Mensaje</Label>
+                        <Textarea
+                            value={String(node.data.config.message || '')}
+                            onChange={(e) => onUpdateConfig(node.id, { message: e.target.value })}
+                            placeholder="Hola {{contact.name}}, tu cita está confirmada."
+                            rows={4}
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            id="preview_url"
+                            checked={Boolean(node.data.config.preview_url)}
+                            onChange={(e) => onUpdateConfig(node.id, { preview_url: e.target.checked })}
+                            className="h-4 w-4"
+                        />
+                        <Label htmlFor="preview_url" className="cursor-pointer text-sm">
+                            Mostrar vista previa de enlaces
+                        </Label>
+                    </div>
+                </>
+            )}
+
+            {action === 'send_template' && (
+                <>
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <Label>Plantilla</Label>
+                            {selectedAccount?.business_account_id && (
+                                <button
+                                    type="button"
+                                    onClick={() => fetchTemplates(selectedAccountId)}
+                                    className="text-xs text-primary hover:underline"
+                                    disabled={loadingTemplates}
+                                >
+                                    {loadingTemplates ? 'Cargando...' : 'Actualizar'}
+                                </button>
+                            )}
+                        </div>
+                        {templates.length > 0 ? (
+                            <Select value={selectedTemplateName} onValueChange={handleTemplateSelect}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Seleccionar plantilla" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {templates.map((t) => (
+                                        <SelectItem key={`${t.name}-${t.language}`} value={t.name}>
+                                            {t.name} ({t.language})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        ) : (
+                            <Input
+                                value={selectedTemplateName}
+                                onChange={(e) => onUpdateConfig(node.id, { template_name: e.target.value })}
+                                placeholder="nombre_de_plantilla"
+                            />
+                        )}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>Idioma de plantilla</Label>
+                        <Input
+                            value={String(node.data.config.template_language || 'es')}
+                            onChange={(e) => onUpdateConfig(node.id, { template_language: e.target.value })}
+                            placeholder="es"
+                        />
+                        <p className="text-xs text-muted-foreground">Código de idioma: es, en, pt_BR, etc.</p>
+                    </div>
+
+                    {/* Template Parameters */}
+                    {selectedTemplate && selectedTemplate.parameters.length > 0 && (
+                        <div className="space-y-3">
+                            <div className="rounded-md border border-green-200 bg-green-50 p-2 dark:border-green-800 dark:bg-green-950">
+                                <p className="text-xs font-medium text-green-800 dark:text-green-200">
+                                    Parámetros de la plantilla ({selectedTemplate.parameters.length})
+                                </p>
+                            </div>
+
+                            {selectedTemplate.parameters.map((param) => (
+                                <div key={param.name} className="space-y-1">
+                                    <Label className="text-xs">
+                                        {param.component === 'button' ? (
+                                            <>🔗 {param.button_text} - URL param</>
+                                        ) : (
+                                            <>
+                                                {param.component === 'header' ? '📝 Header: ' : '📄 Body: '}
+                                                <span className="font-mono">{`{{${param.name}}}`}</span>
+                                            </>
+                                        )}
+                                    </Label>
+                                    <Input
+                                        value={templateParams[param.name] || ''}
+                                        onChange={(e) => handleParamChange(param.name, e.target.value)}
+                                        placeholder={param.example || `Valor para ${param.name}`}
+                                        className="text-sm"
+                                    />
+                                    {param.example && <p className="text-xs text-muted-foreground">Ej: {param.example}</p>}
+                                </div>
+                            ))}
+
+                            <div className="rounded-md bg-muted/30 p-2">
+                                <p className="text-xs text-muted-foreground">
+                                    💡 Usa variables como <code className="rounded bg-muted px-1">{'{{contact.name}}'}</code> para datos dinámicos
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
+
+            <div className="rounded-md bg-muted/50 p-2">
+                <p className="mb-2 text-xs font-medium">Variables disponibles</p>
+                <div className="flex flex-wrap gap-1">
+                    {templateVariables.slice(0, 6).map((v) => (
+                        <span key={v.token} className="rounded bg-background px-1.5 py-0.5 font-mono text-xs" title={v.description}>
                             {v.token}
                         </span>
                     ))}

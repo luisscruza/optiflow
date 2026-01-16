@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Banknote, Building2, Calculator, ChevronRight, Coins, FileText, Hash, MapPin, Settings, Shield, Users } from 'lucide-react';
+import { Banknote, Building2, Calculator, ChevronRight, Coins, FileText, Hash, MapPin, MessageCircle, Settings, Shield, Users } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
@@ -37,6 +37,11 @@ const configurationSections = [
         title: 'Impuestos',
         icon: Calculator,
         items: [{ title: 'Impuestos', href: '/taxes', icon: Calculator }],
+    },
+    {
+        title: 'Integraciones',
+        icon: MessageCircle,
+        items: [{ title: 'WhatsApp Business', href: '/whatsapp-accounts', icon: MessageCircle }],
     },
 ];
 

@@ -27,10 +27,18 @@ type TelegramBotOption = {
     default_chat_id: string | null;
 };
 
+type WhatsappAccountOption = {
+    id: string;
+    name: string;
+    display_phone_number: string | null;
+    business_account_id: string | null;
+};
+
 interface Props {
     workflows: WorkflowOption[];
     templateVariables?: TemplateVariable[];
     telegramBots?: TelegramBotOption[];
+    whatsappAccounts?: WhatsappAccountOption[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -38,7 +46,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Nueva', href: '/automations/create' },
 ];
 
-export default function AutomationsCreate({ workflows, templateVariables, telegramBots }: Props) {
+export default function AutomationsCreate({ workflows, templateVariables, telegramBots, whatsappAccounts }: Props) {
     const handleSave = (nodes: AutomationNode[], edges: AutomationEdge[], name: string, isActive: boolean) => {
         const triggerNode = nodes.find((n) => n.data.nodeType === 'workflow.stage_entered');
 
@@ -88,6 +96,7 @@ export default function AutomationsCreate({ workflows, templateVariables, telegr
                     workflows={workflows}
                     templateVariables={templateVariables ?? []}
                     telegramBots={telegramBots ?? []}
+                    whatsappAccounts={whatsappAccounts ?? []}
                     onSave={handleSave}
                 />
             </div>

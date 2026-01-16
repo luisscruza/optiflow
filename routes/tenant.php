@@ -44,6 +44,7 @@ use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\StreamInvoicePdfController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\TelegramBotController;
+use App\Http\Controllers\WhatsappAccountController;
 use App\Http\Controllers\WorkflowController;
 use App\Http\Controllers\WorkflowJobController;
 use App\Http\Controllers\WorkflowJobStageController;
@@ -79,7 +80,7 @@ Route::middleware([
     InitializeTenancyBySubdomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function (): void {
-    Route::get('/', fn() => redirect()->route('dashboard'))->name('home');
+    Route::get('/', fn () => redirect()->route('dashboard'))->name('home');
 
     Route::prefix('invitations')->name('invitations.')->group(function (): void {
         Route::get('{token}', [WorkspaceInvitationController::class, 'show'])->name('show');
@@ -173,7 +174,7 @@ Route::middleware([
             Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
             Route::patch('document-subtypes/{documentSubtype}/set-default', SetDefaultDocumentSubtypeController::class)->name('document-subtypes.set-default');
 
-            Route::get('inventory', fn() => Inertia::render('inventory/index'))->name('inventory.index');
+            Route::get('inventory', fn () => Inertia::render('inventory/index'))->name('inventory.index');
 
             Route::resource('stock-adjustments', StockAdjustmentController::class)->only(['index', 'create', 'store', 'show'])->parameters([
                 'stock-adjustments' => 'product',
@@ -223,11 +224,17 @@ Route::middleware([
             Route::get('api/telegram-bots', [TelegramBotController::class, 'list'])->name('telegram-bots.list');
             Route::post('telegram-bots/{telegram_bot}/test', [TelegramBotController::class, 'testMessage'])->name('telegram-bots.test');
 
+            // WhatsApp Accounts
+            Route::resource('whatsapp-accounts', WhatsappAccountController::class)->except(['show']);
+            Route::get('api/whatsapp-accounts', [WhatsappAccountController::class, 'list'])->name('whatsapp-accounts.list');
+            Route::get('whatsapp-accounts/{whatsapp_account}/templates', [WhatsappAccountController::class, 'templates'])->name('whatsapp-accounts.templates');
+            Route::post('whatsapp-accounts/{whatsapp_account}/test', [WhatsappAccountController::class, 'testMessage'])->name('whatsapp-accounts.test');
+
             Route::post('impersonate/{user}', [ImpersonationController::class, 'store']);
             Route::delete('impersonate', [ImpersonationController::class, 'destroy']);
         });
     });
 
-    require __DIR__ . '/settings.php';
-    require __DIR__ . '/auth.php';
+    require __DIR__.'/settings.php';
+    require __DIR__.'/auth.php';
 });
