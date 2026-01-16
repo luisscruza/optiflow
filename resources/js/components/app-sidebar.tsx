@@ -10,7 +10,7 @@ import prescriptions from '@/routes/prescriptions';
 import products from '@/routes/products';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BarChart3, BookOpen, Eye, Folder, Kanban, LayoutGrid, Package, Receipt, RotateCcw, Settings, Users2 } from 'lucide-react';
+import { BarChart3, BookOpen, Eye, Folder, FolderSync,  Kanban, LayoutGrid, Package, Receipt, RotateCcw, Settings, Users2 } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
@@ -126,6 +126,11 @@ export function AppSidebar() {
         },
         ...(can('view configuration')
             ? [
+                {
+                    title: 'Automatizaciones',
+                    href: '/automations',
+                    icon: FolderSync,
+                },
                   {
                       title: 'Configuración',
                       href: '/configuration',

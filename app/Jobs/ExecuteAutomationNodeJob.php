@@ -107,7 +107,13 @@ final class ExecuteAutomationNodeJob implements ShouldQueue
                 $nodeRun->finished_at = now();
                 $nodeRun->save();
 
-                $nextNodes = $this->nextNodeIds($edges, $this->nodeId);
+                // For condition nodes, determine which branch to follow
+                $branch = null;
+                if ($type === 'logic.condition' && $result->success) {
+                    $branch = $result->output['branch'] ?? 'true';
+                }
+
+                $nextNodes = $this->nextNodeIds($edges, $this->nodeId, $branch);
 
                 // Update pending count: one finished, plus newly scheduled.
                 $run->pending_nodes = max(0, (int) $run->pending_nodes - 1);
@@ -170,9 +176,10 @@ final class ExecuteAutomationNodeJob implements ShouldQueue
 
     /**
      * @param  array<int, mixed>  $edges
+     * @param  string|null  $branch  If provided (for condition nodes), filter by sourceHandle
      * @return array<int, string>
      */
-    private function nextNodeIds(array $edges, string $fromNodeId): array
+    private function nextNodeIds(array $edges, string $fromNodeId, ?string $branch = null): array
     {
         $next = [];
 
@@ -184,9 +191,20 @@ final class ExecuteAutomationNodeJob implements ShouldQueue
             $from = $edge['from'] ?? null;
             $to = $edge['to'] ?? null;
 
-            if ($from === $fromNodeId && is_string($to) && $to !== '') {
-                $next[] = $to;
+            if ($from !== $fromNodeId || ! is_string($to) || $to === '') {
+                continue;
             }
+
+            // If a branch is specified (condition node), filter by sourceHandle
+            if ($branch !== null) {
+                $sourceHandle = $edge['sourceHandle'] ?? null;
+                // Only follow the edge if the sourceHandle matches the branch
+                if ($sourceHandle !== $branch) {
+                    continue;
+                }
+            }
+
+            $next[] = $to;
         }
 
         return array_values(array_unique($next));
