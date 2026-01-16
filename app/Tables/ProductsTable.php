@@ -38,12 +38,12 @@ final class ProductsTable extends Table
                 ->cellClassName('font-medium')
                 ->formatUsing(function ($value, Product $product) {
                     if ($product->description) {
-                        return $value . ' • ' . $product->description;
+                        return $value.' • '.$product->description;
                     }
 
                     return $value;
                 })
-                ->cellTooltip(fn(Product $product) => $product->description ? $product->name . ' - ' . $product->description : $product->name),
+                ->cellTooltip(fn (Product $product) => $product->description ? $product->name.' - '.$product->description : $product->name),
 
             TextColumn::make('sku', 'SKU')
                 ->sortable()
@@ -86,7 +86,7 @@ final class ProductsTable extends Table
             TextColumn::make('tax', 'Impuesto')
                 ->formatUsing(function ($value, Product $product) {
                     if ($product->defaultTax) {
-                        return $product->defaultTax->name . ' (' . $product->defaultTax->rate . '%)';
+                        return $product->defaultTax->name.' ('.$product->defaultTax->rate.'%)';
                     }
 
                     return 'Sin impuesto';
@@ -108,7 +108,7 @@ final class ProductsTable extends Table
                         ->icon('package')
                         ->href('/products/{id}')
                         ->permission('view inventory')
-                        ->visibleWhen(fn(Product $product) => $product->track_stock),
+                        ->visibleWhen(fn (Product $product) => $product->track_stock),
 
                     DeleteAction::make()
                         ->href('/products/{id}')

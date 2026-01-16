@@ -44,14 +44,14 @@ final class ContactController extends Controller
 
         return Inertia::render('contacts/create', [
             'identification_types' => collect(IdentificationType::cases())
-                ->map(fn($type): array => [
+                ->map(fn ($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])
                 ->values()
                 ->toArray(),
             'contact_types' => collect(ContactType::cases())
-                ->map(fn($type): array => [
+                ->map(fn ($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])
@@ -104,14 +104,14 @@ final class ContactController extends Controller
         return Inertia::render('contacts/edit', [
             'contact' => $contact,
             'identification_types' => collect(IdentificationType::cases())
-                ->map(fn($type): array => [
+                ->map(fn ($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])
                 ->values()
                 ->toArray(),
             'contact_types' => collect(ContactType::cases())
-                ->map(fn($type): array => [
+                ->map(fn ($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])

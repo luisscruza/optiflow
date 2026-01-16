@@ -273,9 +273,9 @@ final class Invoice extends Model implements Auditable, Commentable
     /**
      * Get the status attribute.
      */
-    protected function amountDue(): \Illuminate\Database\Eloquent\Casts\Attribute
+    protected function amountDue(): Attribute
     {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn (): float|int => max(0, $this->total_amount - $this->payments()->sum('amount')));
+        return Attribute::make(get: fn (): float|int => max(0, $this->total_amount - $this->payments()->sum('amount')));
     }
 
     /**

@@ -43,11 +43,9 @@ final class ContactsTable extends Table
                 ->cellClassName('font-medium')
                 ->cellTooltip(fn (Contact $contact) => $contact->name),
 
-
             TextColumn::make('identification_number', 'RNC o Cédula')
                 ->sortable()
                 ->formatUsing(fn ($value) => $value ?: ''),
-
 
             TextColumn::make('email', 'Email')
                 ->sortable()
@@ -55,7 +53,7 @@ final class ContactsTable extends Table
 
             TextColumn::make('phone_primary', 'Teléfono')
                 ->formatUsing(fn ($value) => Str::of($value)
-                ->replaceMatches('/(\+1|1)?[ -.]?(\d{3})[ -.]?(\d{3})[ -.]?(\d{4})/', '($2) $3-$4')->__toString())
+                    ->replaceMatches('/(\+1|1)?[ -.]?(\d{3})[ -.]?(\d{3})[ -.]?(\d{4})/', '($2) $3-$4')->__toString())
                 ->sortable(),
 
             ActionColumn::make()
