@@ -21,7 +21,7 @@ export function TriggerNode({ data, selected }: NodeProps<AutomationNodeData>) {
 
             {data.config?.stage_id && (
                 <div className="mt-2 rounded bg-amber-200/50 px-2 py-1 text-xs text-amber-700 dark:bg-amber-800/50 dark:text-amber-300">
-                    Stage configurado
+                    Etapa configurada
                 </div>
             )}
 

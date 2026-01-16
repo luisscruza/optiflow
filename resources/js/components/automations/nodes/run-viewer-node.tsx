@@ -1,6 +1,6 @@
-import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
-import { Check, Clock, Loader2, X, Zap, Webhook, MessageCircle, Send, GitBranch } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Handle, Position, type Node, type NodeProps } from '@xyflow/react';
+import { Check, Clock, GitBranch, Loader2, MessageCircle, Send, Webhook, X, Zap } from 'lucide-react';
 
 export interface NodeRunData {
     id: string;
@@ -169,21 +169,13 @@ export function RunViewerNode({ data, selected }: NodeProps<RunViewerNodeData>) 
             } ${colors.border}`}
         >
             {/* Left Handle (input) */}
-            <Handle
-                type="target"
-                position={Position.Left}
-                className={`!h-3 !w-3 !border-2 !border-gray-400 !bg-white dark:!bg-gray-900`}
-            />
+            <Handle type="target" position={Position.Left} className={`!h-3 !w-3 !border-2 !border-gray-400 !bg-white dark:!bg-gray-900`} />
 
             {/* Main Content */}
             <div className="flex items-center gap-2">
-                <div className={`flex h-8 w-8 items-center justify-center rounded-md text-white ${colors.icon}`}>
-                    {getNodeIcon(data.nodeType)}
-                </div>
+                <div className={`flex h-8 w-8 items-center justify-center rounded-md text-white ${colors.icon}`}>{getNodeIcon(data.nodeType)}</div>
                 <div className="flex-1">
-                    <p className={`text-xs font-medium tracking-wide uppercase ${colors.text}`}>
-                        {getNodeLabel(data.nodeType)}
-                    </p>
+                    <p className={`text-xs font-medium tracking-wide uppercase ${colors.text}`}>{getNodeLabel(data.nodeType)}</p>
                     <p className={`text-sm font-semibold ${colors.title}`}>{data.label}</p>
                 </div>
             </div>
@@ -194,11 +186,7 @@ export function RunViewerNode({ data, selected }: NodeProps<RunViewerNodeData>) 
                     {getStatusIcon(status)}
                     {getStatusLabel(status)}
                 </Badge>
-                {hasRun && data.run!.attempts > 1 && (
-                    <span className="text-xs text-muted-foreground">
-                        {data.run!.attempts} intentos
-                    </span>
-                )}
+                {hasRun && data.run!.attempts > 1 && <span className="text-xs text-muted-foreground">{data.run!.attempts} intentos</span>}
             </div>
 
             {/* Error Message */}
@@ -235,11 +223,7 @@ export function RunViewerNode({ data, selected }: NodeProps<RunViewerNodeData>) 
                     />
                 </>
             ) : (
-                <Handle
-                    type="source"
-                    position={Position.Right}
-                    className={`!h-3 !w-3 !border-2 !border-gray-400 !bg-white dark:!bg-gray-900`}
-                />
+                <Handle type="source" position={Position.Right} className={`!h-3 !w-3 !border-2 !border-gray-400 !bg-white dark:!bg-gray-900`} />
             )}
         </div>
     );

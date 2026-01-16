@@ -1,25 +1,18 @@
 import { Head, Link } from '@inertiajs/react';
-import {
-    Background,
-    Controls,
-    MiniMap,
-    ReactFlow,
-    type Edge,
-    type NodeTypes,
-} from '@xyflow/react';
+import { Background, Controls, MiniMap, ReactFlow, type Edge, type NodeTypes } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { ChevronLeft, Clock, History, AlertCircle, CheckCircle2, Loader2, XCircle } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { formatDistanceToNow, format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { AlertCircle, CheckCircle2, ChevronLeft, Clock, History, Loader2, XCircle } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
+import { RunViewerNode, type NodeRunData, type RunViewerNode as RunViewerNodeType } from '@/components/automations/nodes/run-viewer-node';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import { RunViewerNode, type NodeRunData, type RunViewerNode as RunViewerNodeType } from '@/components/automations/nodes/run-viewer-node';
 
 interface EnrichedNode {
     id: string;
@@ -120,9 +113,17 @@ function getStatusIcon(status: string) {
 function getStatusBadge(status: string) {
     switch (status) {
         case 'completed':
-            return <Badge variant="default" className="bg-green-600">Completado</Badge>;
+            return (
+                <Badge variant="default" className="bg-green-600">
+                    Completado
+                </Badge>
+            );
         case 'running':
-            return <Badge variant="default" className="bg-blue-600">En ejecución</Badge>;
+            return (
+                <Badge variant="default" className="bg-blue-600">
+                    En ejecución
+                </Badge>
+            );
         case 'failed':
             return <Badge variant="destructive">Fallido</Badge>;
         case 'pending':
@@ -213,9 +214,7 @@ export default function AutomationRunShow({ automation, run, definition }: Props
                             <div className="flex items-center gap-2">
                                 {getStatusIcon(run.status)}
                                 <div>
-                                    <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                                        Ejecución de {automation.name}
-                                    </h1>
+                                    <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">Ejecución de {automation.name}</h1>
                                     <p className="text-sm text-muted-foreground">
                                         Versión {run.version_number ?? '-'} • {formatDate(run.started_at)}
                                     </p>
@@ -270,7 +269,7 @@ export default function AutomationRunShow({ automation, run, definition }: Props
                     </div>
 
                     {/* Inspector Panel */}
-                    <div className="w-96 border-l bg-background overflow-y-auto">
+                    <div className="w-96 overflow-y-auto border-l bg-background">
                         <Tabs defaultValue="run" className="h-full">
                             <div className="border-b px-4 py-2">
                                 <TabsList className="w-full">
@@ -288,9 +287,7 @@ export default function AutomationRunShow({ automation, run, definition }: Props
                                 <Card>
                                     <CardHeader className="pb-3">
                                         <CardTitle className="text-base">Detalles de la ejecución</CardTitle>
-                                        <CardDescription>
-                                            Información general sobre esta ejecución.
-                                        </CardDescription>
+                                        <CardDescription>Información general sobre esta ejecución.</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div>
@@ -306,7 +303,7 @@ export default function AutomationRunShow({ automation, run, definition }: Props
                                         {run.subject_type && (
                                             <div>
                                                 <p className="text-sm font-medium text-muted-foreground">Sujeto</p>
-                                                <p className="mt-1 text-sm font-mono">
+                                                <p className="mt-1 font-mono text-sm">
                                                     {run.subject_type} #{run.subject_id}
                                                 </p>
                                             </div>
@@ -343,12 +340,8 @@ export default function AutomationRunShow({ automation, run, definition }: Props
                                 {selectedNode ? (
                                     <Card>
                                         <CardHeader className="pb-3">
-                                            <CardTitle className="text-base">
-                                                {getNodeLabel(selectedNode.type)}
-                                            </CardTitle>
-                                            <CardDescription>
-                                                {selectedNode.id}
-                                            </CardDescription>
+                                            <CardTitle className="text-base">{getNodeLabel(selectedNode.type)}</CardTitle>
+                                            <CardDescription>{selectedNode.id}</CardDescription>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
                                             {selectedNodeRun ? (
@@ -356,11 +349,15 @@ export default function AutomationRunShow({ automation, run, definition }: Props
                                                     <div>
                                                         <p className="text-sm font-medium text-muted-foreground">Estado</p>
                                                         <div className="mt-1">
-                                                            <Badge variant={
-                                                                selectedNodeRun.status === 'completed' ? 'default' :
-                                                                selectedNodeRun.status === 'failed' ? 'destructive' :
-                                                                'secondary'
-                                                            }>
+                                                            <Badge
+                                                                variant={
+                                                                    selectedNodeRun.status === 'completed'
+                                                                        ? 'default'
+                                                                        : selectedNodeRun.status === 'failed'
+                                                                          ? 'destructive'
+                                                                          : 'secondary'
+                                                                }
+                                                            >
                                                                 {selectedNodeRun.status}
                                                             </Badge>
                                                         </div>

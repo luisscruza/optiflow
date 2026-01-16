@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Clock, History } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { ChevronLeft, ChevronRight, Clock, History } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,9 +38,17 @@ interface Props {
 function getStatusBadge(status: string) {
     switch (status) {
         case 'completed':
-            return <Badge variant="default" className="bg-green-600">Completado</Badge>;
+            return (
+                <Badge variant="default" className="bg-green-600">
+                    Completado
+                </Badge>
+            );
         case 'running':
-            return <Badge variant="default" className="bg-blue-600">En ejecución</Badge>;
+            return (
+                <Badge variant="default" className="bg-blue-600">
+                    En ejecución
+                </Badge>
+            );
         case 'failed':
             return <Badge variant="destructive">Fallido</Badge>;
         case 'pending':
@@ -103,18 +111,14 @@ export default function AutomationRunsIndex({ automation, runs }: Props) {
                 <Card>
                     <CardHeader>
                         <CardTitle>Ejecuciones</CardTitle>
-                        <CardDescription>
-                            Listado de las ejecuciones de esta automatización ordenadas por fecha.
-                        </CardDescription>
+                        <CardDescription>Listado de las ejecuciones de esta automatización ordenadas por fecha.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {runs.data.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-12 text-center">
                                 <Clock className="mb-4 h-12 w-12 text-muted-foreground" />
                                 <h3 className="mb-2 text-lg font-semibold">Sin ejecuciones</h3>
-                                <p className="text-muted-foreground">
-                                    Esta automatización aún no se ha ejecutado.
-                                </p>
+                                <p className="text-muted-foreground">Esta automatización aún no se ha ejecutado.</p>
                             </div>
                         ) : (
                             <>
@@ -134,23 +138,13 @@ export default function AutomationRunsIndex({ automation, runs }: Props) {
                                         {runs.data.map((run) => (
                                             <TableRow key={run.id}>
                                                 <TableCell>{getStatusBadge(run.status)}</TableCell>
-                                                <TableCell className="font-medium">
-                                                    {formatEventKey(run.trigger_event_key)}
-                                                </TableCell>
+                                                <TableCell className="font-medium">{formatEventKey(run.trigger_event_key)}</TableCell>
                                                 <TableCell>v{run.version_number ?? '-'}</TableCell>
                                                 <TableCell>
-                                                    {run.pending_nodes > 0 ? (
-                                                        <Badge variant="outline">{run.pending_nodes}</Badge>
-                                                    ) : (
-                                                        '-'
-                                                    )}
+                                                    {run.pending_nodes > 0 ? <Badge variant="outline">{run.pending_nodes}</Badge> : '-'}
                                                 </TableCell>
-                                                <TableCell className="text-muted-foreground">
-                                                    {formatDate(run.started_at)}
-                                                </TableCell>
-                                                <TableCell className="text-muted-foreground">
-                                                    {formatDate(run.finished_at)}
-                                                </TableCell>
+                                                <TableCell className="text-muted-foreground">{formatDate(run.started_at)}</TableCell>
+                                                <TableCell className="text-muted-foreground">{formatDate(run.finished_at)}</TableCell>
                                                 <TableCell className="text-right">
                                                     <Link href={`/automations/${automation.id}/runs/${run.id}`}>
                                                         <Button variant="ghost" size="sm">
