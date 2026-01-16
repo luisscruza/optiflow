@@ -156,6 +156,7 @@ final class WorkflowController extends Controller
                 ->get(),
             'invoices' => Inertia::lazy(fn () => $request->getContactId()
                 ? Invoice::query()
+                    ->where('contact_id', $request->getContactId())
                     ->with('contact')
                     ->orderBy('created_at', 'desc')
                     ->limit(50)

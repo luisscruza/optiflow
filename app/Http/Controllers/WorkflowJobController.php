@@ -52,7 +52,6 @@ final class WorkflowJobController extends Controller
         return Inertia::render('workflow-jobs/show', [
             'workflow' => $workflow,
             'job' => $job,
-            // Defer events loading - they're not critical for initial render
             'events' => Inertia::defer(fn () => $job->events()
                 ->with(['user', 'fromStage', 'toStage'])
                 ->orderBy('created_at', 'desc')

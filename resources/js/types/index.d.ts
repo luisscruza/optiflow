@@ -533,6 +533,7 @@ export interface Invoice {
     amount_due: number;
     document_number: string;
     issue_date: string;
+    human_readable_issue_date: string;
     due_date: string;
     total_amount: number;
     subtotal_amount: number;

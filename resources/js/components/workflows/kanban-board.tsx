@@ -22,6 +22,7 @@ import {
 
 import { DynamicFields } from './dynamic-fields';
 import { KanbanColumn } from './kanban-column';
+import { useCurrency } from '@/utils/currency';
 
 interface KanbanBoardProps {
     workflow: Workflow;
@@ -33,6 +34,7 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [], prescriptions = [] }: KanbanBoardProps) {
     const { can } = usePermissions();
+    const { format: formatCurrency } = useCurrency();
     const [draggedJob, setDraggedJob] = useState<WorkflowJob | null>(null);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
@@ -284,7 +286,7 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
                                 <SearchableSelect
                                     options={invoices.map((invoice) => ({
                                         value: invoice.id.toString(),
-                                        label: `#${invoice.document_number} - $${Number(invoice.total_amount).toLocaleString('es-DO')}`,
+                                        label: `#${invoice.document_number} - ${formatCurrency(invoice.total_amount)} - Emitida el ${invoice.human_readable_issue_date}`,
                                     }))}
                                     value={newJobInvoiceId}
                                     onValueChange={setNewJobInvoiceId}

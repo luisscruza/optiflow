@@ -12,6 +12,7 @@ use App\Contracts\Commentable;
 use App\Enums\InvoiceStatus;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -99,6 +100,7 @@ final class Invoice extends Model implements Auditable, Commentable
 
     protected $appends = [
         'amount_due',
+        'human_readable_issue_date',
     ];
 
     /**
@@ -182,6 +184,13 @@ final class Invoice extends Model implements Auditable, Commentable
         } else {
             $this->update(['status' => InvoiceStatus::PendingPayment->value]);
         }
+    }
+
+    public function humanReadableIssueDate(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => $this->issue_date->translatedFormat('d F Y'),
+        );
     }
 
     /**
