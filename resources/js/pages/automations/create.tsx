@@ -48,11 +48,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function AutomationsCreate({ workflows, templateVariables, telegramBots, whatsappAccounts }: Props) {
     const handleSave = (nodes: AutomationNode[], edges: AutomationEdge[], name: string, isActive: boolean) => {
-        const triggerNode = nodes.find((n) => n.data.nodeType === 'workflow.stage_entered');
+        const triggerNode = nodes.find((n) => ['workflow.stage_entered', 'invoice.created', 'invoice.updated'].includes(n.data.nodeType));
 
         router.post('/automations', {
             name,
             is_active: isActive,
+            trigger_type: triggerNode?.data.nodeType ?? 'workflow.stage_entered',
             trigger_workflow_id: triggerNode?.data.config.workflow_id ?? '',
             trigger_stage_id: triggerNode?.data.config.stage_id ?? '',
             nodes: nodes.map((n) => ({

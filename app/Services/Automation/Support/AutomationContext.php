@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Automation\Support;
 
+use App\Models\Contact;
+use App\Models\Invoice;
 use App\Models\User;
 use App\Models\WorkflowJob;
 use App\Models\WorkflowStage;
@@ -11,10 +13,12 @@ use App\Models\WorkflowStage;
 final readonly class AutomationContext
 {
     public function __construct(
-        public WorkflowJob $job,
+        public ?WorkflowJob $job,
         public ?WorkflowStage $fromStage,
         public ?WorkflowStage $toStage,
         public ?User $actor,
+        public ?Invoice $invoice = null,
+        public ?Contact $contact = null,
     ) {}
 
     /**
@@ -25,8 +29,16 @@ final readonly class AutomationContext
      */
     public function toTemplateData(array $input = []): array
     {
-        $contact = $this->job->relationLoaded('contact') ? $this->job->contact : null;
-        $invoice = $this->job->relationLoaded('invoice') ? $this->job->invoice : null;
+        $contact = $this->contact;
+        $invoice = $this->invoice;
+
+        if (! $contact && $this->job?->relationLoaded('contact')) {
+            $contact = $this->job->contact;
+        }
+
+        if (! $invoice && $this->job?->relationLoaded('invoice')) {
+            $invoice = $this->job->invoice;
+        }
 
         $contactNumber = null;
         if ($contact) {
@@ -38,7 +50,7 @@ final readonly class AutomationContext
 
         return [
             'input' => $input,
-            'job' => [
+            'job' => $this->job ? [
                 'id' => $this->job->id,
                 'workflow_id' => $this->job->workflow_id,
                 'workflow_stage_id' => $this->job->workflow_stage_id,
@@ -49,7 +61,7 @@ final readonly class AutomationContext
                 'due_date' => optional($this->job->due_date)?->toISOString(),
                 'metadata' => $this->job->metadata,
                 'workspace_id' => $this->job->workspace_id,
-            ],
+            ] : null,
             'contact' => $contact ? [
                 'id' => $contact->id,
                 'name' => $contact->name,

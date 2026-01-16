@@ -31,13 +31,13 @@ final class AutomationController extends Controller
             ->with(['triggers'])
             ->orderByDesc('created_at')
             ->get()
-            ->map(fn (Automation $automation): array => [
+            ->map(fn(Automation $automation): array => [
                 'id' => $automation->id,
                 'name' => $automation->name,
                 'is_active' => (bool) $automation->is_active,
                 'published_version' => (int) $automation->published_version,
                 'created_at' => optional($automation->created_at)?->toISOString(),
-                'triggers' => $automation->triggers->map(fn (AutomationTrigger $trigger): array => [
+                'triggers' => $automation->triggers->map(fn(AutomationTrigger $trigger): array => [
                     'id' => $trigger->id,
                     'event_key' => $trigger->event_key,
                     'workflow_id' => $trigger->workflow_id,
@@ -54,13 +54,13 @@ final class AutomationController extends Controller
     public function create(): Response
     {
         $workflows = Workflow::query()
-            ->with(['stages' => fn ($query) => $query->orderBy('position')])
+            ->with(['stages' => fn($query) => $query->orderBy('position')])
             ->orderBy('name')
             ->get()
-            ->map(fn (Workflow $workflow): array => [
+            ->map(fn(Workflow $workflow): array => [
                 'id' => $workflow->id,
                 'name' => $workflow->name,
-                'stages' => $workflow->stages->map(fn ($stage): array => [
+                'stages' => $workflow->stages->map(fn($stage): array => [
                     'id' => $stage->id,
                     'name' => $stage->name,
                 ])->all(),
@@ -93,9 +93,7 @@ final class AutomationController extends Controller
     public function store(StoreAutomationRequest $request): RedirectResponse
     {
         $validated = $request->validated();
-
-        $workflowId = $validated['trigger_workflow_id'];
-        $stageId = $validated['trigger_stage_id'];
+        $triggerType = $validated['trigger_type'];
 
         $automation = Automation::query()->create([
             'workspace_id' => Auth::user()->current_workspace_id,
@@ -113,10 +111,37 @@ final class AutomationController extends Controller
             'created_by' => Auth::id(),
         ]);
 
+        $triggerNode = collect($definition['nodes'] ?? [])->first(function ($node): bool {
+            return is_array($node) && in_array(($node['type'] ?? null), ['workflow.stage_entered', 'invoice.created', 'invoice.updated'], true);
+        });
+
+        $triggerNodeType = is_array($triggerNode) && is_string($triggerNode['type'] ?? null)
+            ? (string) $triggerNode['type']
+            : $triggerType;
+
+        $triggerConfig = is_array($triggerNode) ? ($triggerNode['config'] ?? []) : [];
+        if (! is_array($triggerConfig)) {
+            $triggerConfig = [];
+        }
+
+        $eventKey = match ($triggerNodeType) {
+            'workflow.stage_entered' => 'workflow.job.stage_changed',
+            'invoice.created' => 'invoice.created',
+            'invoice.updated' => 'invoice.updated',
+            default => 'workflow.job.stage_changed',
+        };
+
+        $workflowId = null;
+        $stageId = null;
+        if ($triggerNodeType === 'workflow.stage_entered') {
+            $workflowId = $triggerConfig['workflow_id'] ?? ($validated['trigger_workflow_id'] ?? null);
+            $stageId = $triggerConfig['stage_id'] ?? ($validated['trigger_stage_id'] ?? null);
+        }
+
         AutomationTrigger::query()->create([
             'automation_id' => $automation->id,
             'workspace_id' => Auth::user()->current_workspace_id,
-            'event_key' => 'workflow.job.stage_changed',
+            'event_key' => $eventKey,
             'workflow_id' => $workflowId,
             'workflow_stage_id' => $stageId,
             'is_active' => true,
@@ -141,13 +166,13 @@ final class AutomationController extends Controller
         $definition = $version?->definition ?? [];
 
         $workflows = Workflow::query()
-            ->with(['stages' => fn ($query) => $query->orderBy('position')])
+            ->with(['stages' => fn($query) => $query->orderBy('position')])
             ->orderBy('name')
             ->get()
-            ->map(fn (Workflow $workflow): array => [
+            ->map(fn(Workflow $workflow): array => [
                 'id' => $workflow->id,
                 'name' => $workflow->name,
-                'stages' => $workflow->stages->map(fn ($stage): array => [
+                'stages' => $workflow->stages->map(fn($stage): array => [
                     'id' => $stage->id,
                     'name' => $stage->name,
                 ])->all(),
@@ -191,9 +216,7 @@ final class AutomationController extends Controller
     public function update(UpdateAutomationRequest $request, Automation $automation): RedirectResponse
     {
         $validated = $request->validated();
-
-        $workflowId = $validated['trigger_workflow_id'];
-        $stageId = $validated['trigger_stage_id'];
+        $triggerType = $validated['trigger_type'];
 
         $automation->update([
             'name' => $validated['name'],
@@ -213,8 +236,36 @@ final class AutomationController extends Controller
 
         $trigger = $automation->triggers()->first();
 
+        $triggerNode = collect($definition['nodes'] ?? [])->first(function ($node): bool {
+            return is_array($node) && in_array(($node['type'] ?? null), ['workflow.stage_entered', 'invoice.created', 'invoice.updated'], true);
+        });
+
+        $triggerNodeType = is_array($triggerNode) && is_string($triggerNode['type'] ?? null)
+            ? (string) $triggerNode['type']
+            : $triggerType;
+
+        $triggerConfig = is_array($triggerNode) ? ($triggerNode['config'] ?? []) : [];
+        if (! is_array($triggerConfig)) {
+            $triggerConfig = [];
+        }
+
+        $eventKey = match ($triggerNodeType) {
+            'workflow.stage_entered' => 'workflow.job.stage_changed',
+            'invoice.created' => 'invoice.created',
+            'invoice.updated' => 'invoice.updated',
+            default => 'workflow.job.stage_changed',
+        };
+
+        $workflowId = null;
+        $stageId = null;
+        if ($triggerNodeType === 'workflow.stage_entered') {
+            $workflowId = $triggerConfig['workflow_id'] ?? ($validated['trigger_workflow_id'] ?? null);
+            $stageId = $triggerConfig['stage_id'] ?? ($validated['trigger_stage_id'] ?? null);
+        }
+
         if ($trigger) {
             $trigger->update([
+                'event_key' => $eventKey,
                 'workflow_id' => $workflowId,
                 'workflow_stage_id' => $stageId,
                 'is_active' => true,
@@ -223,7 +274,7 @@ final class AutomationController extends Controller
             AutomationTrigger::query()->create([
                 'automation_id' => $automation->id,
                 'workspace_id' => Auth::user()->current_workspace_id,
-                'event_key' => 'workflow.job.stage_changed',
+                'event_key' => $eventKey,
                 'workflow_id' => $workflowId,
                 'workflow_stage_id' => $stageId,
                 'is_active' => true,
@@ -254,7 +305,7 @@ final class AutomationController extends Controller
             ->orderByDesc('created_at')
             ->limit(20)
             ->get()
-            ->map(fn (WorkflowJob $job): array => [
+            ->map(fn(WorkflowJob $job): array => [
                 'id' => $job->id,
                 'title' => $job->title,
                 'contact_name' => $job->contact?->name ?? '—',
@@ -320,8 +371,8 @@ final class AutomationController extends Controller
         }
 
         // Find the trigger node (starting point)
-        $currentNodes = array_filter($nodes, fn ($n) => $n['type'] === 'workflow.stage_entered');
-        $queue = array_map(fn ($n) => $n['id'], $currentNodes);
+        $currentNodes = array_filter($nodes, fn($n) => $n['type'] === 'workflow.stage_entered');
+        $queue = array_map(fn($n) => $n['id'], $currentNodes);
 
         $visited = [];
         $input = [];
@@ -504,7 +555,7 @@ final class AutomationController extends Controller
 
             $previous = 't1';
             foreach ($validated['actions'] as $index => $action) {
-                $nodeId = 'a'.($index + 1);
+                $nodeId = 'a' . ($index + 1);
 
                 $nodes[] = [
                     'id' => $nodeId,

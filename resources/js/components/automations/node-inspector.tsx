@@ -41,6 +41,7 @@ interface NodeInspectorProps {
     telegramBots?: TelegramBotOption[];
     whatsappAccounts?: WhatsappAccountOption[];
     onUpdateConfig: (nodeId: string, config: Record<string, unknown>) => void;
+    onUpdateNodeType: (nodeId: string, nodeType: string) => void;
     onDelete: (nodeId: string) => void;
 }
 
@@ -51,6 +52,7 @@ export function NodeInspector({
     telegramBots = [],
     whatsappAccounts = [],
     onUpdateConfig,
+    onUpdateNodeType,
     onDelete,
 }: NodeInspectorProps) {
     if (!node) {
@@ -74,7 +76,7 @@ export function NodeInspector({
         );
     }
 
-    const isTrigger = node.data.nodeType === 'workflow.stage_entered';
+    const isTrigger = ['workflow.stage_entered', 'invoice.created', 'invoice.updated'].includes(node.data.nodeType);
     const isWebhook = node.data.nodeType === 'http.webhook';
     const isTelegram = node.data.nodeType === 'telegram.send_message';
     const isWhatsapp = node.data.nodeType === 'whatsapp.send_message';
@@ -88,7 +90,14 @@ export function NodeInspector({
             </div>
 
             <div className="space-y-4 p-4">
-                {isTrigger && <TriggerConfig node={node} workflows={workflows} onUpdateConfig={onUpdateConfig} />}
+                {isTrigger && (
+                    <TriggerConfig
+                        node={node}
+                        workflows={workflows}
+                        onUpdateConfig={onUpdateConfig}
+                        onUpdateNodeType={onUpdateNodeType}
+                    />
+                )}
 
                 {isWebhook && <WebhookConfig node={node} templateVariables={templateVariables} onUpdateConfig={onUpdateConfig} />}
 
@@ -122,11 +131,16 @@ function TriggerConfig({
     node,
     workflows,
     onUpdateConfig,
+    onUpdateNodeType,
 }: {
     node: AutomationNode;
     workflows: WorkflowOption[];
     onUpdateConfig: (nodeId: string, config: Record<string, unknown>) => void;
+    onUpdateNodeType: (nodeId: string, nodeType: string) => void;
 }) {
+    const triggerType = node.data.nodeType;
+    const isWorkflowTrigger = triggerType === 'workflow.stage_entered';
+
     const selectedWorkflow = useMemo(() => {
         return workflows.find((w) => w.id === node.data.config.workflow_id);
     }, [workflows, node.data.config.workflow_id]);
@@ -134,45 +148,74 @@ function TriggerConfig({
     return (
         <>
             <div className="space-y-2">
-                <Label>Flujo de trabajo</Label>
+                <Label>Tipo de disparador</Label>
                 <Select
-                    value={String(node.data.config.workflow_id || '')}
+                    value={triggerType}
                     onValueChange={(v) => {
-                        onUpdateConfig(node.id, { workflow_id: v, stage_id: '' });
+                        onUpdateNodeType(node.id, v);
                     }}
                 >
                     <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar flujo" />
+                        <SelectValue placeholder="Seleccionar tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                        {workflows.map((w) => (
-                            <SelectItem key={w.id} value={w.id}>
-                                {w.name}
-                            </SelectItem>
-                        ))}
+                        <SelectItem value="workflow.stage_entered">Cuando entra a etapa</SelectItem>
+                        <SelectItem value="invoice.created">Factura creada</SelectItem>
+                        <SelectItem value="invoice.updated">Factura actualizada</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
 
-            <div className="space-y-2">
-                <Label>Etapa (cuando entra a...)</Label>
-                <Select
-                    value={String(node.data.config.stage_id || '')}
-                    onValueChange={(v) => onUpdateConfig(node.id, { stage_id: v })}
-                    disabled={!selectedWorkflow}
-                >
-                    <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar etapa" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {(selectedWorkflow?.stages ?? []).map((s) => (
-                            <SelectItem key={s.id} value={s.id}>
-                                {s.name}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
+            {!isWorkflowTrigger && (
+                <div className="rounded border bg-muted/50 p-3 text-sm text-muted-foreground">
+                    Este disparador se ejecuta automáticamente cuando ocurre el evento seleccionado en una factura.
+                </div>
+            )}
+
+            {isWorkflowTrigger && (
+                <>
+                    <div className="space-y-2">
+                        <Label>Flujo de trabajo</Label>
+                        <Select
+                            value={String(node.data.config.workflow_id || '')}
+                            onValueChange={(v) => {
+                                onUpdateConfig(node.id, { workflow_id: v, stage_id: '' });
+                            }}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Seleccionar flujo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {workflows.map((w) => (
+                                    <SelectItem key={w.id} value={w.id}>
+                                        {w.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>Etapa (cuando entra a...)</Label>
+                        <Select
+                            value={String(node.data.config.stage_id || '')}
+                            onValueChange={(v) => onUpdateConfig(node.id, { stage_id: v })}
+                            disabled={!selectedWorkflow}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Seleccionar etapa" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {(selectedWorkflow?.stages ?? []).map((s) => (
+                                    <SelectItem key={s.id} value={s.id}>
+                                        {s.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </>
+            )}
         </>
     );
 }

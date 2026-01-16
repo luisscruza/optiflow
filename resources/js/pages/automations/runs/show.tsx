@@ -65,7 +65,7 @@ function getNodeLabel(nodeType: string): string {
         case 'workflow.stage_entered':
             return 'Proceso cambio de etapa';
         case 'http.webhook':
-            return 'HTTP Webhook';
+            return 'HTTP Request';
         case 'telegram.send_message':
             return 'Telegram Message';
         case 'whatsapp.send_message':

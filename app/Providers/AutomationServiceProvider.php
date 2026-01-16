@@ -36,5 +36,13 @@ final class AutomationServiceProvider extends ServiceProvider
         Event::listen('workflow.job.stage_changed', function (array $payload) use ($engine): void {
             $engine->handleWorkflowJobStageChanged($payload);
         });
+
+        Event::listen('invoice.created', function (array $payload) use ($engine): void {
+            $engine->handleInvoiceCreated($payload);
+        });
+
+        Event::listen('invoice.updated', function (array $payload) use ($engine): void {
+            $engine->handleInvoiceUpdated($payload);
+        });
     }
 }

@@ -390,7 +390,7 @@ export function AutomationBuilder({
             type: 'webhook',
             position: { x: 400, y: 200 },
             data: {
-                label: 'HTTP Webhook',
+                label: 'HTTP Request',
                 nodeType: 'http.webhook',
                 config: {
                     url: '',
@@ -499,6 +499,40 @@ export function AutomationBuilder({
         [recordSnapshot, setNodes],
     );
 
+    const updateNodeType = useCallback(
+        (nodeId: string, nodeType: string) => {
+            recordSnapshot();
+            setNodes((nds) =>
+                nds.map((node) => {
+                    if (node.id === nodeId) {
+                        return {
+                            ...node,
+                            data: {
+                                ...node.data,
+                                nodeType,
+                            },
+                        };
+                    }
+                    return node;
+                }),
+            );
+
+            setSelectedNode((prev) => {
+                if (prev && prev.id === nodeId) {
+                    return {
+                        ...prev,
+                        data: {
+                            ...prev.data,
+                            nodeType,
+                        },
+                    };
+                }
+                return prev;
+            });
+        },
+        [recordSnapshot, setNodes],
+    );
+
     const deleteNode = useCallback(
         (nodeId: string) => {
             recordSnapshot();
@@ -595,7 +629,7 @@ export function AutomationBuilder({
                         </Button>
                         <Button size="sm" variant="outline" onClick={addWebhookNode}>
                             <Plus className="mr-1 h-4 w-4" />
-                            Webhook
+                            Petición HTTP
                         </Button>
                         <Button size="sm" variant="outline" onClick={addTelegramNode}>
                             <Plus className="mr-1 h-4 w-4" />
@@ -614,7 +648,7 @@ export function AutomationBuilder({
                         <Button size="sm" variant="outline" onClick={redo} disabled={!canRedo}>
                             <Redo2 className="h-4 w-4" />
                         </Button>
-                        <div className="flex items-center gap-2 rounded-md bg-background px-3 py-1.5 border">
+                        <div className="flex items-center gap-2 rounded-md border bg-background px-3 py-1.5">
                             <input
                                 type="text"
                                 value={name}
@@ -623,7 +657,7 @@ export function AutomationBuilder({
                                 className="w-48 border-none bg-transparent text-sm outline-none"
                             />
                         </div>
-                        <label className="flex cursor-pointer items-center gap-2 rounded-md bg-background px-3 py-1.5 text-sm border">
+                        <label className="flex cursor-pointer items-center gap-2 rounded-md border bg-background px-3 py-1.5 text-sm">
                             <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4" />
                             Activa
                         </label>
@@ -643,6 +677,7 @@ export function AutomationBuilder({
                 telegramBots={telegramBots}
                 whatsappAccounts={whatsappAccounts}
                 onUpdateConfig={updateNodeConfig}
+                onUpdateNodeType={updateNodeType}
                 onDelete={deleteNode}
             />
         </div>

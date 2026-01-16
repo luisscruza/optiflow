@@ -6,6 +6,7 @@ namespace App\Jobs;
 
 use App\Models\AutomationNodeRun;
 use App\Models\AutomationRun;
+use App\Models\Invoice;
 use App\Models\WorkflowJob;
 use App\Models\WorkflowStage;
 use App\Services\Automation\NodeRunners\NodeRunnerRegistry;
@@ -76,18 +77,12 @@ final class ExecuteAutomationNodeJob implements ShouldQueue
                 return;
             }
 
-            /** @var WorkflowJob $job */
-            $job = WorkflowJob::query()
-                ->withoutWorkspaceScope()
-                ->with(['contact', 'invoice'])
-                ->findOrFail($run->subject_id);
+            $context = $this->buildContextForRun($run);
+            if (! $context instanceof AutomationContext) {
+                $this->markRunFailed($run, "Unsupported subject type [{$run->subject_type}].");
 
-            $context = new AutomationContext(
-                job: $job,
-                fromStage: null,
-                toStage: WorkflowStage::query()->find($job->workflow_stage_id),
-                actor: Auth::user(),
-            );
+                return;
+            }
 
             $nodeRun = $existing ?? new AutomationNodeRun();
             $nodeRun->automation_run_id = $run->id;
@@ -153,6 +148,45 @@ final class ExecuteAutomationNodeJob implements ShouldQueue
                 $this->markRunFailed($run, $e->getMessage());
             }
         });
+    }
+
+    private function buildContextForRun(AutomationRun $run): ?AutomationContext
+    {
+        if ($run->subject_type === 'workflow_job') {
+            /** @var WorkflowJob $job */
+            $job = WorkflowJob::query()
+                ->withoutWorkspaceScope()
+                ->with(['contact', 'invoice'])
+                ->findOrFail($run->subject_id);
+
+            return new AutomationContext(
+                job: $job,
+                fromStage: null,
+                toStage: WorkflowStage::query()->find($job->workflow_stage_id),
+                actor: Auth::user(),
+                invoice: $job->invoice,
+                contact: $job->contact,
+            );
+        }
+
+        if ($run->subject_type === 'invoice') {
+            /** @var Invoice $invoice */
+            $invoice = Invoice::query()
+                ->withoutWorkspaceScope()
+                ->with(['contact'])
+                ->findOrFail($run->subject_id);
+
+            return new AutomationContext(
+                job: null,
+                fromStage: null,
+                toStage: null,
+                actor: Auth::user(),
+                invoice: $invoice,
+                contact: $invoice->contact,
+            );
+        }
+
+        return null;
     }
 
     /**

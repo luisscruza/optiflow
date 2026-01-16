@@ -78,6 +78,14 @@ function buildInitialNodes(definition: Props['definition'], trigger: Trigger): A
                     nodeType = 'trigger';
                     label = 'Proceso cambio de etapa';
                     break;
+                case 'invoice.created':
+                    nodeType = 'trigger';
+                    label = 'Factura creada';
+                    break;
+                case 'invoice.updated':
+                    nodeType = 'trigger';
+                    label = 'Factura actualizada';
+                    break;
                 case 'telegram.send_message':
                     nodeType = 'telegram';
                     label = 'Telegram Message';
@@ -93,7 +101,7 @@ function buildInitialNodes(definition: Props['definition'], trigger: Trigger): A
                 case 'http.webhook':
                 default:
                     nodeType = 'webhook';
-                    label = 'HTTP Webhook';
+                    label = 'HTTP Request';
                     break;
             }
 
@@ -147,11 +155,12 @@ export default function AutomationsEdit({ automation, trigger, workflows, defini
     const initialEdges = buildInitialEdges(definition);
 
     const handleSave = (nodes: AutomationNode[], edges: AutomationEdge[], name: string, isActive: boolean) => {
-        const triggerNode = nodes.find((n) => n.data.nodeType === 'workflow.stage_entered');
+        const triggerNode = nodes.find((n) => ['workflow.stage_entered', 'invoice.created', 'invoice.updated'].includes(n.data.nodeType));
 
         router.patch(`/automations/${automation.id}`, {
             name,
             is_active: isActive,
+            trigger_type: triggerNode?.data.nodeType ?? 'workflow.stage_entered',
             trigger_workflow_id: triggerNode?.data.config.workflow_id ?? '',
             trigger_stage_id: triggerNode?.data.config.stage_id ?? '',
             nodes: nodes.map((n) => ({

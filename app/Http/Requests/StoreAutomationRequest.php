@@ -22,8 +22,10 @@ class StoreAutomationRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'is_active' => ['required', 'boolean'],
 
-            'trigger_workflow_id' => ['required', 'uuid', 'exists:workflows,id'],
-            'trigger_stage_id' => ['required', 'uuid', 'exists:workflow_stages,id'],
+            'trigger_type' => ['required', 'string', 'in:workflow.stage_entered,invoice.created,invoice.updated'],
+
+            'trigger_workflow_id' => ['required_if:trigger_type,workflow.stage_entered', 'nullable', 'uuid', 'exists:workflows,id'],
+            'trigger_stage_id' => ['required_if:trigger_type,workflow.stage_entered', 'nullable', 'uuid', 'exists:workflow_stages,id'],
 
             // Visual builder format (nodes + edges)
             'nodes' => ['sometimes', 'array'],
@@ -68,8 +70,9 @@ class StoreAutomationRequest extends FormRequest
     {
         return [
             'name.required' => 'El nombre es obligatorio.',
-            'trigger_workflow_id.required' => 'El flujo de trabajo es obligatorio.',
-            'trigger_stage_id.required' => 'La etapa es obligatoria.',
+            'trigger_type.required' => 'El tipo de disparador es obligatorio.',
+            'trigger_workflow_id.required_if' => 'El flujo de trabajo es obligatorio.',
+            'trigger_stage_id.required_if' => 'La etapa es obligatoria.',
             'actions.required' => 'Debes agregar al menos una acción.',
             'actions.*.config.url.required' => 'El URL del webhook es obligatorio.',
         ];
