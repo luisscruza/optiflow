@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AutomationController;
+use App\Http\Controllers\AutomationRunController;
 use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\BulkDownloadInvoicePdfController;
 use App\Http\Controllers\BulkDownloadQuotationPdfController;
@@ -218,6 +219,10 @@ Route::middleware([
             Route::resource('automations', AutomationController::class)->only(['index', 'create', 'store', 'edit', 'update']);
             Route::get('api/automations/test-data', [AutomationController::class, 'testData'])->name('automations.test-data');
             Route::post('automations/{automation}/test', [AutomationController::class, 'runTest'])->name('automations.test');
+
+            // Automation Runs
+            Route::get('automations/{automation}/runs', [AutomationRunController::class, 'index'])->name('automations.runs.index');
+            Route::get('automations/{automation}/runs/{run}', [AutomationRunController::class, 'show'])->name('automations.runs.show');
 
             // Telegram Bots
             Route::resource('telegram-bots', TelegramBotController::class)->except(['show']);

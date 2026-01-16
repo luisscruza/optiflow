@@ -105,7 +105,7 @@ const defaultNodes: AutomationNode[] = [
         type: 'trigger',
         position: { x: 100, y: 200 },
         data: {
-            label: 'Stage Entered',
+            label: 'Proceso cambio de etapa',
             nodeType: 'workflow.stage_entered',
             config: {
                 workflow_id: '',

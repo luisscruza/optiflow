@@ -76,7 +76,7 @@ function buildInitialNodes(definition: Props['definition'], trigger: Trigger): A
             switch (n.type) {
                 case 'workflow.stage_entered':
                     nodeType = 'trigger';
-                    label = 'Stage Entered';
+                    label = 'Proceso cambio de etapa';
                     break;
                 case 'telegram.send_message':
                     nodeType = 'telegram';
@@ -117,7 +117,7 @@ function buildInitialNodes(definition: Props['definition'], trigger: Trigger): A
         type: 'trigger',
         position: { x: 100, y: 200 },
         data: {
-            label: 'Stage Entered',
+            label: 'Proceso cambio de etapa',
             nodeType: 'workflow.stage_entered',
             config: {
                 workflow_id: trigger?.workflow_id ?? '',

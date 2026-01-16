@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Plus, Workflow as WorkflowIcon } from 'lucide-react';
+import { History, Plus, Workflow as WorkflowIcon } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -92,11 +92,18 @@ export default function AutomationsIndex({ automations }: Props) {
                                 <CardContent className="space-y-3">
                                     <div className="text-sm text-muted-foreground">Disparadores: {automation.triggers.length}</div>
 
-                                    <Link href={`/automations/${automation.id}/edit`} className="block">
-                                        <Button variant="outline" className="w-full">
-                                            Editar
-                                        </Button>
-                                    </Link>
+                                    <div className="flex gap-2">
+                                        <Link href={`/automations/${automation.id}/edit`} className="flex-1">
+                                            <Button variant="outline" className="w-full">
+                                                Editar
+                                            </Button>
+                                        </Link>
+                                        <Link href={`/automations/${automation.id}/runs`}>
+                                            <Button variant="ghost" size="icon" title="Ver historial">
+                                                <History className="h-4 w-4" />
+                                            </Button>
+                                        </Link>
+                                    </div>
                                 </CardContent>
                             </Card>
                         ))}
