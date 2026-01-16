@@ -614,7 +614,7 @@ export function AutomationBuilder({
                         <Button size="sm" variant="outline" onClick={redo} disabled={!canRedo}>
                             <Redo2 className="h-4 w-4" />
                         </Button>
-                        <div className="flex items-center gap-2 rounded-md bg-background px-3 py-1.5">
+                        <div className="flex items-center gap-2 rounded-md bg-background px-3 py-1.5 border">
                             <input
                                 type="text"
                                 value={name}
@@ -623,7 +623,7 @@ export function AutomationBuilder({
                                 className="w-48 border-none bg-transparent text-sm outline-none"
                             />
                         </div>
-                        <label className="flex cursor-pointer items-center gap-2 rounded-md bg-background px-3 py-1.5 text-sm">
+                        <label className="flex cursor-pointer items-center gap-2 rounded-md bg-background px-3 py-1.5 text-sm border">
                             <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4" />
                             Activa
                         </label>
