@@ -14,6 +14,7 @@ use App\Models\WhatsappAccount;
 use App\Models\Workflow;
 use App\Models\WorkflowJob;
 use App\Services\Automation\NodeRunners\NodeRunnerRegistry;
+use App\Services\Automation\NodeTypes\NodeTypeRegistry;
 use App\Services\Automation\Support\AutomationContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -81,11 +82,7 @@ final class AutomationController extends Controller
             'workflows' => $workflows,
             'telegramBots' => $telegramBots,
             'whatsappAccounts' => $whatsappAccounts,
-            'nodeTypes' => [
-                ['type' => 'workflow.stage_entered', 'label' => 'Cuando entra a etapa'],
-                ['type' => 'http.webhook', 'label' => 'Webhook HTTP'],
-                ['type' => 'telegram.send_message', 'label' => 'Telegram'],
-            ],
+            'nodeTypeRegistry' => app(NodeTypeRegistry::class)->toGroupedArray(),
             'templateVariables' => $this->templateVariables(),
         ]);
     }
@@ -111,8 +108,12 @@ final class AutomationController extends Controller
             'created_by' => Auth::id(),
         ]);
 
-        $triggerNode = collect($definition['nodes'] ?? [])->first(function ($node): bool {
-            return is_array($node) && in_array(($node['type'] ?? null), ['workflow.stage_entered', 'invoice.created', 'invoice.updated'], true);
+        $nodeTypeRegistry = app(NodeTypeRegistry::class);
+
+        $triggerNode = collect($definition['nodes'] ?? [])->first(function ($node) use ($nodeTypeRegistry): bool {
+            $type = $node['type'] ?? null;
+
+            return is_array($node) && is_string($type) && $nodeTypeRegistry->get($type)?->category === 'trigger';
         });
 
         $triggerNodeType = is_array($triggerNode) && is_string($triggerNode['type'] ?? null)
@@ -124,12 +125,7 @@ final class AutomationController extends Controller
             $triggerConfig = [];
         }
 
-        $eventKey = match ($triggerNodeType) {
-            'workflow.stage_entered' => 'workflow.job.stage_changed',
-            'invoice.created' => 'invoice.created',
-            'invoice.updated' => 'invoice.updated',
-            default => 'workflow.job.stage_changed',
-        };
+        $eventKey = $nodeTypeRegistry->getEventKeyForTrigger($triggerNodeType) ?? 'workflow.job.stage_changed';
 
         $workflowId = null;
         $stageId = null;
@@ -204,11 +200,7 @@ final class AutomationController extends Controller
             'workflows' => $workflows,
             'telegramBots' => $telegramBots,
             'whatsappAccounts' => $whatsappAccounts,
-            'nodeTypes' => [
-                ['type' => 'workflow.stage_entered', 'label' => 'Cuando entra a etapa'],
-                ['type' => 'http.webhook', 'label' => 'Webhook HTTP'],
-                ['type' => 'telegram.send_message', 'label' => 'Telegram'],
-            ],
+            'nodeTypeRegistry' => app(NodeTypeRegistry::class)->toGroupedArray(),
             'templateVariables' => $this->templateVariables(),
         ]);
     }
@@ -236,8 +228,12 @@ final class AutomationController extends Controller
 
         $trigger = $automation->triggers()->first();
 
-        $triggerNode = collect($definition['nodes'] ?? [])->first(function ($node): bool {
-            return is_array($node) && in_array(($node['type'] ?? null), ['workflow.stage_entered', 'invoice.created', 'invoice.updated'], true);
+        $nodeTypeRegistry = app(NodeTypeRegistry::class);
+
+        $triggerNode = collect($definition['nodes'] ?? [])->first(function ($node) use ($nodeTypeRegistry): bool {
+            $type = $node['type'] ?? null;
+
+            return is_array($node) && is_string($type) && $nodeTypeRegistry->get($type)?->category === 'trigger';
         });
 
         $triggerNodeType = is_array($triggerNode) && is_string($triggerNode['type'] ?? null)
@@ -249,12 +245,7 @@ final class AutomationController extends Controller
             $triggerConfig = [];
         }
 
-        $eventKey = match ($triggerNodeType) {
-            'workflow.stage_entered' => 'workflow.job.stage_changed',
-            'invoice.created' => 'invoice.created',
-            'invoice.updated' => 'invoice.updated',
-            default => 'workflow.job.stage_changed',
-        };
+        $eventKey = $nodeTypeRegistry->getEventKeyForTrigger($triggerNodeType) ?? 'workflow.job.stage_changed';
 
         $workflowId = null;
         $stageId = null;

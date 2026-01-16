@@ -14,16 +14,20 @@ import {
     type NodeTypes,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import * as LucideIcons from 'lucide-react';
+import { Plus, Redo2, Save, Undo2 } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { GitBranch, MessageCircle, Plus, Redo2, Save, Undo2 } from 'lucide-react';
+import { AutomationProvider } from './automation-context';
+import { NodeCatalogDrawer } from './node-catalog-drawer';
 import { NodeInspector } from './node-inspector';
 import { ConditionNode } from './nodes/condition-node';
 import { TelegramNode } from './nodes/telegram-node';
 import { TriggerNode } from './nodes/trigger-node';
 import { WebhookNode } from './nodes/webhook-node';
 import { WhatsappNode } from './nodes/whatsapp-node';
+import { getNodeType, type NodeTypeRegistry } from './registry';
 
 export type AutomationNodeData = {
     label: string;
@@ -91,6 +95,7 @@ interface AutomationBuilderProps {
     templateVariables: TemplateVariable[];
     telegramBots?: TelegramBotOption[];
     whatsappAccounts?: WhatsappAccountOption[];
+    nodeTypeRegistry: NodeTypeRegistry;
     initialNodes?: AutomationNode[];
     initialEdges?: AutomationEdge[];
     onSave: (nodes: AutomationNode[], edges: AutomationEdge[], name: string, isActive: boolean) => void;
@@ -99,29 +104,39 @@ interface AutomationBuilderProps {
     isSaving?: boolean;
 }
 
-const defaultNodes: AutomationNode[] = [
-    {
+function getDefaultTriggerNode(registry: NodeTypeRegistry): AutomationNode {
+    const triggerDef = getNodeType(registry, 'workflow.stage_entered');
+    return {
         id: 'trigger-1',
         type: 'trigger',
         position: { x: 100, y: 200 },
         data: {
-            label: 'Proceso cambio de etapa',
+            label: triggerDef?.label ?? 'Cambio de etapa',
             nodeType: 'workflow.stage_entered',
-            config: {
+            config: triggerDef?.defaultConfig ?? {
                 workflow_id: '',
                 stage_id: '',
             },
         },
-    },
-];
+    };
+}
 
 const defaultEdges: AutomationEdge[] = [];
+
+/**
+ * Get icon component from Lucide by name.
+ */
+function getIconComponent(iconName: string): React.ComponentType<{ className?: string }> {
+    const Icon = (LucideIcons as Record<string, React.ComponentType<{ className?: string }>>)[iconName];
+    return Icon ?? LucideIcons.Plus;
+}
 
 export function AutomationBuilder({
     workflows,
     templateVariables,
     telegramBots = [],
     whatsappAccounts = [],
+    nodeTypeRegistry,
     initialNodes,
     initialEdges,
     onSave,
@@ -129,11 +144,13 @@ export function AutomationBuilder({
     automationIsActive = true,
     isSaving = false,
 }: AutomationBuilderProps) {
+    const defaultNodes = useMemo(() => [getDefaultTriggerNode(nodeTypeRegistry)], [nodeTypeRegistry]);
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes ?? defaultNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges ?? defaultEdges);
     const [selectedNode, setSelectedNode] = useState<AutomationNode | null>(null);
     const [name, setName] = useState(automationName);
     const [isActive, setIsActive] = useState(automationIsActive);
+    const [isCatalogOpen, setIsCatalogOpen] = useState(false);
     const [clipboard, setClipboard] = useState<ClipboardPayload | null>(null);
     const pasteCountRef = useRef(0);
     const canvasRef = useRef<HTMLDivElement | null>(null);
@@ -383,86 +400,27 @@ export function AutomationBuilder({
         [copySelectionToClipboard, pasteClipboard, redo, undo],
     );
 
-    const addWebhookNode = useCallback(() => {
-        recordSnapshot();
-        const newNode: AutomationNode = {
-            id: `webhook-${Date.now()}`,
-            type: 'webhook',
-            position: { x: 400, y: 200 },
-            data: {
-                label: 'HTTP Request',
-                nodeType: 'http.webhook',
-                config: {
-                    url: '',
-                    method: 'POST',
-                    headers: {},
-                    body: {},
-                },
-            },
-        };
-        setNodes((nds) => [...nds, newNode]);
-    }, [recordSnapshot, setNodes]);
+    // Dynamic node creation based on registry
+    const addNodeByType = useCallback(
+        (nodeTypeKey: string) => {
+            const definition = getNodeType(nodeTypeRegistry, nodeTypeKey);
+            if (!definition) return;
 
-    const addTelegramNode = useCallback(() => {
-        recordSnapshot();
-        const newNode: AutomationNode = {
-            id: `telegram-${Date.now()}`,
-            type: 'telegram',
-            position: { x: 400, y: 350 },
-            data: {
-                label: 'Telegram Message',
-                nodeType: 'telegram.send_message',
-                config: {
-                    bot_token: '',
-                    chat_id: '',
-                    message: '',
-                    parse_mode: 'HTML',
-                    disable_notification: false,
+            recordSnapshot();
+            const newNode: AutomationNode = {
+                id: `${definition.reactNodeType}-${Date.now()}`,
+                type: definition.reactNodeType,
+                position: { x: 400, y: 200 + Math.random() * 100 },
+                data: {
+                    label: definition.label,
+                    nodeType: definition.key,
+                    config: { ...definition.defaultConfig },
                 },
-            },
-        };
-        setNodes((nds) => [...nds, newNode]);
-    }, [recordSnapshot, setNodes]);
-
-    const addWhatsappNode = useCallback(() => {
-        recordSnapshot();
-        const newNode: AutomationNode = {
-            id: `whatsapp-${Date.now()}`,
-            type: 'whatsapp',
-            position: { x: 400, y: 500 },
-            data: {
-                label: 'WhatsApp Message',
-                nodeType: 'whatsapp.send_message',
-                config: {
-                    whatsapp_account_id: '',
-                    action: 'send_message',
-                    to: '',
-                    message: '',
-                    preview_url: false,
-                },
-            },
-        };
-        setNodes((nds) => [...nds, newNode]);
-    }, [recordSnapshot, setNodes]);
-
-    const addConditionNode = useCallback(() => {
-        recordSnapshot();
-        const newNode: AutomationNode = {
-            id: `condition-${Date.now()}`,
-            type: 'condition',
-            position: { x: 400, y: 200 },
-            data: {
-                label: 'Condición',
-                nodeType: 'logic.condition',
-                config: {
-                    field: '',
-                    operator: 'equals',
-                    value: '',
-                },
-            },
-        };
-        setNodes((nds) => [...nds, newNode]);
-    }, [recordSnapshot, setNodes]);
+            };
+            setNodes((nds) => [...nds, newNode]);
+        },
+        [nodeTypeRegistry, recordSnapshot, setNodes],
+    );
 
     const updateNodeConfig = useCallback(
         (nodeId: string, config: Record<string, unknown>) => {
@@ -591,95 +549,96 @@ export function AutomationBuilder({
     );
 
     return (
-        <div className="flex h-[700px] w-full gap-4">
-            {/* Canvas */}
-            <div
-                ref={canvasRef}
-                className="relative flex-1 rounded-lg border bg-muted/30"
-                tabIndex={0}
-                onKeyDown={onKeyDown}
-                onMouseDown={() => canvasRef.current?.focus()}
-            >
-                <ReactFlow
-                    nodes={nodes}
-                    edges={edges}
-                    onNodesChange={handleNodesChange}
-                    onEdgesChange={handleEdgesChange}
-                    onConnect={onConnect}
-                    onNodeClick={onNodeClick}
-                    onPaneClick={onPaneClick}
-                    nodeTypes={nodeTypes}
-                    fitView
-                    snapToGrid
-                    snapGrid={[15, 15]}
-                    defaultEdgeOptions={{
-                        markerEnd: { type: MarkerType.ArrowClosed },
-                        style: { strokeWidth: 2 },
-                        animated: true,
-                    }}
+        <AutomationProvider nodeTypeRegistry={nodeTypeRegistry}>
+            <div className="flex h-[700px] w-full gap-4">
+                {/* Canvas */}
+                <div
+                    ref={canvasRef}
+                    className="relative flex-1 rounded-lg border bg-muted/30"
+                    tabIndex={0}
+                    onKeyDown={onKeyDown}
+                    onMouseDown={() => canvasRef.current?.focus()}
                 >
-                    <Background gap={15} />
-                    <Controls />
-                    <MiniMap />
+                    <ReactFlow
+                        nodes={nodes}
+                        edges={edges}
+                        onNodesChange={handleNodesChange}
+                        onEdgesChange={handleEdgesChange}
+                        onConnect={onConnect}
+                        onNodeClick={onNodeClick}
+                        onPaneClick={onPaneClick}
+                        nodeTypes={nodeTypes}
+                        fitView
+                        snapToGrid
+                        snapGrid={[15, 15]}
+                        defaultEdgeOptions={{
+                            markerEnd: { type: MarkerType.ArrowClosed },
+                            style: { strokeWidth: 2 },
+                            animated: true,
+                        }}
+                    >
+                        <Background gap={15} />
+                        <Controls />
+                        <MiniMap />
 
-                    <Panel position="top-left" className="flex gap-2">
-                        <Button size="sm" variant="outline" onClick={addConditionNode}>
-                            <GitBranch className="mr-1 h-4 w-4" />
-                            Condición
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={addWebhookNode}>
-                            <Plus className="mr-1 h-4 w-4" />
-                            Petición HTTP
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={addTelegramNode}>
-                            <Plus className="mr-1 h-4 w-4" />
-                            Telegram
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={addWhatsappNode}>
-                            <MessageCircle className="mr-1 h-4 w-4" />
-                            WhatsApp
-                        </Button>
-                    </Panel>
+                        <Panel position="top-left" className="flex flex-wrap gap-2">
+                            <Button size="sm" variant="default" onClick={() => setIsCatalogOpen(true)}>
+                                <Plus className="mr-1 h-4 w-4" />
+                                Añadir nodo
+                            </Button>
+                        </Panel>
 
-                    <Panel position="top-right" className="flex items-center gap-3">
-                        <Button size="sm" variant="outline" onClick={undo} disabled={!canUndo}>
-                            <Undo2 className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={redo} disabled={!canRedo}>
-                            <Redo2 className="h-4 w-4" />
-                        </Button>
-                        <div className="flex items-center gap-2 rounded-md border bg-background px-3 py-1.5">
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                placeholder="Nombre de la automatización"
-                                className="w-48 border-none bg-transparent text-sm outline-none"
-                            />
-                        </div>
-                        <label className="flex cursor-pointer items-center gap-2 rounded-md border bg-background px-3 py-1.5 text-sm">
-                            <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4" />
-                            Activa
-                        </label>
-                        <Button size="sm" onClick={handleSave} disabled={isSaving || !name.trim()}>
-                            <Save className="mr-1 h-4 w-4" />
-                            {isSaving ? 'Guardando...' : 'Guardar'}
-                        </Button>
-                    </Panel>
-                </ReactFlow>
+                        <Panel position="top-right" className="flex items-center gap-3">
+                            <Button size="sm" variant="outline" onClick={undo} disabled={!canUndo}>
+                                <Undo2 className="h-4 w-4" />
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={redo} disabled={!canRedo}>
+                                <Redo2 className="h-4 w-4" />
+                            </Button>
+                            <div className="flex items-center gap-2 rounded-md border bg-background px-3 py-1.5">
+                                <input
+                                    type="text"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    placeholder="Nombre de la automatización"
+                                    className="w-48 border-none bg-transparent text-sm outline-none"
+                                />
+                            </div>
+                            <label className="flex cursor-pointer items-center gap-2 rounded-md border bg-background px-3 py-1.5 text-sm">
+                                <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4" />
+                                Activa
+                            </label>
+                            <Button size="sm" onClick={handleSave} disabled={isSaving || !name.trim()}>
+                                <Save className="mr-1 h-4 w-4" />
+                                {isSaving ? 'Guardando...' : 'Guardar'}
+                            </Button>
+                        </Panel>
+                    </ReactFlow>
+                </div>
+
+                {/* Inspector Panel */}
+                <NodeInspector
+                    node={selectedNode}
+                    workflows={workflows}
+                    templateVariables={templateVariables}
+                    telegramBots={telegramBots}
+                    whatsappAccounts={whatsappAccounts}
+                    nodeTypeRegistry={nodeTypeRegistry}
+                    onUpdateConfig={updateNodeConfig}
+                    onUpdateNodeType={updateNodeType}
+                    onDelete={deleteNode}
+                />
+
+                {/* Node Catalog Drawer */}
+                <NodeCatalogDrawer
+                    open={isCatalogOpen}
+                    onOpenChange={setIsCatalogOpen}
+                    onSelectNodeType={(nodeTypeKey) => {
+                        addNodeByType(nodeTypeKey);
+                        setIsCatalogOpen(false);
+                    }}
+                />
             </div>
-
-            {/* Inspector Panel */}
-            <NodeInspector
-                node={selectedNode}
-                workflows={workflows}
-                templateVariables={templateVariables}
-                telegramBots={telegramBots}
-                whatsappAccounts={whatsappAccounts}
-                onUpdateConfig={updateNodeConfig}
-                onUpdateNodeType={updateNodeType}
-                onDelete={deleteNode}
-            />
-        </div>
+        </AutomationProvider>
     );
 }

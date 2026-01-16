@@ -1,12 +1,14 @@
-import { Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import type { AutomationNode } from './automation-builder';
+import { getGroupedOutputSchema, getNodeType, isTriggerType, type NodeTypeRegistry } from './registry';
 
 type WorkflowOption = {
     id: string;
@@ -40,6 +42,7 @@ interface NodeInspectorProps {
     templateVariables: TemplateVariable[];
     telegramBots?: TelegramBotOption[];
     whatsappAccounts?: WhatsappAccountOption[];
+    nodeTypeRegistry: NodeTypeRegistry;
     onUpdateConfig: (nodeId: string, config: Record<string, unknown>) => void;
     onUpdateNodeType: (nodeId: string, nodeType: string) => void;
     onDelete: (nodeId: string) => void;
@@ -51,6 +54,7 @@ export function NodeInspector({
     templateVariables,
     telegramBots = [],
     whatsappAccounts = [],
+    nodeTypeRegistry,
     onUpdateConfig,
     onUpdateNodeType,
     onDelete,
@@ -76,36 +80,37 @@ export function NodeInspector({
         );
     }
 
-    const isTrigger = ['workflow.stage_entered', 'invoice.created', 'invoice.updated'].includes(node.data.nodeType);
-    const isWebhook = node.data.nodeType === 'http.webhook';
-    const isTelegram = node.data.nodeType === 'telegram.send_message';
-    const isWhatsapp = node.data.nodeType === 'whatsapp.send_message';
-    const isCondition = node.data.nodeType === 'logic.condition';
+    const nodeTypeDef = getNodeType(nodeTypeRegistry, node.data.nodeType);
+    const isTrigger = isTriggerType(nodeTypeRegistry, node.data.nodeType);
+    const inspectorComponent = nodeTypeDef?.inspectorComponent;
 
     return (
         <div className="w-80 overflow-y-auto rounded-lg border bg-card">
             <div className="flex items-center justify-between border-b p-3">
-                <h3 className="font-semibold">{node.data.label}</h3>
+                <h3 className="font-semibold">{nodeTypeDef?.label ?? node.data.label}</h3>
                 <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">{node.data.nodeType}</span>
             </div>
 
             <div className="space-y-4 p-4">
-                {isTrigger && (
+                {inspectorComponent === 'TriggerConfig' && (
                     <TriggerConfig
                         node={node}
                         workflows={workflows}
+                        nodeTypeRegistry={nodeTypeRegistry}
                         onUpdateConfig={onUpdateConfig}
                         onUpdateNodeType={onUpdateNodeType}
                     />
                 )}
 
-                {isWebhook && <WebhookConfig node={node} templateVariables={templateVariables} onUpdateConfig={onUpdateConfig} />}
+                {inspectorComponent === 'WebhookConfig' && (
+                    <WebhookConfig node={node} templateVariables={templateVariables} onUpdateConfig={onUpdateConfig} />
+                )}
 
-                {isTelegram && (
+                {inspectorComponent === 'TelegramConfig' && (
                     <TelegramConfig node={node} templateVariables={templateVariables} telegramBots={telegramBots} onUpdateConfig={onUpdateConfig} />
                 )}
 
-                {isWhatsapp && (
+                {inspectorComponent === 'WhatsappConfig' && (
                     <WhatsappConfig
                         node={node}
                         templateVariables={templateVariables}
@@ -114,7 +119,9 @@ export function NodeInspector({
                     />
                 )}
 
-                {isCondition && <ConditionConfig node={node} templateVariables={templateVariables} onUpdateConfig={onUpdateConfig} />}
+                {inspectorComponent === 'ConditionConfig' && (
+                    <ConditionConfig node={node} templateVariables={templateVariables} onUpdateConfig={onUpdateConfig} />
+                )}
 
                 {!isTrigger && (
                     <Button variant="destructive" size="sm" className="w-full" onClick={() => onDelete(node.id)}>
@@ -122,6 +129,9 @@ export function NodeInspector({
                         Eliminar nodo
                     </Button>
                 )}
+
+                {/* Output Schema Panel */}
+                <OutputSchemaPanel nodeType={node.data.nodeType} nodeTypeRegistry={nodeTypeRegistry} />
             </div>
         </div>
     );
@@ -130,16 +140,26 @@ export function NodeInspector({
 function TriggerConfig({
     node,
     workflows,
+    nodeTypeRegistry,
     onUpdateConfig,
     onUpdateNodeType,
 }: {
     node: AutomationNode;
     workflows: WorkflowOption[];
+    nodeTypeRegistry: NodeTypeRegistry;
     onUpdateConfig: (nodeId: string, config: Record<string, unknown>) => void;
     onUpdateNodeType: (nodeId: string, nodeType: string) => void;
 }) {
     const triggerType = node.data.nodeType;
     const isWorkflowTrigger = triggerType === 'workflow.stage_entered';
+
+    // Get all trigger types from the registry
+    const triggerOptions = useMemo(() => {
+        return Object.values(nodeTypeRegistry.triggers).map((t) => ({
+            value: t.key,
+            label: t.label,
+        }));
+    }, [nodeTypeRegistry]);
 
     const selectedWorkflow = useMemo(() => {
         return workflows.find((w) => w.id === node.data.config.workflow_id);
@@ -159,9 +179,11 @@ function TriggerConfig({
                         <SelectValue placeholder="Seleccionar tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="workflow.stage_entered">Cuando entra a etapa</SelectItem>
-                        <SelectItem value="invoice.created">Factura creada</SelectItem>
-                        <SelectItem value="invoice.updated">Factura actualizada</SelectItem>
+                        {triggerOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                            </SelectItem>
+                        ))}
                     </SelectContent>
                 </Select>
             </div>
@@ -852,5 +874,96 @@ function WhatsappConfig({
                 </div>
             </div>
         </>
+    );
+}
+
+/**
+ * Panel that displays the output schema for a node.
+ */
+function OutputSchemaPanel({ nodeType, nodeTypeRegistry }: { nodeType: string; nodeTypeRegistry: NodeTypeRegistry }) {
+    const [isOpen, setIsOpen] = useState(true);
+    const groupedSchema = useMemo(() => getGroupedOutputSchema(nodeTypeRegistry, nodeType), [nodeTypeRegistry, nodeType]);
+
+    if (groupedSchema.size === 0) {
+        return null;
+    }
+
+    return (
+        <div className="mt-4 border-t pt-4">
+            <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+                <CollapsibleTrigger className="flex w-full items-center justify-between text-sm font-medium">
+                    <span>📤 Datos de salida</span>
+                    {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-3 space-y-2">
+                    <p className="text-xs text-muted-foreground">Estos datos estarán disponibles para los nodos siguientes:</p>
+                    <div className="max-h-[300px] space-y-2 overflow-y-auto">
+                        {Array.from(groupedSchema.entries()).map(([key, group]) => (
+                            <OutputSchemaGroup key={key} name={key} group={group} />
+                        ))}
+                    </div>
+                </CollapsibleContent>
+            </Collapsible>
+        </div>
+    );
+}
+
+function OutputSchemaGroup({
+    name,
+    group,
+}: {
+    name: string;
+    group: { type: string; description: string; children: { key: string; type: string; description: string }[] };
+}) {
+    const [isOpen, setIsOpen] = useState(false);
+    const hasChildren = group.children.length > 0;
+
+    const typeColors: Record<string, string> = {
+        string: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+        number: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+        boolean: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
+        object: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300',
+        array: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300',
+        mixed: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+    };
+
+    if (!hasChildren) {
+        return (
+            <div className="rounded border bg-muted/30 p-2">
+                <div className="flex items-center justify-between">
+                    <code className="text-xs font-medium">{`{{${name}}}`}</code>
+                    <span className={`rounded px-1.5 py-0.5 text-[10px] ${typeColors[group.type] ?? typeColors.mixed}`}>{group.type}</span>
+                </div>
+                {group.description && <p className="mt-1 text-xs text-muted-foreground">{group.description}</p>}
+            </div>
+        );
+    }
+
+    return (
+        <Collapsible open={isOpen} onOpenChange={setIsOpen} className="rounded border bg-muted/30">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-2">
+                <div className="flex items-center gap-2">
+                    {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                    <code className="text-xs font-medium">{name}</code>
+                </div>
+                <span className={`rounded px-1.5 py-0.5 text-[10px] ${typeColors.object}`}>object</span>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="border-t px-2 pb-2">
+                {group.description && <p className="py-1 text-xs text-muted-foreground">{group.description}</p>}
+                <div className="space-y-1">
+                    {group.children.map((child) => (
+                        <div key={child.key} className="flex items-start justify-between rounded bg-background/50 px-2 py-1">
+                            <div className="min-w-0 flex-1">
+                                <code className="text-[11px]">{`{{${name}.${child.key}}}`}</code>
+                                {child.description && <p className="truncate text-[10px] text-muted-foreground">{child.description}</p>}
+                            </div>
+                            <span className={`ml-2 shrink-0 rounded px-1 py-0.5 text-[10px] ${typeColors[child.type] ?? typeColors.mixed}`}>
+                                {child.type}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </CollapsibleContent>
+        </Collapsible>
     );
 }

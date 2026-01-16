@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { ChevronLeft, Workflow as WorkflowIcon } from 'lucide-react';
 
 import { AutomationBuilder, type AutomationEdge, type AutomationNode } from '@/components/automations/automation-builder';
+import { getNodeType, isTriggerType, type NodeTypeRegistry } from '@/components/automations/registry';
 import { TestPanel } from '@/components/automations/test-panel';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
@@ -58,6 +59,7 @@ interface Props {
     templateVariables?: TemplateVariable[];
     telegramBots?: TelegramBotOption[];
     whatsappAccounts?: WhatsappAccountOption[];
+    nodeTypeRegistry: NodeTypeRegistry;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -65,45 +67,14 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Editar', href: '#' },
 ];
 
-function buildInitialNodes(definition: Props['definition'], trigger: Trigger): AutomationNode[] {
+function buildInitialNodes(definition: Props['definition'], trigger: Trigger, nodeTypeRegistry: NodeTypeRegistry): AutomationNode[] {
     const nodes: AutomationNode[] = [];
 
     if (definition?.nodes && definition.nodes.length > 0) {
         for (const n of definition.nodes) {
-            let nodeType: string;
-            let label: string;
-
-            switch (n.type) {
-                case 'workflow.stage_entered':
-                    nodeType = 'trigger';
-                    label = 'Proceso cambio de etapa';
-                    break;
-                case 'invoice.created':
-                    nodeType = 'trigger';
-                    label = 'Factura creada';
-                    break;
-                case 'invoice.updated':
-                    nodeType = 'trigger';
-                    label = 'Factura actualizada';
-                    break;
-                case 'telegram.send_message':
-                    nodeType = 'telegram';
-                    label = 'Telegram Message';
-                    break;
-                case 'whatsapp.send_message':
-                    nodeType = 'whatsapp';
-                    label = 'WhatsApp Message';
-                    break;
-                case 'logic.condition':
-                    nodeType = 'condition';
-                    label = 'Condición';
-                    break;
-                case 'http.webhook':
-                default:
-                    nodeType = 'webhook';
-                    label = 'HTTP Request';
-                    break;
-            }
+            const nodeTypeDef = getNodeType(nodeTypeRegistry, n.type);
+            const nodeType = nodeTypeDef?.reactNodeType ?? 'webhook';
+            const label = nodeTypeDef?.label ?? 'HTTP Request';
 
             nodes.push({
                 id: n.id,
@@ -120,12 +91,13 @@ function buildInitialNodes(definition: Props['definition'], trigger: Trigger): A
     }
 
     // Fallback: build from trigger
+    const defaultTriggerDef = getNodeType(nodeTypeRegistry, 'workflow.stage_entered');
     nodes.push({
         id: 'trigger-1',
         type: 'trigger',
         position: { x: 100, y: 200 },
         data: {
-            label: 'Proceso cambio de etapa',
+            label: defaultTriggerDef?.label ?? 'Cambio de etapa',
             nodeType: 'workflow.stage_entered',
             config: {
                 workflow_id: trigger?.workflow_id ?? '',
@@ -150,12 +122,21 @@ function buildInitialEdges(definition: Props['definition']): AutomationEdge[] {
     }));
 }
 
-export default function AutomationsEdit({ automation, trigger, workflows, definition, templateVariables, telegramBots, whatsappAccounts }: Props) {
-    const initialNodes = buildInitialNodes(definition, trigger);
+export default function AutomationsEdit({
+    automation,
+    trigger,
+    workflows,
+    definition,
+    templateVariables,
+    telegramBots,
+    whatsappAccounts,
+    nodeTypeRegistry,
+}: Props) {
+    const initialNodes = buildInitialNodes(definition, trigger, nodeTypeRegistry);
     const initialEdges = buildInitialEdges(definition);
 
     const handleSave = (nodes: AutomationNode[], edges: AutomationEdge[], name: string, isActive: boolean) => {
-        const triggerNode = nodes.find((n) => ['workflow.stage_entered', 'invoice.created', 'invoice.updated'].includes(n.data.nodeType));
+        const triggerNode = nodes.find((n) => isTriggerType(nodeTypeRegistry, n.data.nodeType));
 
         router.patch(`/automations/${automation.id}`, {
             name,
@@ -205,6 +186,7 @@ export default function AutomationsEdit({ automation, trigger, workflows, defini
                     templateVariables={templateVariables ?? []}
                     telegramBots={telegramBots ?? []}
                     whatsappAccounts={whatsappAccounts ?? []}
+                    nodeTypeRegistry={nodeTypeRegistry}
                     initialNodes={initialNodes}
                     initialEdges={initialEdges}
                     onSave={handleSave}

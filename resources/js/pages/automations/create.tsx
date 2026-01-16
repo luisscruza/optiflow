@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { ChevronLeft, Workflow as WorkflowIcon } from 'lucide-react';
 
 import { AutomationBuilder, type AutomationEdge, type AutomationNode } from '@/components/automations/automation-builder';
+import { isTriggerType, type NodeTypeRegistry } from '@/components/automations/registry';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
@@ -39,6 +40,7 @@ interface Props {
     templateVariables?: TemplateVariable[];
     telegramBots?: TelegramBotOption[];
     whatsappAccounts?: WhatsappAccountOption[];
+    nodeTypeRegistry: NodeTypeRegistry;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -46,9 +48,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Nueva', href: '/automations/create' },
 ];
 
-export default function AutomationsCreate({ workflows, templateVariables, telegramBots, whatsappAccounts }: Props) {
+export default function AutomationsCreate({ workflows, templateVariables, telegramBots, whatsappAccounts, nodeTypeRegistry }: Props) {
     const handleSave = (nodes: AutomationNode[], edges: AutomationEdge[], name: string, isActive: boolean) => {
-        const triggerNode = nodes.find((n) => ['workflow.stage_entered', 'invoice.created', 'invoice.updated'].includes(n.data.nodeType));
+        const triggerNode = nodes.find((n) => isTriggerType(nodeTypeRegistry, n.data.nodeType));
 
         router.post('/automations', {
             name,
@@ -98,6 +100,7 @@ export default function AutomationsCreate({ workflows, templateVariables, telegr
                     templateVariables={templateVariables ?? []}
                     telegramBots={telegramBots ?? []}
                     whatsappAccounts={whatsappAccounts ?? []}
+                    nodeTypeRegistry={nodeTypeRegistry}
                     onSave={handleSave}
                 />
             </div>
