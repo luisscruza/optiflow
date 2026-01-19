@@ -75,4 +75,17 @@ enum ReportType: string
             self::StockLevels, self::StockMovements, self::LowStockAlert => ReportGroup::Inventory,
         };
     }
+
+    public function implemented(): bool
+    {
+        return match ($this) {
+            self::GeneralSales,
+            self::SalesByProduct,
+            self::SalesByCustomer,
+            self::SalesBySalesman,
+            self::PrescriptionsSummary,
+            self::PrescriptionsByDoctor => true,
+            default => false,
+        };
+    }
 }

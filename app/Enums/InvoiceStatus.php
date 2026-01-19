@@ -74,4 +74,13 @@ enum InvoiceStatus: string
             self::Deleted => 'bg-red-100 text-red-800',
         };
     }
+    
+    public function toBadge(): array
+    {
+        return [
+            'label' => $this->label(),
+            'variant' => $this->badgeVariant(),
+            'className' => $this->badgeClassName(),
+        ];
+    }
 }
