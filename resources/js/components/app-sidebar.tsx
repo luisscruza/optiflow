@@ -9,18 +9,25 @@ import inventory from '@/routes/inventory';
 import prescriptions from '@/routes/prescriptions';
 import products from '@/routes/products';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
-import { BarChart3, BookOpen, Eye, Folder, FolderSync,  Kanban, LayoutGrid, Package, Receipt, RotateCcw, Settings, Users2 } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { BarChart3, BookOpen, Eye, Folder, FolderSync, Bell,  Kanban, LayoutGrid, Package, Receipt, RotateCcw, Settings, Users2 } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
     const { can } = usePermissions();
+    const { unreadNotifications } = usePage().props as { unreadNotifications: number };
 
     const mainNavItems: NavItem[] = [
         {
             title: 'Tablero',
             href: dashboard(),
             icon: LayoutGrid,
+        },
+                {
+            title: 'Notificaciones',
+            href: '/notifications',
+            icon: Bell,
+            badge: unreadNotifications > 0 ? unreadNotifications : undefined,
         },
         ...(can('view workflows')
             ? [

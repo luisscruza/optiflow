@@ -52,6 +52,11 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                         <Link href={item.href!} prefetch>
                             {item.icon && <item.icon />}
                             <span>{item.title}</span>
+                            {item.badge !== undefined && (
+                                <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground">
+                                    {item.badge}
+                                </span>
+                            )}
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

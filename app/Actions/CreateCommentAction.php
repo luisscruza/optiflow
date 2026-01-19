@@ -31,8 +31,8 @@ final readonly class CreateCommentAction
             $comment = $model->comment($data['comment']);
 
             // Process mentions and send notifications
-            $this->mentionService->processMentions($comment, $user);
-
+            $mentionedUserIds = $data['mentioned_user_ids'] ?? [];
+            $this->mentionService->processMentionsWithIds($comment, $user, $mentionedUserIds);
         });
     }
 

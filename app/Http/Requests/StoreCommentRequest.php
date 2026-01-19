@@ -27,6 +27,8 @@ final class StoreCommentRequest extends FormRequest
             'commentable_type' => ['required', 'string'],
             'commentable_id' => ['required'],
             'comment' => ['required', 'string', 'max:1000'],
+            'mentioned_user_ids' => ['nullable', 'array'],
+            'mentioned_user_ids.*' => ['integer', 'exists:users,id'],
         ];
     }
 }

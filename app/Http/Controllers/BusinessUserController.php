@@ -39,6 +39,7 @@ final class BusinessUserController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'last_activity_at' => $user->last_activity_at?->diffForHumans() ?? 'Sin actividad',
                     'business_role' => $user->business_role->label(),
                     'workspaces_count' => $user->workspaces_count,
                     'workspaces' => $user->workspaces->map(function ($workspace) use ($user, $roles): array {

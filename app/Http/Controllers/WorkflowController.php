@@ -70,7 +70,9 @@ final class WorkflowController extends Controller
     {
         abort_unless($request->user()->can(Permission::CreateWorkflows), 403);
 
-        return Inertia::render('workflows/create');
+        return Inertia::render('workflows/create', [
+            'mastertables' => Mastertable::query()->orderBy('name')->get(),
+        ]);
     }
 
     public function store(CreateWorkflowRequest $request, CreateWorkflowAction $action): RedirectResponse

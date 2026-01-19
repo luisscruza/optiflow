@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
+ * @property int $id
+ * @property string $name
+ * @property string $alias
+ * @property string|null $description
  * @property-read \Illuminate\Database\Eloquent\Collection<int, MastertableItem> $items
  * @property-read int|null $items_count
  *
