@@ -44,7 +44,7 @@ const errorMessages: Record<number, { title: string; description: string; icon: 
         icon: AlertTriangle,
     },
     503: {
-        title: 'Servicio no disponible',
+        title: 'Mantenimiento del servicio',
         description: 'El servicio está temporalmente fuera de línea. Por favor, intenta más tarde.',
         icon: AlertTriangle,
     },
@@ -70,7 +70,7 @@ export default function ErrorPage({ status, message }: ErrorPageProps) {
                     </div>
 
                     {/* Status Code */}
-                    <h1 className="mb-2 text-7xl font-bold tracking-tight text-foreground">{status}</h1>
+                    {status !== 503 && <h1 className="mb-2 text-7xl font-bold tracking-tight text-foreground">{status}</h1>}
 
                     {/* Title */}
                     <h2 className="mb-3 text-2xl font-semibold text-foreground">{error.title}</h2>
@@ -78,19 +78,23 @@ export default function ErrorPage({ status, message }: ErrorPageProps) {
                     {/* Description */}
                     <p className="mb-8 text-muted-foreground">{message ?? error.description}</p>
 
-                    {/* Actions */}
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                        <Button variant="outline" onClick={() => window.history.back()} className="gap-2">
-                            <ArrowLeft className="h-4 w-4" />
-                            Volver atrás
-                        </Button>
-                        <Button asChild className="gap-2">
-                            <Link href="/">
-                                <Home className="h-4 w-4" />
-                                Ir al inicio
-                            </Link>
-                        </Button>
-                    </div>
+                    {status !== 503 && (
+                        <>
+                            {/* Actions */}
+                            <div className="flex flex-col gap-3 sm:flex-row">
+                                <Button variant="outline" onClick={() => window.history.back()} className="gap-2">
+                                    <ArrowLeft className="h-4 w-4" />
+                                    Volver atrás
+                                </Button>
+                                <Button asChild className="gap-2">
+                                    <Link href="/">
+                                        <Home className="h-4 w-4" />
+                                        Ir al inicio
+                                    </Link>
+                                </Button>
+                            </div>
+                        </>
+                    )}
 
                     {/* Refresh hint for 419 */}
                     {status === 419 && (
@@ -101,13 +105,18 @@ export default function ErrorPage({ status, message }: ErrorPageProps) {
                     )}
                 </div>
 
-                {/* Footer */}
-                <p className="mt-16 text-sm text-muted-foreground">
+                    {status !== 503 && (
+                        <>
+                            <p className="mt-16 text-sm text-muted-foreground">
                     Si el problema persiste, contacta a{' '}
                     <a href="mailto:soporte@opticanet.com" className="text-primary underline-offset-4 hover:underline">
                         soporte
                     </a>
                 </p>
+                        </>
+                    )}
+                {/* Footer */}
+            
             </div>
         </>
     );

@@ -41,8 +41,17 @@ return Application::configure(basePath: dirname(__DIR__))
                     ->toResponse($request)
                     ->setStatusCode(404);
             }
+            
+            if (app()->isDownForMaintenance()) {
+                return Inertia::render('error-page', [
+                    'status' => 503,
+                    'message' => 'Nuestro servicio se encuentra en un mantenimiento programado. Por favor, vuelve a intentarlo más tarde.',
+                ])
+                    ->toResponse($request)
+                    ->setStatusCode(503);
+            }
 
-            if (! app()->environment(['local']) && in_array($response->getStatusCode(), [400, 401, 403, 404, 419, 429, 500, 503])) {
+            if (! app()->environment(['local']) && in_array($response->getStatusCode(), [400, 401, 403, 404, 419, 429, 500])) {
                 return Inertia::render('error-page', [
                     'status' => $response->getStatusCode(),
                     'message' => $exception->getMessage() ?: null,
