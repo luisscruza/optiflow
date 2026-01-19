@@ -74,11 +74,11 @@ final readonly class CreateInvoiceAction
             }
 
             DB::afterCommit(function () use ($invoice, $workspace): void {
-                Event::dispatch('invoice.created', [
+                Event::dispatch('invoice.created', [[
                     'invoice_id' => $invoice->id,
                     'workspace_id' => $workspace->id,
                     'user_id' => Auth::id(),
-                ]);
+                ]]);
             });
 
             return new InvoiceResult(

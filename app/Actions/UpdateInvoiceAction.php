@@ -66,11 +66,11 @@ final readonly class UpdateInvoiceAction
                 }
 
                 DB::afterCommit(function () use ($invoice): void {
-                    Event::dispatch('invoice.updated', [
+                    Event::dispatch('invoice.updated', [[
                         'invoice_id' => $invoice->id,
                         'workspace_id' => $invoice->workspace_id,
                         'user_id' => Auth::id(),
-                    ]);
+                    ]]);
                 });
 
                 return new InvoiceResult($invoice->load(['contact', 'documentSubtype', 'items.product']));

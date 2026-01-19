@@ -55,15 +55,26 @@ final class AutomationController extends Controller
     public function create(): Response
     {
         $workflows = Workflow::query()
-            ->with(['stages' => fn($query) => $query->orderBy('position')])
+            ->with([
+                'stages' => fn($query) => $query->orderBy('position'),
+                'fields' => fn($query) => $query->where('is_active', true)->orderBy('position'),
+            ])
             ->orderBy('name')
             ->get()
             ->map(fn(Workflow $workflow): array => [
                 'id' => $workflow->id,
                 'name' => $workflow->name,
+                'invoice_requirement' => $workflow->invoice_requirement,
                 'stages' => $workflow->stages->map(fn($stage): array => [
                     'id' => $stage->id,
                     'name' => $stage->name,
+                ])->all(),
+                'fields' => $workflow->fields->map(fn($field): array => [
+                    'id' => $field->id,
+                    'name' => $field->name,
+                    'key' => $field->key,
+                    'type' => $field->type->value,
+                    'is_required' => (bool) $field->is_required,
                 ])->all(),
             ]);
 
@@ -162,15 +173,26 @@ final class AutomationController extends Controller
         $definition = $version?->definition ?? [];
 
         $workflows = Workflow::query()
-            ->with(['stages' => fn($query) => $query->orderBy('position')])
+            ->with([
+                'stages' => fn($query) => $query->orderBy('position'),
+                'fields' => fn($query) => $query->where('is_active', true)->orderBy('position'),
+            ])
             ->orderBy('name')
             ->get()
             ->map(fn(Workflow $workflow): array => [
                 'id' => $workflow->id,
                 'name' => $workflow->name,
+                'invoice_requirement' => $workflow->invoice_requirement,
                 'stages' => $workflow->stages->map(fn($stage): array => [
                     'id' => $stage->id,
                     'name' => $stage->name,
+                ])->all(),
+                'fields' => $workflow->fields->map(fn($field): array => [
+                    'id' => $field->id,
+                    'name' => $field->name,
+                    'key' => $field->key,
+                    'type' => $field->type->value,
+                    'is_required' => (bool) $field->is_required,
                 ])->all(),
             ]);
 

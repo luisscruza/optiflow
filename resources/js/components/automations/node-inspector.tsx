@@ -7,14 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { AutomationNode } from './automation-builder';
+import type { AutomationNode, WorkflowOption } from './automation-builder';
 import { getGroupedOutputSchema, getNodeType, isTriggerType, type NodeTypeRegistry } from './registry';
-
-type WorkflowOption = {
-    id: string;
-    name: string;
-    stages: { id: string; name: string }[];
-};
 
 type TemplateVariable = {
     label: string;
@@ -131,7 +125,12 @@ export function NodeInspector({
                 )}
 
                 {/* Output Schema Panel */}
-                <OutputSchemaPanel nodeType={node.data.nodeType} nodeTypeRegistry={nodeTypeRegistry} />
+                <OutputSchemaPanel
+                    nodeType={node.data.nodeType}
+                    nodeTypeRegistry={nodeTypeRegistry}
+                    workflows={workflows}
+                    nodeConfig={node.data.config}
+                />
             </div>
         </div>
     );
@@ -877,12 +876,84 @@ function WhatsappConfig({
     );
 }
 
+type DynamicSchemaField = {
+    type: string;
+    description: string;
+    children: { key: string; type: string; description: string }[];
+};
+
+/**
+ * Build dynamic output schema for workflow triggers based on workflow configuration.
+ */
+function buildWorkflowTriggerSchema(
+    workflow: WorkflowOption | undefined,
+    baseSchema: Map<string, DynamicSchemaField>,
+): Map<string, DynamicSchemaField> {
+    const schema = new Map(baseSchema);
+
+    // Add invoice fields if workflow requires/allows invoice
+    if (workflow?.invoice_requirement === 'required' || workflow?.invoice_requirement === 'optional') {
+        schema.set('invoice', {
+            type: 'object',
+            description: workflow.invoice_requirement === 'required' ? 'Factura asociada (requerida)' : 'Factura asociada (opcional)',
+            children: [
+                { key: 'id', type: 'string', description: 'ID de la factura' },
+                { key: 'type', type: 'string', description: 'Tipo de documento' },
+                { key: 'document_number', type: 'string', description: 'Número de documento' },
+                { key: 'number', type: 'string', description: 'Alias de document_number' },
+                { key: 'total_amount', type: 'number', description: 'Monto total' },
+                { key: 'issue_date', type: 'string', description: 'Fecha de emisión' },
+                { key: 'due_date', type: 'string', description: 'Fecha de vencimiento' },
+                { key: 'status', type: 'string', description: 'Estado de la factura' },
+            ],
+        });
+    }
+
+    // Add custom fields from workflow metadata
+    if (workflow?.fields && workflow.fields.length > 0) {
+        const metadataChildren: { key: string; type: string; description: string }[] = workflow.fields.map((field) => ({
+            key: field.key,
+            type: field.type === 'number' ? 'number' : field.type === 'boolean' ? 'boolean' : 'string',
+            description: `${field.name}${field.is_required ? ' (requerido)' : ''}`,
+        }));
+
+        schema.set('metadata', {
+            type: 'object',
+            description: 'Campos personalizados del proceso',
+            children: metadataChildren,
+        });
+    }
+
+    return schema;
+}
+
 /**
  * Panel that displays the output schema for a node.
  */
-function OutputSchemaPanel({ nodeType, nodeTypeRegistry }: { nodeType: string; nodeTypeRegistry: NodeTypeRegistry }) {
+function OutputSchemaPanel({
+    nodeType,
+    nodeTypeRegistry,
+    workflows,
+    nodeConfig,
+}: {
+    nodeType: string;
+    nodeTypeRegistry: NodeTypeRegistry;
+    workflows: WorkflowOption[];
+    nodeConfig: Record<string, unknown>;
+}) {
     const [isOpen, setIsOpen] = useState(true);
-    const groupedSchema = useMemo(() => getGroupedOutputSchema(nodeTypeRegistry, nodeType), [nodeTypeRegistry, nodeType]);
+
+    const groupedSchema = useMemo(() => {
+        const baseSchema = getGroupedOutputSchema(nodeTypeRegistry, nodeType);
+
+        // For workflow triggers, enhance schema based on selected workflow
+        if (nodeType === 'workflow.stage_entered' && nodeConfig?.workflow_id) {
+            const selectedWorkflow = workflows.find((w) => w.id === nodeConfig.workflow_id);
+            return buildWorkflowTriggerSchema(selectedWorkflow, baseSchema);
+        }
+
+        return baseSchema;
+    }, [nodeTypeRegistry, nodeType, workflows, nodeConfig]);
 
     if (groupedSchema.size === 0) {
         return null;

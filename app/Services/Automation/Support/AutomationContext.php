@@ -47,6 +47,13 @@ final readonly class AutomationContext
                 ?? $contact->phone_primary
                 ?? $contact->phone_secondary;
         }
+        
+        \Log::debug('AutomationContext toTemplateData', [
+            'input' => $input,
+            'job_id' => $this->job?->id,
+            'contact_id' => $contact?->id,
+            'invoice_id' => $invoice?->total_amount,
+        ]);
 
         return [
             'input' => $input,
@@ -56,12 +63,14 @@ final readonly class AutomationContext
                 'workflow_stage_id' => $this->job->workflow_stage_id,
                 'contact_id' => $this->job->contact_id,
                 'invoice_id' => $this->job->invoice_id,
-                'prescription_id' => $this->job->prescription_id,
+                'notes' => $this->job->notes,
                 'priority' => $this->job->priority,
                 'due_date' => optional($this->job->due_date)?->toISOString(),
-                'metadata' => $this->job->metadata,
-                'workspace_id' => $this->job->workspace_id,
+                'started_at' => optional($this->job->started_at)?->toISOString(),
+                'completed_at' => optional($this->job->completed_at)?->toISOString(),
             ] : null,
+            // Metadata fields are expanded to top level for easy access
+            'metadata' => $this->job?->metadata ?? [],
             'contact' => $contact ? [
                 'id' => $contact->id,
                 'name' => $contact->name,
@@ -75,7 +84,6 @@ final readonly class AutomationContext
             ] : null,
             'invoice' => $invoice ? [
                 'id' => $invoice->id,
-                'type' => $invoice->type,
                 'document_number' => $invoice->document_number,
                 // Friendly alias for builders who think in "number".
                 'number' => $invoice->document_number,

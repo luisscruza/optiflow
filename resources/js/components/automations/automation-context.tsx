@@ -1,8 +1,10 @@
 import { createContext, useContext, type ReactNode } from 'react';
+import type { WorkflowOption } from './automation-builder';
 import type { NodeTypeRegistry } from './registry';
 
 interface AutomationContextValue {
     nodeTypeRegistry: NodeTypeRegistry;
+    workflows: WorkflowOption[];
 }
 
 const AutomationContext = createContext<AutomationContextValue | null>(null);
@@ -10,10 +12,11 @@ const AutomationContext = createContext<AutomationContextValue | null>(null);
 interface AutomationProviderProps {
     children: ReactNode;
     nodeTypeRegistry: NodeTypeRegistry;
+    workflows: WorkflowOption[];
 }
 
-export function AutomationProvider({ children, nodeTypeRegistry }: AutomationProviderProps) {
-    return <AutomationContext.Provider value={{ nodeTypeRegistry }}>{children}</AutomationContext.Provider>;
+export function AutomationProvider({ children, nodeTypeRegistry, workflows }: AutomationProviderProps) {
+    return <AutomationContext.Provider value={{ nodeTypeRegistry, workflows }}>{children}</AutomationContext.Provider>;
 }
 
 export function useAutomationContext(): AutomationContextValue {
@@ -26,4 +29,8 @@ export function useAutomationContext(): AutomationContextValue {
 
 export function useNodeTypeRegistry(): NodeTypeRegistry {
     return useAutomationContext().nodeTypeRegistry;
+}
+
+export function useWorkflows(): WorkflowOption[] {
+    return useAutomationContext().workflows;
 }

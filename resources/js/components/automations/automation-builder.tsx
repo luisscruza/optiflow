@@ -64,10 +64,20 @@ const nodeTypes: NodeTypes = {
     condition: ConditionNode,
 };
 
-type WorkflowOption = {
+export type WorkflowField = {
     id: string;
     name: string;
+    key: string;
+    type: 'text' | 'textarea' | 'number' | 'date' | 'select' | 'boolean';
+    is_required: boolean;
+};
+
+export type WorkflowOption = {
+    id: string;
+    name: string;
+    invoice_requirement: 'optional' | 'required' | null;
     stages: { id: string; name: string }[];
+    fields: WorkflowField[];
 };
 
 type TemplateVariable = {
@@ -549,7 +559,7 @@ export function AutomationBuilder({
     );
 
     return (
-        <AutomationProvider nodeTypeRegistry={nodeTypeRegistry}>
+        <AutomationProvider nodeTypeRegistry={nodeTypeRegistry} workflows={workflows}>
             <div className="flex h-[700px] w-full gap-4">
                 {/* Canvas */}
                 <div
