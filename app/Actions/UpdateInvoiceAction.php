@@ -11,7 +11,9 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Workspace;
 use App\Support\NCFValidator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -47,7 +49,7 @@ final readonly class UpdateInvoiceAction
                     $this->updateNumerator($documentSubtype, $data['ncf']);
                 }
 
-                $items = array_filter($data['items'] ?? [], fn (array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
+                $items = array_filter($data['items'] ?? [], fn(array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
                     $item['quantity'] > 0);
 
                 try {
@@ -63,17 +65,25 @@ final readonly class UpdateInvoiceAction
                     $invoice->salesmen()->sync($data['salesmen_ids']);
                 }
 
+                DB::afterCommit(function () use ($invoice): void {
+                    Event::dispatch('invoice.updated', [[
+                        'invoice_id' => $invoice->id,
+                        'workspace_id' => $invoice->workspace_id,
+                        'user_id' => Auth::id(),
+                    ]]);
+                });
+
                 return new InvoiceResult($invoice->load(['contact', 'documentSubtype', 'items.product']));
             });
         } catch (Throwable $e) {
             Log::error('Failed to update invoice', [
                 'invoice_id' => $invoice->id,
-                'workspace_id' => $workspace->id,
+                'workspace_id' => $invoice->workspace_id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return new InvoiceResult(error: 'Error actualizando la factura: '.$e->getMessage());
+            return new InvoiceResult(error: 'Error actualizando la factura: ' . $e->getMessage());
         }
     }
 
@@ -177,7 +187,7 @@ final readonly class UpdateInvoiceAction
         }
 
         // Remove items that are no longer present
-        $itemsToRemove = $originalItems->reject(fn ($item): bool => in_array($item->id, $processedIds));
+        $itemsToRemove = $originalItems->reject(fn($item): bool => in_array($item->id, $processedIds));
 
         foreach ($itemsToRemove as $item) {
             $this->removeInvoiceItem($invoice, $item);

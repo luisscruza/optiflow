@@ -9,6 +9,7 @@ use App\Models\WorkflowEvent;
 use App\Models\WorkflowJob;
 use App\Models\WorkflowStage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 
 final readonly class RecordWorkflowEventAction
 {
@@ -17,13 +18,25 @@ final readonly class RecordWorkflowEventAction
      */
     public function stageChanged(WorkflowJob $job, ?WorkflowStage $fromStage, WorkflowStage $toStage): WorkflowEvent
     {
-        return WorkflowEvent::create([
+        $event = WorkflowEvent::create([
             'workflow_job_id' => $job->id,
             'event_type' => EventType::StageChanged,
             'from_stage_id' => $fromStage?->id,
             'to_stage_id' => $toStage->id,
             'user_id' => Auth::id(),
         ]);
+
+        Event::dispatch('workflow.job.stage_changed', [[
+            'workflow_job_id' => $job->id,
+            'workflow_id' => $job->workflow_id,
+            'from_stage_id' => $fromStage?->id,
+            'to_stage_id' => $toStage->id,
+            'workspace_id' => $job->workspace_id,
+            'user_id' => Auth::id(),
+            'workflow_event_id' => $event->id,
+        ]]);
+
+        return $event;
     }
 
     /**

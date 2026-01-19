@@ -12,7 +12,9 @@ use App\Models\DocumentSubtype;
 use App\Models\Invoice;
 use App\Models\Workspace;
 use App\Support\NCFValidator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Throwable;
 
 final readonly class CreateInvoiceAction
@@ -41,7 +43,7 @@ final readonly class CreateInvoiceAction
 
             $this->updateNumerator($documentSubtype, $data['ncf']);
 
-            $items = array_filter($data['items'], fn (array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
+            $items = array_filter($data['items'], fn(array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
                 $item['quantity'] > 0);
 
             try {
@@ -70,6 +72,14 @@ final readonly class CreateInvoiceAction
                     'notes' => $data['payment_notes'] ?? null,
                 ]);
             }
+
+            DB::afterCommit(function () use ($invoice, $workspace): void {
+                Event::dispatch('invoice.created', [[
+                    'invoice_id' => $invoice->id,
+                    'workspace_id' => $workspace->id,
+                    'user_id' => Auth::id(),
+                ]]);
+            });
 
             return new InvoiceResult(
                 invoice: $invoice->load(['contact', 'documentSubtype', 'items.product'])

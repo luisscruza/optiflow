@@ -275,6 +275,14 @@ final class Contact extends Model implements Commentable
         );
     }
 
+    public function getPhoneAttribute(): ?string
+    {
+        return $this->mobile
+            ?? $this->phone
+            ?? $this->phone_primary
+            ?? $this->phone_secondary;
+    }
+
     /**
      * @return array<string, string>
      */
