@@ -25,7 +25,7 @@ final class SyncDGII extends Command
     {
         $zipFilePath = storage_path('app/dgii/DGII_RNC.zip');
         $extractPath = storage_path('app/dgii');
-        $txtFilePath = $extractPath.'/DGII_RNC.txt';
+        $txtFilePath = $extractPath . '/DGII_RNC.txt';
 
         if (! file_exists($extractPath)) {
             mkdir($extractPath, 0755, true);
@@ -35,7 +35,7 @@ final class SyncDGII extends Command
         $response = Http::withHeaders(['User-Agent' => 'Mozilla/5.0'])->get($this->url);
 
         if (! $response->ok()) {
-            $this->error('Failed to download file. HTTP status: '.$response->status());
+            $this->error('Failed to download file. HTTP status: ' . $response->status());
 
             return 1;
         }
@@ -92,8 +92,8 @@ final class SyncDGII extends Command
         while (($data = fgetcsv($handle, 0, '|')) !== false) {
             $row = [
                 'identification' => $data[0] ?? null,
-                'name' => $data[1] ?? null,
-                'comercial_name' => $data[2] ?? null,
+                'name' => isset($data[1]) ? mb_convert_encoding($data[1], 'UTF-8', 'Windows-1252') : null,
+                'comercial_name' => isset($data[2]) ? mb_convert_encoding($data[2], 'UTF-8', 'Windows-1252') : null,
                 'status' => $data[9] ?? null,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -134,7 +134,7 @@ final class SyncDGII extends Command
             if (in_array($item, ['.', '..', 'DGII_RNC.txt'])) {
                 continue;
             }
-            $path = $directory.DIRECTORY_SEPARATOR.$item;
+            $path = $directory . DIRECTORY_SEPARATOR . $item;
             if (is_dir($path)) {
                 $this->deleteDirectoryRecursive($path);
             } elseif (is_file($path) && pathinfo($path, PATHINFO_EXTENSION) !== 'txt') {
