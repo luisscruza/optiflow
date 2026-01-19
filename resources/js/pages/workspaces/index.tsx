@@ -18,6 +18,10 @@ import { Head, router } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
+        title: 'Configuración',
+        href: '/configuration',
+    },
+    {
         title: 'Sucursales',
         href: index().url,
     },

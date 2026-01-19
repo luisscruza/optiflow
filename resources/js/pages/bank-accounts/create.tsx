@@ -12,6 +12,10 @@ import { type BreadcrumbItem, type Currency } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
+        title: 'Configuración',
+        href: '/configuration',
+    },
+    {
         title: 'Cuentas bancarias',
         href: '/bank-accounts',
     },

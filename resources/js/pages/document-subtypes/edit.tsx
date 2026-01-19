@@ -31,6 +31,10 @@ interface Props {
 
 export default function EditDocumentSubtype({ subtype }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
+            {
+        title: 'Configuración',
+        href: '/configuration',
+    },
         {
             title: 'Numeraciones de comprobantes',
             href: '/document-subtypes',

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
+import { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { Pencil, Plus, RefreshCw, Search, Shield, Trash2, Users } from 'lucide-react';
 import { useRef, useState } from 'react';
@@ -48,6 +49,16 @@ export default function BusinessRoles({ roles, permissions, workspaces }: Props)
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [searchQuery, setSearchQuery] = useState('');
     const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Configuración',
+            href: '/configuration',
+        },
+        {
+            title: 'Roles y permisos',
+            href: '/business/roles',
+        },
+    ];
 
     const resetForm = () => {
         setRoleName('');
@@ -273,7 +284,7 @@ export default function BusinessRoles({ roles, permissions, workspaces }: Props)
     );
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Roles y permisos" />
 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
