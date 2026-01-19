@@ -169,22 +169,6 @@ export default function ShowDocumentSubtype({ subtype }: Props) {
                                         <label className="text-sm font-medium text-gray-500">Estado</label>
                                         <p className={`text-lg font-medium ${getStatusColor()}`}>{getStatusText()}</p>
                                     </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-500">Preferida</label>
-                                        <div className="mt-1 flex items-center gap-2">
-                                            <Badge variant={subtype.is_default ? 'default' : 'secondary'}>{subtype.preferida}</Badge>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-500">Electrónica</label>
-                                        <div className="mt-1 flex items-center gap-2">
-                                            <Badge variant={subtype.electronica === 'Sí' ? 'default' : 'secondary'}>{subtype.electronica}</Badge>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-500">Documentos generados</label>
-                                        <p className="text-lg font-medium">{subtype.document_count}</p>
-                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
