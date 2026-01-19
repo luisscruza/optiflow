@@ -47,6 +47,7 @@ interface User {
     created_at: string;
     workspaces_count: number;
     workspaces: WorkspaceMembership[];
+    last_activity_at: string;
 }
 
 interface Workspace {
@@ -256,6 +257,7 @@ export default function BusinessUsers({ users, workspaces, rolesByWorkspace }: P
                                         <TableHead>Usuario</TableHead>
                                         <TableHead>Email</TableHead>
                                         <TableHead>Rol de negocio</TableHead>
+                                        <TableHead>Última actividad</TableHead>
                                         <TableHead className="text-center">Workspaces</TableHead>
                                         <TableHead>Acciones</TableHead>
                                     </TableRow>
@@ -275,6 +277,9 @@ export default function BusinessUsers({ users, workspaces, rolesByWorkspace }: P
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant="outline">{user.business_role}</Badge>
+                                            </TableCell>
+                                                <TableCell className="text-center">
+                                                <Badge variant="secondary">{user.last_activity_at}</Badge>
                                             </TableCell>
                                             <TableCell className="text-center">
                                                 <Badge variant="secondary">{user.workspaces_count}</Badge>

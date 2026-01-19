@@ -57,7 +57,7 @@ final class MentionService
 
         $mentionedUsers = $this->findMentionedUsers($mentionedUsernames);
 
-        $mentionedUsers = $mentionedUsers->reject(fn(User $user): bool => $user->id === $mentioner->id);
+        $mentionedUsers = $mentionedUsers->reject(fn (User $user): bool => $user->id === $mentioner->id);
 
         foreach ($mentionedUsers as $user) {
             $user->notify(new CommentMention($comment, $mentioner));

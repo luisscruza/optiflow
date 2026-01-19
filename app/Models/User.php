@@ -202,6 +202,7 @@ final class User extends Authenticatable
             'business_role' => UserRole::class,
             'dashboard_layout' => 'array',
             'password_changed_at' => 'datetime',
+            'last_activity_at' => 'datetime',
         ];
     }
 }
