@@ -377,7 +377,7 @@ export interface Contact {
     phone_secondary?: string | null;
     mobile?: string | null;
     fax?: string | null;
-    contact_type: 'customer' | 'supplier';
+    contact_type: 'customer' | 'supplier' | 'optometrist';
     status: 'active' | 'inactive';
     observations?: string | null;
     credit_limit: number;
@@ -391,6 +391,12 @@ export interface Contact {
     } | null;
     documents_count?: number;
     supplied_stocks_count?: number;
+    comments?: CommentData[];
+    // Related data counts for stats
+    invoices_count?: number;
+    quotations_count?: number;
+    prescriptions_count?: number;
+    workflow_jobs_count?: number;
 }
 
 export interface MasterTableData {
@@ -973,4 +979,15 @@ export interface WorkflowEvent {
     from_stage?: WorkflowStage | null;
     to_stage?: WorkflowStage | null;
     user?: User | null;
+}
+
+export interface ContactStats {
+    total_invoices: number;
+    total_quotations: number;
+    total_prescriptions: number;
+    total_workflow_jobs: number;
+    total_invoiced: number;
+    total_paid: number;
+    pending_amount: number;
+    pending_workflow_jobs: number;
 }
