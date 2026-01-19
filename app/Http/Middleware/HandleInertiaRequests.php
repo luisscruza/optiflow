@@ -53,6 +53,8 @@ final class HandleInertiaRequests extends Middleware
 
         App::setLocale('es');
 
+        $gitReleaseVersion = trim((string) shell_exec('git describe --tags --abbrev=0'));
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -71,6 +73,7 @@ final class HandleInertiaRequests extends Middleware
                 'error' => $request->session()->get('error'),
             ],
             'impersonating' => Impersonator::isImpersonating(),
+            'gitVersion' => $gitReleaseVersion !== '' ? $gitReleaseVersion : null,
         ];
     }
 
