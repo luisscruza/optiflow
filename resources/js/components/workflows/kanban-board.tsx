@@ -20,9 +20,9 @@ import {
     type WorkflowJobPriority,
 } from '@/types';
 
+import { useCurrency } from '@/utils/currency';
 import { DynamicFields } from './dynamic-fields';
 import { KanbanColumn } from './kanban-column';
-import { useCurrency } from '@/utils/currency';
 
 interface KanbanBoardProps {
     workflow: Workflow;
@@ -340,13 +340,27 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
                             <Label htmlFor="job-priority">Prioridad</Label>
                             <SearchableSelect
                                 options={[
-                                    { value: 'low', label: 'Baja' },
-                                    { value: 'medium', label: 'Media' },
-                                    { value: 'high', label: 'Alta' },
-                                    { value: 'urgent', label: 'Urgente' },
+                                    { value: 'low', label: 'Baja (10 días)' },
+                                    { value: 'medium', label: 'Media (7 días)' },
+                                    { value: 'high', label: 'Alta (4 días)' },
+                                    { value: 'urgent', label: 'Urgente (2 días)' },
                                 ]}
                                 value={newJobPriority}
-                                onValueChange={(v) => setNewJobPriority(v as WorkflowJobPriority | '')}
+                                onValueChange={(v) => {
+                                    setNewJobPriority(v as WorkflowJobPriority | '');
+                                    if (v) {
+                                        const daysMap: Record<WorkflowJobPriority, number> = {
+                                            low: 10,
+                                            medium: 7,
+                                            high: 4,
+                                            urgent: 2,
+                                        };
+                                        const days = daysMap[v as WorkflowJobPriority];
+                                        const dueDate = new Date();
+                                        dueDate.setDate(dueDate.getDate() + days);
+                                        setNewJobDueDate(dueDate.toISOString().split('T')[0]);
+                                    }
+                                }}
                                 placeholder="Seleccionar prioridad"
                                 searchPlaceholder="Buscar prioridad..."
                                 emptyText="No se encontró la prioridad"

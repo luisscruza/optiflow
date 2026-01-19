@@ -29,10 +29,10 @@ const priorityColors: Record<WorkflowJobPriority, string> = {
 };
 
 const priorityLabels: Record<WorkflowJobPriority, string> = {
-    low: 'Baja',
-    medium: 'Media',
-    high: 'Alta',
-    urgent: 'Urgente',
+    low: 'Baja (10d)',
+    medium: 'Media (7d)',
+    high: 'Alta (4d)',
+    urgent: 'Urgente (2d)',
 };
 
 export function KanbanCard({ job, workflow, onDragStart, onDragEnd, canEdit = false, canDelete = false }: KanbanCardProps) {
@@ -188,15 +188,33 @@ export function KanbanCard({ job, workflow, onDragStart, onDragEnd, canEdit = fa
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="edit-priority">Prioridad</Label>
-                            <Select value={editPriority} onValueChange={(value) => setEditPriority(value as WorkflowJobPriority | '')}>
+                            <Select
+                                value={editPriority}
+                                onValueChange={(value) => {
+                                    setEditPriority(value as WorkflowJobPriority | '');
+                                    // Auto-set due date based on priority
+                                    if (value) {
+                                        const daysMap: Record<WorkflowJobPriority, number> = {
+                                            low: 10,
+                                            medium: 7,
+                                            high: 4,
+                                            urgent: 2,
+                                        };
+                                        const days = daysMap[value as WorkflowJobPriority];
+                                        const dueDate = new Date();
+                                        dueDate.setDate(dueDate.getDate() + days);
+                                        setEditDueDate(dueDate.toISOString().split('T')[0]);
+                                    }
+                                }}
+                            >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Seleccionar prioridad" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="low">Baja</SelectItem>
-                                    <SelectItem value="medium">Media</SelectItem>
-                                    <SelectItem value="high">Alta</SelectItem>
-                                    <SelectItem value="urgent">Urgente</SelectItem>
+                                    <SelectItem value="low">Baja (10 días)</SelectItem>
+                                    <SelectItem value="medium">Media (7 días)</SelectItem>
+                                    <SelectItem value="high">Alta (4 días)</SelectItem>
+                                    <SelectItem value="urgent">Urgente (2 días)</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
