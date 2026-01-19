@@ -48,6 +48,13 @@ if ! git pull origin main; then
     exit 1
 fi
 
+log "Pulling latest tags..."
+if ! git fetch --tags; then
+    error "Git fetch tags failed"
+    php artisan up
+    exit 1
+fi
+
 log "Installing composer dependencies..."
 composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
