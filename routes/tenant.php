@@ -27,6 +27,8 @@ use App\Http\Controllers\GlobalRoleController;
 use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\InitialStockController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\MastertableController;
+use App\Http\Controllers\MastertableItemController;
 use App\Http\Controllers\PasswordChangeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrescriptionController;
@@ -148,6 +150,11 @@ Route::middleware([
             Route::resource('salesmen', SalesmanController::class)->except(['show']);
 
             Route::resource('bank-accounts', BankAccountController::class);
+
+            Route::resource('mastertables', MastertableController::class);
+            Route::post('mastertables/{mastertable}/items', [MastertableItemController::class, 'store'])->name('mastertables.items.store');
+            Route::put('mastertables/{mastertable}/items/{item}', [MastertableItemController::class, 'update'])->name('mastertables.items.update');
+            Route::delete('mastertables/{mastertable}/items/{item}', [MastertableItemController::class, 'destroy'])->name('mastertables.items.destroy');
 
             Route::resource('invoices', InvoiceController::class);
             Route::get('invoices/create/quotation/{quotation}', CreateInvoiceFromQuotationController::class)->name('invoices.create-from-quotation');

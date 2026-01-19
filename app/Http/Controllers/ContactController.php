@@ -44,14 +44,14 @@ final class ContactController extends Controller
 
         return Inertia::render('contacts/create', [
             'identification_types' => collect(IdentificationType::cases())
-                ->map(fn($type): array => [
+                ->map(fn ($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])
                 ->values()
                 ->toArray(),
             'contact_types' => collect(ContactType::cases())
-                ->map(fn($type): array => [
+                ->map(fn ($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])
@@ -125,7 +125,7 @@ final class ContactController extends Controller
             'total_paid' => $contact->invoices()
                 ->whereIn('status', ['paid', 'partially_paid'])
                 ->get()
-                ->sum(fn($invoice) => $invoice->total_amount - $invoice->amount_due),
+                ->sum(fn ($invoice) => $invoice->total_amount - $invoice->amount_due),
             'pending_amount' => $contact->invoices()
                 ->whereNotIn('status', ['paid', 'cancelled'])
                 ->sum('total_amount'),
@@ -157,14 +157,14 @@ final class ContactController extends Controller
         return Inertia::render('contacts/edit', [
             'contact' => $contact,
             'identification_types' => collect(IdentificationType::cases())
-                ->map(fn($type): array => [
+                ->map(fn ($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])
                 ->values()
                 ->toArray(),
             'contact_types' => collect(ContactType::cases())
-                ->map(fn($type): array => [
+                ->map(fn ($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])
@@ -181,8 +181,9 @@ final class ContactController extends Controller
         abort_unless($user->can(Permission::ContactsEdit), 403);
 
         $action->handle($user, $contact, $request->validated());
+
         return redirect()->route('contacts.show', $contact)
-            ->with('success', "El contacto ha sido actualizado exitosamente.");
+            ->with('success', 'El contacto ha sido actualizado exitosamente.');
     }
 
     /**
@@ -195,6 +196,6 @@ final class ContactController extends Controller
         $action->handle($user, $contact);
 
         return redirect()->route('contacts.index')
-            ->with('success', "El contacto ha sido eliminado exitosamente.");
+            ->with('success', 'El contacto ha sido eliminado exitosamente.');
     }
 }

@@ -100,7 +100,7 @@ final class WorkflowController extends Controller
         ];
 
         $workflow->load([
-            'stages' => fn($query) => $query->orderBy('position')->withCount([
+            'stages' => fn ($query) => $query->orderBy('position')->withCount([
                 'jobs as pending_jobs_count' => function ($q) use ($filterPipeline, $filters) {
                     $this->applyPipelineFilters($q, $filterPipeline);
                     if (! $filters['status'] || $filters['status'] === 'pending') {
@@ -116,13 +116,13 @@ final class WorkflowController extends Controller
                     $q->whereNotNull('completed_at');
                 },
             ]),
-            'fields' => fn($query) => $query->where('is_active', true)->orderBy('position'),
+            'fields' => fn ($query) => $query->where('is_active', true)->orderBy('position'),
             'fields.mastertable.items',
         ]);
 
         $stageJobProps = [];
         foreach ($workflow->stages as $stage) {
-            $propName = 'stage_' . str_replace('-', '_', $stage->id) . '_jobs';
+            $propName = 'stage_'.str_replace('-', '_', $stage->id).'_jobs';
 
             $query = WorkflowJob::query()
                 ->where('workflow_stage_id', $stage->id)
@@ -151,26 +151,26 @@ final class WorkflowController extends Controller
             'workflow' => $workflow,
             'filters' => array_filter($filters),
             'showAllWorkspaces' => $showAllWorkspaces,
-            'contacts' => fn() => Contact::query()
+            'contacts' => fn () => Contact::query()
                 ->customers()
                 ->where('status', 'active')
                 ->orderBy('name')
                 ->get(),
-            'invoices' => Inertia::lazy(fn() => $request->getContactId()
+            'invoices' => Inertia::lazy(fn () => $request->getContactId()
                 ? Invoice::query()
-                ->where('contact_id', $request->getContactId())
-                ->with('contact')
-                ->orderBy('created_at', 'desc')
-                ->limit(50)
-                ->get()
+                    ->where('contact_id', $request->getContactId())
+                    ->with('contact')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(50)
+                    ->get()
                 : []),
-            'prescriptions' => Inertia::lazy(fn() => $request->getContactId()
+            'prescriptions' => Inertia::lazy(fn () => $request->getContactId()
                 ? Prescription::query()
-                ->with('patient')
-                ->where('patient_id', $request->getContactId())
-                ->orderBy('created_at', 'desc')
-                ->limit(50)
-                ->get()
+                    ->with('patient')
+                    ->where('patient_id', $request->getContactId())
+                    ->orderBy('created_at', 'desc')
+                    ->limit(50)
+                    ->get()
                 : []),
         ], $stageJobProps));
     }
@@ -179,7 +179,7 @@ final class WorkflowController extends Controller
     {
         abort_unless($request->user()->can(Permission::EditWorkflows), 403);
 
-        $workflow->load(['fields' => fn($query) => $query->orderBy('position')]);
+        $workflow->load(['fields' => fn ($query) => $query->orderBy('position')]);
 
         return Inertia::render('workflows/edit', [
             'workflow' => $workflow,

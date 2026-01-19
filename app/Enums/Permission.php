@@ -80,6 +80,12 @@ enum Permission: string
     case EditWorkflowStages = 'edit workflow stages';
     case DeleteWorkflowStages = 'delete workflow stages';
 
+    // Mastertables
+    case MastertablesView = 'view mastertables';
+    case MastertablesCreate = 'create mastertables';
+    case MastertablesEdit = 'edit mastertables';
+    case MastertablesDelete = 'delete mastertables';
+
     public static function all(): array
     {
         return array_map(fn (self $permission) => $permission->value, self::cases());
