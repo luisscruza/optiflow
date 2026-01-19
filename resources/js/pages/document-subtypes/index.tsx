@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, Edit, Filter, Plus, Search, Settings, Star } from 'lucide-react';
+import { Calendar, Edit, Eye, Filter, Plus, Search, Settings, Star } from 'lucide-react';
 import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -173,7 +173,6 @@ export default function DocumentSubtypesIndex({ subtypes, filters }: Props) {
                                     <TableRow>
                                         <TableHead>Nombre</TableHead>
                                         <TableHead>Preferida</TableHead>
-                                        <TableHead>Electrónica</TableHead>
                                         <TableHead>Fecha de finalización</TableHead>
                                         <TableHead>Prefijo</TableHead>
                                         <TableHead>Siguiente número</TableHead>
@@ -202,11 +201,6 @@ export default function DocumentSubtypesIndex({ subtypes, filters }: Props) {
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge variant={subtype.electronica === 'Sí' ? 'default' : 'secondary'}>
-                                                        {subtype.electronica}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell>
                                                     {subtype.fecha_finalizacion ? (
                                                         <div className="flex items-center gap-1">
                                                             <Calendar className="h-4 w-4 text-gray-400" />
@@ -229,7 +223,9 @@ export default function DocumentSubtypesIndex({ subtypes, filters }: Props) {
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
                                                             <DropdownMenuItem asChild>
-                                                                <Link href={`/document-subtypes/${subtype.id}`}>Ver detalles</Link>
+                                                                <Link href={`/document-subtypes/${subtype.id}`}>
+                                                                <Eye className="mr-2 h-4 w-4" />
+                                                                Ver detalles</Link>
                                                             </DropdownMenuItem>
                                                             <DropdownMenuItem asChild>
                                                                 <Link href={`/document-subtypes/${subtype.id}/edit`}>

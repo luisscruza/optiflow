@@ -132,6 +132,26 @@ final class Workspace extends Model
     }
 
     /**
+     * @return BelongsToMany<DocumentSubtype, $this>
+     */
+    public function documentSubtypes(): BelongsToMany
+    {
+        return $this->belongsToMany(DocumentSubtype::class)
+            ->withPivot(['is_preferred'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the preferred document subtype for this workspace.
+     */
+    public function getPreferredDocumentSubtype(): ?DocumentSubtype
+    {
+        return $this->documentSubtypes()
+            ->wherePivot('is_preferred', true)
+            ->first();
+    }
+
+    /**
      * Add a user to the workspace.
      */
     public function addUser(User $user, string $role = 'member'): void

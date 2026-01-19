@@ -23,6 +23,7 @@ use App\Models\Quotation;
 use App\Models\Salesman;
 use App\Models\Tax;
 use App\Models\User;
+use App\Models\Workspace;
 use App\Tables\InvoicesTable;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
@@ -96,7 +97,7 @@ final class InvoiceController extends Controller
 
         $documentSubtype = $request->filled('document_subtype_id')
             ? DocumentSubtype::query()->findOrFail($request->get('document_subtype_id'))
-            : DocumentSubtype::active()->where('is_default', true)->first();
+            : $this->getDefaultDocumentSubtype($currentWorkspace);
 
         $availableWorkspaces = Auth::user()?->workspaces ?? collect();
 
@@ -384,5 +385,21 @@ final class InvoiceController extends Controller
         }
 
         return 'in_stock';
+    }
+
+    private function getDefaultDocumentSubtype(?Workspace $workspace): ?DocumentSubtype
+    {
+        if ($workspace instanceof Workspace) {
+            $workspacePreferred = $workspace->getPreferredDocumentSubtype();
+
+            if ($workspacePreferred instanceof DocumentSubtype && $workspacePreferred->isValid()) {
+                return $workspacePreferred;
+            }
+        }
+
+        return DocumentSubtype::active()
+            ->forInvoice()
+            ->where('is_default', true)
+            ->first();
     }
 }
