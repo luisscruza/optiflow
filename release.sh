@@ -8,7 +8,7 @@ set -euo pipefail
 VERSION_BUMP=${1:-patch}
 
 # Get latest v-* tag
-CURRENT_TAG=$(git describe --tags --abbrev=0 --match 'v-*' 2>/dev/null || echo "v-0.0.0")
+CURRENT_TAG=$(git describe --tags --abbrev=0 --match "alpha-*" || echo "alpha-0.0.0")
 
 # Strip prefix v-
 VERSION=${CURRENT_TAG#v-}
