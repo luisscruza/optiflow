@@ -42,6 +42,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
         commentable_type: actualCommentableType,
         commentable_id: actualCommentableId,
         parent_id: parentId,
+        mentioned_user_ids: [] as number[],
     });
 
     const getInitials = (name: string) => {
@@ -53,6 +54,10 @@ export const CommentForm: React.FC<CommentFormProps> = ({
             .slice(0, 2);
     };
 
+    const handleMentionChange = (mentionedUserIds: number[]) => {
+        setData('mentioned_user_ids', mentionedUserIds);
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -62,6 +67,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
             preserveScroll: true,
             onSuccess: () => {
                 reset('comment');
+                setData('mentioned_user_ids', []);
                 onSuccess?.();
             },
         });
@@ -87,6 +93,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
                     <MentionTextarea
                         value={data.comment}
                         onChange={(value) => setData('comment', value)}
+                        onMentionChange={handleMentionChange}
                         placeholder={placeholder}
                         rows={3}
                         disabled={processing}

@@ -13,13 +13,23 @@ final class MentionService
 {
     /**
      * Extract mentions from comment text
-     * Returns array of usernames (without @)
+     * Returns array of usernames (without @ and brackets)
+     * Supports: @username and @[Full Name]
      */
     public function extractMentions(string $text): array
     {
-        preg_match_all('/@([a-zA-Z0-9._-]+)/', $text, $matches);
+        // Match @[Full Name] (with brackets for multi-word names)
+        preg_match_all('/@\[([^\]]+)\]/', $text, $bracketMatches);
 
-        return array_unique($matches[1] ?? []);
+        // Match @username (single word without brackets)
+        preg_match_all('/@([a-zA-Z0-9._-]+)(?!\[)/', $text, $simpleMatches);
+
+        $mentions = array_merge(
+            $bracketMatches[1] ?? [],
+            $simpleMatches[1] ?? []
+        );
+
+        return array_unique($mentions);
     }
 
     /**
@@ -47,8 +57,7 @@ final class MentionService
 
         $mentionedUsers = $this->findMentionedUsers($mentionedUsernames);
 
-        // Don't notify the person who made the comment
-        $mentionedUsers = $mentionedUsers->reject(fn (User $user): bool => $user->id === $mentioner->id);
+        $mentionedUsers = $mentionedUsers->reject(fn(User $user): bool => $user->id === $mentioner->id);
 
         foreach ($mentionedUsers as $user) {
             $user->notify(new CommentMention($comment, $mentioner));
@@ -64,15 +73,46 @@ final class MentionService
     }
 
     /**
+     * Process mentions using user IDs directly (more reliable)
+     */
+    public function processMentionsWithIds(Comment $comment, User $author, array $mentionedUserIds): void
+    {
+        if ($mentionedUserIds === []) {
+            return;
+        }
+
+        $mentionedUsers = User::query()
+            ->whereIn('id', $mentionedUserIds)
+            ->where('id', '!=', $author->id)
+            ->get();
+
+        foreach ($mentionedUsers as $user) {
+            $user->notify(new CommentMention($comment, $author));
+        }
+    }
+
+    /**
      * Highlight mentions in text for frontend display
+     * Supports: @username and @[Full Name]
+     * Removes brackets when rendering
      */
     public function highlightMentions(string $text): string
     {
-        return preg_replace(
-            '/@([a-zA-Z0-9._-]+)/',
+        // First, highlight @[Full Name] mentions (removing brackets)
+        $text = preg_replace(
+            '/@\[([^\]]+)\]/',
             '<span class="mention">@$1</span>',
             $text
         );
+
+        // Then, highlight @username mentions (but not already wrapped ones)
+        $text = preg_replace(
+            '/@([a-zA-Z0-9._-]+)(?!\[)/',
+            '<span class="mention">@$1</span>',
+            $text
+        );
+
+        return $text;
     }
 
     /**

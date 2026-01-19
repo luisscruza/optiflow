@@ -105,6 +105,11 @@ Route::middleware([
         Route::patch('comments/{comment}', [App\Http\Controllers\CommentController::class, 'update'])->name('comments.update');
         Route::delete('comments/{comment}', [App\Http\Controllers\CommentController::class, 'destroy'])->name('comments.destroy');
 
+        Route::get('notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+        Route::patch('notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
+        Route::post('notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+        Route::delete('notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
+
         // Business-wide user management (not scoped to workspace)
         Route::get('business/users', [BusinessUserController::class, 'index'])->name('business.users.index');
         Route::post('business/users/invite', [BusinessUserInvitationController::class, 'store'])->name('business.users.invite');
