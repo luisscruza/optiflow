@@ -100,7 +100,7 @@ export default function CreateCurrencyModal({ isOpen, onClose }: CreateCurrencyM
         <Dialog open={isOpen} onOpenChange={handleClose}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Nueva Moneda</DialogTitle>
+                    <DialogTitle>Nueva moneda</DialogTitle>
                 </DialogHeader>
                 
                 <form onSubmit={handleSubmit} className="space-y-4">

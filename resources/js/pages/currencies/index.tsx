@@ -73,10 +73,10 @@ export default function CurrenciesIndex({ currencies, historicalRates, defaultCu
 
         if (fromDefault) {
             // Convert from default currency to selected currency
-            return amount * selectedCurrency.current_rate;
+            return amount / selectedCurrency.current_rate;
         } else {
             // Convert from selected currency to default currency
-            return amount / selectedCurrency.current_rate;
+            return amount * selectedCurrency.current_rate;
         }
     };
 
@@ -144,7 +144,7 @@ export default function CurrenciesIndex({ currencies, historicalRates, defaultCu
                             </div>
                             <Button variant="outline" onClick={() => setIsCreateCurrencyModalOpen(true)}>
                                 <Coins className="mr-2 h-4 w-4" />
-                                Nueva Moneda
+                                Nueva moneda
                             </Button>
                         </div>
 
@@ -263,12 +263,12 @@ export default function CurrenciesIndex({ currencies, historicalRates, defaultCu
                                                 <p className="text-center text-sm text-muted-foreground">
                                                     {conversionDirection === 'to-foreign' ? (
                                                         <>
-                                                            1 {defaultCurrency.code} = {selectedCurrency.current_rate.toFixed(4)}{' '}
+                                                            1 {defaultCurrency.code} = {(1 / selectedCurrency.current_rate).toFixed(4)}{' '}
                                                             {selectedCurrency.code}
                                                         </>
                                                     ) : (
                                                         <>
-                                                            1 {selectedCurrency.code} = {(1 / selectedCurrency.current_rate).toFixed(4)}{' '}
+                                                            1 {selectedCurrency.code} = {selectedCurrency.current_rate.toFixed(4)}{' '}
                                                             {defaultCurrency.code}
                                                         </>
                                                     )}
@@ -302,7 +302,7 @@ export default function CurrenciesIndex({ currencies, historicalRates, defaultCu
                                         </div>
                                         <Button size="sm" onClick={() => setIsCreateRateModalOpen(true)}>
                                             <Plus className="mr-2 h-4 w-4" />
-                                            Agregar Tasa
+                                            Agregar tasa
                                         </Button>
                                     </div>
                                 </CardHeader>
@@ -332,7 +332,7 @@ export default function CurrenciesIndex({ currencies, historicalRates, defaultCu
                                                             <td className="py-2 text-right font-mono">{rate.rate.toFixed(4)}</td>
                                                             <td className="py-2 text-right text-muted-foreground">
                                                                 {defaultCurrency.symbol}1.00 = {selectedCurrency.symbol}
-                                                                {rate.rate.toFixed(2)}
+                                                                {(1 / rate.rate).toFixed(2)}
                                                             </td>
                                                         </tr>
                                                     ))
