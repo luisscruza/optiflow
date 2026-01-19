@@ -9,10 +9,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
-import type { SharedData } from '@/types';
+import type { BreadcrumbItem, SharedData } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
 import { Building2, Mail, Plus, Shield, Trash2, UserPlus, Users } from 'lucide-react';
 import { useState } from 'react';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Configuración',
+        href: '/configuration',
+    },
+    {
+        title: 'Usuarios del negocio',
+        href: '/business/users',
+    },
+];
 
 interface Role {
     id: number;
@@ -205,7 +216,7 @@ export default function BusinessUsers({ users, workspaces, rolesByWorkspace }: P
     const availableWorkspacesForUser = selectedUser ? workspaces.filter((w) => !selectedUser.workspaces.some((uw) => uw.id === w.id)) : [];
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Usuarios del negocio" />
 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

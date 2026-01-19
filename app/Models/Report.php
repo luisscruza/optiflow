@@ -14,15 +14,9 @@ final class Report extends Model
     /** @use HasFactory<\Database\Factories\ReportFactory> */
     use HasFactory;
 
-    protected $fillable = [
-        'type',
-        'name',
-        'description',
-        'group',
-        'config',
-        'is_active',
-    ];
-
+    /**
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [

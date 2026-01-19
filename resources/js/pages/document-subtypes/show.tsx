@@ -1,12 +1,12 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, Edit, FileText, Hash, Settings, Star, TrendingUp } from 'lucide-react';
+import { Building2, Calendar, Edit, FileText, Hash, Settings, Star, TrendingUp } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type Workspace } from '@/types';
 
 interface DocumentSubtype {
     id: number;
@@ -29,9 +29,11 @@ interface DocumentSubtype {
 
 interface Props {
     subtype: DocumentSubtype;
+    availableWorkspaces: Workspace[];
+    workspacePreferences: Record<number, boolean>;
 }
 
-export default function ShowDocumentSubtype({ subtype }: Props) {
+export default function ShowDocumentSubtype({ subtype, availableWorkspaces, workspacePreferences }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Numeraciones de comprobantes',
@@ -51,6 +53,19 @@ export default function ShowDocumentSubtype({ subtype }: Props) {
                 preserveState: true,
                 onSuccess: () => {
                     router.reload({ only: ['subtype'] });
+                },
+            },
+        );
+    };
+
+    const handleSetWorkspacePreferred = (workspace: Workspace) => {
+        router.patch(
+            `/document-subtypes/${subtype.id}/workspace/${workspace.slug}/set-preferred`,
+            {},
+            {
+                preserveState: true,
+                onSuccess: () => {
+                    router.reload({ only: ['workspacePreferences'] });
                 },
             },
         );
@@ -169,22 +184,6 @@ export default function ShowDocumentSubtype({ subtype }: Props) {
                                         <label className="text-sm font-medium text-gray-500">Estado</label>
                                         <p className={`text-lg font-medium ${getStatusColor()}`}>{getStatusText()}</p>
                                     </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-500">Preferida</label>
-                                        <div className="mt-1 flex items-center gap-2">
-                                            <Badge variant={subtype.is_default ? 'default' : 'secondary'}>{subtype.preferida}</Badge>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-500">Electrónica</label>
-                                        <div className="mt-1 flex items-center gap-2">
-                                            <Badge variant={subtype.electronica === 'Sí' ? 'default' : 'secondary'}>{subtype.electronica}</Badge>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-500">Documentos generados</label>
-                                        <p className="text-lg font-medium">{subtype.document_count}</p>
-                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
@@ -237,6 +236,62 @@ export default function ShowDocumentSubtype({ subtype }: Props) {
 
                     {/* Sidebar */}
                     <div className="space-y-6">
+                        {/* Preferences Card */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Star className="h-5 w-5" />
+                                    Preferencias
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {/* Global Default */}
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium">Predeterminada global</p>
+                                        <p className="text-xs text-gray-500">Se usará si no hay preferencia por sucursal</p>
+                                    </div>
+                                    {subtype.is_default ? (
+                                        <Badge variant="default" className="bg-yellow-100 text-yellow-800">
+                                            <Star className="mr-1 h-3 w-3 fill-current" />
+                                            Activa
+                                        </Badge>
+                                    ) : (
+                                        <Button variant="outline" size="sm" onClick={handleSetDefault}>
+                                            Establecer
+                                        </Button>
+                                    )}
+                                </div>
+
+                                {/* Workspace Preferences */}
+                                {availableWorkspaces.length > 0 && (
+                                    <div className="border-t pt-4">
+                                        <p className="mb-3 text-sm font-medium">Preferida por sucursal</p>
+                                        <div className="space-y-2">
+                                            {availableWorkspaces.map((workspace) => (
+                                                <div key={workspace.id} className="flex items-center justify-between rounded-lg border p-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <Building2 className="h-4 w-4 text-gray-400" />
+                                                        <span className="text-sm">{workspace.name}</span>
+                                                    </div>
+                                                    {workspacePreferences[workspace.id] ? (
+                                                        <Badge variant="default" className="bg-blue-100 text-blue-800">
+                                                            <Star className="mr-1 h-3 w-3 fill-current" />
+                                                            Preferida
+                                                        </Badge>
+                                                    ) : (
+                                                        <Button variant="ghost" size="sm" onClick={() => handleSetWorkspacePreferred(workspace)}>
+                                                            Establecer
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
                         <Card>
                             <CardHeader>
                                 <CardTitle>Información del sistema</CardTitle>

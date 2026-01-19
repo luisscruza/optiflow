@@ -25,6 +25,7 @@ import { CommentList } from '@/components/CommentList';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { Input } from '@/components/ui/input';
@@ -870,6 +871,27 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
                                                                             ))}
                                                                         </SelectContent>
                                                                     </Select>
+                                                                )}
+
+                                                                {field.type === 'boolean' && (
+                                                                    <div className="flex items-center gap-2 pt-1">
+                                                                        <Checkbox
+                                                                            id={`field-${field.id}`}
+                                                                            checked={
+                                                                                currentValue === true ||
+                                                                                currentValue === 'true' ||
+                                                                                currentValue === 1 ||
+                                                                                currentValue === '1'
+                                                                            }
+                                                                            onCheckedChange={(checked) => handleFieldChange(checked === true)}
+                                                                        />
+                                                                        <Label
+                                                                            htmlFor={`field-${field.id}`}
+                                                                            className="cursor-pointer text-sm text-gray-600"
+                                                                        >
+                                                                            {field.placeholder || 'Sí'}
+                                                                        </Label>
+                                                                    </div>
                                                                 )}
                                                             </div>
                                                         );

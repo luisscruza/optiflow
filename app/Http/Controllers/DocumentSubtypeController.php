@@ -12,6 +12,7 @@ use App\Models\DocumentSubtype;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -38,9 +39,7 @@ final class DocumentSubtypeController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        // Add computed fields for the table
         $subtypes->getCollection()->transform(function ($subtype) {
-            $subtype->electronica = 'No'; // Default to No for now
             $subtype->siguiente_numero = $subtype->next_number;
             $subtype->fecha_finalizacion = $subtype->valid_until_date?->format('d/m/Y');
             $subtype->preferida = $subtype->is_default ? 'Sí' : 'No';
@@ -81,8 +80,19 @@ final class DocumentSubtypeController extends Controller
      */
     public function show(DocumentSubtype $documentSubtype): Response
     {
+        $documentSubtype->load('preferredByWorkspaces');
+
+        $availableWorkspaces = Auth::user()?->workspaces ?? collect();
+
+        $workspacePreferences = $documentSubtype->preferredByWorkspaces
+            ->pluck('id')
+            ->mapWithKeys(fn ($id) => [$id => true])
+            ->toArray();
+
         return Inertia::render('document-subtypes/show', [
             'subtype' => $documentSubtype,
+            'availableWorkspaces' => $availableWorkspaces,
+            'workspacePreferences' => $workspacePreferences,
         ]);
     }
 

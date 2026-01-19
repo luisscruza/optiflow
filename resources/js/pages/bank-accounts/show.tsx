@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Building2, Calendar, CreditCard, DollarSign, Edit, FileText, TrendingDown, TrendingUp } from 'lucide-react';
+import { Building2, Calendar, CreditCard, DollarSign, Edit, FileText, TrendingDown, TrendingUp } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,17 +8,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { useCurrency } from '@/utils/currency';
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Cuentas bancarias',
-        href: '/bank-accounts',
-    },
-    {
-        title: 'Detalles de la cuenta',
-        href: '#',
-    },
-];
 
 interface Payment {
     id: number;
@@ -69,6 +58,21 @@ interface Props {
 
 export default function ShowBankAccount({ bankAccount }: Props) {
     const { format: formatCurrency } = useCurrency();
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Configuración',
+            href: '/configuration',
+        },
+        {
+            title: 'Cuentas bancarias',
+            href: '/bank-accounts',
+        },
+        {
+            title: bankAccount.name,
+            href: '#',
+        },
+    ];
 
     const handleDelete = () => {
         if (confirm('¿Estás seguro de que deseas eliminar esta cuenta bancaria?')) {
@@ -122,20 +126,12 @@ export default function ShowBankAccount({ bankAccount }: Props) {
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="mb-8 flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                        <Button variant="ghost" size="sm" asChild>
-                            <Link href="/bank-accounts">
-                                <ArrowLeft className="mr-2 h-4 w-4" />
-                                Volver
-                            </Link>
-                        </Button>
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{bankAccount.name}</h1>
-                            <p className="text-gray-600 dark:text-gray-400">
-                                {bankAccount.type_label}
-                                {bankAccount.account_number && ` • ${bankAccount.account_number}`}
-                            </p>
-                        </div>
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{bankAccount.name}</h1>
+                        <p className="text-gray-600 dark:text-gray-400">
+                            {bankAccount.type_label}
+                            {bankAccount.account_number && ` • ${bankAccount.account_number}`}
+                        </p>
                     </div>
 
                     <div className="flex space-x-3">

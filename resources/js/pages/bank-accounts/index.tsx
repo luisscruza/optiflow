@@ -14,6 +14,10 @@ import { useCurrency } from '@/utils/currency';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
+        title: 'Configuración',
+        href: '/configuration',
+    },
+    {
         title: 'Cuentas bancarias',
         href: '/bank-accounts',
     },

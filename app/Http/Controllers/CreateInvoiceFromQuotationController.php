@@ -17,6 +17,7 @@ use App\Models\Quotation;
 use App\Models\Salesman;
 use App\Models\Tax;
 use App\Models\User;
+use App\Models\Workspace;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
@@ -71,8 +72,6 @@ final class CreateInvoiceFromQuotationController extends Controller
                 return $product;
             });
 
-        $defaultDocumentSubtype = DocumentSubtype::active()->forInvoice()->where('is_default', true)->first();
-
         $availableWorkspaces = Auth::user()?->workspaces ?? collect();
 
         $quotationItems = $quotation->items->map(fn ($item, $index) => [
@@ -95,7 +94,6 @@ final class CreateInvoiceFromQuotationController extends Controller
             ])->values()->all(),
         ])->values()->all();
 
-        // Group taxes by type for the multi-select component
         $taxesGroupedByType = Tax::query()
             ->orderBy('is_default', 'desc')
             ->orderBy('name')
@@ -114,12 +112,14 @@ final class CreateInvoiceFromQuotationController extends Controller
             ->orderBy('name')
             ->get();
 
+        $documentSubtype = $this->getDefaultDocumentSubtype($currentWorkspace);
+
         return Inertia::render('invoices/create', [
             'documentSubtypes' => $documentSubtypes,
             'customers' => $customers,
             'products' => $products,
-            'ncf' => $defaultDocumentSubtype?->generateNCF(),
-            'document_subtype_id' => $defaultDocumentSubtype?->id,
+            'ncf' => $documentSubtype?->generateNCF(),
+            'document_subtype_id' => $documentSubtype->id,
             'currentWorkspace' => $currentWorkspace,
             'availableWorkspaces' => $availableWorkspaces,
             'defaultNote' => CompanyDetail::getByKey('terms_conditions'),
@@ -165,5 +165,21 @@ final class CreateInvoiceFromQuotationController extends Controller
         }
 
         return 'in_stock';
+    }
+
+    private function getDefaultDocumentSubtype(?Workspace $workspace): ?DocumentSubtype
+    {
+        if ($workspace instanceof Workspace) {
+            $workspacePreferred = $workspace->getPreferredDocumentSubtype();
+
+            if ($workspacePreferred instanceof DocumentSubtype && $workspacePreferred->isValid()) {
+                return $workspacePreferred;
+            }
+        }
+
+        return DocumentSubtype::active()
+            ->forInvoice()
+            ->where('is_default', true)
+            ->first();
     }
 }

@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Building2, ChevronDown, ChevronRight, Save, Users } from 'lucide-react';
+import { ArrowLeft, Building2, ChevronDown, ChevronRight, DollarSign, Save, Users } from 'lucide-react';
 import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +37,7 @@ interface ContactFormData {
     province: string;
     postal_code: string;
     country: string;
+    credit_limit: string;
 }
 
 export default function EditContact({ contact, contact_types, identification_types }: Props) {
@@ -44,6 +45,7 @@ export default function EditContact({ contact, contact_types, identification_typ
     const [contactInfoOpen, setContactInfoOpen] = useState(true);
     const [identificationOpen, setIdentificationOpen] = useState(false);
     const [addressOpen, setAddressOpen] = useState(false);
+    const [financialOpen, setFinancialOpen] = useState(false);
     const [additionalOpen, setAdditionalOpen] = useState(false);
 
     // Get available countries and their provinces/cities
@@ -87,6 +89,7 @@ export default function EditContact({ contact, contact_types, identification_typ
         province: contact.primary_address?.province || '',
         postal_code: '',
         country: contact.primary_address?.country || 'Dominican Republic',
+        credit_limit: contact.credit_limit?.toString() || '0',
     });
 
     const selectedCountryProvinces = getProvincesForCountry(data.country);
@@ -472,6 +475,52 @@ export default function EditContact({ contact, contact_types, identification_typ
                                                     </SelectContent>
                                                 </Select>
                                                 {errors.country && <p className="text-sm text-red-600 dark:text-red-400">{errors.country}</p>}
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </CollapsibleContent>
+                            </Card>
+                        </Collapsible>
+
+                        {/* Financial Information - Collapsed by Default */}
+                        <Collapsible open={financialOpen} onOpenChange={setFinancialOpen}>
+                            <Card>
+                                <CollapsibleTrigger asChild>
+                                    <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                        <CardTitle className="flex items-center justify-between">
+                                            <span className="flex items-center gap-2">
+                                                <DollarSign className="h-4 w-4" />
+                                                Información Financiera
+                                            </span>
+                                            {financialOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                        </CardTitle>
+                                        <CardDescription>Configuración de crédito y condiciones comerciales</CardDescription>
+                                    </CardHeader>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <CardContent className="space-y-4">
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="credit_limit">Límite de Crédito</Label>
+                                                <div className="relative">
+                                                    <DollarSign className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                                    <Input
+                                                        id="credit_limit"
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0"
+                                                        value={data.credit_limit}
+                                                        onChange={(e) => setData('credit_limit', e.target.value)}
+                                                        placeholder="0.00"
+                                                        className={`pl-9 ${errors.credit_limit ? 'border-red-500' : ''}`}
+                                                    />
+                                                </div>
+                                                {errors.credit_limit && (
+                                                    <p className="text-sm text-red-600 dark:text-red-400">{errors.credit_limit}</p>
+                                                )}
+                                                <p className="text-xs text-gray-500">
+                                                    Define el monto máximo de crédito permitido para este contacto. Dejar en 0 para sin límite.
+                                                </p>
                                             </div>
                                         </div>
                                     </CardContent>

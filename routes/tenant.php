@@ -40,6 +40,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportGroupController;
 use App\Http\Controllers\SalesmanController;
 use App\Http\Controllers\SetDefaultDocumentSubtypeController;
+use App\Http\Controllers\SetWorkspacePreferredDocumentSubtypeController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\StreamInvoicePdfController;
@@ -174,6 +175,7 @@ Route::middleware([
 
             Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
             Route::patch('document-subtypes/{documentSubtype}/set-default', SetDefaultDocumentSubtypeController::class)->name('document-subtypes.set-default');
+            Route::patch('document-subtypes/{documentSubtype}/workspace/{workspace}/set-preferred', SetWorkspacePreferredDocumentSubtypeController::class)->name('document-subtypes.set-workspace-preferred');
 
             Route::get('inventory', fn() => Inertia::render('inventory/index'))->name('inventory.index');
 

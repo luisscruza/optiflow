@@ -90,10 +90,13 @@ final class SyncDGII extends Command
         $count = 0;
 
         while (($data = fgetcsv($handle, 0, '|')) !== false) {
+            $name = isset($data[1]) ? mb_convert_encoding($data[1], 'UTF-8', 'Windows-1252') : null;
+            $comercialName = isset($data[2]) ? mb_convert_encoding($data[2], 'UTF-8', 'Windows-1252') : null;
+
             $row = [
                 'identification' => $data[0] ?? null,
-                'name' => $data[1] ?? null,
-                'comercial_name' => $data[2] ?? null,
+                'name' => $name ? mb_substr($name, 0, 255) : null,
+                'comercial_name' => $comercialName ? mb_substr($comercialName, 0, 255) : null,
                 'status' => $data[9] ?? null,
                 'created_at' => now(),
                 'updated_at' => now(),

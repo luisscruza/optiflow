@@ -44,14 +44,14 @@ final class ContactController extends Controller
 
         return Inertia::render('contacts/create', [
             'identification_types' => collect(IdentificationType::cases())
-                ->map(fn ($type): array => [
+                ->map(fn($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])
                 ->values()
                 ->toArray(),
             'contact_types' => collect(ContactType::cases())
-                ->map(fn ($type): array => [
+                ->map(fn($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])
@@ -87,8 +87,61 @@ final class ContactController extends Controller
             'comments.comments.comments.commentator',
         ]);
 
+        // Load invoices with basic info, limited to latest 10
+        $invoices = $contact->invoices()
+            ->with(['documentSubtype'])
+            ->orderByDesc('issue_date')
+            ->limit(10)
+            ->get();
+
+        // Load quotations from the Quotation model, limited to latest 10
+        $quotations = $contact->quotations()
+            ->with(['documentSubtype'])
+            ->orderByDesc('issue_date')
+            ->limit(10)
+            ->get();
+
+        // Load prescriptions, limited to latest 10
+        $prescriptions = $contact->prescriptions()
+            ->with(['optometrist'])
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get();
+
+        // Load workflow jobs, limited to latest 10
+        $workflowJobs = $contact->workflowJobs()
+            ->with(['workflow', 'workflowStage'])
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get();
+
+        // Calculate summary statistics
+        $stats = [
+            'total_invoices' => $contact->invoices()->count(),
+            'total_quotations' => $contact->quotations()->count(),
+            'total_prescriptions' => $contact->prescriptions()->count(),
+            'total_workflow_jobs' => $contact->workflowJobs()->count(),
+            'total_invoiced' => $contact->invoices()->sum('total_amount'),
+            'total_paid' => $contact->invoices()
+                ->whereIn('status', ['paid', 'partially_paid'])
+                ->get()
+                ->sum(fn($invoice) => $invoice->total_amount - $invoice->amount_due),
+            'pending_amount' => $contact->invoices()
+                ->whereNotIn('status', ['paid', 'cancelled'])
+                ->sum('total_amount'),
+            'pending_workflow_jobs' => $contact->workflowJobs()
+                ->whereNull('completed_at')
+                ->whereNull('canceled_at')
+                ->count(),
+        ];
+
         return Inertia::render('contacts/show', [
             'contact' => $contact,
+            'invoices' => $invoices,
+            'quotations' => $quotations,
+            'prescriptions' => $prescriptions,
+            'workflowJobs' => $workflowJobs,
+            'stats' => $stats,
         ]);
     }
 
@@ -104,14 +157,14 @@ final class ContactController extends Controller
         return Inertia::render('contacts/edit', [
             'contact' => $contact,
             'identification_types' => collect(IdentificationType::cases())
-                ->map(fn ($type): array => [
+                ->map(fn($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])
                 ->values()
                 ->toArray(),
             'contact_types' => collect(ContactType::cases())
-                ->map(fn ($type): array => [
+                ->map(fn($type): array => [
                     'value' => $type->value,
                     'label' => $type->label(),
                 ])
@@ -128,11 +181,8 @@ final class ContactController extends Controller
         abort_unless($user->can(Permission::ContactsEdit), 403);
 
         $action->handle($user, $contact, $request->validated());
-
-        $contactTypeLabel = ContactType::from($contact->contact_type)->label();
-
         return redirect()->route('contacts.show', $contact)
-            ->with('success', "El {$contactTypeLabel} ha sido actualizado exitosamente.");
+            ->with('success', "El contacto ha sido actualizado exitosamente.");
     }
 
     /**
@@ -142,11 +192,9 @@ final class ContactController extends Controller
     {
         abort_unless($user->can(Permission::ContactsDelete), 403);
 
-        $contactTypeLabel = ContactType::from($contact->contact_type)->label();
-
         $action->handle($user, $contact);
 
         return redirect()->route('contacts.index')
-            ->with('success', "El {$contactTypeLabel} ha sido eliminado exitosamente.");
+            ->with('success', "El contacto ha sido eliminado exitosamente.");
     }
 }

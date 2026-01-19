@@ -183,7 +183,7 @@ final readonly class GeneralSalesReport implements ReportContract
                 'id' => $invoice->id,
                 'document_number' => $invoice->document_number,
                 'customer_name' => $invoice->contact?->name ?? 'Sin cliente',
-                'status' => $invoice->status_config,
+                'status' => $invoice->status->toBadge(),
                 'issue_date' => $invoice->issue_date->format('d/m/Y'),
                 'subtotal_amount' => $invoice->subtotal_amount,
                 'total_amount' => $invoice->total_amount,

@@ -22,7 +22,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string|null $email
  * @property string|null $phone
  * @property string|null $address
- * @property string $contact_type
  * @property array<array-key, mixed>|null $metadata
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at
@@ -138,7 +137,7 @@ final class Contact extends Model implements Commentable
      */
     public function invoices(): HasMany
     {
-        return $this->documents()->where('type', 'invoice');
+        return $this->hasMany(Invoice::class);
     }
 
     /**
@@ -148,7 +147,7 @@ final class Contact extends Model implements Commentable
      */
     public function quotations(): HasMany
     {
-        return $this->documents()->where('type', 'quotation');
+        return $this->hasMany(Quotation::class);
     }
 
     /**
@@ -159,6 +158,26 @@ final class Contact extends Model implements Commentable
     public function suppliedStocks(): HasMany
     {
         return $this->hasMany(ProductStock::class, 'supplier_id');
+    }
+
+    /**
+     * Get the prescriptions where this contact is the patient.
+     *
+     * @return HasMany<Prescription, $this>
+     */
+    public function prescriptions(): HasMany
+    {
+        return $this->hasMany(Prescription::class, 'patient_id');
+    }
+
+    /**
+     * Get the workflow jobs for this contact.
+     *
+     * @return HasMany<WorkflowJob, $this>
+     */
+    public function workflowJobs(): HasMany
+    {
+        return $this->hasMany(WorkflowJob::class);
     }
 
     /**

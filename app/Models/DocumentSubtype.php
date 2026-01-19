@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -141,6 +142,38 @@ final class DocumentSubtype extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(Invoice::class);
+    }
+
+    /**
+     * Get the workspaces that have preferences for this document subtype.
+     *
+     * @return BelongsToMany<Workspace, $this>
+     */
+    public function workspaces(): BelongsToMany
+    {
+        return $this->belongsToMany(Workspace::class)
+            ->withPivot(['is_preferred'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get workspaces where this document subtype is preferred.
+     *
+     * @return BelongsToMany<Workspace, $this>
+     */
+    public function preferredByWorkspaces(): BelongsToMany
+    {
+        return $this->workspaces()->wherePivot('is_preferred', true);
+    }
+
+    /**
+     * Check if this document subtype is preferred for a specific workspace.
+     */
+    public function isPreferredForWorkspace(Workspace $workspace): bool
+    {
+        return $this->preferredByWorkspaces()
+            ->where('workspaces.id', $workspace->id)
+            ->exists();
     }
 
     /**
