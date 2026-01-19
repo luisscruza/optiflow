@@ -34,6 +34,7 @@ const fieldTypes: { value: WorkflowFieldType; label: string }[] = [
     { value: 'number', label: 'Número' },
     { value: 'date', label: 'Fecha' },
     { value: 'select', label: 'Selección' },
+    { value: 'boolean', label: 'Sí/No' },
 ];
 
 const generateKey = (name: string): string => {

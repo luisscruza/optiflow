@@ -1,3 +1,4 @@
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -73,6 +74,20 @@ export function DynamicFields({ fields, values, onChange }: DynamicFieldsProps) 
                             ))}
                         </SelectContent>
                     </Select>
+                );
+
+            case 'boolean':
+                return (
+                    <div className="flex items-center gap-2 pt-1">
+                        <Checkbox
+                            id={`field-${field.key}`}
+                            checked={value === true || value === 'true' || value === 1 || value === '1'}
+                            onCheckedChange={(checked) => onChange(field.key, checked === true ? 1 : 0)}
+                        />
+                        <Label htmlFor={`field-${field.key}`} className="cursor-pointer text-sm text-gray-600">
+                            {field.placeholder || 'Sí'}
+                        </Label>
+                    </div>
                 );
 
             default:

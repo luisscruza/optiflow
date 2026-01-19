@@ -560,11 +560,7 @@ export interface Quotation {
     workspace_id: number;
     contact_id: number;
     document_subtype_id: number;
-    status:
-        | 'converted'
-        | 'draft'
-        | 'non_converted'
-        | 'sent';
+    status: 'converted' | 'draft' | 'non_converted' | 'sent';
     document_number: string;
     issue_date: string;
     due_date: string;
@@ -839,7 +835,7 @@ export interface ProductImport {
 
 // Workflow Types (Kanban for lens processing)
 export type WorkflowJobPriority = 'low' | 'medium' | 'high' | 'urgent';
-export type WorkflowFieldType = 'text' | 'textarea' | 'number' | 'date' | 'select';
+export type WorkflowFieldType = 'text' | 'textarea' | 'number' | 'date' | 'select' | 'boolean';
 
 export interface WorkflowField {
     id: string;

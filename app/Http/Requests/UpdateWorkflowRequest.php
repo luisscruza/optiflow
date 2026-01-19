@@ -32,7 +32,7 @@ final class UpdateWorkflowRequest extends FormRequest
             'fields.*.id' => ['sometimes', 'nullable', 'uuid'],
             'fields.*.name' => ['required_with:fields', 'string', 'max:255'],
             'fields.*.key' => ['required_with:fields', 'string', 'max:255', 'regex:/^[a-z0-9_]+$/'],
-            'fields.*.type' => ['required_with:fields', 'string', 'in:text,textarea,number,date,select'],
+            'fields.*.type' => ['required_with:fields', 'string', 'in:text,textarea,number,date,select,boolean'],
             'fields.*.mastertable_id' => ['nullable', 'integer', 'exists:mastertables,id'],
             'fields.*.is_required' => ['sometimes', 'boolean'],
             'fields.*.placeholder' => ['nullable', 'string', 'max:255'],
