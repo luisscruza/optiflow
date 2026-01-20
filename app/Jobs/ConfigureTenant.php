@@ -56,7 +56,15 @@ final class ConfigureTenant implements ShouldQueue
 
     private function createMainUser(Client $client): User
     {
+        /**
+         * TODO: Remove this conditional replacing with a faker in the tests
+         *  factory for the Client model to generate predictable passwords.
+         */
+        if (app()->environment('testing')) {
+            $password = 'password';
+        } else {
         $password = Str::random(12);
+        }
 
         $user = User::query()->create([
             'name' => $client->name,

@@ -45,10 +45,8 @@ trait RefreshDatabaseWithTenant
      */
     public function initializeTenant()
     {
-        // Hardcoded tenant ID for testing purposes.
         $tenantId = 'foo';
 
-        // Retrieve or create the tenant with the given ID.
         $tenant = Tenant::firstOr(function () use ($tenantId) {
 
             /**
@@ -57,17 +55,15 @@ trait RefreshDatabaseWithTenant
              */
             config(['tenancy.database.prefix' => config('tenancy.database.prefix').ParallelTesting::token().'_']);
 
-            // Define the database name for the tenant.
             $dbName = config('tenancy.database.prefix').$tenantId;
 
-            // Drop the database if it already exists.
             DB::unprepared("DROP DATABASE IF EXISTS `{$dbName}`");
 
             $client = Client::firstOrCreate(
                 ['name' => 'Test Client'],
                 ['email' => 'test@example.com']
             );
-            // Create the tenant and associated domain if they don't exist.
+
             $t = Tenant::create(['id' => $tenantId, 'name' => 'Test Tenant', 'client_id' => $client->id, 'domain' => $tenantId]);
 
             if (! $t->domains()->count()) {
@@ -77,10 +73,12 @@ trait RefreshDatabaseWithTenant
             return $t;
         });
 
-        // Initialize tenancy for the current test.
         tenancy()->initialize($tenant);
 
+        $subdomain = $tenant->domain;
+        $url = 'https://'.$subdomain.'.opticanet.test';
+
         // Set the root URL for the current tenant.
-        URL::forceRootUrl('http://foo.localhost');
+        URL::forceRootUrl($url);
     }
 }
