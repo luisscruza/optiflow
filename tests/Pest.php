@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Tests\Concerns\RefreshDatabaseWithTenant;
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -14,14 +16,7 @@ declare(strict_types=1);
 */
 
 pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
-    ->use(Tests\Concerns\InteractsWithTenancy::class)
-    ->beforeEach(function (): void {
-        $this->setUpTenancy();
-    })
-    ->afterEach(function (): void {
-        $this->tearDownTenancy();
-    })
+    ->use(RefreshDatabaseWithTenant::class)
     ->in('Feature/Tenant', 'Unit/Tenant', 'Browser/Tenant');
 
 pest()->extend(Tests\TestCase::class)

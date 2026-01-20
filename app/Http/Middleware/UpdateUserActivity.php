@@ -25,7 +25,17 @@ class UpdateUserActivity
             return $next($request);
         }
 
-        $last = $user->last_activity_at;
+        if (! tenant()) {
+            return $next($request);
+        }
+
+        try {
+            $last = $user->getAttribute('last_activity_at');
+        } catch (\Illuminate\Database\Eloquent\MissingAttributeException) {
+            $user->forceFill(['last_activity_at' => now()])->saveQuietly();
+
+            return $next($request);
+        }
 
         if (is_string($last)) {
             $last = Carbon::parse($last);

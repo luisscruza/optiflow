@@ -21,30 +21,18 @@ final class InvoiceItemFactory extends Factory
      */
     public function definition(): array
     {
-        $quantity = fake()->numberBetween(1, 100);
-        $unitPrice = fake()->randomFloat(2, 10, 1000);
-        $discountRate = fake()->randomFloat(2, 0, 20);
-        $tax = Tax::factory()->create();
-        $taxRate = (float) $tax->rate;
-
-        $subtotal = $quantity * $unitPrice;
-        $discountAmount = $subtotal * ($discountRate / 100);
-        $subtotalAfterDiscount = $subtotal - $discountAmount;
-        $taxAmount = $subtotalAfterDiscount * ($taxRate / 100);
-        $total = $subtotalAfterDiscount + $taxAmount;
-
         return [
             'invoice_id' => Invoice::factory(),
             'product_id' => Product::factory(),
             'description' => fake()->sentence(),
-            'quantity' => $quantity,
-            'unit_price' => $unitPrice,
-            'discount_amount' => $discountAmount,
-            'discount_rate' => $discountRate,
-            'tax_id' => $tax->id,
-            'tax_rate' => $taxRate,
-            'tax_amount' => $taxAmount,
-            'total' => $total,
+            'quantity' => fake()->numberBetween(1, 100),
+            'unit_price' => fake()->randomFloat(2, 10, 1000),
+            'discount_amount' => fake()->randomFloat(2, 0, 100),
+            'discount_rate' => fake()->randomFloat(2, 0, 20),
+            'tax_id' => Tax::factory(),
+            'tax_rate' => fake()->randomFloat(2, 0, 25),
+            'tax_amount' => fake()->randomFloat(2, 0, 100),
+            'total' => fake()->randomFloat(2, 10, 5000),
         ];
     }
 

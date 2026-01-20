@@ -25,6 +25,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at
  * @property int|null $current_workspace_id
+ * @property-read \Carbon\CarbonImmutable|null $last_activity_at
  * @property-read Workspace|null $currentWorkspace
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
