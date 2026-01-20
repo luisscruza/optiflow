@@ -1,0 +1,15 @@
+{
+    "agents": [
+        "cursor",
+        "opencode",
+        "phpstorm"
+    ],
+    "editors": [
+        "cursor",
+        "opencode",
+        "phpstorm",
+        "vscode"
+    ],
+    "guidelines": [],
+    "herd_mcp": true
+}
