@@ -46,7 +46,10 @@ abstract class Column
 
     public static function make(string $name, ?string $label = null): static
     {
-        return new static($name, $label);
+        /** @var static $instance */
+        $instance = app(static::class, ['name' => $name, 'label' => $label]);
+
+        return $instance;
     }
 
     public function sortable(bool $sortable = true): static

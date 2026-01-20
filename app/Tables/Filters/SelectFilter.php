@@ -18,7 +18,12 @@ final class SelectFilter extends Filter
     {
         if (is_string($options) && enum_exists($options)) {
             $this->options = collect($options::cases())
-                ->mapWithKeys(fn ($case) => [$case->value => method_exists($case, 'label') ? $case->label() : $case->name])
+                ->mapWithKeys(function ($case): array {
+                    $value = $case instanceof BackedEnum ? $case->value : $case->name;
+                    $label = method_exists($case, 'label') ? $case->label() : $case->name;
+
+                    return [(string) $value => $label];
+                })
                 ->toArray();
         } else {
             $this->options = $options;

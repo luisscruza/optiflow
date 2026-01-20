@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tables\Columns;
 
+use App\Contracts\Badgeable;
 use BackedEnum;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
@@ -50,12 +51,23 @@ final class BadgeColumn extends Column
     {
         $rawValue = data_get($record, $this->name);
 
-        if ($record->{$this->name} instanceof BackedEnum) {
+        if ($rawValue instanceof Badgeable) {
             return [
-                'value' => $record->{$this->name}->value,
-                'label' => $record->{$this->name}->label(),
-                'variant' => $record->{$this->name}->badgeVariant(),
-                'className' => $record->{$this->name}->badgeClassName(),
+                'value' => $rawValue instanceof BackedEnum ? $rawValue->value : $rawValue,
+                'label' => $rawValue->label(),
+                'variant' => $rawValue->badgeVariant(),
+                'className' => $rawValue->badgeClassName(),
+            ];
+        }
+        if ($rawValue instanceof BackedEnum
+            && is_callable([$rawValue, 'label'])
+            && is_callable([$rawValue, 'badgeVariant'])
+            && is_callable([$rawValue, 'badgeClassName'])) {
+            return [
+                'value' => $rawValue->value,
+                'label' => (string) call_user_func([$rawValue, 'label']),
+                'variant' => (string) call_user_func([$rawValue, 'badgeVariant']),
+                'className' => (string) call_user_func([$rawValue, 'badgeClassName']),
             ];
         }
         $label = $this->getDisplayLabel($rawValue, $record);
@@ -79,6 +91,12 @@ final class BadgeColumn extends Column
 
     protected function getDisplayLabel(mixed $value, Model $record): string
     {
+        if ($value instanceof BackedEnum) {
+            $value = $value->value;
+        } elseif ($value instanceof \UnitEnum) {
+            $value = $value->name;
+        }
+
         if ($this->labelUsing) {
             return call_user_func($this->labelUsing, $value, $record);
         }
@@ -88,6 +106,12 @@ final class BadgeColumn extends Column
 
     protected function getColor(mixed $value, Model $record): string
     {
+        if ($value instanceof BackedEnum) {
+            $value = $value->value;
+        } elseif ($value instanceof \UnitEnum) {
+            $value = $value->name;
+        }
+
         if ($this->colorUsing) {
             return call_user_func($this->colorUsing, $value, $record);
         }

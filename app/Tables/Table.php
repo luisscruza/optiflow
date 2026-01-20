@@ -9,7 +9,7 @@ use App\Tables\Columns\Column;
 use App\Tables\Filters\DateRangeFilter;
 use App\Tables\Filters\Filter;
 use App\Tables\Filters\SearchFilter;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -52,7 +52,8 @@ abstract class Table implements Arrayable, JsonSerializable
      */
     public static function make(?Request $request = null): static
     {
-        $instance = new static;
+        /** @var static $instance */
+        $instance = app(static::class);
         $instance->request = $request ?? request();
 
         return $instance;
