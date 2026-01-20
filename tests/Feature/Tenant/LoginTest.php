@@ -15,7 +15,6 @@ test('user can login', function () {
         ->assertSee('Ingresa tu correo electrónico y contraseña para iniciar sesión')
         ->fill('email', 'test@example.com')
         ->fill('password', 'password')
-        ->debug()
         ->click('Iniciar sesión')
         ->assertPathIs('/dashboard')
         ->assertSee('Tablero');
