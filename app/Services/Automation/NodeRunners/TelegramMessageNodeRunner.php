@@ -83,9 +83,9 @@ final class TelegramMessageNodeRunner implements AutomationNodeRunner
             ]);
 
             return NodeResult::success([
-                'message_id' => $response->getMessageId(),
-                'chat_id' => $response->getChat()->getId(),
-                'date' => $response->getDate(),
+                'message_id' => data_get($response, 'message_id'),
+                'chat_id' => data_get($response, 'chat.id'),
+                'date' => data_get($response, 'date'),
             ]);
         } catch (TelegramSDKException $e) {
             return NodeResult::failure([

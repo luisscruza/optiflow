@@ -43,7 +43,7 @@ final class ReportController extends Controller
             ->where('is_active', true)
             ->limit(4)
             ->get()
-            ->map(fn ($report) => [
+            ->map(fn (Report $report): array => [
                 'id' => $report->id,
                 'type' => $report->type->value,
                 'name' => $report->name,

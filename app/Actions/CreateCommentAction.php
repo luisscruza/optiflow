@@ -7,6 +7,7 @@ namespace App\Actions;
 use App\Contracts\Commentable;
 use App\Models\User;
 use App\Services\MentionService;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -22,11 +23,11 @@ final readonly class CreateCommentAction
     public function handle(User $user, array $data): void
     {
         DB::transaction(function () use ($user, $data): void {
-            /** @var class-string<Commentable> $class */
+            /** @var class-string<Model&Commentable> $class */
             $class = $this->resolveCommentableClass($data['commentable_type']);
 
-            /** @var Model $model */
-            $model = $class::findOrFail($data['commentable_id']);
+            /** @var Model&Commentable $model */
+            $model = $class::query()->findOrFail($data['commentable_id']);
 
             $comment = $model->comment($data['comment']);
 

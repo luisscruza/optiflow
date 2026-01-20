@@ -9,6 +9,23 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property string $id
+ * @property string $workflow_id
+ * @property string $name
+ * @property string $key
+ * @property WorkflowFieldType $type
+ * @property int|null $mastertable_id
+ * @property bool $is_required
+ * @property string|null $placeholder
+ * @property string|null $default_value
+ * @property int $position
+ * @property bool $is_active
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ * @property-read Workflow $workflow
+ * @property-read Mastertable|null $mastertable
+ */
 final class WorkflowField extends Model
 {
     use HasUuids;

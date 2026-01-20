@@ -19,7 +19,7 @@ final class ReportGroupController extends Controller
             ->where('group', $reportGroup)
             ->where('is_active', true)
             ->get()
-            ->map(fn ($report) => [
+            ->map(fn (Report $report): array => [
                 'id' => $report->id,
                 'type' => $report->type->value,
                 'name' => $report->name,

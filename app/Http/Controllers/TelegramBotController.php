@@ -45,7 +45,12 @@ final class TelegramBotController extends Controller
         try {
             $telegram = new Api($validated['bot_token']);
             $botInfo = $telegram->getMe();
-            $botUsername = $botInfo->getUsername();
+            $botUsername = data_get($botInfo, 'username');
+            if (! is_string($botUsername) || $botUsername === '') {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['bot_token' => 'Token inválido: no se pudo obtener el usuario.']);
+            }
         } catch (TelegramSDKException $e) {
             return redirect()->back()
                 ->withInput()
@@ -92,7 +97,14 @@ final class TelegramBotController extends Controller
             try {
                 $telegram = new Api($validated['bot_token']);
                 $botInfo = $telegram->getMe();
-                $updateData['bot_username'] = $botInfo->getUsername();
+                $botUsername = data_get($botInfo, 'username');
+                if (! is_string($botUsername) || $botUsername === '') {
+                    return redirect()->back()
+                        ->withInput()
+                        ->withErrors(['bot_token' => 'Token inválido: no se pudo obtener el usuario.']);
+                }
+
+                $updateData['bot_username'] = $botUsername;
                 $updateData['bot_token'] = $validated['bot_token'];
             } catch (TelegramSDKException $e) {
                 return redirect()->back()
@@ -150,7 +162,7 @@ final class TelegramBotController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message_id' => $response->getMessageId(),
+                'message_id' => data_get($response, 'message_id'),
             ]);
         } catch (TelegramSDKException $e) {
             return response()->json([

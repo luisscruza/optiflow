@@ -8,6 +8,22 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property string $id
+ * @property string $automation_run_id
+ * @property string $node_id
+ * @property string $node_type
+ * @property string $status
+ * @property int $attempts
+ * @property array<array-key, mixed>|null $input
+ * @property array<array-key, mixed>|null $output
+ * @property string|null $error
+ * @property \Carbon\CarbonImmutable|null $started_at
+ * @property \Carbon\CarbonImmutable|null $finished_at
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ * @property-read AutomationRun $run
+ */
 final class AutomationNodeRun extends Model
 {
     use HasUuids;

@@ -12,7 +12,9 @@ use App\Models\AutomationVersion;
 use App\Models\TelegramBot;
 use App\Models\WhatsappAccount;
 use App\Models\Workflow;
+use App\Models\WorkflowField;
 use App\Models\WorkflowJob;
+use App\Models\WorkflowStage;
 use App\Services\Automation\NodeRunners\NodeRunnerRegistry;
 use App\Services\Automation\NodeTypes\NodeTypeRegistry;
 use App\Services\Automation\Support\AutomationContext;
@@ -65,11 +67,11 @@ final class AutomationController extends Controller
                 'id' => $workflow->id,
                 'name' => $workflow->name,
                 'invoice_requirement' => $workflow->invoice_requirement,
-                'stages' => $workflow->stages->map(fn($stage): array => [
+                'stages' => $workflow->stages->map(fn(WorkflowStage $stage): array => [
                     'id' => $stage->id,
                     'name' => $stage->name,
                 ])->all(),
-                'fields' => $workflow->fields->map(fn($field): array => [
+                'fields' => $workflow->fields->map(fn(WorkflowField $field): array => [
                     'id' => $field->id,
                     'name' => $field->name,
                     'key' => $field->key,
@@ -183,11 +185,11 @@ final class AutomationController extends Controller
                 'id' => $workflow->id,
                 'name' => $workflow->name,
                 'invoice_requirement' => $workflow->invoice_requirement,
-                'stages' => $workflow->stages->map(fn($stage): array => [
+                'stages' => $workflow->stages->map(fn(WorkflowStage $stage): array => [
                     'id' => $stage->id,
                     'name' => $stage->name,
                 ])->all(),
-                'fields' => $workflow->fields->map(fn($field): array => [
+                'fields' => $workflow->fields->map(fn(WorkflowField $field): array => [
                     'id' => $field->id,
                     'name' => $field->name,
                     'key' => $field->key,
@@ -313,16 +315,16 @@ final class AutomationController extends Controller
         }
 
         $jobs = WorkflowJob::query()
-            ->with(['contact', 'invoice', 'stage'])
+            ->with(['contact', 'invoice', 'workflowStage', 'workflow'])
             ->where('workflow_id', $workflowId)
             ->orderByDesc('created_at')
             ->limit(20)
             ->get()
             ->map(fn(WorkflowJob $job): array => [
                 'id' => $job->id,
-                'title' => $job->title,
+                'title' => $job->contact?->name ?? $job->workflow?->name ?? (string) $job->id,
                 'contact_name' => $job->contact?->name ?? '—',
-                'stage_name' => $job->stage?->name ?? '—',
+                'stage_name' => $job->workflowStage?->name ?? '—',
                 'created_at' => $job->created_at?->toDateTimeString(),
             ]);
 
@@ -340,7 +342,7 @@ final class AutomationController extends Controller
         ]);
 
         $job = WorkflowJob::query()
-            ->with(['contact', 'invoice', 'stage', 'workflow'])
+            ->with(['contact', 'invoice', 'workflowStage', 'workflow'])
             ->findOrFail($validated['job_id']);
 
         $version = AutomationVersion::query()
@@ -357,11 +359,14 @@ final class AutomationController extends Controller
         $edges = $definition['edges'] ?? [];
 
         // Build context
+        $stage = $job->workflowStage;
+        $actor = Auth::user();
+
         $context = new AutomationContext(
             job: $job,
-            fromStageId: $job->workflow_stage_id,
-            toStageId: $job->workflow_stage_id,
-            actorId: Auth::id(),
+            fromStage: $stage,
+            toStage: $stage,
+            actor: $actor,
         );
 
         $results = [];
@@ -390,7 +395,7 @@ final class AutomationController extends Controller
         $visited = [];
         $input = [];
 
-        while (! empty($queue)) {
+        while ($queue !== []) {
             $nodeId = array_shift($queue);
 
             if (in_array($nodeId, $visited, true)) {
@@ -453,11 +458,11 @@ final class AutomationController extends Controller
                     $nodeResult = $runner->run($context, $config, $input);
 
                     $result['status'] = $nodeResult->success ? 'success' : 'error';
-                    $result['output'] = $nodeResult->data;
+                    $result['output'] = $nodeResult->output;
 
                     // For condition nodes, determine which branch to follow
                     if ($nodeType === 'logic.condition' && $nodeResult->success) {
-                        $branch = $nodeResult->data['branch'] ?? 'true';
+                        $branch = $nodeResult->output['branch'] ?? 'true';
                         // Filter next nodes by the branch handle
                         foreach ($edges as $edge) {
                             if (($edge['from'] ?? '') === $nodeId) {
@@ -472,7 +477,7 @@ final class AutomationController extends Controller
                         continue;
                     }
 
-                    $input = array_merge($input, $nodeResult->data);
+                    $input = array_merge($input, $nodeResult->output);
                 }
             } catch (Throwable $e) {
                 $result['status'] = 'error';
@@ -493,7 +498,7 @@ final class AutomationController extends Controller
             'success' => true,
             'job' => [
                 'id' => $job->id,
-                'title' => $job->title,
+                'title' => $job->contact?->name ?? $job->workflow?->name ?? (string) $job->id,
                 'contact' => $job->contact?->name,
             ],
             'results' => $results,
