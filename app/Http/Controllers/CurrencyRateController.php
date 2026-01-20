@@ -9,7 +9,7 @@ use App\Http\Requests\CreateCurrencyRateRequest;
 use Illuminate\Http\RedirectResponse;
 use InvalidArgumentException;
 
-final class CurrencyRateController extends Controller
+final class CurrencyRateController
 {
     /**
      * Store a newly created resource in storage.

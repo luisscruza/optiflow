@@ -13,7 +13,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
 
-final class BusinessUserController extends Controller
+final class BusinessUserController
 {
     /**
      * Display a listing of all users in the business with their workspace memberships.

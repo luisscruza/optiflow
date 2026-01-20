@@ -17,7 +17,7 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class BankAccountController extends Controller
+final class BankAccountController
 {
     /**
      * Display a listing of bank accounts.

@@ -8,7 +8,7 @@ use App\Actions\GenerateQuotationPdfAction;
 use App\Models\Quotation;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-final class DownloadQuotationPdfController extends Controller
+final class DownloadQuotationPdfController
 {
     /**
      * Handle the incoming request.

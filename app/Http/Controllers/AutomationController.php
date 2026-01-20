@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class AutomationController extends Controller
+final class AutomationController
 {
     public function index(): Response
     {

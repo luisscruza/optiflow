@@ -15,7 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class CurrencyController extends Controller
+final class CurrencyController
 {
     /**
      * Display a listing of currencies.

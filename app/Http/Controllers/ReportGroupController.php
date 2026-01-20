@@ -9,7 +9,7 @@ use App\Models\Report;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class ReportGroupController extends Controller
+final class ReportGroupController
 {
     public function show(string $group): Response
     {

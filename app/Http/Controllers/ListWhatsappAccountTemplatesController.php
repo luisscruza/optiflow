@@ -9,7 +9,7 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
 
-final class ListWhatsappAccountTemplatesController extends Controller
+final class ListWhatsappAccountTemplatesController
 {
     /**
      * Fetch message templates for a given account.

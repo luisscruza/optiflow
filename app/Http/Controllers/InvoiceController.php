@@ -36,7 +36,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
 
-final class InvoiceController extends Controller
+final class InvoiceController
 {
     /**
      * Display a listing of invoices.

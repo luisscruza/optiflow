@@ -9,7 +9,7 @@ use App\Models\Prescription;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
 
-final class DownloadPrescriptionController extends Controller
+final class DownloadPrescriptionController
 {
     /**
      * Handle the incoming request.

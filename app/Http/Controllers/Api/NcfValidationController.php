@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Actions\ValidateNFCAction;
-use App\Http\Controllers\Controller;
 use App\Http\Requests\NfcValidationRequest;
 use Illuminate\Http\JsonResponse;
 
-final class NcfValidationController extends Controller
+final class NcfValidationController
 {
     /**
      * Validate a manual NCF entry.

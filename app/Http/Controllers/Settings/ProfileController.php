@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Settings;
 
 use App\Actions\DeleteProfileAction;
 use App\Actions\UpdateProfileAction;
-use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\DeleteProfileRequest;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -15,7 +14,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class ProfileController extends Controller
+final class ProfileController
 {
     /**
      * Show the user's profile settings page.

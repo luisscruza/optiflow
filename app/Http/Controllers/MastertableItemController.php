@@ -17,7 +17,7 @@ use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 
-final class MastertableItemController extends Controller
+final class MastertableItemController
 {
     /**
      * Store a newly created item in storage.

@@ -17,7 +17,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class SalesmanController extends Controller
+final class SalesmanController
 {
     /**
      * Display a listing of the resource.

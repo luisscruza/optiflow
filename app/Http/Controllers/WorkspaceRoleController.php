@@ -20,7 +20,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
 
-final class WorkspaceRoleController extends Controller
+final class WorkspaceRoleController
 {
     /**
      * Display a listing of roles for the current workspace.

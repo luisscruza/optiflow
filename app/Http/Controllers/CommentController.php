@@ -13,7 +13,7 @@ use App\Models\Comment;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 
-final class CommentController extends Controller
+final class CommentController
 {
     public function store(StoreCommentRequest $request, CreateCommentAction $action, #[CurrentUser] \App\Models\User $user): RedirectResponse
     {

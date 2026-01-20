@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Actions\CreateAuthenticatedSessionAction;
 use App\Actions\DeleteAuthenticatedSessionAction;
-use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\DeleteAuthenticatedSessionRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
@@ -15,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class AuthenticatedSessionController extends Controller
+final class AuthenticatedSessionController
 {
     /**
      * Show the login page.

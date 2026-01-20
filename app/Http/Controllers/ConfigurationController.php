@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class ConfigurationController extends Controller
+final class ConfigurationController
 {
     public function index(Request $request): Response
     {

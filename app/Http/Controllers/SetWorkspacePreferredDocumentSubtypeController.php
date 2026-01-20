@@ -9,7 +9,7 @@ use App\Models\DocumentSubtype;
 use App\Models\Workspace;
 use Illuminate\Http\RedirectResponse;
 
-final class SetWorkspacePreferredDocumentSubtypeController extends Controller
+final class SetWorkspacePreferredDocumentSubtypeController
 {
     /**
      * Set a document subtype as preferred for a specific workspace.

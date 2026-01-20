@@ -19,7 +19,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class MastertableController extends Controller
+final class MastertableController
 {
     /**
      * Display a listing of mastertables.

@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Context;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class CreateInvoiceFromQuotationController extends Controller
+final class CreateInvoiceFromQuotationController
 {
     /**
      * Show the form for creating an invoice from a quotation.

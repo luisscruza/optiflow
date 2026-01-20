@@ -8,7 +8,7 @@ use App\Actions\CreateDashboardLayoutAction;
 use App\Http\Requests\CreateDashboardLayoutRequest;
 use Illuminate\Http\RedirectResponse;
 
-final class DashboardLayoutController extends Controller
+final class DashboardLayoutController
 {
     /**
      * Store the dashboard layout for the authenticated user.

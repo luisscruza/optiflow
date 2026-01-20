@@ -8,7 +8,7 @@ use App\Models\WorkflowJob;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-final class AutomationTestDataController extends Controller
+final class AutomationTestDataController
 {
     /**
      * Get workflow jobs for test mode.

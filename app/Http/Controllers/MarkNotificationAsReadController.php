@@ -7,7 +7,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
-final class MarkNotificationAsReadController extends Controller
+final class MarkNotificationAsReadController
 {
     /**
      * Mark a notification as read.

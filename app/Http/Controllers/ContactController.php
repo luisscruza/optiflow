@@ -21,7 +21,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class ContactController extends Controller
+final class ContactController
 {
     /**
      * Display a listing of contacts.

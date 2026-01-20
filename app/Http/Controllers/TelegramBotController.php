@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class TelegramBotController extends Controller
+final class TelegramBotController
 {
     public function index(): Response
     {

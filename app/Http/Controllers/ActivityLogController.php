@@ -11,7 +11,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Activitylog\Models\Activity;
 
-final class ActivityLogController extends Controller
+final class ActivityLogController
 {
     /**
      * Display a listing of all activity logs.

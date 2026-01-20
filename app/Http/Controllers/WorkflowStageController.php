@@ -14,7 +14,7 @@ use App\Models\WorkflowStage;
 use Illuminate\Http\RedirectResponse;
 use RuntimeException;
 
-final class WorkflowStageController extends Controller
+final class WorkflowStageController
 {
     /**
      * Store a newly created stage in storage.

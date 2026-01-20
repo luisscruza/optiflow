@@ -22,7 +22,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use InvalidArgumentException;
 
-final class ProductController extends Controller
+final class ProductController
 {
     /**
      * Display a listing of the resource.

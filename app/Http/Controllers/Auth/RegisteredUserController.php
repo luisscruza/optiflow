@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Actions\CreateRegisteredUserAction;
-use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\CreateRegisteredUserRequest;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class RegisteredUserController extends Controller
+final class RegisteredUserController
 {
     /**
      * Show the registration page.

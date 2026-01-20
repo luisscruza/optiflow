@@ -19,7 +19,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class ReportController extends Controller
+final class ReportController
 {
     public function index(): Response
     {

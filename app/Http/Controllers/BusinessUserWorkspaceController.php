@@ -14,7 +14,7 @@ use App\Models\Workspace;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 
-final class BusinessUserWorkspaceController extends Controller
+final class BusinessUserWorkspaceController
 {
     /**
      * Add user to a workspace.

@@ -8,7 +8,7 @@ use App\Actions\GenerateBulkInvoicePdfArchiveAction;
 use App\Exceptions\ActionNotFoundException;
 use Illuminate\Http\Request;
 
-final class BulkDownloadInvoicePdfController extends Controller
+final class BulkDownloadInvoicePdfController
 {
     /**
      * Handle the incoming request.

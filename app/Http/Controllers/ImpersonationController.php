@@ -9,7 +9,7 @@ use App\Actions\StopImpersonatingUserAction;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 
-final class ImpersonationController extends Controller
+final class ImpersonationController
 {
     public function store(User $user, ImpersonateUserAction $action): RedirectResponse
     {

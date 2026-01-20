@@ -12,7 +12,7 @@ use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 
-final class BusinessUserInvitationController extends Controller
+final class BusinessUserInvitationController
 {
     /**
      * Invite a new user to the business and assign them to workspaces.

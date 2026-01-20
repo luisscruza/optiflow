@@ -30,7 +30,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
 
-final class QuotationController extends Controller
+final class QuotationController
 {
     /**
      * Display a listing of quotations.

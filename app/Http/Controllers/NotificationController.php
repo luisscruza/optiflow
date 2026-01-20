@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class NotificationController extends Controller
+final class NotificationController
 {
     /**
      * Display a listing of notifications.

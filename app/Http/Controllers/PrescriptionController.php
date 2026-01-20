@@ -21,7 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 use Inertia\Response;
 
-final class PrescriptionController extends Controller
+final class PrescriptionController
 {
     public function create(#[CurrentUser] User $user): Response
     {

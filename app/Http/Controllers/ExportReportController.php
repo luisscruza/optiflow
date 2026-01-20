@@ -16,7 +16,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-final class ExportReportController extends Controller
+final class ExportReportController
 {
     public function __invoke(string $type, Request $request): BinaryFileResponse
     {

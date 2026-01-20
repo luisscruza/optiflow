@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Actions\CreateNewPasswordAction;
 use App\Exceptions\ActionValidationException;
-use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\CreateNewPasswordRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class NewPasswordController extends Controller
+final class NewPasswordController
 {
     /**
      * Show the password reset page.

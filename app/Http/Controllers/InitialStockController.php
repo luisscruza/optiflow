@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Context;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class InitialStockController extends Controller
+final class InitialStockController
 {
     public function index(): Response
     {

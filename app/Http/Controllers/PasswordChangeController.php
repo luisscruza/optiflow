@@ -12,7 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class PasswordChangeController extends Controller
+final class PasswordChangeController
 {
     public function edit(#[CurrentUser] User $user): Response
     {

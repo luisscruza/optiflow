@@ -10,7 +10,7 @@ use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 
-final class QuickProductCreate extends Controller
+final class QuickProductCreate
 {
     /**
      * Handle the incoming request.

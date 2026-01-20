@@ -15,7 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class WhatsappAccountController extends Controller
+final class WhatsappAccountController
 {
     public function index(): Response
     {

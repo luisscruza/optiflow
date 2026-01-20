@@ -8,7 +8,7 @@ use App\Actions\GenerateInvoicePdfAction;
 use App\Models\Invoice;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-final class DownloadInvoicePdfController extends Controller
+final class DownloadInvoicePdfController
 {
     /**
      * Handle the incoming request.

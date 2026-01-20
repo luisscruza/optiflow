@@ -11,7 +11,7 @@ use App\Services\Automation\NodeRunners\NodeRunnerRegistry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-final class AutomationTestRunController extends Controller
+final class AutomationTestRunController
 {
     /**
      * Run automation in test mode.

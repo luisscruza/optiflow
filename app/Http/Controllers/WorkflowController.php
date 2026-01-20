@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Context;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class WorkflowController extends Controller
+final class WorkflowController
 {
     /**
      * Display a listing of workflows.

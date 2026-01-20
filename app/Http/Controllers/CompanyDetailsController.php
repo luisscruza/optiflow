@@ -12,7 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class CompanyDetailsController extends Controller
+final class CompanyDetailsController
 {
     /**
      * Show the form for editing company details.

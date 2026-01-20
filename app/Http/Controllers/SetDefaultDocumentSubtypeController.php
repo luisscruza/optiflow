@@ -9,7 +9,7 @@ use App\Models\DocumentSubtype;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 
-final class SetDefaultDocumentSubtypeController extends Controller
+final class SetDefaultDocumentSubtypeController
 {
     /**
      * Set a document subtype as default.

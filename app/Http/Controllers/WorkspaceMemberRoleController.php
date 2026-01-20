@@ -12,7 +12,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Context;
 
-final class WorkspaceMemberRoleController extends Controller
+final class WorkspaceMemberRoleController
 {
     /**
      * Update a member's role.

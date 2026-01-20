@@ -7,7 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\WhatsappAccount;
 use Illuminate\Http\JsonResponse;
 
-final class ListWhatsappAccountsController extends Controller
+final class ListWhatsappAccountsController
 {
     /**
      * List accounts for API/JSON consumption (automation builder).

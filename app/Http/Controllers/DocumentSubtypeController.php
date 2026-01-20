@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class DocumentSubtypeController extends Controller
+final class DocumentSubtypeController
 {
     /**
      * Display a listing of document subtypes (numeraciones).

@@ -8,7 +8,7 @@ use App\Enums\QuotationStatus;
 use App\Models\Quotation;
 use Illuminate\Http\RedirectResponse;
 
-final class ConvertQuotationToInvoiceController extends Controller
+final class ConvertQuotationToInvoiceController
 {
     /**
      * Redirect to the invoice creation page with quotation data pre-filled.

@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Context;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class StockTransferController extends Controller
+final class StockTransferController
 {
     public function index(): Response
     {
@@ -90,7 +90,7 @@ final class StockTransferController extends Controller
 
         abort_unless(
             ($stockMovement->from_workspace_id === $workspace->id ||
-            $stockMovement->to_workspace_id === $workspace->id),
+                $stockMovement->to_workspace_id === $workspace->id),
             404
         );
 

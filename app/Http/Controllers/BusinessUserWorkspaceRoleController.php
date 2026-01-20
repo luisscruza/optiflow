@@ -13,7 +13,7 @@ use App\Models\Workspace;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 
-final class BusinessUserWorkspaceRoleController extends Controller
+final class BusinessUserWorkspaceRoleController
 {
     /**
      * Update user roles in a specific workspace.

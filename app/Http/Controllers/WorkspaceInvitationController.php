@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class WorkspaceInvitationController extends Controller
+final class WorkspaceInvitationController
 {
     /**
      * Assign a user to workspace(s). Create user if they don't exist.
@@ -44,7 +44,8 @@ final class WorkspaceInvitationController extends Controller
             ->map(fn ($assignment) => \App\Models\Workspace::query()->find($assignment['workspace_id'])->name)
             ->join(', ', ' y ');
 
-        return redirect()->back()->with('success',
+        return redirect()->back()->with(
+            'success',
             'Usuario '.$assignedUser->name.' asignado exitosamente a: '.$workspaceNames.'.'
         );
     }
@@ -113,7 +114,6 @@ final class WorkspaceInvitationController extends Controller
                 'invitation_email' => $invitation->email,
                 'message' => 'Crea tu cuenta para aceptar la invitación.',
             ]);
-
         }
 
         $user = Auth::user();
@@ -128,7 +128,8 @@ final class WorkspaceInvitationController extends Controller
         try {
             $acceptInvitationAction->handle($invitation, $user);
 
-            return redirect()->route('dashboard')->with('success',
+            return redirect()->route('dashboard')->with(
+                'success',
                 'Te has unido al workspace '.$invitation->workspace->name.' exitosamente.'
             );
         } catch (Exception $e) {
@@ -153,7 +154,8 @@ final class WorkspaceInvitationController extends Controller
 
         $invitation->decline();
 
-        return redirect()->route('home')->with('info',
+        return redirect()->route('home')->with(
+            'info',
             'Has rechazado la invitación al workspace '.$invitation->workspace->name.'.'
         );
     }

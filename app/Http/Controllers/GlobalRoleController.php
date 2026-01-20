@@ -17,7 +17,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
 
-final class GlobalRoleController extends Controller
+final class GlobalRoleController
 {
     /**
      * Display a listing of global roles (grouped by name across workspaces).

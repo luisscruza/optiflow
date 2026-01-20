@@ -10,7 +10,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class StreamInvoicePdfController extends Controller
+class StreamInvoicePdfController
 {
     /**
      * Handle the incoming request.

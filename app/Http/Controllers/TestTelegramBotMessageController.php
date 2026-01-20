@@ -10,7 +10,7 @@ use App\Models\TelegramBot;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-final class TestTelegramBotMessageController extends Controller
+final class TestTelegramBotMessageController
 {
     /**
      * Test sending a message with a bot.

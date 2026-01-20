@@ -12,7 +12,7 @@ use App\Models\WorkflowStage;
 use Illuminate\Http\RedirectResponse;
 use InvalidArgumentException;
 
-final class WorkflowJobStageController extends Controller
+final class WorkflowJobStageController
 {
     public function update(MoveWorkflowJobRequest $request, Workflow $workflow, WorkflowJob $job, MoveWorkflowJobAction $action): RedirectResponse
     {

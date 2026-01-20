@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class ProductImportController extends Controller
+final class ProductImportController
 {
     /**
      * Display a listing of recent imports.

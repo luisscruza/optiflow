@@ -8,7 +8,7 @@ use App\Actions\GenerateBulkQuotationPdfArchiveAction;
 use App\Exceptions\ActionNotFoundException;
 use Illuminate\Http\Request;
 
-final class BulkDownloadQuotationPdfController extends Controller
+final class BulkDownloadQuotationPdfController
 {
     /**
      * Handle the incoming request.

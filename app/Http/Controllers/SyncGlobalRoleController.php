@@ -9,7 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
-final class SyncGlobalRoleController extends Controller
+final class SyncGlobalRoleController
 {
     /**
      * Sync a role to all workspaces that don't have it yet.

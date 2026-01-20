@@ -11,7 +11,7 @@ use App\Models\Workspace;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 
-final class ProcessProductImportController extends Controller
+final class ProcessProductImportController
 {
     public function __construct(private readonly ProcessProductImportAction $processProductImportAction) {}
 
@@ -47,7 +47,6 @@ final class ProcessProductImportController extends Controller
 
             return redirect()->route('product-imports.show', $productImport->id)
                 ->with('warning', "Import completed with {$result['errors']} errors. {$result['imported']} products imported successfully.");
-
         } catch (Exception $e) {
             $productImport->markAsFailed(['general' => $e->getMessage()]);
 

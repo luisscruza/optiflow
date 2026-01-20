@@ -9,7 +9,7 @@ use OpenSpout\Common\Entity\Row;
 use OpenSpout\Writer\XLSX\Writer;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-final class DownloadProductImportTemplateController extends Controller
+final class DownloadProductImportTemplateController
 {
     /**
      * Download the import template.
@@ -53,7 +53,6 @@ final class DownloadProductImportTemplateController extends Controller
             $writer->close();
 
             return response()->download($tempFile, 'plantilla-importacion-productos.xlsx')->deleteFileAfterSend(true);
-
         } catch (Exception $e) {
             if (file_exists($tempFile)) {
                 unlink($tempFile);

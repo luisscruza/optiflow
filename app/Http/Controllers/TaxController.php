@@ -20,7 +20,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use InvalidArgumentException;
 
-final class TaxController extends Controller
+final class TaxController
 {
     /**
      * Display a listing of the resource.

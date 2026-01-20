@@ -11,7 +11,7 @@ use App\Models\Workspace;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 
-final class WorkspaceContextController extends Controller
+final class WorkspaceContextController
 {
     /**
      * Switch to a workspace (update action).
@@ -36,7 +36,6 @@ final class WorkspaceContextController extends Controller
 
         return redirect()->route('dashboard')
             ->with('success', "Ahora estás en {$workspace->name}.");
-
     }
 
     /**

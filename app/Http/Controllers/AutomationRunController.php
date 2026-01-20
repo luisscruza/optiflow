@@ -9,7 +9,7 @@ use App\Models\AutomationRun;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class AutomationRunController extends Controller
+final class AutomationRunController
 {
     public function index(Automation $automation): Response
     {

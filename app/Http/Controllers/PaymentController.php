@@ -27,7 +27,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class PaymentController extends Controller
+final class PaymentController
 {
     /**
      * Display a listing of payments.

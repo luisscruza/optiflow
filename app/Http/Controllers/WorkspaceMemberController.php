@@ -15,7 +15,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
 
-final class WorkspaceMemberController extends Controller
+final class WorkspaceMemberController
 {
     /**
      * Display workspace members.

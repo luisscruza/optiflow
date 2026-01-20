@@ -8,7 +8,7 @@ use App\Models\TelegramBot;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
-final class ListTelegramBotsController extends Controller
+final class ListTelegramBotsController
 {
     /**
      * API endpoint to list bots for automation builder.

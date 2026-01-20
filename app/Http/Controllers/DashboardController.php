@@ -16,8 +16,11 @@ use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class DashboardController extends Controller
+final class DashboardController
 {
+    /**
+     * Todo: Move range constants to a dedicated class or enum.
+     */
     private const RANGE_CURRENT_MONTH = 'current_month';
 
     private const RANGE_LAST_MONTH = 'last_month';
