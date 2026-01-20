@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\CreateNewPasswordAction;
+use App\Exceptions\ActionValidationException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\CreateNewPasswordRequest;
-use App\Models\User;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -35,34 +32,18 @@ final class NewPasswordController extends Controller
      *
      * @throws ValidationException
      */
-    public function store(CreateNewPasswordRequest $request): RedirectResponse
+    public function store(CreateNewPasswordRequest $request, CreateNewPasswordAction $action): RedirectResponse
     {
-        $validated = $request->validated();
+        try {
+            $status = $action->handle($request->validated());
 
-        // Here we will attempt to reset the user's password. If it is successful we
-        // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (User $user) use ($validated): void {
-                $user->forceFill([
-                    'password' => Hash::make($validated['password']),
-                    'remember_token' => Str::random(60),
-                ])->save();
-
-                event(new PasswordReset($user));
-            }
-        );
-
-        // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
-        // redirect them back to where they came from with their error message.
-        if ($status === Password::PasswordReset) {
             return to_route('login')->with('status', __($status));
+        } catch (ActionValidationException $exception) {
+            throw ValidationException::withMessages(
+                collect($exception->errors())
+                    ->map(fn (string $message): array => [$message])
+                    ->all()
+            );
         }
-
-        throw ValidationException::withMessages([
-            'email' => [__($status)],
-        ]);
     }
 }

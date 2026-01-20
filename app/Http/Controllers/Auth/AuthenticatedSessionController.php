@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\CreateAuthenticatedSessionAction;
+use App\Actions\DeleteAuthenticatedSessionAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\DeleteAuthenticatedSessionRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -30,11 +31,9 @@ final class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request, CreateAuthenticatedSessionAction $action): RedirectResponse
     {
-        $request->authenticate();
-
-        $request->session()->regenerate();
+        $action->handle($request);
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
@@ -42,12 +41,9 @@ final class AuthenticatedSessionController extends Controller
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(DeleteAuthenticatedSessionRequest $request): RedirectResponse
+    public function destroy(DeleteAuthenticatedSessionRequest $request, DeleteAuthenticatedSessionAction $action): RedirectResponse
     {
-        Auth::guard('web')->logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        $action->handle($request);
 
         return redirect('/login');
     }

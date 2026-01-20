@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\DeleteNotificationAction;
 use App\Http\Requests\DeleteNotificationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,12 +36,9 @@ final class NotificationController extends Controller
     /**
      * Delete a notification.
      */
-    public function destroy(DeleteNotificationRequest $request, string $id): RedirectResponse
+    public function destroy(DeleteNotificationRequest $request, string $id, DeleteNotificationAction $action): RedirectResponse
     {
-        $request->user()
-            ->notifications()
-            ->where('id', $id)
-            ->delete();
+        $action->handle($request->user(), $id);
 
         return back();
     }

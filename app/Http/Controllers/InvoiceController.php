@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\CreateInvoiceAction;
+use App\Actions\DeleteInvoiceAction;
 use App\Actions\UpdateInvoiceAction;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\Permission;
 use App\Enums\QuotationStatus;
 use App\Enums\TaxType;
+use App\Exceptions\ActionValidationException;
 use App\Http\Requests\CreateInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\BankAccount;
@@ -353,16 +355,16 @@ final class InvoiceController extends Controller
     /**
      * Remove the specified invoice.
      */
-    public function destroy(Invoice $invoice, #[CurrentUser] User $user): RedirectResponse
+    public function destroy(Invoice $invoice, #[CurrentUser] User $user, DeleteInvoiceAction $action): RedirectResponse
     {
         abort_unless($user->can(Permission::InvoicesDelete), 403);
 
-        if (! $invoice->canBeDeleted()) {
+        try {
+            $action->handle($invoice);
+        } catch (ActionValidationException $exception) {
             return redirect()->route('invoices.index')
-                ->with('error', 'La factura no se puede eliminar porque tiene pagos registrados.');
+                ->withErrors($exception->errors());
         }
-
-        $invoice->update(['status' => InvoiceStatus::Deleted->value]);
 
         return redirect()->route('invoices.index')
             ->with('success', 'Factura eliminada exitosamente.');

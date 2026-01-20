@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateTelegramBotAction;
+use App\Actions\DeleteTelegramBotAction;
+use App\Actions\UpdateTelegramBotAction;
+use App\Exceptions\ActionValidationException;
 use App\Http\Requests\CreateTelegramBotRequest;
 use App\Http\Requests\UpdateTelegramBotRequest;
 use App\Models\TelegramBot;
@@ -11,8 +15,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
-use Telegram\Bot\Api;
-use Telegram\Bot\Exceptions\TelegramSDKException;
 
 final class TelegramBotController extends Controller
 {
@@ -33,35 +35,15 @@ final class TelegramBotController extends Controller
         return Inertia::render('telegram-bots/create');
     }
 
-    public function store(CreateTelegramBotRequest $request): RedirectResponse
+    public function store(CreateTelegramBotRequest $request, CreateTelegramBotAction $action): RedirectResponse
     {
-        $validated = $request->validated();
-
-        // Verify the token by getting bot info
         try {
-            $telegram = new Api($validated['bot_token']);
-            /** @var \Telegram\Bot\Objects\User $botInfo */
-            $botInfo = $telegram->getMe();
-            $botUsername = $botInfo->username;
-            if (! is_string($botUsername) || $botUsername === '') {
-                return redirect()->back()
-                    ->withInput()
-                    ->withErrors(['bot_token' => 'Token inválido: no se pudo obtener el usuario.']);
-            }
-        } catch (TelegramSDKException $e) {
+            $action->handle($request->user(), $request->validated());
+        } catch (ActionValidationException $exception) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['bot_token' => 'Token inválido: '.$e->getMessage()]);
+                ->withErrors($exception->errors());
         }
-
-        TelegramBot::query()->create([
-            'workspace_id' => Auth::user()->current_workspace_id,
-            'name' => $validated['name'],
-            'bot_username' => $botUsername,
-            'bot_token' => $validated['bot_token'],
-            'default_chat_id' => $validated['default_chat_id'] ?? null,
-            'is_active' => true,
-        ]);
 
         return redirect()->route('telegram-bots.index')
             ->with('success', 'Bot de Telegram agregado correctamente.');
@@ -74,47 +56,23 @@ final class TelegramBotController extends Controller
         ]);
     }
 
-    public function update(UpdateTelegramBotRequest $request, TelegramBot $telegramBot): RedirectResponse
+    public function update(UpdateTelegramBotRequest $request, TelegramBot $telegramBot, UpdateTelegramBotAction $action): RedirectResponse
     {
-        $validated = $request->validated();
-
-        $updateData = [
-            'name' => $validated['name'],
-            'default_chat_id' => $validated['default_chat_id'] ?? null,
-            'is_active' => $validated['is_active'],
-        ];
-
-        // Only update token if provided
-        if (! empty($validated['bot_token'])) {
-            try {
-                $telegram = new Api($validated['bot_token']);
-                /** @var \Telegram\Bot\Objects\User $botInfo */
-                $botInfo = $telegram->getMe();
-                $botUsername = $botInfo->username;
-                if (! is_string($botUsername) || $botUsername === '') {
-                    return redirect()->back()
-                        ->withInput()
-                        ->withErrors(['bot_token' => 'Token inválido: no se pudo obtener el usuario.']);
-                }
-
-                $updateData['bot_username'] = $botUsername;
-                $updateData['bot_token'] = $validated['bot_token'];
-            } catch (TelegramSDKException $e) {
-                return redirect()->back()
-                    ->withInput()
-                    ->withErrors(['bot_token' => 'Token inválido: '.$e->getMessage()]);
-            }
+        try {
+            $action->handle($telegramBot, $request->validated());
+        } catch (ActionValidationException $exception) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors($exception->errors());
         }
-
-        $telegramBot->update($updateData);
 
         return redirect()->route('telegram-bots.index')
             ->with('success', 'Bot de Telegram actualizado correctamente.');
     }
 
-    public function destroy(TelegramBot $telegramBot): RedirectResponse
+    public function destroy(TelegramBot $telegramBot, DeleteTelegramBotAction $action): RedirectResponse
     {
-        $telegramBot->delete();
+        $action->handle($telegramBot);
 
         return redirect()->route('telegram-bots.index')
             ->with('success', 'Bot de Telegram eliminado correctamente.');

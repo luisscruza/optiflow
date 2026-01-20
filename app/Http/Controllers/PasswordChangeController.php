@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\UpdatePasswordChangeAction;
 use App\Http\Requests\UpdatePasswordChangeRequest;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -24,14 +24,9 @@ final class PasswordChangeController extends Controller
     /**
      * Update the user's password.
      */
-    public function update(UpdatePasswordChangeRequest $request): RedirectResponse
+    public function update(UpdatePasswordChangeRequest $request, UpdatePasswordChangeAction $action): RedirectResponse
     {
-        $validated = $request->validated();
-
-        $request->user()->update([
-            'password' => Hash::make($validated['password']),
-            'password_changed_at' => now(),
-        ]);
+        $action->handle($request->user(), $request->validated());
 
         return to_route('dashboard')->with('success', 'Contraseña actualizada con éxito.');
     }

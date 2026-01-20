@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\CreateQuotationAction;
+use App\Actions\DeleteQuotationAction;
 use App\Actions\UpdateQuotationAction;
 use App\Enums\Permission;
 use App\Enums\TaxType;
+use App\Exceptions\ActionValidationException;
 use App\Http\Requests\CreateQuotationRequest;
 use App\Http\Requests\UpdateQuotationRequest;
 use App\Models\Contact;
@@ -242,16 +244,15 @@ final class QuotationController extends Controller
     /**
      * Remove the specified quotation.
      */
-    public function destroy(Quotation $quotation, #[CurrentUser] User $user): RedirectResponse
+    public function destroy(Quotation $quotation, #[CurrentUser] User $user, DeleteQuotationAction $action): RedirectResponse
     {
         abort_unless($user->can(Permission::QuotationsDelete), 403);
 
-        // For now, we'll only allow deleting draft quotations
-        if ($quotation->status !== 'draft') {
-            return redirect()->back()->withErrors(['error' => 'Solo se pueden eliminar cotizaciones en borrador.']);
+        try {
+            $action->handle($quotation);
+        } catch (ActionValidationException $exception) {
+            return redirect()->back()->withErrors($exception->errors());
         }
-
-        $quotation->delete();
 
         return redirect()->route('quotations.index')
             ->with('success', 'Cotización eliminada exitosamente.');

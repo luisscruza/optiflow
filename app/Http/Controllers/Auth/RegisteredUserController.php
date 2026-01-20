@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\CreateRegisteredUserAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\CreateRegisteredUserRequest;
-use App\Models\User;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,19 +26,9 @@ final class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(CreateRegisteredUserRequest $request): RedirectResponse
+    public function store(CreateRegisteredUserRequest $request, CreateRegisteredUserAction $action): RedirectResponse
     {
-        $validated = $request->validated();
-
-        $user = User::query()->create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-        ]);
-
-        event(new Registered($user));
-
-        Auth::login($user);
+        $action->handle($request->validated());
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

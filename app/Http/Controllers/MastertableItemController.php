@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateMastertableItemAction;
+use App\Actions\DeleteMastertableItemAction;
+use App\Actions\UpdateMastertableItemAction;
 use App\Enums\Permission;
+use App\Exceptions\ActionNotFoundException;
 use App\Http\Requests\CreateMastertableItemRequest;
 use App\Http\Requests\UpdateMastertableItemRequest;
 use App\Models\Mastertable;
@@ -18,13 +22,11 @@ final class MastertableItemController extends Controller
     /**
      * Store a newly created item in storage.
      */
-    public function store(CreateMastertableItemRequest $request, Mastertable $mastertable, #[CurrentUser] User $user): RedirectResponse
+    public function store(CreateMastertableItemRequest $request, Mastertable $mastertable, CreateMastertableItemAction $action, #[CurrentUser] User $user): RedirectResponse
     {
         abort_unless($user->can(Permission::MastertablesEdit), 403);
 
-        $validated = $request->validated();
-
-        $mastertable->items()->create($validated);
+        $action->handle($mastertable, $request->validated());
 
         return redirect()->back()
             ->with('success', 'Elemento agregado correctamente.');
@@ -33,15 +35,15 @@ final class MastertableItemController extends Controller
     /**
      * Update the specified item in storage.
      */
-    public function update(UpdateMastertableItemRequest $request, Mastertable $mastertable, MastertableItem $item, #[CurrentUser] User $user): RedirectResponse
+    public function update(UpdateMastertableItemRequest $request, Mastertable $mastertable, MastertableItem $item, UpdateMastertableItemAction $action, #[CurrentUser] User $user): RedirectResponse
     {
         abort_unless($user->can(Permission::MastertablesEdit), 403);
 
-        abort_unless($item->mastertable_id === $mastertable->id, 404);
-
-        $validated = $request->validated();
-
-        $item->update($validated);
+        try {
+            $action->handle($mastertable, $item, $request->validated());
+        } catch (ActionNotFoundException) {
+            abort(404);
+        }
 
         return redirect()->back()
             ->with('success', 'Elemento actualizado correctamente.');
@@ -50,13 +52,15 @@ final class MastertableItemController extends Controller
     /**
      * Remove the specified item from storage.
      */
-    public function destroy(Mastertable $mastertable, MastertableItem $item, #[CurrentUser] User $user): RedirectResponse
+    public function destroy(Mastertable $mastertable, MastertableItem $item, DeleteMastertableItemAction $action, #[CurrentUser] User $user): RedirectResponse
     {
         abort_unless($user->can(Permission::MastertablesEdit), 403);
 
-        abort_unless($item->mastertable_id === $mastertable->id, 404);
-
-        $item->delete();
+        try {
+            $action->handle($mastertable, $item);
+        } catch (ActionNotFoundException) {
+            abort(404);
+        }
 
         return redirect()->back()
             ->with('success', 'Elemento eliminado correctamente.');

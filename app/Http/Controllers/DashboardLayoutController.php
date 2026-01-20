@@ -4,22 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateDashboardLayoutAction;
 use App\Http\Requests\CreateDashboardLayoutRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 
 final class DashboardLayoutController extends Controller
 {
     /**
      * Store the dashboard layout for the authenticated user.
      */
-    public function store(CreateDashboardLayoutRequest $request): RedirectResponse
+    public function store(CreateDashboardLayoutRequest $request, CreateDashboardLayoutAction $action): RedirectResponse
     {
-        $validated = $request->validated();
-
-        $user = Auth::user();
-        $user->dashboard_layout = $validated['layout'];
-        $user->save();
+        $action->handle($request->user(), $request->validated());
 
         return redirect()->back()->with('success', 'Tablero actualizado con éxito.');
     }
