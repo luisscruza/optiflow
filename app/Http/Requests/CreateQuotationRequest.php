@@ -44,13 +44,13 @@ final class CreateQuotationRequest extends FormRequest
             'items.*.unit_price' => ['required', 'numeric', 'min:0'],
             'items.*.discount_rate' => ['required', 'numeric', 'min:0', 'max:100'],
             'items.*.discount_amount' => ['required', 'numeric', 'min:0'],
-            'items.*.tax_rate' => ['required', 'numeric', 'min:0', 'max:100'],
-            'items.*.tax_amount' => ['required', 'numeric', 'min:0'],
+            'items.*.tax_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'items.*.tax_amount' => ['nullable', 'numeric', 'min:0'],
             'items.*.total' => ['required', 'numeric', 'min:0'],
             'items.*.taxes' => ['nullable', 'array'],
-            'items.*.taxes.*.id' => ['required', 'integer', 'exists:taxes,id'],
-            'items.*.taxes.*.rate' => ['required', 'numeric', 'min:0', 'max:100'],
-            'items.*.taxes.*.amount' => ['required', 'numeric', 'min:0'],
+            'items.*.taxes.*.id' => ['nullable', 'integer', 'exists:taxes,id'],
+            'items.*.taxes.*.rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'items.*.taxes.*.amount' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 
