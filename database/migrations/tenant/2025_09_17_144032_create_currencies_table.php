@@ -17,7 +17,7 @@ return new class extends Migration
         Schema::create('currencies', function (Blueprint $table): void {
             $table->id();
             $table->string('name'); // e.g., "Dominican Peso"
-            $table->string('code', 3)->unique(); // e.g., "DOP"
+            $table->string('code')->unique(); // e.g., "DOP"
             $table->string('symbol'); // e.g., "RD$"
             $table->boolean('is_default')->default(false);
             $table->boolean('is_active')->default(true);
