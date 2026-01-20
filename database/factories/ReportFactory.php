@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\ReportType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,8 +19,15 @@ final class ReportFactory extends Factory
      */
     public function definition(): array
     {
+        $type = fake()->randomElement(ReportType::cases());
+
         return [
-            //
+            'type' => $type,
+            'name' => fake()->sentence(3),
+            'description' => fake()->optional()->sentence(),
+            'group' => $type->group(),
+            'config' => null,
+            'is_active' => true,
         ];
     }
 }
