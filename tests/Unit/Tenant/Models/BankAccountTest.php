@@ -2,10 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\BankAccountType;
 use App\Models\BankAccount;
-use App\Models\Currency;
-use App\Models\Payment;
 
 test('to array', function (): void {
     $bankAccount = BankAccount::factory()->create()->refresh();

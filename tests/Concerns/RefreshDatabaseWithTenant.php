@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Concerns;
 
 use App\Models\Central\Client;
@@ -53,10 +55,10 @@ trait RefreshDatabaseWithTenant
              * Set the tenant prefix to the parallel testing token.
              * This is necessary to avoid database collisions when running tests in parallel.
              */
-            config(['tenancy.database.prefix' => config('tenancy.database.prefix') . ParallelTesting::token() . '_']);
+            config(['tenancy.database.prefix' => config('tenancy.database.prefix').ParallelTesting::token().'_']);
 
             // Define the database name for the tenant.
-            $dbName = config('tenancy.database.prefix') . $tenantId;
+            $dbName = config('tenancy.database.prefix').$tenantId;
 
             // Drop the database if it already exists.
             DB::unprepared("DROP DATABASE IF EXISTS `{$dbName}`");
@@ -68,7 +70,7 @@ trait RefreshDatabaseWithTenant
             // Create the tenant and associated domain if they don't exist.
             $t = Tenant::create(['id' => $tenantId, 'name' => 'Test Tenant', 'client_id' => $client->id, 'domain' => $tenantId]);
 
-            if (!$t->domains()->count()) {
+            if (! $t->domains()->count()) {
                 $t->domains()->create(['domain' => $tenantId]);
             }
 

@@ -2,10 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Models\Invoice;
 use App\Models\InvoiceItem;
-use App\Models\Product;
-use App\Models\Tax;
 
 test('to array', function (): void {
     $invoiceItem = InvoiceItem::factory()->create()->refresh();

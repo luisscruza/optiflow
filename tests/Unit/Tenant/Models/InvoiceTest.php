@@ -2,14 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\InvoiceStatus;
-use App\Models\Contact;
-use App\Models\DocumentSubtype;
 use App\Models\Invoice;
-use App\Models\InvoiceItem;
-use App\Models\Payment;
-use App\Models\StockMovement;
-use App\Models\Workspace;
 
 test('to array', function (): void {
     $invoice = Invoice::factory()->create()->refresh();
