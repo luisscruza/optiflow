@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\ParseExcelFileAction;
-use App\Actions\ProcessProductImportAction;
 use App\Http\Requests\MapColumnsRequest;
-use App\Http\Requests\ProcessImportRequest;
 use App\Http\Requests\UploadProductImportRequest;
 use App\Models\ProductImport;
 use App\Models\Workspace;
@@ -17,15 +15,10 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
-use OpenSpout\Common\Entity\Row;
-use OpenSpout\Writer\XLSX\Writer;
 
 final class ProductImportController extends Controller
 {
-    public function __construct(
-        private readonly ParseExcelFileAction $parseExcelFileAction,
-        private readonly ProcessProductImportAction $processProductImportAction
-    ) {}
+    public function __construct(private readonly ParseExcelFileAction $parseExcelFileAction) {}
 
     /**
      * Display a listing of recent imports.
@@ -138,48 +131,6 @@ final class ProductImportController extends Controller
     }
 
     /**
-     * Process the import.
-     */
-    public function process(ProcessImportRequest $request, ProductImport $productImport): RedirectResponse
-    {
-        if ($productImport->status !== ProductImport::STATUS_MAPPING) {
-            return redirect()->route('product-imports.show', $productImport->id)
-                ->withErrors(['general' => 'Import is not ready for processing']);
-        }
-
-        if (! $productImport->column_mapping) {
-            return redirect()->route('product-imports.show', $productImport->id)
-                ->withErrors(['general' => 'Column mapping is required before processing']);
-        }
-
-        try {
-            $user = Auth::user();
-            $validatedData = $request->validated();
-            $workspaceIds = $validatedData['workspaces'];
-            $stockMapping = $validatedData['stock_mapping'] ?? [];
-
-            $workspaces = Workspace::query()->whereIn('id', $workspaceIds)->get();
-
-            // Process the import in the background (or synchronously for now)
-            $result = $this->processProductImportAction->handle($productImport, $workspaces, $stockMapping);
-
-            if ($result['errors'] === 0) {
-                return redirect()->route('product-imports.show', $productImport->id)
-                    ->with('success', "Import completed successfully! {$result['imported']} products imported.");
-            }
-
-            return redirect()->route('product-imports.show', $productImport->id)
-                ->with('warning', "Import completed with {$result['errors']} errors. {$result['imported']} products imported successfully.");
-
-        } catch (Exception $e) {
-            $productImport->markAsFailed(['general' => $e->getMessage()]);
-
-            return redirect()->route('product-imports.show', $productImport->id)
-                ->withErrors(['general' => 'Import failed: '.$e->getMessage()]);
-        }
-    }
-
-    /**
      * Remove the specified import.
      */
     public function destroy(ProductImport $productImport): RedirectResponse
@@ -197,54 +148,4 @@ final class ProductImportController extends Controller
         }
     }
 
-    /**
-     * Download the import template.
-     */
-    public function template(): \Symfony\Component\HttpFoundation\BinaryFileResponse
-    {
-        $writer = new Writer();
-        $tempFile = tempnam(sys_get_temp_dir(), 'product_import_template_');
-
-        try {
-            $writer->openToFile($tempFile);
-
-            // Create header row using Row::fromValues()
-            $headerRow = Row::fromValues([
-                'Nombre',
-                'SKU',
-                'Descripción',
-                'Precio',
-                'Costo',
-                'Controlar Stock',
-                'Permitir Stock Negativo',
-                'ID Impuesto por Defecto',
-                'Categoría',
-            ]);
-            $writer->addRow($headerRow);
-
-            // Add sample data row
-            $sampleRow = Row::fromValues([
-                'Producto de Ejemplo',
-                'SKU-001',
-                'Descripción del producto de ejemplo',
-                '100.00',
-                '60.00',
-                'Sí',
-                'No',
-                '',
-                'Categoría Ejemplo',
-            ]);
-            $writer->addRow($sampleRow);
-
-            $writer->close();
-
-            return response()->download($tempFile, 'plantilla-importacion-productos.xlsx')->deleteFileAfterSend(true);
-
-        } catch (Exception $e) {
-            if (file_exists($tempFile)) {
-                unlink($tempFile);
-            }
-            abort(500, 'Error generating template: '.$e->getMessage());
-        }
-    }
 }

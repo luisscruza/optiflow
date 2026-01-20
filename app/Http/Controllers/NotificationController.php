@@ -32,31 +32,6 @@ final class NotificationController extends Controller
     }
 
     /**
-     * Mark a notification as read.
-     */
-    public function markAsRead(Request $request, string $id): RedirectResponse
-    {
-        $notification = $request->user()
-            ->notifications()
-            ->where('id', $id)
-            ->firstOrFail();
-
-        $notification->markAsRead();
-
-        return back();
-    }
-
-    /**
-     * Mark all notifications as read.
-     */
-    public function markAllAsRead(Request $request): RedirectResponse
-    {
-        $request->user()->unreadNotifications->markAsRead();
-
-        return back();
-    }
-
-    /**
      * Delete a notification.
      */
     public function destroy(Request $request, string $id): RedirectResponse

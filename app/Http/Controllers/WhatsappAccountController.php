@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\WhatsappAccount;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Client\Response as HttpResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -114,170 +114,11 @@ final class WhatsappAccountController extends Controller
     }
 
     /**
-     * List accounts for API/JSON consumption (automation builder).
-     */
-    public function list(): JsonResponse
-    {
-        $accounts = WhatsappAccount::query()
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name', 'display_phone_number', 'business_account_id']);
-
-        return response()->json($accounts);
-    }
-
-    /**
-     * Fetch message templates for a given account.
-     */
-    public function templates(WhatsappAccount $whatsappAccount): JsonResponse
-    {
-        if (empty($whatsappAccount->business_account_id)) {
-            return response()->json([
-                'error' => 'Business Account ID is required to fetch templates.',
-                'templates' => [],
-            ], 400);
-        }
-
-        $response = Http::withToken($whatsappAccount->access_token)
-            ->get("https://graph.facebook.com/v21.0/{$whatsappAccount->business_account_id}/message_templates", [
-                'limit' => 100,
-            ]);
-
-        if (! $response->successful()) {
-            return response()->json([
-                'error' => $response->json('error.message', 'Failed to fetch templates'),
-                'templates' => [],
-            ], $response->status());
-        }
-
-        $templates = collect($response->json('data', []))
-            ->filter(fn ($t) => ($t['status'] ?? '') === 'APPROVED')
-            ->map(function ($t) {
-                $parameters = $this->extractTemplateParameters($t['components'] ?? []);
-
-                return [
-                    'name' => $t['name'],
-                    'language' => $t['language'],
-                    'category' => $t['category'] ?? null,
-                    'parameter_format' => $t['parameter_format'] ?? 'POSITIONAL',
-                    'components' => $t['components'] ?? [],
-                    'parameters' => $parameters,
-                ];
-            })
-            ->values()
-            ->all();
-
-        return response()->json(['templates' => $templates]);
-    }
-
-    /**
-     * Send a test message.
-     */
-    public function testMessage(Request $request, WhatsappAccount $whatsappAccount): JsonResponse
-    {
-        $validated = $request->validate([
-            'to' => ['required', 'string'],
-            'message' => ['required', 'string'],
-        ]);
-
-        $response = Http::withToken($whatsappAccount->access_token)
-            ->post("https://graph.facebook.com/v21.0/{$whatsappAccount->phone_number_id}/messages", [
-                'messaging_product' => 'whatsapp',
-                'recipient_type' => 'individual',
-                'to' => $validated['to'],
-                'type' => 'text',
-                'text' => [
-                    'preview_url' => false,
-                    'body' => $validated['message'],
-                ],
-            ]);
-
-        if (! $response->successful()) {
-            return response()->json([
-                'success' => false,
-                'error' => $response->json('error.message', 'Failed to send message'),
-            ], $response->status());
-        }
-
-        return response()->json([
-            'success' => true,
-            'message_id' => $response->json('messages.0.id'),
-        ]);
-    }
-
-    /**
-     * Extract parameters from template components.
-     *
-     * @param  array<int, array<string, mixed>>  $components
-     * @return array<int, array{name: string, type: string, component: string, example?: string}>
-     */
-    private function extractTemplateParameters(array $components): array
-    {
-        $parameters = [];
-
-        foreach ($components as $component) {
-            $componentType = $component['type'] ?? '';
-
-            // Extract named parameters from BODY component
-            if ($componentType === 'BODY' || $componentType === 'HEADER') {
-                $namedParams = $component['example']['body_text_named_params'] ?? [];
-                foreach ($namedParams as $param) {
-                    $parameters[] = [
-                        'name' => $param['param_name'],
-                        'type' => 'text',
-                        'component' => mb_strtolower($componentType),
-                        'example' => $param['example'] ?? null,
-                    ];
-                }
-
-                // Also check for positional parameters in the text ({{1}}, {{2}}, etc.)
-                $text = $component['text'] ?? '';
-                if (preg_match_all('/\{\{(\d+)\}\}/', $text, $matches)) {
-                    foreach ($matches[1] as $num) {
-                        // Only add if we don't already have named params
-                        if (empty($namedParams)) {
-                            $parameters[] = [
-                                'name' => $num,
-                                'type' => 'text',
-                                'component' => mb_strtolower($componentType),
-                                'positional' => true,
-                            ];
-                        }
-                    }
-                }
-            }
-
-            // Extract button URL parameters
-            if ($componentType === 'BUTTONS') {
-                $buttons = $component['buttons'] ?? [];
-                foreach ($buttons as $buttonIndex => $button) {
-                    if (($button['type'] ?? '') === 'URL') {
-                        $url = $button['url'] ?? '';
-                        if (preg_match_all('/\{\{(\d+)\}\}/', $url, $matches)) {
-                            foreach ($matches[1] as $num) {
-                                $parameters[] = [
-                                    'name' => "button_{$buttonIndex}_url_{$num}",
-                                    'type' => 'text',
-                                    'component' => 'button',
-                                    'button_index' => $buttonIndex,
-                                    'button_text' => $button['text'] ?? 'Button',
-                                    'example' => $button['example'][$num - 1] ?? null,
-                                ];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return $parameters;
-    }
-
-    /**
      * @return array{valid: bool, error?: string, display_phone_number?: string}
      */
     private function verifyCredentials(string $phoneNumberId, string $accessToken): array
     {
+        /** @var HttpResponse $response */
         $response = Http::withToken($accessToken)
             ->get("https://graph.facebook.com/v21.0/{$phoneNumberId}");
 

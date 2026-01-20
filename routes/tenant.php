@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AutomationController;
+use App\Http\Controllers\AutomationTestDataController;
+use App\Http\Controllers\AutomationTestRunController;
 use App\Http\Controllers\AutomationRunController;
 use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\BulkDownloadInvoicePdfController;
@@ -23,6 +25,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DashboardLayoutController;
 use App\Http\Controllers\DocumentSubtypeController;
 use App\Http\Controllers\DownloadInvoicePdfController;
+use App\Http\Controllers\DownloadProductImportTemplateController;
 use App\Http\Controllers\DownloadPrescriptionController;
 use App\Http\Controllers\DownloadQuotationPdfController;
 use App\Http\Controllers\GlobalRoleController;
@@ -30,14 +33,18 @@ use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\InitialStockController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\MastertableController;
+use App\Http\Controllers\MarkAllNotificationsAsReadController;
+use App\Http\Controllers\MarkNotificationAsReadController;
 use App\Http\Controllers\MastertableItemController;
 use App\Http\Controllers\PasswordChangeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProcessProductImportController;
 use App\Http\Controllers\ProductImportController;
 use App\Http\Controllers\QuickProductCreate;
 use App\Http\Controllers\QuotationController;
+use App\Http\Controllers\ExportReportController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportGroupController;
 use App\Http\Controllers\SalesmanController;
@@ -48,8 +55,14 @@ use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\StreamInvoicePdfController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\TelegramBotController;
+use App\Http\Controllers\ListTelegramBotsController;
+use App\Http\Controllers\TestTelegramBotMessageController;
 use App\Http\Controllers\WhatsappAccountController;
+use App\Http\Controllers\ListWhatsappAccountsController;
+use App\Http\Controllers\ListWhatsappAccountTemplatesController;
+use App\Http\Controllers\TestWhatsappAccountMessageController;
 use App\Http\Controllers\WorkflowController;
+use App\Http\Controllers\SyncGlobalRoleController;
 use App\Http\Controllers\WorkflowJobController;
 use App\Http\Controllers\WorkflowJobStageController;
 use App\Http\Controllers\WorkflowStageController;
@@ -110,8 +123,8 @@ Route::middleware([
         Route::delete('comments/{comment}', [App\Http\Controllers\CommentController::class, 'destroy'])->name('comments.destroy');
 
         Route::get('notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
-        Route::patch('notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
-        Route::post('notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+        Route::patch('notifications/{id}/read', MarkNotificationAsReadController::class)->name('notifications.read');
+        Route::post('notifications/read-all', MarkAllNotificationsAsReadController::class)->name('notifications.read-all');
         Route::delete('notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
 
         // Business-wide user management (not scoped to workspace)
@@ -126,7 +139,7 @@ Route::middleware([
         Route::post('business/roles', [GlobalRoleController::class, 'store'])->name('business.roles.store');
         Route::patch('business/roles/{roleName}', [GlobalRoleController::class, 'update'])->name('business.roles.update');
         Route::delete('business/roles/{roleName}', [GlobalRoleController::class, 'destroy'])->name('business.roles.destroy');
-        Route::post('business/roles/{roleName}/sync', [GlobalRoleController::class, 'sync'])->name('business.roles.sync');
+        Route::post('business/roles/{roleName}/sync', SyncGlobalRoleController::class)->name('business.roles.sync');
 
         Route::middleware(HasWorkspace::class)->group(function (): void {
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -149,8 +162,8 @@ Route::middleware([
 
             // Product Import routes
             Route::resource('product-imports', ProductImportController::class)->except(['edit']);
-            Route::post('product-imports/{product_import}/process', [ProductImportController::class, 'process'])->name('product-imports.process');
-            Route::get('product-imports/template/download', [ProductImportController::class, 'template'])->name('product-imports.template');
+            Route::post('product-imports/{product_import}/process', ProcessProductImportController::class)->name('product-imports.process');
+            Route::get('product-imports/template/download', DownloadProductImportTemplateController::class)->name('product-imports.template');
 
             Route::resource('taxes', TaxController::class);
 
@@ -217,7 +230,7 @@ Route::middleware([
             Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
             Route::get('reports/group/{group}', [ReportGroupController::class, 'show'])->name('reports.group');
             Route::get('reports/{type}', [ReportController::class, 'show'])->name('reports.show');
-            Route::get('reports/{type}/export', [ReportController::class, 'export'])->name('reports.export');
+            Route::get('reports/{type}/export', ExportReportController::class)->name('reports.export');
 
             // Workflow routes (Kanban for lens processing)
             Route::resource('workflows', WorkflowController::class);
@@ -231,8 +244,8 @@ Route::middleware([
             Route::delete('workflows/{workflow}/jobs/{job}', [WorkflowJobController::class, 'destroy'])->name('workflows.jobs.destroy');
 
             Route::resource('automations', AutomationController::class)->only(['index', 'create', 'store', 'edit', 'update']);
-            Route::get('api/automations/test-data', [AutomationController::class, 'testData'])->name('automations.test-data');
-            Route::post('automations/{automation}/test', [AutomationController::class, 'runTest'])->name('automations.test');
+            Route::get('api/automations/test-data', AutomationTestDataController::class)->name('automations.test-data');
+            Route::post('automations/{automation}/test', AutomationTestRunController::class)->name('automations.test');
 
             // Automation Runs
             Route::get('automations/{automation}/runs', [AutomationRunController::class, 'index'])->name('automations.runs.index');
@@ -240,14 +253,14 @@ Route::middleware([
 
             // Telegram Bots
             Route::resource('telegram-bots', TelegramBotController::class)->except(['show']);
-            Route::get('api/telegram-bots', [TelegramBotController::class, 'list'])->name('telegram-bots.list');
-            Route::post('telegram-bots/{telegram_bot}/test', [TelegramBotController::class, 'testMessage'])->name('telegram-bots.test');
+            Route::get('api/telegram-bots', ListTelegramBotsController::class)->name('telegram-bots.list');
+            Route::post('telegram-bots/{telegram_bot}/test', TestTelegramBotMessageController::class)->name('telegram-bots.test');
 
             // WhatsApp Accounts
             Route::resource('whatsapp-accounts', WhatsappAccountController::class)->except(['show']);
-            Route::get('api/whatsapp-accounts', [WhatsappAccountController::class, 'list'])->name('whatsapp-accounts.list');
-            Route::get('whatsapp-accounts/{whatsapp_account}/templates', [WhatsappAccountController::class, 'templates'])->name('whatsapp-accounts.templates');
-            Route::post('whatsapp-accounts/{whatsapp_account}/test', [WhatsappAccountController::class, 'testMessage'])->name('whatsapp-accounts.test');
+            Route::get('api/whatsapp-accounts', ListWhatsappAccountsController::class)->name('whatsapp-accounts.list');
+            Route::get('whatsapp-accounts/{whatsapp_account}/templates', ListWhatsappAccountTemplatesController::class)->name('whatsapp-accounts.templates');
+            Route::post('whatsapp-accounts/{whatsapp_account}/test', TestWhatsappAccountMessageController::class)->name('whatsapp-accounts.test');
 
             Route::post('impersonate/{user}', [ImpersonationController::class, 'store']);
             Route::delete('impersonate', [ImpersonationController::class, 'destroy']);

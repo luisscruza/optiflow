@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\TelegramBot;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -129,49 +128,4 @@ final class TelegramBotController extends Controller
             ->with('success', 'Bot de Telegram eliminado correctamente.');
     }
 
-    /**
-     * API endpoint to list bots for automation builder.
-     */
-    public function list(): JsonResponse
-    {
-        $bots = TelegramBot::query()
-            ->where('workspace_id', Auth::user()->current_workspace_id)
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name', 'bot_username', 'default_chat_id']);
-
-        return response()->json($bots);
-    }
-
-    /**
-     * Test sending a message with a bot.
-     */
-    public function testMessage(Request $request, TelegramBot $telegramBot): JsonResponse
-    {
-        $validated = $request->validate([
-            'chat_id' => ['required', 'string'],
-            'message' => ['required', 'string'],
-        ]);
-
-        try {
-            $telegram = new Api($telegramBot->bot_token);
-
-            /** @var \Telegram\Bot\Objects\Message $response */
-            $response = $telegram->sendMessage([
-                'chat_id' => $validated['chat_id'],
-                'text' => $validated['message'],
-                'parse_mode' => 'HTML',
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message_id' => $response->messageId,
-            ]);
-        } catch (TelegramSDKException $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ], 422);
-        }
-    }
 }
