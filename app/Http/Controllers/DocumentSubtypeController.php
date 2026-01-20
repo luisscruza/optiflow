@@ -40,9 +40,9 @@ final class DocumentSubtypeController extends Controller
             ->withQueryString();
 
         $subtypes->getCollection()->transform(function ($subtype) {
-            $subtype->siguiente_numero = $subtype->next_number;
-            $subtype->fecha_finalizacion = $subtype->valid_until_date?->format('d/m/Y');
-            $subtype->preferida = $subtype->is_default ? 'Sí' : 'No';
+            $subtype->setAttribute('siguiente_numero', $subtype->next_number);
+            $subtype->setAttribute('fecha_finalizacion', $subtype->valid_until_date?->format('d/m/Y'));
+            $subtype->setAttribute('preferida', $subtype->is_default ? 'Sí' : 'No');
 
             return $subtype;
         });

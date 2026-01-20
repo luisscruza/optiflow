@@ -47,8 +47,9 @@ final class BusinessUserWorkspaceRoleController extends Controller
 
         foreach ($request->validated('role_ids') as $roleId) {
             $role = Role::find($roleId);
+            $roleWorkspaceId = $role?->getAttribute('workspace_id');
 
-            if ($role && $role->workspace_id === $workspace->id) {
+            if ($roleWorkspaceId !== null && (int) $roleWorkspaceId === $workspace->id) {
                 $user->assignRole($role);
             }
         }

@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property-read Contact|null $optometrist
  * @property-read Contact|null $patient
  * @property-read Workspace|null $workspace
+ * @property-read string|null $workspace_name
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Prescription forWorkspace(\App\Models\Workspace|int $workspace)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Prescription newModelQuery()

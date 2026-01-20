@@ -60,7 +60,15 @@ final class WorkflowEvent extends Model
      */
     protected function eventTypeLabel(): Attribute
     {
-        return Attribute::get(fn (): string => $this->event_type->label());
+        return Attribute::get(function (): string {
+            $eventType = $this->event_type;
+
+            if ($eventType instanceof EventType) {
+                return $eventType->label();
+            }
+
+            return EventType::tryFrom((string) $eventType)?->label() ?? (string) $eventType;
+        });
     }
 
     /**

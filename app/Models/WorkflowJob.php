@@ -46,16 +46,18 @@ final class WorkflowJob extends Model implements Commentable, HasMedia
      */
     public function registerMediaConversions(?Media $media = null): void
     {
-        $this->addMediaConversion('thumb')
+        $thumbConversion = $this->addMediaConversion('thumb');
+        $thumbConversion->performOnCollections('images');
+        $thumbConversion
             ->width(150)
             ->height(150)
-            ->sharpen(10)
-            ->performOnCollections('images');
+            ->sharpen(10);
 
-        $this->addMediaConversion('preview')
+        $previewConversion = $this->addMediaConversion('preview');
+        $previewConversion->performOnCollections('images');
+        $previewConversion
             ->width(800)
-            ->height(600)
-            ->performOnCollections('images');
+            ->height(600);
     }
 
     /**

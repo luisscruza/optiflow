@@ -87,12 +87,15 @@ final class PaymentController extends Controller
 
         $pendingInvoices = Invoice::query()
             ->with(['contact', 'documentSubtype'])
-            ->whereColumn('total_amount', '>', 'paid_amount')
+            ->withSum('payments', 'amount')
+            ->whereColumn('total_amount', '>', 'payments_sum_amount')
             ->where('status', '!=', 'voided')
             ->orderBy('issue_date', 'desc')
             ->get()
             ->map(function ($invoice) {
-                $invoice->amount_due = $invoice->total_amount - $invoice->paid_amount;
+                /** @var Invoice&object{payments_sum_amount: float|int|string|null} $invoice */
+                $paidAmount = (float) ($invoice->payments_sum_amount ?? 0);
+                $invoice->setAttribute('paid_amount', $paidAmount);
 
                 return $invoice;
             });

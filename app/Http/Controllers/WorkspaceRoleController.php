@@ -84,7 +84,7 @@ final class WorkspaceRoleController extends Controller
     {
         $workspace = Context::get('workspace');
 
-        if ($role->workspace_id !== $workspace->id) {
+        if ($role->getAttribute('workspace_id') !== $workspace->id) {
             abort(404);
         }
 
@@ -104,7 +104,7 @@ final class WorkspaceRoleController extends Controller
     {
         $workspace = Context::get('workspace');
 
-        if ($role->workspace_id !== $workspace->id) {
+        if ($role->getAttribute('workspace_id') !== $workspace->id) {
             abort(404);
         }
 

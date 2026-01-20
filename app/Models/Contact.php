@@ -204,6 +204,14 @@ final class Contact extends Model implements Commentable
         return $this->status === 'active';
     }
 
+    public function getPhoneAttribute(): ?string
+    {
+        return $this->mobile
+            ?? $this->phone
+            ?? $this->phone_primary
+            ?? $this->phone_secondary;
+    }
+
     /**
      * Scope to filter by contact type.
      */
@@ -261,7 +269,19 @@ final class Contact extends Model implements Commentable
     protected function age(): Attribute
     {
         return Attribute::make(
-            get: fn (): ?int => $this->birth_date?->age
+            get: function (): ?int {
+                $birthDate = $this->birth_date;
+
+                if ($birthDate instanceof \Carbon\CarbonInterface) {
+                    return $birthDate->age;
+                }
+
+                if (is_string($birthDate) && $birthDate !== '') {
+                    return \Carbon\Carbon::parse($birthDate)->age;
+                }
+
+                return null;
+            }
         );
     }
 
@@ -273,14 +293,6 @@ final class Contact extends Model implements Commentable
         return Attribute::make(
             get: fn (): ?string => $this->primaryAddress?->full_address
         );
-    }
-
-    public function getPhoneAttribute(): ?string
-    {
-        return $this->mobile
-            ?? $this->phone
-            ?? $this->phone_primary
-            ?? $this->phone_secondary;
     }
 
     /**

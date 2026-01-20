@@ -6,6 +6,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Workspace;
+use Carbon\CarbonInterface;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -35,22 +37,32 @@ final class BusinessUserController extends Controller
                     ->where('model_id', '=', $user->id)
                     ->get()->toArray();
 
+                $lastActivity = $user->last_activity_at;
+
+                if (is_string($lastActivity)) {
+                    $lastActivity = Carbon::parse($lastActivity);
+                }
+
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'last_activity_at' => $user->last_activity_at?->diffForHumans() ?? 'Sin actividad',
+                    'last_activity_at' => $lastActivity instanceof CarbonInterface
+                        ? $lastActivity->diffForHumans()
+                        : 'Sin actividad',
                     'business_role' => $user->business_role->label(),
                     'workspaces_count' => $user->workspaces_count,
                     'workspaces' => $user->workspaces->map(function ($workspace) use ($user, $roles): array {
+                        /** @var \Illuminate\Database\Eloquent\Relations\Pivot|null $pivot */
+                        $pivot = $workspace->getRelationValue('pivot');
                         $workspaceRoles = array_filter($roles, fn ($role) => $role->workspace_id === $workspace->id);
 
                         return [
                             'id' => $workspace->id,
                             'name' => $workspace->name,
                             'is_owner' => $workspace->owner_id === $user->id,
-                            'pivot_role' => $workspace->pivot->role,
-                            'joined_at' => $workspace->pivot->joined_at,
+                            'pivot_role' => $pivot?->getAttribute('role'),
+                            'joined_at' => $pivot?->getAttribute('joined_at'),
                             'roles' => array_values(array_map(fn ($role) => [
                                 'id' => $role->id,
                                 'name' => $role->name,

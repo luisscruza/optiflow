@@ -40,7 +40,8 @@ final class BusinessUserWorkspaceController extends Controller
         // Assign role if provided
         if ($request->validated('role_id')) {
             $role = Role::find($request->validated('role_id'));
-            if ($role && $role->workspace_id === $workspace->id) {
+            $roleWorkspaceId = $role?->getAttribute('workspace_id');
+            if ($roleWorkspaceId !== null && (int) $roleWorkspaceId === $workspace->id) {
                 $user->assignRole($role);
             }
         }

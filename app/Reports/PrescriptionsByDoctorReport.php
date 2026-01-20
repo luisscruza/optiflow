@@ -238,6 +238,11 @@ final readonly class PrescriptionsByDoctorReport implements ReportContract
      */
     public function summary(array $filters = []): array
     {
+        /** @var object{
+         *     total_prescriptions: int,
+         *     total_patients: int,
+         *     total_optometrists: int
+         * }|null $totals */
         $totals = $this->baseQuery($filters)
             ->selectRaw('
                 COUNT(*) as total_prescriptions,
@@ -247,9 +252,9 @@ final readonly class PrescriptionsByDoctorReport implements ReportContract
             ->first();
 
         return [
-            ['key' => 'total_prescriptions', 'label' => 'Total de recetas', 'value' => (int) $totals->total_prescriptions, 'type' => 'number'],
-            ['key' => 'total_patients', 'label' => 'Pacientes atendidos', 'value' => (int) $totals->total_patients, 'type' => 'number'],
-            ['key' => 'total_optometrists', 'label' => 'Optometristas activos', 'value' => (int) $totals->total_optometrists, 'type' => 'number'],
+            ['key' => 'total_prescriptions', 'label' => 'Total de recetas', 'value' => (int) ($totals->total_prescriptions ?? 0), 'type' => 'number'],
+            ['key' => 'total_patients', 'label' => 'Pacientes atendidos', 'value' => (int) ($totals->total_patients ?? 0), 'type' => 'number'],
+            ['key' => 'total_optometrists', 'label' => 'Optometristas activos', 'value' => (int) ($totals->total_optometrists ?? 0), 'type' => 'number'],
         ];
     }
 
@@ -327,13 +332,21 @@ final readonly class PrescriptionsByDoctorReport implements ReportContract
         }
 
         return $query->get()
-            ->map(fn ($invoice) => [
-                'id' => $invoice->id,
-                'document_number' => $invoice->document_number,
-                'total_amount' => (float) $invoice->total_amount,
-                'issue_date' => $invoice->issue_date,
-                'status' => $this->getInvoiceStatus($invoice->id, (float) $invoice->total_amount),
-            ])
+            ->map(function ($invoice): array {
+                /** @var \stdClass&object{
+                 *     id: int,
+                 *     document_number: string,
+                 *     total_amount: float|int|string,
+                 *     issue_date: string
+                 * } $invoice */
+                return [
+                    'id' => $invoice->id,
+                    'document_number' => $invoice->document_number,
+                    'total_amount' => (float) $invoice->total_amount,
+                    'issue_date' => $invoice->issue_date,
+                    'status' => $this->getInvoiceStatus($invoice->id, (float) $invoice->total_amount),
+                ];
+            })
             ->toArray();
     }
 

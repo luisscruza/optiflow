@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use Carbon\CarbonInterface;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Symfony\Component\HttpFoundation\Response;
 
 class UpdateUserActivity
@@ -25,7 +27,11 @@ class UpdateUserActivity
 
         $last = $user->last_activity_at;
 
-        if (! $last || $last->lt(now()->subSeconds(120))) {
+        if (is_string($last)) {
+            $last = Carbon::parse($last);
+        }
+
+        if (! $last instanceof CarbonInterface || $last->lt(now()->subSeconds(120))) {
             $user->forceFill(['last_activity_at' => now()])->saveQuietly();
         }
 

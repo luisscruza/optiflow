@@ -216,6 +216,12 @@ final readonly class GeneralSalesReport implements ReportContract
      */
     public function summary(array $filters = []): array
     {
+        /** @var object{
+         *     total_invoices: int,
+         *     subtotal: float|int|string,
+         *     taxes: float|int|string,
+         *     total: float|int|string
+         * }|null $totals */
         $totals = $this->baseQuery($filters)
             ->selectRaw('
                 COUNT(*) as total_invoices,
@@ -226,10 +232,10 @@ final readonly class GeneralSalesReport implements ReportContract
             ->first();
 
         return [
-            ['key' => 'total_invoices', 'label' => 'Facturas', 'value' => (int) $totals->total_invoices, 'type' => 'number'],
-            ['key' => 'subtotal', 'label' => 'Antes de impuestos', 'value' => (float) $totals->subtotal, 'type' => 'currency'],
-            ['key' => 'taxes', 'label' => 'Impuestos', 'value' => (float) $totals->taxes, 'type' => 'currency'],
-            ['key' => 'total', 'label' => 'Después de impuestos', 'value' => (float) $totals->total, 'type' => 'currency'],
+            ['key' => 'total_invoices', 'label' => 'Facturas', 'value' => (int) ($totals->total_invoices ?? 0), 'type' => 'number'],
+            ['key' => 'subtotal', 'label' => 'Antes de impuestos', 'value' => (float) ($totals->subtotal ?? 0), 'type' => 'currency'],
+            ['key' => 'taxes', 'label' => 'Impuestos', 'value' => (float) ($totals->taxes ?? 0), 'type' => 'currency'],
+            ['key' => 'total', 'label' => 'Después de impuestos', 'value' => (float) ($totals->total ?? 0), 'type' => 'currency'],
         ];
     }
 

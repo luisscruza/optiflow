@@ -90,6 +90,7 @@ use Spatie\Activitylog\LogOptions;
  * @property-read array<string, mixed> $status_config
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Payment> $payments
  * @property-read int|null $payments_count
+ * @property-read string|null $workspace_name
  *
  * @mixin \Eloquent
  */
@@ -186,13 +187,6 @@ final class Invoice extends Model implements Auditable, Commentable
         }
     }
 
-    public function humanReadableIssueDate(): Attribute
-    {
-        return Attribute::make(
-            get: fn (): string => $this->issue_date->translatedFormat('d F Y'),
-        );
-    }
-
     /**
      * Get the activity log options for this model.
      * Only track meaningful changes, not calculated fields.
@@ -259,6 +253,13 @@ final class Invoice extends Model implements Auditable, Commentable
     public function canRegisterPayment(): bool
     {
         return ! in_array($this->status, [InvoiceStatus::Paid, InvoiceStatus::Deleted, InvoiceStatus::Cancelled, InvoiceStatus::Draft]);
+    }
+
+    protected function humanReadableIssueDate(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => $this->issue_date->translatedFormat('d F Y'),
+        );
     }
 
     /**

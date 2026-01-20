@@ -44,8 +44,9 @@ final class TelegramBotController extends Controller
         // Verify the token by getting bot info
         try {
             $telegram = new Api($validated['bot_token']);
+            /** @var \Telegram\Bot\Objects\User $botInfo */
             $botInfo = $telegram->getMe();
-            $botUsername = data_get($botInfo, 'username');
+            $botUsername = $botInfo->username;
             if (! is_string($botUsername) || $botUsername === '') {
                 return redirect()->back()
                     ->withInput()
@@ -54,7 +55,7 @@ final class TelegramBotController extends Controller
         } catch (TelegramSDKException $e) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['bot_token' => 'Token inválido: ' . $e->getMessage()]);
+                ->withErrors(['bot_token' => 'Token inválido: '.$e->getMessage()]);
         }
 
         TelegramBot::query()->create([
@@ -96,8 +97,9 @@ final class TelegramBotController extends Controller
         if (! empty($validated['bot_token'])) {
             try {
                 $telegram = new Api($validated['bot_token']);
+                /** @var \Telegram\Bot\Objects\User $botInfo */
                 $botInfo = $telegram->getMe();
-                $botUsername = data_get($botInfo, 'username');
+                $botUsername = $botInfo->username;
                 if (! is_string($botUsername) || $botUsername === '') {
                     return redirect()->back()
                         ->withInput()
@@ -109,7 +111,7 @@ final class TelegramBotController extends Controller
             } catch (TelegramSDKException $e) {
                 return redirect()->back()
                     ->withInput()
-                    ->withErrors(['bot_token' => 'Token inválido: ' . $e->getMessage()]);
+                    ->withErrors(['bot_token' => 'Token inválido: '.$e->getMessage()]);
             }
         }
 
@@ -154,6 +156,7 @@ final class TelegramBotController extends Controller
         try {
             $telegram = new Api($telegramBot->bot_token);
 
+            /** @var \Telegram\Bot\Objects\Message $response */
             $response = $telegram->sendMessage([
                 'chat_id' => $validated['chat_id'],
                 'text' => $validated['message'],
@@ -162,7 +165,7 @@ final class TelegramBotController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message_id' => data_get($response, 'message_id'),
+                'message_id' => $response->messageId,
             ]);
         } catch (TelegramSDKException $e) {
             return response()->json([

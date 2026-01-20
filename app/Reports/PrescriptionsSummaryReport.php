@@ -174,11 +174,13 @@ final class PrescriptionsSummaryReport implements ReportContract
             ->orderBy($sortColumn, $sortDirection)
             ->paginate($perPage)
             ->through(function (Prescription $prescription) use ($filters) {
+                $workspaceName = $prescription->workspace_name;
+
                 return [
                     'id' => $prescription->id,
                     'prescription_id' => $prescription->id,
                     'workspace_id' => $prescription->workspace_id,
-                    'workspace_name' => $prescription->workspace_name,
+                    'workspace_name' => $workspaceName,
                     'patient_id' => $prescription->patient_id,
                     'patient_name' => $prescription->patient?->name ?? 'Sin paciente',
                     'optometrist_name' => $prescription->optometrist?->name ?? 'Sin optometrista',
@@ -215,36 +217,40 @@ final class PrescriptionsSummaryReport implements ReportContract
         return $this->query($filters)
             ->orderByDesc('prescriptions.created_at')
             ->get()
-            ->map(fn (Prescription $prescription) => [
-                'id' => $prescription->id,
-                'prescription_id' => $prescription->id,
-                'workspace_id' => $prescription->workspace_id,
-                'workspace_name' => $prescription->workspace_name,
-                'patient_id' => $prescription->patient_id,
-                'patient_name' => $prescription->patient?->name ?? 'Sin paciente',
-                'optometrist_name' => $prescription->optometrist?->name ?? 'Sin optometrista',
-                'prescription_data' => [
-                    'od' => [
-                        'esfera' => $prescription->subjetivo_od_esfera,
-                        'cilindro' => $prescription->subjetivo_od_cilindro,
-                        'eje' => $prescription->subjetivo_od_eje,
-                        'add' => $prescription->subjetivo_od_add,
-                        'av_lejos' => $prescription->subjetivo_od_av_lejos,
-                        'av_cerca' => $prescription->subjetivo_od_av_cerca,
+            ->map(function (Prescription $prescription) use ($filters): array {
+                $workspaceName = $prescription->workspace_name;
+
+                return [
+                    'id' => $prescription->id,
+                    'prescription_id' => $prescription->id,
+                    'workspace_id' => $prescription->workspace_id,
+                    'workspace_name' => $workspaceName,
+                    'patient_id' => $prescription->patient_id,
+                    'patient_name' => $prescription->patient?->name ?? 'Sin paciente',
+                    'optometrist_name' => $prescription->optometrist?->name ?? 'Sin optometrista',
+                    'prescription_data' => [
+                        'od' => [
+                            'esfera' => $prescription->subjetivo_od_esfera,
+                            'cilindro' => $prescription->subjetivo_od_cilindro,
+                            'eje' => $prescription->subjetivo_od_eje,
+                            'add' => $prescription->subjetivo_od_add,
+                            'av_lejos' => $prescription->subjetivo_od_av_lejos,
+                            'av_cerca' => $prescription->subjetivo_od_av_cerca,
+                        ],
+                        'oi' => [
+                            'esfera' => $prescription->subjetivo_oi_esfera,
+                            'cilindro' => $prescription->subjetivo_oi_cilindro,
+                            'eje' => $prescription->subjetivo_oi_eje,
+                            'add' => $prescription->subjetivo_oi_add,
+                            'av_lejos' => $prescription->subjetivo_oi_av_lejos,
+                            'av_cerca' => $prescription->subjetivo_oi_av_cerca,
+                        ],
                     ],
-                    'oi' => [
-                        'esfera' => $prescription->subjetivo_oi_esfera,
-                        'cilindro' => $prescription->subjetivo_oi_cilindro,
-                        'eje' => $prescription->subjetivo_oi_eje,
-                        'add' => $prescription->subjetivo_oi_add,
-                        'av_lejos' => $prescription->subjetivo_oi_av_lejos,
-                        'av_cerca' => $prescription->subjetivo_oi_av_cerca,
-                    ],
-                ],
-                'prescription_date' => $prescription->created_at->format('d/m/Y'),
-                'invoices' => $this->getPatientInvoices($prescription->patient_id, $filters),
-                'view_prescription' => 'Ver receta',
-            ])
+                    'prescription_date' => $prescription->created_at->format('d/m/Y'),
+                    'invoices' => $this->getPatientInvoices($prescription->patient_id, $filters),
+                    'view_prescription' => 'Ver receta',
+                ];
+            })
             ->toArray();
     }
 
@@ -283,6 +289,12 @@ final class PrescriptionsSummaryReport implements ReportContract
             });
         }
 
+        /** @var object{
+         *     total_prescriptions: int,
+         *     total_workspaces: int,
+         *     total_patients: int,
+         *     total_optometrists: int
+         * }|null $totals */
         $totals = $query
             ->selectRaw('
                 COUNT(*) as total_prescriptions,
@@ -295,22 +307,22 @@ final class PrescriptionsSummaryReport implements ReportContract
         return [
             [
                 'label' => 'Total recetas',
-                'value' => $totals->total_prescriptions ?? 0,
+                'value' => (int) ($totals->total_prescriptions ?? 0),
                 'type' => 'number',
             ],
             [
                 'label' => 'Sucursales',
-                'value' => $totals->total_workspaces ?? 0,
+                'value' => (int) ($totals->total_workspaces ?? 0),
                 'type' => 'number',
             ],
             [
                 'label' => 'Pacientes',
-                'value' => $totals->total_patients ?? 0,
+                'value' => (int) ($totals->total_patients ?? 0),
                 'type' => 'number',
             ],
             [
                 'label' => 'Optometristas',
-                'value' => $totals->total_optometrists ?? 0,
+                'value' => (int) ($totals->total_optometrists ?? 0),
                 'type' => 'number',
             ],
         ];

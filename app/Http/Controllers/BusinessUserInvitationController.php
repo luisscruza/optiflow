@@ -53,7 +53,8 @@ final class BusinessUserInvitationController extends Controller
             foreach ($request->validated('workspaces') as $workspaceData) {
                 if (isset($workspaceData['role_id'])) {
                     $role = \Spatie\Permission\Models\Role::find($workspaceData['role_id']);
-                    if ($role && $role->workspace_id === $workspaceData['workspace_id']) {
+                    $roleWorkspaceId = $role?->getAttribute('workspace_id');
+                    if ($roleWorkspaceId !== null && (int) $roleWorkspaceId === (int) $workspaceData['workspace_id']) {
                         // Set the workspace context before assigning the role
                         setPermissionsTeamId($workspaceData['workspace_id']);
                         $user->assignRole($role);

@@ -42,10 +42,10 @@ final class StockAdjustmentController extends Controller
         // Transform products to include current stock information
         $products->transform(function ($product) {
             $stock = $product->stocksInCurrentWorkspace->first();
-            $product->stock_in_current_workspace = [
+            $product->setAttribute('stock_in_current_workspace', [
                 'quantity' => $stock?->quantity ?? 0,
                 'minimum_quantity' => $stock?->minimum_quantity ?? 0,
-            ];
+            ]);
             unset($product->stocksInCurrentWorkspace);
 
             return $product;

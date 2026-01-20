@@ -180,12 +180,21 @@ final readonly class SalesmanSalesReport implements ReportContract
         return $query
             ->orderBy($sortColumn, $sortDirection)
             ->paginate($perPage)
-            ->through(function ($item) use ($filters) {
+            ->through(function ($item) use ($filters): array {
+                /** @var Salesman&object{
+                 *     id: int,
+                 *     salesman_name: string,
+                 *     paid_amount: float|int|string,
+                 *     subtotal_amount: float|int|string,
+                 *     total_amount: float|int|string
+                 * } $item */
+                $id = $item->id;
+
                 return [
-                    'id' => $item->id,
-                    'salesman_id' => $item->id,
+                    'id' => $id,
+                    'salesman_id' => $id,
                     'salesman_name' => $item->salesman_name,
-                    'invoices' => $this->getSalesmanInvoices($item->id, $filters),
+                    'invoices' => $this->getSalesmanInvoices($id, $filters),
                     'paid_amount' => (float) $item->paid_amount,
                     'subtotal_amount' => (float) $item->subtotal_amount,
                     'total_amount' => (float) $item->total_amount,
@@ -202,15 +211,27 @@ final readonly class SalesmanSalesReport implements ReportContract
         return $this->query($filters)
             ->orderByDesc('total_amount')
             ->get()
-            ->map(fn ($item) => [
-                'id' => $item->id,
-                'salesman_id' => $item->id,
-                'salesman_name' => $item->salesman_name,
-                'invoice_count' => (int) $item->invoice_count,
-                'paid_amount' => (float) $item->paid_amount,
-                'subtotal_amount' => (float) $item->subtotal_amount,
-                'total_amount' => (float) $item->total_amount,
-            ])
+            ->map(function ($item): array {
+                /** @var Salesman&object{
+                 *     id: int,
+                 *     salesman_name: string,
+                 *     invoice_count: int|string,
+                 *     paid_amount: float|int|string,
+                 *     subtotal_amount: float|int|string,
+                 *     total_amount: float|int|string
+                 * } $item */
+                $id = $item->id;
+
+                return [
+                    'id' => $id,
+                    'salesman_id' => $id,
+                    'salesman_name' => $item->salesman_name,
+                    'invoice_count' => (int) $item->invoice_count,
+                    'paid_amount' => (float) $item->paid_amount,
+                    'subtotal_amount' => (float) $item->subtotal_amount,
+                    'total_amount' => (float) $item->total_amount,
+                ];
+            })
             ->toArray();
     }
 
@@ -220,6 +241,13 @@ final readonly class SalesmanSalesReport implements ReportContract
      */
     public function summary(array $filters = []): array
     {
+        /** @var object{
+         *     total_salesmen: int,
+         *     total_invoices: int,
+         *     paid: float|int|string,
+         *     subtotal: float|int|string,
+         *     total: float|int|string
+         * }|null $totals */
         $totals = $this->baseQuery($filters)
             ->selectRaw('
                 COUNT(DISTINCT salesmen.id) as total_salesmen,
@@ -231,10 +259,10 @@ final readonly class SalesmanSalesReport implements ReportContract
             ->first();
 
         return [
-            ['key' => 'total_salesmen', 'label' => 'Total de vendedores', 'value' => (int) $totals->total_salesmen, 'type' => 'number'],
-            ['key' => 'total_invoices', 'label' => 'Total de facturas', 'value' => (int) $totals->total_invoices, 'type' => 'number'],
-            ['key' => 'paid', 'label' => 'Pagado', 'value' => (float) $totals->paid, 'type' => 'currency'],
-            ['key' => 'total', 'label' => 'Total', 'value' => (float) $totals->total, 'type' => 'currency'],
+            ['key' => 'total_salesmen', 'label' => 'Total de vendedores', 'value' => (int) ($totals->total_salesmen ?? 0), 'type' => 'number'],
+            ['key' => 'total_invoices', 'label' => 'Total de facturas', 'value' => (int) ($totals->total_invoices ?? 0), 'type' => 'number'],
+            ['key' => 'paid', 'label' => 'Pagado', 'value' => (float) ($totals->paid ?? 0), 'type' => 'currency'],
+            ['key' => 'total', 'label' => 'Total', 'value' => (float) ($totals->total ?? 0), 'type' => 'currency'],
         ];
     }
 
@@ -368,7 +396,7 @@ final readonly class SalesmanSalesReport implements ReportContract
             ->select('invoices.id', 'invoices.document_number', 'invoices.total_amount', 'invoices.issue_date', 'workspaces.name as workspace_name')
             ->orderByDesc('invoices.issue_date')
             ->get()
-            ->map(function (Invoice $invoice) {
+            ->map(function (Invoice $invoice): array {
                 return [
                     'id' => $invoice->id,
                     'document_number' => $invoice->document_number,

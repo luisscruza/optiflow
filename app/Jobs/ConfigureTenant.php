@@ -10,6 +10,7 @@ use App\Enums\Permission as EnumsPermission;
 use App\Enums\UserRole;
 use App\Models\BankAccount;
 use App\Models\Central\Client;
+use App\Models\Central\Tenant;
 use App\Models\CompanyDetail;
 use App\Models\Currency;
 use App\Models\Permission;
@@ -25,14 +26,13 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
-use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Str;
 
 final class ConfigureTenant implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(private TenantWithDatabase $tenant)
+    public function __construct(private Tenant $tenant)
     {
         //
     }
@@ -80,7 +80,7 @@ final class ConfigureTenant implements ShouldQueue
         ]);
     }
 
-    private function setCompanyDetails(TenantWithDatabase $tenant, Client $client): void
+    private function setCompanyDetails(Tenant $tenant, Client $client): void
     {
         $values = [
             [

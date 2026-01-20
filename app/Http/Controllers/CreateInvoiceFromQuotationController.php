@@ -62,10 +62,10 @@ final class CreateInvoiceFromQuotationController extends Controller
             ->get()
             ->map(function ($product) use ($currentWorkspace): Product {
                 $stock = $currentWorkspace ? $product->stocks->first() : null;
-                $product->current_stock = $stock;
-                $product->stock_quantity = $stock ? $stock->quantity : 0;
-                $product->minimum_quantity = $stock ? $stock->minimum_quantity : 0;
-                $product->stock_status = $this->getStockStatus($product, $stock);
+                $product->setAttribute('current_stock', $stock);
+                $product->setAttribute('stock_quantity', $stock ? $stock->quantity : 0);
+                $product->setAttribute('minimum_quantity', $stock ? $stock->minimum_quantity : 0);
+                $product->setAttribute('stock_status', $this->getStockStatus($product, $stock));
 
                 unset($product->stocks);
 
@@ -85,13 +85,18 @@ final class CreateInvoiceFromQuotationController extends Controller
             'tax_rate' => $item->tax_rate ?? 0,
             'tax_amount' => $item->tax_amount ?? 0,
             'total' => $item->total,
-            'taxes' => $item->taxes->map(fn ($tax) => [
-                'id' => $tax->id,
-                'name' => $tax->name,
-                'type' => $tax->type,
-                'rate' => $tax->pivot->rate,
-                'amount' => $tax->pivot->amount,
-            ])->values()->all(),
+            'taxes' => $item->taxes->map(function ($tax): array {
+                /** @var \Illuminate\Database\Eloquent\Relations\Pivot|null $pivot */
+                $pivot = $tax->getRelationValue('pivot');
+
+                return [
+                    'id' => $tax->id,
+                    'name' => $tax->name,
+                    'type' => $tax->type,
+                    'rate' => $pivot?->getAttribute('rate'),
+                    'amount' => $pivot?->getAttribute('amount'),
+                ];
+            })->values()->all(),
         ])->values()->all();
 
         $taxesGroupedByType = Tax::query()

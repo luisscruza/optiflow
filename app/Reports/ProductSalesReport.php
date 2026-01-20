@@ -170,15 +170,27 @@ final readonly class ProductSalesReport implements ReportContract
         return $query
             ->orderBy($sortColumn, $sortDirection)
             ->paginate($perPage)
-            ->through(fn ($item) => [
-                'id' => $item->id,
-                'product_id' => $item->id,
-                'product_name' => $item->product_name,
-                'sku' => $item->sku,
-                'quantity' => (float) $item->quantity,
-                'subtotal_amount' => (float) $item->subtotal_amount,
-                'total_amount' => (float) $item->total_amount,
-            ]);
+            ->through(function ($item): array {
+                /** @var InvoiceItem&object{
+                 *     id: int,
+                 *     product_name: string,
+                 *     sku: string|null,
+                 *     quantity: float|int|string,
+                 *     subtotal_amount: float|int|string,
+                 *     total_amount: float|int|string
+                 * } $item */
+                $id = $item->id;
+
+                return [
+                    'id' => $id,
+                    'product_id' => $id,
+                    'product_name' => $item->product_name,
+                    'sku' => $item->sku,
+                    'quantity' => (float) $item->quantity,
+                    'subtotal_amount' => (float) $item->subtotal_amount,
+                    'total_amount' => (float) $item->total_amount,
+                ];
+            });
     }
 
     /**
@@ -190,15 +202,27 @@ final readonly class ProductSalesReport implements ReportContract
         return $this->query($filters)
             ->orderByDesc('total_amount')
             ->get()
-            ->map(fn ($item) => [
-                'id' => $item->id,
-                'product_id' => $item->id,
-                'product_name' => $item->product_name,
-                'sku' => $item->sku,
-                'quantity' => (float) $item->quantity,
-                'subtotal_amount' => (float) $item->subtotal_amount,
-                'total_amount' => (float) $item->total_amount,
-            ])
+            ->map(function ($item): array {
+                /** @var InvoiceItem&object{
+                 *     id: int,
+                 *     product_name: string,
+                 *     sku: string|null,
+                 *     quantity: float|int|string,
+                 *     subtotal_amount: float|int|string,
+                 *     total_amount: float|int|string
+                 * } $item */
+                $id = $item->id;
+
+                return [
+                    'id' => $id,
+                    'product_id' => $id,
+                    'product_name' => $item->product_name,
+                    'sku' => $item->sku,
+                    'quantity' => (float) $item->quantity,
+                    'subtotal_amount' => (float) $item->subtotal_amount,
+                    'total_amount' => (float) $item->total_amount,
+                ];
+            })
             ->toArray();
     }
 
@@ -208,6 +232,13 @@ final readonly class ProductSalesReport implements ReportContract
      */
     public function summary(array $filters = []): array
     {
+        /** @var object{
+         *     total_products: int,
+         *     total_quantity: float|int|string,
+         *     subtotal: float|int|string,
+         *     taxes: float|int|string,
+         *     total: float|int|string
+         * }|null $totals */
         $totals = $this->baseQuery($filters)
             ->selectRaw('
                 COUNT(DISTINCT products.id) as total_products,
@@ -219,10 +250,10 @@ final readonly class ProductSalesReport implements ReportContract
             ->first();
 
         return [
-            ['key' => 'total_products', 'label' => 'Productos/Servicios', 'value' => (int) $totals->total_products, 'type' => 'number'],
-            ['key' => 'total_quantity', 'label' => 'Cantidad vendida', 'value' => (float) $totals->total_quantity, 'type' => 'number'],
-            ['key' => 'subtotal', 'label' => 'Antes de impuestos', 'value' => (float) $totals->subtotal, 'type' => 'currency'],
-            ['key' => 'total', 'label' => 'Total', 'value' => (float) $totals->total, 'type' => 'currency'],
+            ['key' => 'total_products', 'label' => 'Productos/Servicios', 'value' => (int) ($totals->total_products ?? 0), 'type' => 'number'],
+            ['key' => 'total_quantity', 'label' => 'Cantidad vendida', 'value' => (float) ($totals->total_quantity ?? 0), 'type' => 'number'],
+            ['key' => 'subtotal', 'label' => 'Antes de impuestos', 'value' => (float) ($totals->subtotal ?? 0), 'type' => 'currency'],
+            ['key' => 'total', 'label' => 'Total', 'value' => (float) ($totals->total ?? 0), 'type' => 'currency'],
         ];
     }
 

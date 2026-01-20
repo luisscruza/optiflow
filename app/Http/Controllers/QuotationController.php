@@ -70,10 +70,10 @@ final class QuotationController extends Controller
             ->get()
             ->map(function ($product) use ($currentWorkspace): Product {
                 $stock = $currentWorkspace ? $product->stocks->first() : null;
-                $product->current_stock = $stock;
-                $product->stock_quantity = $stock ? $stock->quantity : 0;
-                $product->minimum_quantity = $stock ? $stock->minimum_quantity : 0;
-                $product->stock_status = $this->getStockStatus($product, $stock);
+                $product->setAttribute('current_stock', $stock);
+                $product->setAttribute('stock_quantity', $stock ? $stock->quantity : 0);
+                $product->setAttribute('minimum_quantity', $stock ? $stock->minimum_quantity : 0);
+                $product->setAttribute('stock_status', $this->getStockStatus($product, $stock));
 
                 unset($product->stocks);
 
@@ -179,10 +179,10 @@ final class QuotationController extends Controller
             ->get()
             ->map(function ($product) use ($currentWorkspace): Product {
                 $stock = $currentWorkspace ? $product->stocks->first() : null;
-                $product->current_stock = $stock;
-                $product->stock_quantity = $stock ? $stock->quantity : 0;
-                $product->minimum_quantity = $stock ? $stock->minimum_quantity : 0;
-                $product->stock_status = $this->getStockStatus($product, $stock);
+                $product->setAttribute('current_stock', $stock);
+                $product->setAttribute('stock_quantity', $stock ? $stock->quantity : 0);
+                $product->setAttribute('minimum_quantity', $stock ? $stock->minimum_quantity : 0);
+                $product->setAttribute('stock_status', $this->getStockStatus($product, $stock));
 
                 unset($product->stocks);
 

@@ -26,9 +26,6 @@ class StreamInvoicePdfController extends Controller
 
         $filename = "factura-{$invoice->document_number}.pdf";
 
-        return $pdf->stream($filename, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="'.$filename.'"',
-        ]);
+        return $pdf->stream($filename);
     }
 }

@@ -156,14 +156,25 @@ final readonly class CustomerSalesReport implements ReportContract
         return $query
             ->orderBy($sortColumn, $sortDirection)
             ->paginate($perPage)
-            ->through(fn ($item) => [
-                'id' => $item->id,
-                'contact_id' => $item->id,
-                'customer_name' => $item->customer_name,
-                'invoice_count' => (int) $item->invoice_count,
-                'subtotal_amount' => (float) $item->subtotal_amount,
-                'total_amount' => (float) $item->total_amount,
-            ]);
+            ->through(function ($item): array {
+                /** @var Invoice&object{
+                 *     id: int,
+                 *     customer_name: string,
+                 *     invoice_count: int|string,
+                 *     subtotal_amount: float|int|string,
+                 *     total_amount: float|int|string
+                 * } $item */
+                $id = $item->id;
+
+                return [
+                    'id' => $id,
+                    'contact_id' => $id,
+                    'customer_name' => $item->customer_name,
+                    'invoice_count' => (int) $item->invoice_count,
+                    'subtotal_amount' => (float) $item->subtotal_amount,
+                    'total_amount' => (float) $item->total_amount,
+                ];
+            });
     }
 
     /**
@@ -175,14 +186,25 @@ final readonly class CustomerSalesReport implements ReportContract
         return $this->query($filters)
             ->orderByDesc('total_amount')
             ->get()
-            ->map(fn ($item) => [
-                'id' => $item->id,
-                'contact_id' => $item->id,
-                'customer_name' => $item->customer_name,
-                'invoice_count' => (int) $item->invoice_count,
-                'subtotal_amount' => (float) $item->subtotal_amount,
-                'total_amount' => (float) $item->total_amount,
-            ])
+            ->map(function ($item): array {
+                /** @var Invoice&object{
+                 *     id: int,
+                 *     customer_name: string,
+                 *     invoice_count: int|string,
+                 *     subtotal_amount: float|int|string,
+                 *     total_amount: float|int|string
+                 * } $item */
+                $id = $item->id;
+
+                return [
+                    'id' => $id,
+                    'contact_id' => $id,
+                    'customer_name' => $item->customer_name,
+                    'invoice_count' => (int) $item->invoice_count,
+                    'subtotal_amount' => (float) $item->subtotal_amount,
+                    'total_amount' => (float) $item->total_amount,
+                ];
+            })
             ->toArray();
     }
 
@@ -192,6 +214,12 @@ final readonly class CustomerSalesReport implements ReportContract
      */
     public function summary(array $filters = []): array
     {
+        /** @var object{
+         *     total_customers: int,
+         *     total_invoices: int,
+         *     subtotal: float|int|string,
+         *     total: float|int|string
+         * }|null $totals */
         $totals = $this->baseQuery($filters)
             ->selectRaw('
                 COUNT(DISTINCT contacts.id) as total_customers,
@@ -202,10 +230,10 @@ final readonly class CustomerSalesReport implements ReportContract
             ->first();
 
         return [
-            ['key' => 'total_customers', 'label' => 'Total de clientes', 'value' => (int) $totals->total_customers, 'type' => 'number'],
-            ['key' => 'total_invoices', 'label' => 'Total de facturas', 'value' => (int) $totals->total_invoices, 'type' => 'number'],
-            ['key' => 'subtotal', 'label' => 'Antes de impuestos', 'value' => (float) $totals->subtotal, 'type' => 'currency'],
-            ['key' => 'total', 'label' => 'Después de impuestos', 'value' => (float) $totals->total, 'type' => 'currency'],
+            ['key' => 'total_customers', 'label' => 'Total de clientes', 'value' => (int) ($totals->total_customers ?? 0), 'type' => 'number'],
+            ['key' => 'total_invoices', 'label' => 'Total de facturas', 'value' => (int) ($totals->total_invoices ?? 0), 'type' => 'number'],
+            ['key' => 'subtotal', 'label' => 'Antes de impuestos', 'value' => (float) ($totals->subtotal ?? 0), 'type' => 'currency'],
+            ['key' => 'total', 'label' => 'Después de impuestos', 'value' => (float) ($totals->total ?? 0), 'type' => 'currency'],
         ];
     }
 
