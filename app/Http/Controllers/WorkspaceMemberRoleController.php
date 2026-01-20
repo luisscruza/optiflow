@@ -4,48 +4,30 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\UpdateWorkspaceMemberRoleAssignmentAction;
+use App\Exceptions\ActionNotFoundException;
+use App\Exceptions\ActionValidationException;
 use App\Http\Requests\UpdateMemberRoleRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Context;
-use Spatie\Permission\Models\Role;
 
 final class WorkspaceMemberRoleController extends Controller
 {
     /**
      * Update a member's role.
      */
-    public function update(UpdateMemberRoleRequest $request, User $member): RedirectResponse
+    public function update(UpdateMemberRoleRequest $request, User $member, UpdateWorkspaceMemberRoleAssignmentAction $action): RedirectResponse
     {
         $workspace = Context::get('workspace');
 
-        if (! $workspace->hasUser($member)) {
+        try {
+            $action->handle($workspace, $member, $request->validated('role'));
+        } catch (ActionNotFoundException) {
             abort(404);
+        } catch (ActionValidationException $exception) {
+            return redirect()->back()->withErrors($exception->errors());
         }
-
-        $roleId = $request->validated('role');
-        $role = Role::query()
-            ->where('id', $roleId)
-            ->where('workspace_id', $workspace->id)
-            ->first();
-
-        if (! $role) {
-            return redirect()->back()->withErrors([
-                'role' => 'El rol seleccionado no es válido.',
-            ]);
-        }
-
-        // Remove existing roles for this workspace
-        $existingRoles = $member->roles()
-            ->where('roles.workspace_id', $workspace->id)
-            ->get();
-
-        foreach ($existingRoles as $existingRole) {
-            $member->removeRole($existingRole);
-        }
-
-        // Assign new role
-        $member->assignRole($role);
 
         return redirect()->back()->with(
             'success',

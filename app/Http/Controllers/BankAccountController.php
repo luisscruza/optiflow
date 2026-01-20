@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\CreateBankAccountAction;
+use App\Actions\DeleteBankAccountAction;
 use App\Actions\UpdateBankAccountAction;
 use App\Enums\BankAccountType;
+use App\Exceptions\ActionValidationException;
 use App\Http\Requests\CreateBankAccountRequest;
 use App\Http\Requests\UpdateBankAccountRequest;
 use App\Models\BankAccount;
@@ -194,17 +196,13 @@ final class BankAccountController extends Controller
     /**
      * Remove the specified bank account.
      */
-    public function destroy(BankAccount $bankAccount): RedirectResponse
+    public function destroy(BankAccount $bankAccount, DeleteBankAccountAction $action): RedirectResponse
     {
-        if ($bankAccount->is_system_account) {
-            return back()->withErrors(['bank_account' => 'No se puede eliminar una cuenta del sistema.']);
+        try {
+            $action->handle($bankAccount);
+        } catch (ActionValidationException $exception) {
+            return back()->withErrors($exception->errors());
         }
-
-        if ($bankAccount->payments()->count() > 0) {
-            return back()->withErrors(['bank_account' => 'No se puede eliminar una cuenta con transacciones asociadas.']);
-        }
-
-        $bankAccount->delete();
 
         return redirect()->route('bank-accounts.index')
             ->with('success', 'Cuenta bancaria eliminada correctamente.');

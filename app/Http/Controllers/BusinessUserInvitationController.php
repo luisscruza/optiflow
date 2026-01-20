@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Actions\AssignUserToWorkspaceAction;
+use App\Actions\InviteBusinessUserAction;
 use App\Enums\UserRole;
+use App\Exceptions\ActionValidationException;
 use App\Http\Requests\InviteBusinessUserRequest;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Str;
-use InvalidArgumentException;
 
 final class BusinessUserInvitationController extends Controller
 {
@@ -20,7 +19,7 @@ final class BusinessUserInvitationController extends Controller
      */
     public function store(
         InviteBusinessUserRequest $request,
-        AssignUserToWorkspaceAction $assignUserAction,
+        InviteBusinessUserAction $action,
         #[CurrentUser] User $currentUser
     ): RedirectResponse {
         // Check if user is business owner
@@ -28,41 +27,10 @@ final class BusinessUserInvitationController extends Controller
             abort(403, 'Solo el propietario del negocio puede invitar usuarios.');
         }
 
-        // Convert workspace assignments to the format expected by AssignUserToWorkspaceAction
-        $workspaceAssignments = collect($request->validated('workspaces'))
-            ->map(fn (array $assignment): array => [
-                'workspace_id' => $assignment['workspace_id'],
-                'role' => UserRole::User, // Using employee role for workspace pivot
-            ])
-            ->toArray();
-
-        // Generate temporary password for new users
-        $tempPassword = 'temp-'.Str::random(12);
-
         try {
-            $user = $assignUserAction->handle(
-                email: $request->validated('email'),
-                name: $request->validated('name'),
-                password: $tempPassword,
-                workspaceAssignments: $workspaceAssignments,
-                businessRole: UserRole::User,
-                assignedBy: $currentUser
-            );
+            $user = $action->handle($request->validated(), $currentUser);
 
-            // Now assign Spatie roles if provided
-            foreach ($request->validated('workspaces') as $workspaceData) {
-                if (isset($workspaceData['role_id'])) {
-                    $role = \Spatie\Permission\Models\Role::find($workspaceData['role_id']);
-                    $roleWorkspaceId = $role?->getAttribute('workspace_id');
-                    if ($roleWorkspaceId !== null && (int) $roleWorkspaceId === (int) $workspaceData['workspace_id']) {
-                        // Set the workspace context before assigning the role
-                        setPermissionsTeamId($workspaceData['workspace_id']);
-                        $user->assignRole($role);
-                    }
-                }
-            }
-
-            $workspaceNames = collect($workspaceAssignments)
+            $workspaceNames = collect($request->validated('workspaces'))
                 ->map(fn ($assignment) => \App\Models\Workspace::query()->find($assignment['workspace_id'])->name)
                 ->join(', ', ' y ');
 
@@ -70,8 +38,8 @@ final class BusinessUserInvitationController extends Controller
                 'success',
                 'Usuario '.$user->name.' invitado exitosamente a: '.$workspaceNames.'.'
             );
-        } catch (InvalidArgumentException $e) {
-            return redirect()->back()->withErrors(['email' => $e->getMessage()]);
+        } catch (ActionValidationException $exception) {
+            return redirect()->back()->withErrors($exception->errors());
         }
     }
 }

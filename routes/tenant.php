@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AutomationController;
+use App\Http\Controllers\AutomationRunController;
 use App\Http\Controllers\AutomationTestDataController;
 use App\Http\Controllers\AutomationTestRunController;
-use App\Http\Controllers\AutomationRunController;
 use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\BulkDownloadInvoicePdfController;
 use App\Http\Controllers\BulkDownloadQuotationPdfController;
@@ -25,26 +25,29 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DashboardLayoutController;
 use App\Http\Controllers\DocumentSubtypeController;
 use App\Http\Controllers\DownloadInvoicePdfController;
-use App\Http\Controllers\DownloadProductImportTemplateController;
 use App\Http\Controllers\DownloadPrescriptionController;
+use App\Http\Controllers\DownloadProductImportTemplateController;
 use App\Http\Controllers\DownloadQuotationPdfController;
+use App\Http\Controllers\ExportReportController;
 use App\Http\Controllers\GlobalRoleController;
 use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\InitialStockController;
 use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\MastertableController;
+use App\Http\Controllers\ListTelegramBotsController;
+use App\Http\Controllers\ListWhatsappAccountsController;
+use App\Http\Controllers\ListWhatsappAccountTemplatesController;
 use App\Http\Controllers\MarkAllNotificationsAsReadController;
 use App\Http\Controllers\MarkNotificationAsReadController;
+use App\Http\Controllers\MastertableController;
 use App\Http\Controllers\MastertableItemController;
 use App\Http\Controllers\PasswordChangeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrescriptionController;
-use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProcessProductImportController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImportController;
 use App\Http\Controllers\QuickProductCreate;
 use App\Http\Controllers\QuotationController;
-use App\Http\Controllers\ExportReportController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportGroupController;
 use App\Http\Controllers\SalesmanController;
@@ -53,16 +56,13 @@ use App\Http\Controllers\SetWorkspacePreferredDocumentSubtypeController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\StreamInvoicePdfController;
+use App\Http\Controllers\SyncGlobalRoleController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\TelegramBotController;
-use App\Http\Controllers\ListTelegramBotsController;
 use App\Http\Controllers\TestTelegramBotMessageController;
-use App\Http\Controllers\WhatsappAccountController;
-use App\Http\Controllers\ListWhatsappAccountsController;
-use App\Http\Controllers\ListWhatsappAccountTemplatesController;
 use App\Http\Controllers\TestWhatsappAccountMessageController;
+use App\Http\Controllers\WhatsappAccountController;
 use App\Http\Controllers\WorkflowController;
-use App\Http\Controllers\SyncGlobalRoleController;
 use App\Http\Controllers\WorkflowJobController;
 use App\Http\Controllers\WorkflowJobStageController;
 use App\Http\Controllers\WorkflowStageController;
@@ -97,7 +97,7 @@ Route::middleware([
     InitializeTenancyBySubdomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function (): void {
-    Route::get('/', fn() => redirect()->route('dashboard'))->name('home');
+    Route::get('/', fn () => redirect()->route('dashboard'))->name('home');
 
     Route::prefix('invitations')->name('invitations.')->group(function (): void {
         Route::get('{token}', [WorkspaceInvitationController::class, 'show'])->name('show');
@@ -202,7 +202,7 @@ Route::middleware([
             Route::patch('document-subtypes/{documentSubtype}/set-default', SetDefaultDocumentSubtypeController::class)->name('document-subtypes.set-default');
             Route::patch('document-subtypes/{documentSubtype}/workspace/{workspace}/set-preferred', SetWorkspacePreferredDocumentSubtypeController::class)->name('document-subtypes.set-workspace-preferred');
 
-            Route::get('inventory', fn() => Inertia::render('inventory/index'))->name('inventory.index');
+            Route::get('inventory', fn () => Inertia::render('inventory/index'))->name('inventory.index');
 
             Route::resource('stock-adjustments', StockAdjustmentController::class)->only(['index', 'create', 'store', 'show'])->parameters([
                 'stock-adjustments' => 'product',
@@ -267,6 +267,6 @@ Route::middleware([
         });
     });
 
-    require __DIR__ . '/settings.php';
-    require __DIR__ . '/auth.php';
+    require __DIR__.'/settings.php';
+    require __DIR__.'/auth.php';
 });

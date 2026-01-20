@@ -49,7 +49,7 @@ final readonly class UpdateInvoiceAction
                     $this->updateNumerator($documentSubtype, $data['ncf']);
                 }
 
-                $items = array_filter($data['items'] ?? [], fn(array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
+                $items = array_filter($data['items'] ?? [], fn (array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
                     $item['quantity'] > 0);
 
                 try {
@@ -83,7 +83,7 @@ final readonly class UpdateInvoiceAction
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return new InvoiceResult(error: 'Error actualizando la factura: ' . $e->getMessage());
+            return new InvoiceResult(error: 'Error actualizando la factura: '.$e->getMessage());
         }
     }
 
@@ -187,7 +187,7 @@ final readonly class UpdateInvoiceAction
         }
 
         // Remove items that are no longer present
-        $itemsToRemove = $originalItems->reject(fn($item): bool => in_array($item->id, $processedIds));
+        $itemsToRemove = $originalItems->reject(fn ($item): bool => in_array($item->id, $processedIds));
 
         foreach ($itemsToRemove as $item) {
             $this->removeInvoiceItem($invoice, $item);

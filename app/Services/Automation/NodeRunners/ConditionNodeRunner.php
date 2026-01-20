@@ -48,8 +48,8 @@ final class ConditionNodeRunner implements AutomationNodeRunner
     private function evaluate(mixed $actualValue, string $operator, mixed $compareValue): bool
     {
         return match ($operator) {
-            'equals', '==' => $actualValue == $compareValue,
-            'not_equals', '!=' => $actualValue != $compareValue,
+            'equals', '==' => $actualValue === $compareValue,
+            'not_equals', '!=' => $actualValue !== $compareValue,
             'contains' => is_string($actualValue) && is_string($compareValue) && str_contains($actualValue, $compareValue),
             'not_contains' => is_string($actualValue) && is_string($compareValue) && ! str_contains($actualValue, $compareValue),
             'starts_with' => is_string($actualValue) && is_string($compareValue) && str_starts_with($actualValue, $compareValue),
@@ -88,8 +88,8 @@ final class ConditionNodeRunner implements AutomationNodeRunner
     private function getValueByPath(array $data, string $path): mixed
     {
         // Remove {{ }} if present
-        $path = trim($path, '{}');
-        $path = trim($path);
+        $path = mb_trim($path, '{}');
+        $path = mb_trim($path);
 
         $segments = explode('.', $path);
         $current = $data;

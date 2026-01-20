@@ -53,7 +53,7 @@ final class HandleInertiaRequests extends Middleware
 
         App::setLocale('es');
 
-        $gitReleaseVersion = trim((string) shell_exec('git describe --tags --abbrev=0'));
+        $gitReleaseVersion = mb_trim((string) shell_exec('git describe --tags --abbrev=0'));
 
         return [
             ...parent::share($request),

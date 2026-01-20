@@ -9,11 +9,11 @@ use App\Tables\Columns\Column;
 use App\Tables\Filters\DateRangeFilter;
 use App\Tables\Filters\Filter;
 use App\Tables\Filters\SearchFilter;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use JsonSerializable;
 
 abstract class Table implements Arrayable, JsonSerializable

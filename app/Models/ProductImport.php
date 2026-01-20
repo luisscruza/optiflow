@@ -210,28 +210,6 @@ final class ProductImport extends Model
     }
 
     /**
-     * Delete the import file.
-     */
-    public function deleteFile(): bool
-    {
-        if (Storage::exists($this->file_path)) {
-            return Storage::delete($this->file_path);
-        }
-
-        return true;
-    }
-
-    /**
-     * Clean up import (delete file and record).
-     */
-    public function cleanup(): bool
-    {
-        $this->deleteFile();
-
-        return (bool) $this->delete();
-    }
-
-    /**
      * @return array<string, string>
      */
     protected function casts(): array

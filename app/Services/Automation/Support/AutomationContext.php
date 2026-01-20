@@ -9,6 +9,7 @@ use App\Models\Invoice;
 use App\Models\User;
 use App\Models\WorkflowJob;
 use App\Models\WorkflowStage;
+use Log;
 
 final readonly class AutomationContext
 {
@@ -47,8 +48,8 @@ final readonly class AutomationContext
                 ?? $contact->phone_primary
                 ?? $contact->phone_secondary;
         }
-        
-        \Log::debug('AutomationContext toTemplateData', [
+
+        Log::debug('AutomationContext toTemplateData', [
             'input' => $input,
             'job_id' => $this->job?->id,
             'contact_id' => $contact?->id,

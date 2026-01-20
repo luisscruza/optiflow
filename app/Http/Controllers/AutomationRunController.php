@@ -25,7 +25,7 @@ final class AutomationRunController extends Controller
                 'name' => $automation->name,
                 'is_active' => (bool) $automation->is_active,
             ],
-            'runs' => $runs->through(fn(AutomationRun $run): array => [
+            'runs' => $runs->through(fn (AutomationRun $run): array => [
                 'id' => $run->id,
                 'status' => $run->status,
                 'trigger_event_key' => $run->trigger_event_key,

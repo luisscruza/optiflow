@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\CreateCurrencyAction;
+use App\Actions\DeleteCurrencyAction;
+use App\Actions\UpdateCurrencyAction;
+use App\Exceptions\ActionValidationException;
 use App\Http\Requests\CreateCurrencyRequest;
 use App\Models\Currency;
 use App\Models\CurrencyRate;
@@ -104,12 +107,9 @@ final class CurrencyController extends Controller
     /**
      * Update the specified currency.
      */
-    public function update(CreateCurrencyRequest $request, Currency $currency): RedirectResponse
+    public function update(CreateCurrencyRequest $request, Currency $currency, UpdateCurrencyAction $action): RedirectResponse
     {
-        $currency->update([
-            'name' => $request->validated()['name'],
-            'symbol' => $request->validated()['symbol'],
-        ]);
+        $action->handle($currency, $request->validated());
 
         return redirect()->route('currencies.index')
             ->with('success', 'Moneda actualizada correctamente.');
@@ -118,13 +118,13 @@ final class CurrencyController extends Controller
     /**
      * Remove the specified currency.
      */
-    public function destroy(Currency $currency): RedirectResponse
+    public function destroy(Currency $currency, DeleteCurrencyAction $action): RedirectResponse
     {
-        if ($currency->is_default) {
-            return back()->withErrors(['currency' => 'No se puede eliminar la moneda predeterminada.']);
+        try {
+            $action->handle($currency);
+        } catch (ActionValidationException $exception) {
+            return back()->withErrors($exception->errors());
         }
-
-        $currency->delete();
 
         return redirect()->route('currencies.index')
             ->with('success', 'Moneda eliminada correctamente.');

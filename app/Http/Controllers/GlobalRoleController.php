@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateGlobalRoleAction;
+use App\Actions\DeleteGlobalRoleAction;
+use App\Actions\UpdateGlobalRoleAction;
+use App\Exceptions\ActionValidationException;
 use App\Http\Requests\StoreGlobalRoleRequest;
 use App\Http\Requests\UpdateGlobalRoleRequest;
 use App\Models\Permission;
 use App\Models\Workspace;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
@@ -73,21 +76,11 @@ final class GlobalRoleController extends Controller
     /**
      * Store a newly created role across all workspaces.
      */
-    public function store(StoreGlobalRoleRequest $request): RedirectResponse
+    public function store(StoreGlobalRoleRequest $request, CreateGlobalRoleAction $action): RedirectResponse
     {
         $workspaces = Workspace::all();
 
-        DB::transaction(function () use ($request, $workspaces): void {
-            foreach ($workspaces as $workspace) {
-                $role = Role::create([
-                    'name' => $request->validated('name'),
-                    'guard_name' => 'web',
-                    'workspace_id' => $workspace->id,
-                ]);
-
-                $role->syncPermissions($request->validated('permissions'));
-            }
-        });
+        $action->handle($request->validated(), $workspaces);
 
         return redirect()->back()->with('success', 'Rol creado exitosamente en todos los workspaces.');
     }
@@ -95,34 +88,12 @@ final class GlobalRoleController extends Controller
     /**
      * Update the specified role across all workspaces.
      */
-    public function update(UpdateGlobalRoleRequest $request, string $roleName): RedirectResponse
+    public function update(UpdateGlobalRoleRequest $request, string $roleName, UpdateGlobalRoleAction $action): RedirectResponse
     {
         $workspaces = Workspace::all();
         $originalName = urldecode($roleName);
 
-        DB::transaction(function () use ($request, $workspaces, $originalName): void {
-            foreach ($workspaces as $workspace) {
-                $role = Role::query()
-                    ->where('name', $originalName)
-                    ->where('workspace_id', $workspace->id)
-                    ->first();
-
-                if ($role) {
-                    $role->update([
-                        'name' => $request->validated('name'),
-                    ]);
-                    $role->syncPermissions($request->validated('permissions'));
-                } else {
-                    // Create the role in this workspace if it doesn't exist (sync)
-                    $role = Role::create([
-                        'name' => $request->validated('name'),
-                        'guard_name' => 'web',
-                        'workspace_id' => $workspace->id,
-                    ]);
-                    $role->syncPermissions($request->validated('permissions'));
-                }
-            }
-        });
+        $action->handle($request->validated(), $workspaces, $originalName);
 
         return redirect()->back()->with('success', 'Rol actualizado exitosamente en todos los workspaces.');
     }
@@ -130,29 +101,16 @@ final class GlobalRoleController extends Controller
     /**
      * Remove the specified role from all workspaces.
      */
-    public function destroy(string $roleName): RedirectResponse
+    public function destroy(string $roleName, DeleteGlobalRoleAction $action): RedirectResponse
     {
         $originalName = urldecode($roleName);
 
-        // Check if any role with this name has users assigned
-        $rolesWithUsers = Role::query()
-            ->where('name', $originalName)
-            ->get()
-            ->filter(fn (Role $role): bool => $role->users()->count() > 0);
-
-        if ($rolesWithUsers->isNotEmpty()) {
-            return redirect()->back()->withErrors([
-                'role' => 'No se puede eliminar un rol que está asignado a usuarios en algún workspace.',
-            ]);
+        try {
+            $action->handle($originalName);
+        } catch (ActionValidationException $exception) {
+            return redirect()->back()->withErrors($exception->errors());
         }
-
-        DB::transaction(function () use ($originalName): void {
-            Role::query()
-                ->where('name', $originalName)
-                ->delete();
-        });
 
         return redirect()->back()->with('success', 'Rol eliminado exitosamente de todos los workspaces.');
     }
-
 }

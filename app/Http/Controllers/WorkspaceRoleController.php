@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateWorkspaceRoleAction;
+use App\Actions\DeleteWorkspaceRoleAction;
+use App\Actions\UpdateWorkspaceRoleAction;
+use App\Exceptions\ActionNotFoundException;
+use App\Exceptions\ActionValidationException;
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
 use App\Models\Permission;
@@ -62,17 +67,11 @@ final class WorkspaceRoleController extends Controller
     /**
      * Store a newly created role in storage.
      */
-    public function store(StoreRoleRequest $request): RedirectResponse
+    public function store(StoreRoleRequest $request, CreateWorkspaceRoleAction $action): RedirectResponse
     {
         $workspace = Context::get('workspace');
 
-        $role = Role::create([
-            'name' => $request->validated('name'),
-            'guard_name' => 'web',
-            'workspace_id' => $workspace->id,
-        ]);
-
-        $role->syncPermissions($request->validated('permissions'));
+        $action->handle($workspace, $request->validated());
 
         return redirect()->back()->with('success', 'Rol creado exitosamente.');
     }
@@ -80,19 +79,15 @@ final class WorkspaceRoleController extends Controller
     /**
      * Update the specified role in storage.
      */
-    public function update(UpdateRoleRequest $request, Role $role): RedirectResponse
+    public function update(UpdateRoleRequest $request, Role $role, UpdateWorkspaceRoleAction $action): RedirectResponse
     {
         $workspace = Context::get('workspace');
 
-        if ($role->getAttribute('workspace_id') !== $workspace->id) {
+        try {
+            $action->handle($workspace, $role, $request->validated());
+        } catch (ActionNotFoundException) {
             abort(404);
         }
-
-        $role->update([
-            'name' => $request->validated('name'),
-        ]);
-
-        $role->syncPermissions($request->validated('permissions'));
 
         return redirect()->back()->with('success', 'Rol actualizado exitosamente.');
     }
@@ -100,22 +95,17 @@ final class WorkspaceRoleController extends Controller
     /**
      * Remove the specified role from storage.
      */
-    public function destroy(Role $role): RedirectResponse
+    public function destroy(Role $role, DeleteWorkspaceRoleAction $action): RedirectResponse
     {
         $workspace = Context::get('workspace');
 
-        if ($role->getAttribute('workspace_id') !== $workspace->id) {
+        try {
+            $action->handle($workspace, $role);
+        } catch (ActionNotFoundException) {
             abort(404);
+        } catch (ActionValidationException $exception) {
+            return redirect()->back()->withErrors($exception->errors());
         }
-
-        // Check if the role is being used by any users
-        if ($role->users()->count() > 0) {
-            return redirect()->back()->withErrors([
-                'role' => 'No se puede eliminar un rol que está asignado a usuarios.',
-            ]);
-        }
-
-        $role->delete();
 
         return redirect()->back()->with('success', 'Rol eliminado exitosamente.');
     }

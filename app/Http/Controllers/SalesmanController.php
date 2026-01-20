@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateSalesmanAction;
+use App\Actions\DeleteSalesmanAction;
+use App\Actions\UpdateSalesmanAction;
 use App\Http\Requests\StoreSalesmanRequest;
 use App\Http\Requests\UpdateSalesmanRequest;
 use App\Models\Salesman;
@@ -61,9 +64,9 @@ final class SalesmanController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreSalesmanRequest $request, #[CurrentUser] User $user): RedirectResponse
+    public function store(StoreSalesmanRequest $request, CreateSalesmanAction $action, #[CurrentUser] User $user): RedirectResponse
     {
-        Salesman::query()->create($request->validated());
+        $action->handle($request->validated());
 
         return redirect()->route('salesmen.index')
             ->with('success', 'Vendedor creado exitosamente.');
@@ -89,9 +92,9 @@ final class SalesmanController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateSalesmanRequest $request, Salesman $salesman): RedirectResponse
+    public function update(UpdateSalesmanRequest $request, Salesman $salesman, UpdateSalesmanAction $action): RedirectResponse
     {
-        $salesman->update($request->validated());
+        $action->handle($salesman, $request->validated());
 
         return redirect()->route('salesmen.index')
             ->with('success', 'Vendedor actualizado exitosamente.');
@@ -100,9 +103,9 @@ final class SalesmanController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Salesman $salesman): RedirectResponse
+    public function destroy(Salesman $salesman, DeleteSalesmanAction $action): RedirectResponse
     {
-        $salesman->delete();
+        $action->handle($salesman);
 
         return redirect()->route('salesmen.index')
             ->with('success', 'Vendedor eliminado exitosamente.');

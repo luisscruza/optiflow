@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\UpdateBusinessUserWorkspaceRolesAction;
 use App\Enums\UserRole;
+use App\Exceptions\ActionValidationException;
 use App\Http\Requests\UpdateUserWorkspaceRolesRequest;
 use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\PermissionRegistrar;
 
 final class BusinessUserWorkspaceRoleController extends Controller
 {
@@ -22,6 +22,7 @@ final class BusinessUserWorkspaceRoleController extends Controller
         UpdateUserWorkspaceRolesRequest $request,
         int $userId,
         int $workspaceId,
+        UpdateBusinessUserWorkspaceRolesAction $action,
         #[CurrentUser] User $currentUser,
     ): RedirectResponse {
         $user = User::findOrFail($userId);
@@ -31,27 +32,10 @@ final class BusinessUserWorkspaceRoleController extends Controller
             abort(403, 'Solo el propietario del negocio puede modificar roles.');
         }
 
-        if (! $workspace->hasUser($user)) {
-            return redirect()->back()->withErrors([
-                'workspace' => 'El usuario no pertenece a este workspace.',
-            ]);
-        }
-
-        app(PermissionRegistrar::class)->setPermissionsTeamId($workspace->id);
-
-        $user->roles()
-            ->where('roles.workspace_id', $workspace->id)
-            ->each(function (Role $role) use ($user): void {
-                $user->removeRole($role);
-            });
-
-        foreach ($request->validated('role_ids') as $roleId) {
-            $role = Role::find($roleId);
-            $roleWorkspaceId = $role?->getAttribute('workspace_id');
-
-            if ($roleWorkspaceId !== null && (int) $roleWorkspaceId === $workspace->id) {
-                $user->assignRole($role);
-            }
+        try {
+            $action->handle($user, $workspace, $request->validated('role_ids'));
+        } catch (ActionValidationException $exception) {
+            return redirect()->back()->withErrors($exception->errors());
         }
 
         return redirect()->back()->with('success', 'Roles actualizados exitosamente.');

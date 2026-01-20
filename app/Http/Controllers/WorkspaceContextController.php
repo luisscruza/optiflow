@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\LeaveWorkspaceAction;
+use App\Actions\SwitchWorkspaceAction;
 use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Container\Attributes\CurrentUser;
@@ -17,9 +18,10 @@ final class WorkspaceContextController extends Controller
      */
     public function update(
         #[CurrentUser] User $user,
-        Workspace $workspace
+        Workspace $workspace,
+        SwitchWorkspaceAction $action
     ): RedirectResponse {
-        if (! $user->switchToWorkspace($workspace)) {
+        if (! $action->handle($user, $workspace)) {
             return back()->with('error', 'You do not have access to this workspace.');
         }
 

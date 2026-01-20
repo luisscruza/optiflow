@@ -27,7 +27,7 @@ final class AutomationTestDataController extends Controller
             ->orderByDesc('created_at')
             ->limit(20)
             ->get()
-            ->map(fn(WorkflowJob $job): array => [
+            ->map(fn (WorkflowJob $job): array => [
                 'id' => $job->id,
                 'title' => $job->contact?->name ?? $job->workflow?->name ?? (string) $job->id,
                 'contact_name' => $job->contact?->name ?? '—',

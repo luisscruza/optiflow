@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\UpdateCompanyDetailsAction;
+use App\Exceptions\ActionValidationException;
 use App\Http\Requests\UpdateCompanyDetailsRequest;
 use App\Models\CompanyDetail;
 use Illuminate\Http\RedirectResponse;
@@ -32,21 +34,12 @@ final class CompanyDetailsController extends Controller
     /**
      * Update the company details.
      */
-    public function update(UpdateCompanyDetailsRequest $request): RedirectResponse
+    public function update(UpdateCompanyDetailsRequest $request, UpdateCompanyDetailsAction $action): RedirectResponse
     {
-        $validatedData = $request->validated();
-
-        // Handle file upload for logo
-        if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
-            $logoPath = $request->file('logo')->store('company-logos', 'public');
-            $validatedData['logo'] = $logoPath;
-        } else {
-            // Remove logo from validated data if no file was uploaded
-            unset($validatedData['logo']);
-        }
-
-        foreach ($validatedData as $key => $value) {
-            CompanyDetail::setByKey($key, $value ?? '');
+        try {
+            $action->handle($request->validated(), $request->file('logo'));
+        } catch (ActionValidationException $exception) {
+            return redirect()->back()->withErrors($exception->errors());
         }
 
         return redirect()

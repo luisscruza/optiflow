@@ -8,6 +8,7 @@ use App\Contracts\Badgeable;
 use BackedEnum;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
+use UnitEnum;
 
 final class BadgeColumn extends Column
 {
@@ -93,7 +94,7 @@ final class BadgeColumn extends Column
     {
         if ($value instanceof BackedEnum) {
             $value = $value->value;
-        } elseif ($value instanceof \UnitEnum) {
+        } elseif ($value instanceof UnitEnum) {
             $value = $value->name;
         }
 
@@ -108,7 +109,7 @@ final class BadgeColumn extends Column
     {
         if ($value instanceof BackedEnum) {
             $value = $value->value;
-        } elseif ($value instanceof \UnitEnum) {
+        } elseif ($value instanceof UnitEnum) {
             $value = $value->name;
         }
 

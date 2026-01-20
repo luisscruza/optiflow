@@ -72,7 +72,7 @@ final class NodeTypeRegistry
      */
     public function triggers(): array
     {
-        return array_filter($this->types, fn(NodeTypeDefinition $def): bool => $def->category === 'trigger');
+        return array_filter($this->types, fn (NodeTypeDefinition $def): bool => $def->category === 'trigger');
     }
 
     /**
@@ -82,7 +82,7 @@ final class NodeTypeRegistry
      */
     public function actions(): array
     {
-        return array_filter($this->types, fn(NodeTypeDefinition $def): bool => $def->category === 'action');
+        return array_filter($this->types, fn (NodeTypeDefinition $def): bool => $def->category === 'action');
     }
 
     /**
@@ -92,7 +92,7 @@ final class NodeTypeRegistry
      */
     public function conditions(): array
     {
-        return array_filter($this->types, fn(NodeTypeDefinition $def): bool => $def->category === 'condition');
+        return array_filter($this->types, fn (NodeTypeDefinition $def): bool => $def->category === 'condition');
     }
 
     /**
@@ -102,7 +102,7 @@ final class NodeTypeRegistry
      */
     public function paletteItems(): array
     {
-        return array_filter($this->types, fn(NodeTypeDefinition $def): bool => $def->showInPalette && $def->category !== 'trigger');
+        return array_filter($this->types, fn (NodeTypeDefinition $def): bool => $def->showInPalette && $def->category !== 'trigger');
     }
 
     /**
@@ -127,7 +127,7 @@ final class NodeTypeRegistry
     {
         return array_filter(
             $this->types,
-            fn(NodeTypeDefinition $def): bool => $def->eventKey === $eventKey
+            fn (NodeTypeDefinition $def): bool => $def->eventKey === $eventKey
         );
     }
 
@@ -139,7 +139,7 @@ final class NodeTypeRegistry
     public function toArray(): array
     {
         return array_map(
-            fn(NodeTypeDefinition $def): array => $def->toArray(),
+            fn (NodeTypeDefinition $def): array => $def->toArray(),
             $this->types
         );
     }
@@ -152,9 +152,9 @@ final class NodeTypeRegistry
     public function toGroupedArray(): array
     {
         return [
-            'triggers' => array_values(array_map(fn(NodeTypeDefinition $d): array => $d->toArray(), $this->triggers())),
-            'actions' => array_values(array_map(fn(NodeTypeDefinition $d): array => $d->toArray(), $this->actions())),
-            'conditions' => array_values(array_map(fn(NodeTypeDefinition $d): array => $d->toArray(), $this->conditions())),
+            'triggers' => array_values(array_map(fn (NodeTypeDefinition $d): array => $d->toArray(), $this->triggers())),
+            'actions' => array_values(array_map(fn (NodeTypeDefinition $d): array => $d->toArray(), $this->actions())),
+            'conditions' => array_values(array_map(fn (NodeTypeDefinition $d): array => $d->toArray(), $this->conditions())),
         ];
     }
 }

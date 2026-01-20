@@ -41,7 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     ->toResponse($request)
                     ->setStatusCode(404);
             }
-            
+
             if (app()->isDownForMaintenance()) {
                 return Inertia::render('error-page', [
                     'status' => 503,

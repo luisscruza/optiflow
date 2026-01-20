@@ -7,9 +7,11 @@ namespace App\Actions;
 use App\DTOs\InvoiceResult;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentType;
+use App\Enums\QuotationStatus;
 use App\Exceptions\InsufficientStockException;
 use App\Models\DocumentSubtype;
 use App\Models\Invoice;
+use App\Models\Quotation;
 use App\Models\Workspace;
 use App\Support\NCFValidator;
 use Illuminate\Support\Facades\Auth;
@@ -41,9 +43,15 @@ final readonly class CreateInvoiceAction
 
             $invoice = $this->createDocument($workspace, $data);
 
+            if (! empty($data['quotation_id'])) {
+                Quotation::query()
+                    ->where('id', $data['quotation_id'])
+                    ->update(['status' => QuotationStatus::Converted]);
+            }
+
             $this->updateNumerator($documentSubtype, $data['ncf']);
 
-            $items = array_filter($data['items'], fn(array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
+            $items = array_filter($data['items'], fn (array $item): bool => isset($item['product_id'], $item['quantity'], $item['unit_price']) &&
                 $item['quantity'] > 0);
 
             try {

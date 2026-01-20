@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\RemoveWorkspaceMemberAction;
+use App\Exceptions\ActionNotFoundException;
+use App\Exceptions\ActionValidationException;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
@@ -79,22 +81,17 @@ final class WorkspaceMemberController extends Controller
     {
         $workspace = Context::get('workspace');
 
-        if (! $workspace || ! $workspace->hasUser($member)) {
+        if (! $workspace) {
             abort(404);
         }
 
-        if ($workspace->owner_id === $member->id) {
-            return redirect()->back()->withErrors([
-                'member' => 'No puedes remover al propietario de la sucursal.',
-            ]);
+        try {
+            $removeMemberAction->handle($workspace, $member);
+        } catch (ActionNotFoundException) {
+            abort(404);
+        } catch (ActionValidationException $exception) {
+            return redirect()->back()->withErrors($exception->errors());
         }
-
-        // Remove roles for this workspace
-        $member->roles()
-            ->where('roles.workspace_id', $workspace->id)
-            ->detach();
-
-        $removeMemberAction->handle($workspace, $member);
 
         return redirect()->back()->with(
             'success',
