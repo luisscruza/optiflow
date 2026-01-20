@@ -11,6 +11,7 @@ use App\Enums\PaymentMethod;
 use App\Enums\Permission;
 use App\Enums\QuotationStatus;
 use App\Enums\TaxType;
+use App\Http\Requests\CreateInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\BankAccount;
 use App\Models\CompanyDetail;
@@ -148,13 +149,13 @@ final class InvoiceController extends Controller
      *
      * @throws Throwable
      */
-    public function store(Request $request, #[CurrentUser] User $user, CreateInvoiceAction $action): RedirectResponse
+    public function store(CreateInvoiceRequest $request, #[CurrentUser] User $user, CreateInvoiceAction $action): RedirectResponse
     {
         abort_unless($user->can(Permission::InvoicesCreate), 403);
 
         $workspace = Context::get('workspace');
 
-        $result = $action->handle($workspace, $request->all());
+        $result = $action->handle($workspace, $request->validated());
 
         if ($result->isError()) {
             Session::flash('error', $result->error);

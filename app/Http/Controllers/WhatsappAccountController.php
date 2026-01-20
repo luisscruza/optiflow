@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateWhatsappAccountRequest;
+use App\Http\Requests\UpdateWhatsappAccountRequest;
 use App\Models\WhatsappAccount;
 use Illuminate\Http\Client\Response as HttpResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -30,14 +31,9 @@ final class WhatsappAccountController extends Controller
         return Inertia::render('whatsapp-accounts/create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(CreateWhatsappAccountRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'phone_number_id' => ['required', 'string', 'max:255'],
-            'business_account_id' => ['nullable', 'string', 'max:255'],
-            'access_token' => ['required', 'string'],
-        ]);
+        $validated = $request->validated();
 
         // Verify the token by calling WhatsApp API
         $verification = $this->verifyCredentials($validated['phone_number_id'], $validated['access_token']);
@@ -68,15 +64,9 @@ final class WhatsappAccountController extends Controller
         ]);
     }
 
-    public function update(Request $request, WhatsappAccount $whatsappAccount): RedirectResponse
+    public function update(UpdateWhatsappAccountRequest $request, WhatsappAccount $whatsappAccount): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'phone_number_id' => ['required', 'string', 'max:255'],
-            'business_account_id' => ['nullable', 'string', 'max:255'],
-            'access_token' => ['nullable', 'string'],
-            'is_active' => ['required', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         $updateData = [
             'name' => $validated['name'],

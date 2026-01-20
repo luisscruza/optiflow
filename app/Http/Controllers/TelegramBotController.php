@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateTelegramBotRequest;
+use App\Http\Requests\UpdateTelegramBotRequest;
 use App\Models\TelegramBot;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -32,13 +33,9 @@ final class TelegramBotController extends Controller
         return Inertia::render('telegram-bots/create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(CreateTelegramBotRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'bot_token' => ['required', 'string'],
-            'default_chat_id' => ['nullable', 'string', 'max:255'],
-        ]);
+        $validated = $request->validated();
 
         // Verify the token by getting bot info
         try {
@@ -77,14 +74,9 @@ final class TelegramBotController extends Controller
         ]);
     }
 
-    public function update(Request $request, TelegramBot $telegramBot): RedirectResponse
+    public function update(UpdateTelegramBotRequest $request, TelegramBot $telegramBot): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'bot_token' => ['nullable', 'string'],
-            'default_chat_id' => ['nullable', 'string', 'max:255'],
-            'is_active' => ['required', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         $updateData = [
             'name' => $validated['name'],
@@ -127,5 +119,4 @@ final class TelegramBotController extends Controller
         return redirect()->route('telegram-bots.index')
             ->with('success', 'Bot de Telegram eliminado correctamente.');
     }
-
 }

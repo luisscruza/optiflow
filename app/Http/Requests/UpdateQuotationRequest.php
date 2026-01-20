@@ -108,4 +108,16 @@ final class UpdateQuotationRequest extends FormRequest
             'items' => 'items',
         ];
     }
+
+    protected function prepareForValidation(): void
+    {
+        $items = collect($this->input('items', []))
+            ->filter(fn (array $item): bool => filled($item['product_id'] ?? null))
+            ->values()
+            ->all();
+
+        $this->merge([
+            'items' => $items,
+        ]);
+    }
 }

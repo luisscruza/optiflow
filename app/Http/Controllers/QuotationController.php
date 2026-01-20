@@ -8,6 +8,7 @@ use App\Actions\CreateQuotationAction;
 use App\Actions\UpdateQuotationAction;
 use App\Enums\Permission;
 use App\Enums\TaxType;
+use App\Http\Requests\CreateQuotationRequest;
 use App\Http\Requests\UpdateQuotationRequest;
 use App\Models\Contact;
 use App\Models\DocumentSubtype;
@@ -118,13 +119,13 @@ final class QuotationController extends Controller
      *
      * @throws Throwable
      */
-    public function store(Request $request, #[CurrentUser] User $user, CreateQuotationAction $action): RedirectResponse
+    public function store(CreateQuotationRequest $request, #[CurrentUser] User $user, CreateQuotationAction $action): RedirectResponse
     {
         abort_unless($user->can(Permission::QuotationsCreate), 403);
 
         $workspace = Context::get('workspace');
 
-        $result = $action->handle($workspace, $request->all());
+        $result = $action->handle($workspace, $request->validated());
 
         if ($result->isError()) {
             Session::flash('error', $result->error);

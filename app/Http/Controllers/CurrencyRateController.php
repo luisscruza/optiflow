@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\CreateCurrencyRateAction;
+use App\Http\Requests\CreateCurrencyRateRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use InvalidArgumentException;
 
 final class CurrencyRateController extends Controller
@@ -14,15 +14,12 @@ final class CurrencyRateController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(CreateCurrencyRateAction $action, Request $request): RedirectResponse
+    public function store(CreateCurrencyRateAction $action, CreateCurrencyRateRequest $request): RedirectResponse
     {
-
-        $validated = request()->validate([
-            'rate' => ['required', 'numeric', 'min:0.0001', 'max:999999.9999'],
-        ]);
+        $validated = $request->validated();
 
         try {
-            $currency = request()->route('currency');
+            $currency = $request->route('currency');
 
             $validated['currency_id'] = $currency;
             $validated['date'] = now();

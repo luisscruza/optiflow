@@ -7,6 +7,8 @@ namespace App\Http\Controllers;
 use App\Actions\CreatePrescriptionAction;
 use App\Actions\UpdatePrescriptionAction;
 use App\Enums\Permission;
+use App\Http\Requests\CreatePrescriptionRequest;
+use App\Http\Requests\UpdatePrescriptionRequest;
 use App\Models\Contact;
 use App\Models\Mastertable;
 use App\Models\MastertableItem;
@@ -74,11 +76,11 @@ final class PrescriptionController extends Controller
         ]);
     }
 
-    public function store(Request $request, CreatePrescriptionAction $action, #[CurrentUser] User $user): RedirectResponse
+    public function store(CreatePrescriptionRequest $request, CreatePrescriptionAction $action, #[CurrentUser] User $user): RedirectResponse
     {
         abort_unless($user->can(Permission::PrescriptionsCreate), 403);
 
-        $action->handle($user, $request->all());
+        $action->handle($user, $request->validated());
 
         return redirect()->back();
     }
@@ -164,11 +166,11 @@ final class PrescriptionController extends Controller
         ]);
     }
 
-    public function update(Request $request, Prescription $prescription, UpdatePrescriptionAction $action, #[CurrentUser] User $user): RedirectResponse
+    public function update(UpdatePrescriptionRequest $request, Prescription $prescription, UpdatePrescriptionAction $action, #[CurrentUser] User $user): RedirectResponse
     {
         abort_unless($user->can(Permission::PrescriptionsEdit), 403);
 
-        $action->handle($prescription, $user, $request->all());
+        $action->handle($prescription, $user, $request->validated());
 
         return redirect()->route('prescriptions.show', $prescription);
     }

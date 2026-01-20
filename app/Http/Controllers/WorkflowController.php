@@ -14,6 +14,7 @@ use App\Filters\WorkflowJob\DueStatusFilter;
 use App\Filters\WorkflowJob\PriorityFilter;
 use App\Filters\WorkflowJob\WorkspaceFilter;
 use App\Http\Requests\CreateWorkflowRequest;
+use App\Http\Requests\DeleteWorkflowRequest;
 use App\Http\Requests\ShowWorkflowRequest;
 use App\Http\Requests\UpdateWorkflowRequest;
 use App\Models\Contact;
@@ -197,7 +198,7 @@ final class WorkflowController extends Controller
             ->with('success', 'Flujo de trabajo actualizado exitosamente.');
     }
 
-    public function destroy(Request $request, Workflow $workflow, DeleteWorkflowAction $action): RedirectResponse
+    public function destroy(DeleteWorkflowRequest $request, Workflow $workflow, DeleteWorkflowAction $action): RedirectResponse
     {
         abort_unless($request->user()->can(Permission::DeleteWorkflows), 403);
 

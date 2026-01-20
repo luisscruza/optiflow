@@ -8,12 +8,12 @@ use App\Actions\AcceptInvitationAction;
 use App\Actions\AssignUserToWorkspaceAction;
 use App\Enums\UserRole;
 use App\Http\Requests\AssignUserToWorkspaceRequest;
+use App\Http\Requests\UpdateWorkspaceInvitationRequest;
 use App\Models\User;
 use App\Models\UserInvitation;
 use Exception;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -86,7 +86,7 @@ final class WorkspaceInvitationController extends Controller
     /**
      * Accept an invitation.
      */
-    public function update(Request $request, string $token, AcceptInvitationAction $acceptInvitationAction): RedirectResponse
+    public function update(UpdateWorkspaceInvitationRequest $request, string $token, AcceptInvitationAction $acceptInvitationAction): RedirectResponse
     {
         $invitation = UserInvitation::query()->where('token', $token)->firstOrFail();
 
