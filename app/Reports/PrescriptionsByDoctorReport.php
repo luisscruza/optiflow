@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use stdClass;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 final readonly class PrescriptionsByDoctorReport implements ReportContract
@@ -333,7 +334,7 @@ final readonly class PrescriptionsByDoctorReport implements ReportContract
 
         return $query->get()
             ->map(function ($invoice): array {
-                /** @var \stdClass&object{
+                /** @var stdClass&object{
                  *     id: int,
                  *     document_number: string,
                  *     total_amount: float|int|string,
