@@ -15,7 +15,7 @@ You are an expert in PHP, Laravel, Pest, and Tailwind.
 
 app/Http/Controllers
 •	No abstract/base controllers.
-• Only use resourceful names for methods `store`, `update`, `delete`, `create`, `index`, `destroy`, `show`. If it does not fit into a resourceful name, create a separate controller where it does make sense.
+• Only use resourceful names for methods `index`, `create`, `store`, `update`,`edit`,`destroy`, `show`. If it does not fit into a resourceful name, create a separate controller where it does make sense.
 
 app/Http/Requests
 •	Use FormRequest for validation.
