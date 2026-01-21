@@ -1,7 +1,7 @@
 import { ArrowLeft, Check, Download, Eye, Play, X } from 'lucide-react';
 import { useState } from 'react';
 
-import { index, process, update } from '@/actions/App/Http/Controllers/ProductImportController';
+import { index, update } from '@/actions/App/Http/Controllers/ProductImportController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import { process } from '@/routes/product-imports';
 import { type BreadcrumbItem, type ProductImport } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 

@@ -1,13 +1,14 @@
 import { Download, Eye, MoreHorizontal, Plus, Upload } from 'lucide-react';
 import { useState } from 'react';
 
-import { create, destroy, index, show, template } from '@/actions/App/Http/Controllers/ProductImportController';
+import { create, destroy, index, show } from '@/actions/App/Http/Controllers/ProductImportController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import { template } from '@/routes/product-imports';
 import { type BreadcrumbItem, type PaginatedData, type ProductImport } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 
