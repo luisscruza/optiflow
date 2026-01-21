@@ -18,3 +18,26 @@ test('to array', function (): void {
         'updated_at',
     ]);
 });
+
+test('handles stock checks and adjustments', function (): void {
+    $stock = ProductStock::factory()->create([
+        'quantity' => 5,
+        'minimum_quantity' => 10,
+    ]);
+
+    expect($stock->isLow())->toBeTrue()
+        ->and($stock->isSufficient(3))->toBeTrue()
+        ->and($stock->isSufficient(15))->toBeFalse()
+        ->and($stock->status)->toBe('low_stock')
+        ->and($stock->level_percentage)->toBe(50.0);
+
+    $stock->incrementStock(10);
+    $stock->refresh();
+    expect($stock->quantity)->toBe('15.00');
+
+    expect($stock->decrementStock(5))->toBeTrue();
+    $stock->refresh();
+    expect($stock->quantity)->toBe('10.00');
+
+    expect($stock->decrementStock(20))->toBeFalse();
+});

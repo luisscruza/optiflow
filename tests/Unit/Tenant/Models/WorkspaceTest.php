@@ -69,3 +69,24 @@ it('has many invitations', function (): void {
     ]);
     expect($workspace->invitations()->count())->toBe(2);
 });
+
+it('to array', function (): void {
+    $workspace = Workspace::factory()->create()->refresh();
+
+    expect(array_keys($workspace->toArray()))->toBe([
+        'id',
+        'name',
+        'code',
+        'slug',
+        'description',
+        'owner_id',
+        'settings',
+        'is_active',
+        'is_default',
+        'created_at',
+        'updated_at',
+        'address',
+        'phone',
+        'members_count',
+    ]);
+});
