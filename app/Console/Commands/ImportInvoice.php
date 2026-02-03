@@ -33,7 +33,7 @@ final class ImportInvoice extends Command
      *
      * @var string
      */
-    protected $signature = 'import:invoices {file : The CSV file path to import} {--limit=50000000 : Number of invoices to import}';
+    protected $signature = 'import:invoices {file : The CSV file path to import} {--limit=50000000 : Number of invoices to import} {--offset=0 : Number of invoices to skip before importing}';
 
     /**
      * The console command description.
@@ -63,13 +63,9 @@ final class ImportInvoice extends Command
      */
     public function handle(): int
     {
-        // truncate
-        DB::table('invoice_item_tax')->delete();
-        DB::table('invoice_items')->delete();
-        DB::table('invoices')->delete();
-
         $filePath = $this->argument('file');
         $limit = (int) $this->option('limit');
+        $offset = (int) $this->option('offset');
 
         if (! file_exists($filePath)) {
             $this->error("File not found: {$filePath}");
@@ -77,26 +73,27 @@ final class ImportInvoice extends Command
             return self::FAILURE;
         }
 
-        $this->info("Starting invoice import from: {$filePath}");
-        $this->info("Limit: {$limit} invoices");
+        $this->info("Empiezando la importación de facturas desde el archivo: {$filePath}");
+        $this->info("Límite: {$limit} facturas");
+        $this->info("Saltando: {$offset} facturas");
 
         try {
             $csv = Reader::createFromPath($filePath, 'r');
             $csv->setHeaderOffset(0);
 
             $records = iterator_to_array($csv->getRecords());
-            $this->info('Found '.count($records).' CSV rows to process');
+            $this->info('Encontradas totales en el archivo CSV: '.count($records));
 
             // Don't clean all records upfront - we'll clean as we process them
 
             // Group records by document_number
             $groupedRecords = $this->groupRecordsByDocumentNumber($records);
-            $this->info('Grouped into '.count($groupedRecords).' invoices');
+            $this->info('Total de facturas únicas a procesar: '.count($groupedRecords));
 
             // Limit the number of invoices to import
-            $groupedRecords = array_slice($groupedRecords, 0, $limit, true);
+            $groupedRecords = array_slice($groupedRecords, $offset, $limit, true);
 
-            $this->info("Processing {$limit} invoices...");
+            $this->info('Procesando un total de facturas: '.count($groupedRecords));
 
             $progressBar = $this->output->createProgressBar(count($groupedRecords));
             $progressBar->start();
@@ -141,19 +138,19 @@ final class ImportInvoice extends Command
             $progressBar->finish();
             $this->newLine();
 
-            $this->info('Import completed!');
-            $this->info("✓ Imported: {$imported}");
-            $this->info("⚠ Skipped: {$skipped}");
+            $this->info('Importación completada.');
+            $this->info("✓ Importadas: {$imported}");
+            $this->info("⚠ Omitidas: {$skipped}");
 
             if ($errors !== []) {
                 $this->newLine();
-                $this->warn('Errors encountered:');
+                $this->warn('Errores encontrados:');
                 foreach (array_slice($errors, 0, 10) as $error) {
                     $this->error($error);
                 }
 
                 if (count($errors) > 10) {
-                    $this->warn('... and '.(count($errors) - 10).' more errors');
+                    $this->warn('... y '.(count($errors) - 10).' errores más');
                 }
             }
 
@@ -176,7 +173,7 @@ final class ImportInvoice extends Command
         $grouped = [];
 
         foreach ($records as $record) {
-            $documentNumber = $record['DOCUMENT_NUMBER'] ?? '';
+            $documentNumber = $this->cleanUtf8String(mb_trim($record['DOCUMENT_NUMBER'] ?? ''));
             if (! empty($documentNumber)) {
                 $grouped[$documentNumber][] = $record;
             }
@@ -192,17 +189,17 @@ final class ImportInvoice extends Command
      */
     private function importInvoice(string $documentNumber, array $invoiceRows, BankAccount $internalBankAccount): bool
     {
+        $documentNumber = $this->cleanUtf8String(mb_trim($documentNumber));
+        if ($documentNumber === '') {
+            return false;
+        }
+
         if ($invoiceRows === []) {
             return false;
         }
 
         // Use first row to get invoice header data
         $firstRow = $invoiceRows[0];
-
-        // Check if invoice already exists
-        if (Invoice::query()->where('document_number', $documentNumber)->exists()) {
-            return false; // Skip duplicates
-        }
 
         // Find contact by name
         $contactName = $this->cleanUtf8String(mb_trim($firstRow['CLIENTE'] ?? ''));
@@ -226,7 +223,7 @@ final class ImportInvoice extends Command
                 'credit_limit' => 0.00,
             ]);
 
-            $this->line("  ℹ Created missing contact: {$contactName}");
+            $this->line("  ℹ Creado contacto faltante: {$contactName}");
         }
 
         // Get document subtype
@@ -243,7 +240,13 @@ final class ImportInvoice extends Command
 
         $workspaceId = $this->getWorkspaceIdFromRow($firstRow);
 
-        // Create invoice
+        if (Invoice::query()->withoutWorkspaceScope()->where('document_number', $documentNumber)->exists()) {
+            $this->line("  ℹ Se saltó la factura {$documentNumber} porque ya existe");
+
+            return false;
+        }
+
+        /** @var Invoice $invoice */
         $invoice = Invoice::query()->create([
             'workspace_id' => $workspaceId,
             'contact_id' => $contact->id,
@@ -272,7 +275,7 @@ final class ImportInvoice extends Command
         // Calculate and update invoice totals from items
         $this->calculateInvoiceTotals($invoice);
 
-        $this->line("  Created invoice {$documentNumber} with {$itemsCreated} items");
+        $this->line("  Creada factura {$documentNumber} con {$itemsCreated} items");
 
         return true;
     }
@@ -330,7 +333,7 @@ final class ImportInvoice extends Command
                 'track_stock' => false,
             ]);
 
-            $this->line("    ℹ Created missing product: {$productName} (SKU: {$sku})");
+            $this->line("    ℹ Creado producto faltante: {$productName} (SKU: {$sku})");
         }
 
         $quantity = (float) ($row['CANTIDAD'] ?? 1);
@@ -348,7 +351,6 @@ final class ImportInvoice extends Command
         $legacyTaxId = $taxes !== []
             ? $taxes[0]['id']
             : $this->resolveLegacyTaxId();
-
 
         /** @var InvoiceItem $invoiceItem */
         $invoiceItem = InvoiceItem::query()->create([
@@ -717,12 +719,13 @@ final class ImportInvoice extends Command
                 'description' => $name,
             ]
         );
+
         return $workspace->id;
     }
 
     /**
      * Update next numbers for document subtypes.
-     */    
+     */
     private function updateDocumentSubtypeNextNumbers(): void
     {
         $subtypes = DocumentSubtype::query()->forInvoice()->get();
@@ -744,5 +747,4 @@ final class ImportInvoice extends Command
             }
         }
     }
-    
 }

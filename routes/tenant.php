@@ -52,6 +52,7 @@ use App\Http\Controllers\QuickProductCreate;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportGroupController;
+use App\Http\Controllers\RunInvoiceImportController;
 use App\Http\Controllers\SalesmanController;
 use App\Http\Controllers\SetDefaultDocumentSubtypeController;
 use App\Http\Controllers\SetWorkspacePreferredDocumentSubtypeController;
@@ -63,6 +64,7 @@ use App\Http\Controllers\TaxController;
 use App\Http\Controllers\TelegramBotController;
 use App\Http\Controllers\TestTelegramBotMessageController;
 use App\Http\Controllers\TestWhatsappAccountMessageController;
+use App\Http\Controllers\UploadInvoiceImportController;
 use App\Http\Controllers\WhatsappAccountController;
 use App\Http\Controllers\WorkflowController;
 use App\Http\Controllers\WorkflowJobController;
@@ -187,6 +189,9 @@ Route::middleware([
             Route::get('invoices/create/quotation/{quotation}', CreateInvoiceFromQuotationController::class)->name('invoices.create-from-quotation');
             Route::get('invoices/{invoice}/pdf', DownloadInvoicePdfController::class)->name('invoices.pdf');
             Route::get('invoices/{invoice}/pdf-stream', StreamInvoicePdfController::class)->name('invoices.pdf-stream');
+            Route::get('invoice-imports/create', fn () => Inertia::render('invoice-imports/create'))->name('invoice-imports.create');
+            Route::post('invoice-imports/upload', UploadInvoiceImportController::class)->name('invoice-imports.upload');
+            Route::post('invoice-imports/run', RunInvoiceImportController::class)->name('invoice-imports.run');
 
             Route::post('invoices/bulk/pdf', BulkDownloadInvoicePdfController::class)->name('invoices.bulk.pdf');
 
