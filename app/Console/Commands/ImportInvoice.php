@@ -4,27 +4,36 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Actions\CreateWorkspaceAction;
 use App\Models\BankAccount;
 use App\Models\Contact;
+use App\Models\Currency;
+use App\Models\DocumentSubtype;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Product;
 use App\Models\Tax;
+use App\Models\User;
+use App\Models\Workspace;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use League\Csv\Reader;
+use Stancl\Tenancy\Concerns\HasATenantsOption;
+use Stancl\Tenancy\Concerns\TenantAwareCommand;
 
 final class ImportInvoice extends Command
 {
+    use HasATenantsOption, TenantAwareCommand;
+
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'import:invoices {file : The CSV file path to import} {--limit=50 : Number of invoices to import}';
+    protected $signature = 'import:invoices {file : The CSV file path to import} {--limit=50000000 : Number of invoices to import}';
 
     /**
      * The console command description.
@@ -34,19 +43,19 @@ final class ImportInvoice extends Command
     protected $description = 'Import invoices and invoice items from CSV file';
 
     /**
-     * Document subtype mapping by prefix.
+     * Document subtype names by prefix.
      *
-     * @var array<string, int>
+     * @var array<string, string>
      */
     private array $documentSubtypeMapping = [
-        'B01' => 1,  // Factura de Crédito Fiscal
-        'B02' => 2,  // Factura de Consumo
-        'COT' => 12, // Cotización
-        'FCT' => 13, // Facturas de Tenares
-        'FCS' => 14, // Factura de Salcedo
-        'BC0' => 15, // Factura BC Optical
-        'OP0' => 16, // Operativo
-        'FLP' => 17, // Factura Laboratorio Optico
+        'B01' => 'Factura de Crédito Fiscal',
+        'B02' => 'Factura de Consumo',
+        'COT' => 'Cotización',
+        'FCT' => 'Facturas de Tenares',
+        'FCS' => 'Factura de Salcedo',
+        'BC0' => 'Factura BC Optical',
+        'OP0' => 'Operativo',
+        'FLP' => 'Factura Laboratorio Optico',
     ];
 
     /**
@@ -54,6 +63,11 @@ final class ImportInvoice extends Command
      */
     public function handle(): int
     {
+        // truncate
+        DB::table('invoice_item_tax')->delete();
+        DB::table('invoice_items')->delete();
+        DB::table('invoices')->delete();
+
         $filePath = $this->argument('file');
         $limit = (int) $this->option('limit');
 
@@ -81,6 +95,7 @@ final class ImportInvoice extends Command
 
             // Limit the number of invoices to import
             $groupedRecords = array_slice($groupedRecords, 0, $limit, true);
+
             $this->info("Processing {$limit} invoices...");
 
             $progressBar = $this->output->createProgressBar(count($groupedRecords));
@@ -90,7 +105,20 @@ final class ImportInvoice extends Command
             $skipped = 0;
             $errors = [];
 
-            $internalBankAccount = BankAccount::query()->where('is_system_account', true)->first();
+            $internalBankAccount = BankAccount::query()
+                ->firstOrCreate(
+                    ['is_system_account' => true],
+                    [
+                        'name' => 'Cuenta Interna',
+                        'description' => 'Cuenta bancaria interna para registros del sistema',
+                        'currency_id' => Currency::first()->id,
+                        'type' => 'cash',
+                        'account_number' => 0,
+                        'initial_balance' => 0.00,
+                        'initial_balance_date' => now(),
+                        'is_active' => false,
+                    ]
+                );
 
             DB::transaction(function () use ($groupedRecords, $progressBar, &$imported, &$skipped, &$errors, $internalBankAccount): void {
                 foreach ($groupedRecords as $documentNumber => $invoiceRows) {
@@ -109,7 +137,7 @@ final class ImportInvoice extends Command
                     $progressBar->advance();
                 }
             });
-
+            $this->updateDocumentSubtypeNextNumbers();
             $progressBar->finish();
             $this->newLine();
 
@@ -213,16 +241,18 @@ final class ImportInvoice extends Command
 
         $status = $this->mapStatus($firstRow['ESTADO'] ?? '');
 
+        $workspaceId = $this->getWorkspaceIdFromRow($firstRow);
+
         // Create invoice
         $invoice = Invoice::query()->create([
-            'workspace_id' => (int) ($firstRow['WORKSPACE'] ?? 1),
+            'workspace_id' => $workspaceId,
             'contact_id' => $contact->id,
             'document_subtype_id' => $documentSubtypeId,
             'status' => $status,
             'document_number' => $this->cleanUtf8String($documentNumber),
             'issue_date' => $issueDate,
             'due_date' => $dueDate,
-            'total_amount' => (float) ($firstRow['TOTAL FACTURA'] ?? 0),
+            'total_amount' => (float) ($firstRow['TOTAL - FACTURA'] ?? $firstRow['TOTAL FACTURA'] ?? 0),
             'notes' => $this->cleanUtf8String($firstRow['NOTAS'] ?? ''),
             'currency_id' => 1,
         ]);
@@ -303,37 +333,112 @@ final class ImportInvoice extends Command
             $this->line("    ℹ Created missing product: {$productName} (SKU: {$sku})");
         }
 
-        // Get or create tax based on the CSV data
-        $taxName = $this->cleanUtf8String(mb_trim($row['NOMBRE IMPUESTO'] ?? 'ITBIS'));
-        $taxRate = (float) ($row['TAX RATE'] ?? 18);
-
-        $tax = Tax::query()->firstOrCreate(['name' => $taxName], ['rate' => $taxRate]);
-
         $quantity = (float) ($row['CANTIDAD'] ?? 1);
         $unitPrice = (float) ($row['PRECIO UNITARIO'] ?? 0);
         $discount = (float) ($row['DESCUENTO'] ?? 0);
-        $total = (float) ($row['TOTAL SERVICIO'] ?? 0);
+        $total = (float) ($row['PRODUCTO/SERVICIO - TOTAL'] ?? $row['TOTAL SERVICIO'] ?? 0);
 
         // Calculate tax amount based on the total and tax rate
         $subtotal = $unitPrice * $quantity;
         $discountAmount = $subtotal * ($discount / 100);
         $subtotalAfterDiscount = $subtotal - $discountAmount;
-        $taxAmount = $subtotalAfterDiscount * ($taxRate / 100);
+        $taxes = $this->extractTaxes($row, $subtotalAfterDiscount);
+        $taxAmount = array_reduce($taxes, fn (float $sum, array $tax): float => $sum + $tax['amount'], 0.0);
+        $taxRate = array_reduce($taxes, fn (float $sum, array $tax): float => $sum + $tax['rate'], 0.0);
+        $legacyTaxId = $taxes !== []
+            ? $taxes[0]['id']
+            : $this->resolveLegacyTaxId();
 
-        InvoiceItem::query()->create([
+
+        /** @var InvoiceItem $invoiceItem */
+        $invoiceItem = InvoiceItem::query()->create([
             'invoice_id' => $invoice->id,
             'product_id' => $product->id,
             'description' => $productName,
             'quantity' => $quantity,
             'unit_price' => $unitPrice,
+            'subtotal' => $subtotal,
+            'discount_amount' => $discountAmount,
             'discount_rate' => $discount,
-            'tax_id' => $tax->id,
-            'tax_rate' => $tax->rate,
+            'tax_id' => $legacyTaxId,
+            'tax_rate' => $taxRate,
             'tax_amount' => $taxAmount,
             'total' => $total,
         ]);
 
+        if ($taxes !== []) {
+            $taxesData = [];
+            foreach ($taxes as $tax) {
+                $taxesData[$tax['id']] = [
+                    'rate' => $tax['rate'],
+                    'amount' => $tax['amount'],
+                ];
+            }
+
+            $invoiceItem->taxes()->sync($taxesData);
+        }
+
         return true;
+    }
+
+    /**
+     * @param  array<string, string>  $row
+     * @return array<int, array{id: int, rate: float, amount: float}>
+     */
+    private function extractTaxes(array $row, float $subtotalAfterDiscount): array
+    {
+        $taxes = [];
+
+        for ($index = 1; $index <= 3; $index++) {
+            $nameKey = "IMPUESTO_{$index}_NOMBRE";
+            $rateKey = "IMPUESTO_{$index}_PORCENTAJE";
+            $amountKey = "IMPUESTO_{$index}_VALOR";
+
+            $taxName = $this->cleanUtf8String(mb_trim($row[$nameKey] ?? ''));
+            $taxRate = (float) ($row[$rateKey] ?? 0);
+            $taxAmount = (float) ($row[$amountKey] ?? 0);
+
+            if ($taxName === '' && $taxRate === 0.0 && $taxAmount === 0.0) {
+                continue;
+            }
+
+            if ($taxName === '') {
+                $taxName = 'ITBIS';
+            }
+
+            if ($taxAmount === 0.0 && $taxRate > 0 && $subtotalAfterDiscount > 0) {
+                $taxAmount = $subtotalAfterDiscount * ($taxRate / 100);
+            }
+
+            if ($taxRate === 0.0 && $taxAmount > 0 && $subtotalAfterDiscount > 0) {
+                $taxRate = ($taxAmount / $subtotalAfterDiscount) * 100;
+            }
+
+            $tax = Tax::query()->firstOrCreate(['name' => $taxName], ['rate' => $taxRate]);
+
+            $taxes[] = [
+                'id' => $tax->id,
+                'rate' => $taxRate,
+                'amount' => $taxAmount,
+            ];
+        }
+
+        return $taxes;
+    }
+
+    private function resolveLegacyTaxId(): int
+    {
+        $taxId = Tax::query()->default()->value('id') ?? Tax::query()->value('id');
+
+        if ($taxId) {
+            return (int) $taxId;
+        }
+
+        return Tax::query()->create([
+            'name' => 'ITBIS',
+            'rate' => 0,
+            'is_default' => true,
+        ])->id;
     }
 
     /**
@@ -341,16 +446,27 @@ final class ImportInvoice extends Command
      */
     private function getDocumentSubtypeId(string $documentNumber): ?int
     {
-        foreach ($this->documentSubtypeMapping as $prefix => $subtypeId) {
-            if (str_starts_with($documentNumber, $prefix)) {
-                return $subtypeId;
-            }
+        $prefix = mb_strtoupper(mb_substr($documentNumber, 0, 3));
+        if ($prefix === '') {
+            return null;
         }
 
-        // Try to find by first 3 characters
-        $prefix = mb_substr($documentNumber, 0, 3);
+        $name = $this->documentSubtypeMapping[$prefix] ?? "Documento {$prefix}";
 
-        return $this->documentSubtypeMapping[$prefix] ?? null;
+        $subtype = DocumentSubtype::query()->firstOrCreate(
+            ['prefix' => $prefix],
+            [
+                'name' => $name,
+                'type' => \App\Enums\DocumentType::Invoice,
+                'is_default' => false,
+                'valid_until_date' => null,
+                'start_number' => 1,
+                'end_number' => null,
+                'next_number' => 1,
+            ]
+        );
+
+        return $subtype->id;
     }
 
     /**
@@ -359,7 +475,7 @@ final class ImportInvoice extends Command
     private function mapStatus(string $status): string
     {
         return match (mb_trim($status)) {
-            'Pagada' => 'paid',
+            'Cobrada' => 'paid',
             'Por cobrar' => 'pending_payment',
             'Anulada' => 'cancelled',
             default => 'draft',
@@ -558,7 +674,75 @@ final class ImportInvoice extends Command
             'amount' => $invoice->total_amount,
             'payment_date' => now(),
             'payment_method' => 'other',
-            'note' => 'Payment registered during invoice import',
+            'note' => 'Pago importado desde Alegra',
         ]);
     }
+
+    /**
+     * Get workspace ID from CSV row.
+     */
+    private function getWorkspaceIdFromRow(array $row): int
+    {
+        $workspaceCode = $this->cleanUtf8String(mb_trim($row['WORKSPACE_ID'] ?? ''));
+        $workspaceName = $this->cleanUtf8String(mb_trim($row['WORKSPACE_NAME'] ?? ''));
+
+        if ($workspaceCode !== '') {
+            $workspace = Workspace::query()
+                ->where('code', $workspaceCode)
+                ->first();
+
+            if ($workspace) {
+                return $workspace->id;
+            }
+        }
+
+        if ($workspaceName !== '') {
+            $workspace = Workspace::query()
+                ->where('name', $workspaceName)
+                ->first();
+
+            if ($workspace) {
+                return $workspace->id;
+            }
+        }
+
+        $name = $workspaceName !== '' ? $workspaceName : ($workspaceCode !== '' ? $workspaceCode : 'Workspace');
+        $code = $workspaceCode !== '' ? $workspaceCode : null;
+
+        $workspace = app(CreateWorkspaceAction::class)->handle(
+            User::query()->where('business_role', 'admin')->first(),
+            [
+                'name' => $name,
+                'code' => $code ?? Str::lower(Str::slug($name)),
+                'description' => $name,
+            ]
+        );
+        return $workspace->id;
+    }
+
+    /**
+     * Update next numbers for document subtypes.
+     */    
+    private function updateDocumentSubtypeNextNumbers(): void
+    {
+        $subtypes = DocumentSubtype::query()->forInvoice()->get();
+
+        foreach ($subtypes as $subtype) {
+            $maxDocumentNumber = Invoice::query()
+                ->where('document_subtype_id', $subtype->id)
+                ->max('document_number');
+
+            if ($maxDocumentNumber) {
+                // Extract numeric part from document number
+                $numberPart = preg_replace('/\D/', '', $maxDocumentNumber);
+                if (is_numeric($numberPart)) {
+                    $nextNumber = (int) $numberPart + 1;
+                    if ($nextNumber > $subtype->next_number) {
+                        $subtype->update(['next_number' => $nextNumber]);
+                    }
+                }
+            }
+        }
+    }
+    
 }

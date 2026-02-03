@@ -342,8 +342,8 @@ final class DashboardController
     {
         // Get daily sales for current period
         $currentDailySales = Invoice::query()
-            ->selectRaw('DATE(created_at) as date, SUM(total_amount) as total')
-            ->whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('DATE(issue_date) as date, SUM(total_amount) as total')
+            ->whereBetween('issue_date', [$startDate, $endDate])
             ->groupBy('date')
             ->orderBy('date')
             ->pluck('total', 'date')
@@ -351,8 +351,8 @@ final class DashboardController
 
         // Get daily sales for previous period
         $previousDailySales = Invoice::query()
-            ->selectRaw('DATE(created_at) as date, SUM(total_amount) as total')
-            ->whereBetween('created_at', [$previousStartDate, $previousEndDate])
+            ->selectRaw('DATE(issue_date) as date, SUM(total_amount) as total')
+            ->whereBetween('issue_date', [$previousStartDate, $previousEndDate])
             ->groupBy('date')
             ->orderBy('date')
             ->pluck('total', 'date')
