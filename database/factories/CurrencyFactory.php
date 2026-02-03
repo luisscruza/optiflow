@@ -18,7 +18,7 @@ final class CurrencyFactory extends Factory
      */
     public function definition(): array
     {
-        $code = fake()->unique()->currencyCode() . '-' . fake()->numberBetween(1000, 9999);
+        $code = fake()->unique()->currencyCode().'-'.fake()->numberBetween(1000, 9999);
 
         return [
             'name' => $code,

@@ -70,16 +70,14 @@ export default function ProductImportsIndex({ imports }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Importación de Productos" />
-            
+
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">Importación de Productos</h1>
-                        <p className="text-muted-foreground">
-                            Importe productos desde archivos Excel de manera masiva
-                        </p>
+                        <p className="text-muted-foreground">Importe productos desde archivos Excel de manera masiva</p>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                         <Button variant="outline" asChild>
                             <Link href={template().url}>
@@ -87,11 +85,11 @@ export default function ProductImportsIndex({ imports }: Props) {
                                 Descargar Plantilla
                             </Link>
                         </Button>
-                        
+
                         <Button asChild>
                             <Link href={create().url}>
                                 <Plus className="mr-2 h-4 w-4" />
-                                Nueva Importación
+                                Nueva importación
                             </Link>
                         </Button>
                     </div>
@@ -100,22 +98,18 @@ export default function ProductImportsIndex({ imports }: Props) {
                 <Card>
                     <CardHeader>
                         <CardTitle>Historial de Importaciones</CardTitle>
-                        <CardDescription>
-                            Revise todas las importaciones de productos realizadas
-                        </CardDescription>
+                        <CardDescription>Revise todas las importaciones de productos realizadas</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {imports.data.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-12">
-                                <Upload className="h-12 w-12 text-muted-foreground mb-4" />
+                                <Upload className="mb-4 h-12 w-12 text-muted-foreground" />
                                 <h3 className="text-lg font-semibold">No hay importaciones</h3>
-                                <p className="text-sm text-muted-foreground mb-6">
-                                    Comience cargando su primer archivo de productos
-                                </p>
+                                <p className="mb-6 text-sm text-muted-foreground">Comience cargando su primer archivo de productos</p>
                                 <Button asChild>
                                     <Link href={create().url}>
                                         <Plus className="mr-2 h-4 w-4" />
-                                        Nueva Importación
+                                        Nueva importación
                                     </Link>
                                 </Button>
                             </div>
@@ -137,9 +131,7 @@ export default function ProductImportsIndex({ imports }: Props) {
                                     {imports.data.map((importRecord: ProductImport) => (
                                         <TableRow key={importRecord.id}>
                                             <TableCell>
-                                                <div className="font-medium">
-                                                    {importRecord.original_filename}
-                                                </div>
+                                                <div className="font-medium">{importRecord.original_filename}</div>
                                                 <div className="text-sm text-muted-foreground">
                                                     {importRecord.total_rows ? `${importRecord.total_rows} filas` : ''}
                                                 </div>
@@ -149,15 +141,9 @@ export default function ProductImportsIndex({ imports }: Props) {
                                                     {getStatusText(importRecord.status)}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell>
-                                                {importRecord.processed_rows || 0}
-                                            </TableCell>
-                                            <TableCell>
-                                                {importRecord.import_summary?.products_created || 0}
-                                            </TableCell>
-                                            <TableCell>
-                                                {importRecord.import_summary?.products_updated || 0}
-                                            </TableCell>
+                                            <TableCell>{importRecord.processed_rows || 0}</TableCell>
+                                            <TableCell>{importRecord.import_summary?.products_created || 0}</TableCell>
+                                            <TableCell>{importRecord.import_summary?.products_updated || 0}</TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-1">
                                                     {importRecord.error_count > 0 && (
@@ -171,9 +157,7 @@ export default function ProductImportsIndex({ imports }: Props) {
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <div className="text-sm">
-                                                    {new Date(importRecord.created_at).toLocaleDateString()}
-                                                </div>
+                                                <div className="text-sm">{new Date(importRecord.created_at).toLocaleDateString()}</div>
                                                 <div className="text-xs text-muted-foreground">
                                                     {new Date(importRecord.created_at).toLocaleTimeString()}
                                                 </div>

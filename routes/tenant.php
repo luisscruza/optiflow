@@ -17,6 +17,7 @@ use App\Http\Controllers\BusinessUserWorkspaceRoleController;
 use App\Http\Controllers\CompanyDetailsController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\ContactImportController;
 use App\Http\Controllers\ConvertQuotationToInvoiceController;
 use App\Http\Controllers\CreateInvoiceFromQuotationController;
 use App\Http\Controllers\CurrencyController;
@@ -43,6 +44,7 @@ use App\Http\Controllers\MastertableItemController;
 use App\Http\Controllers\PasswordChangeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrescriptionController;
+use App\Http\Controllers\ProcessContactImportController;
 use App\Http\Controllers\ProcessProductImportController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImportController;
@@ -168,6 +170,9 @@ Route::middleware([
             Route::resource('taxes', TaxController::class);
 
             Route::resource('contacts', ContactController::class);
+
+            Route::resource('contact-imports', ContactImportController::class)->only(['create', 'store', 'show', 'update', 'destroy']);
+            Route::post('contact-imports/{contact_import}/process', ProcessContactImportController::class)->name('contact-imports.process');
 
             Route::resource('salesmen', SalesmanController::class)->except(['show']);
 

@@ -1,8 +1,8 @@
+import { Toaster } from '@/components/ui/sonner';
 import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout';
 import { SharedData, type BreadcrumbItem } from '@/types';
-import { useEffect, type ReactNode } from 'react';
-import { Toaster } from "@/components/ui/sonner"
 import { usePage } from '@inertiajs/react';
+import { useEffect, type ReactNode } from 'react';
 import { toast } from 'sonner';
 
 interface AppLayoutProps {
@@ -25,7 +25,7 @@ export default ({ children, breadcrumbs, ...props }: AppLayoutProps) => {
     return (
         <AppLayoutTemplate breadcrumbs={breadcrumbs} {...props}>
             {children}
-            <Toaster richColors closeButton/>
+            <Toaster richColors closeButton />
         </AppLayoutTemplate>
     );
-}
+};

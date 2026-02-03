@@ -840,6 +840,37 @@ export interface ProductImport {
     updated_at: string;
 }
 
+export interface ContactImport {
+    id: number;
+    filename: string;
+    original_filename: string;
+    file_path: string;
+    source_files?: Array<{
+        filename: string;
+        original_filename: string;
+        file_path: string;
+        has_header?: boolean;
+    }> | null;
+    status: 'pending' | 'mapping' | 'processing' | 'completed' | 'failed';
+    headers?: string[] | null;
+    column_mapping?: Record<string, string> | null;
+    import_data?: any[] | null;
+    validation_errors?: Array<{ row: number; field: string; message: string }> | null;
+    import_summary?: {
+        imported?: number;
+        errors?: number;
+        validation_errors?: number;
+        processing_errors?: number;
+    } | null;
+    total_rows?: number | null;
+    processed_rows?: number | null;
+    successful_rows?: number | null;
+    error_rows: number;
+    imported_at?: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
 // Workflow Types (Kanban for lens processing)
 export type WorkflowJobPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type WorkflowFieldType = 'text' | 'textarea' | 'number' | 'date' | 'select' | 'boolean';

@@ -1,7 +1,8 @@
 import { Head, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { Plus, Upload } from 'lucide-react';
 import { useState } from 'react';
 
+import { create as contactImportCreate } from '@/actions/App/Http/Controllers/ContactImportController';
 import { usePermissions } from '@/hooks/use-permissions';
 
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
@@ -43,14 +44,24 @@ export default function ContactsIndex({ contacts }: Props) {
                     </div>
 
                     {can('create contacts') && (
-                        <Button
-                            variant="outline"
-                            onClick={() => setShowQuickModal(true)}
-                            className="border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900/20 dark:text-gray-300"
-                        >
-                            <Plus className="mr-2 h-4 w-4" />
-                            Nuevo contacto
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => router.visit(contactImportCreate().url)}
+                                className="border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900/20 dark:text-gray-300"
+                            >
+                                <Upload className="mr-2 h-4 w-4" />
+                                Importar contactos
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowQuickModal(true)}
+                                className="border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900/20 dark:text-gray-300"
+                            >
+                                <Plus className="mr-2 h-4 w-4" />
+                                Nuevo contacto
+                            </Button>
+                        </div>
                     )}
                 </div>
 

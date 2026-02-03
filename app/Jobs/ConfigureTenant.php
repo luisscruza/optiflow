@@ -63,7 +63,7 @@ final class ConfigureTenant implements ShouldQueue
         if (app()->environment('testing')) {
             $password = 'password';
         } else {
-        $password = Str::random(12);
+            $password = Str::random(12);
         }
 
         $user = User::query()->create([

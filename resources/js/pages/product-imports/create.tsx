@@ -16,7 +16,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: index().url,
     },
     {
-        title: 'Nueva Importación',
+        title: 'Nueva importación',
         href: '',
     },
 ];
@@ -29,7 +29,7 @@ export default function ProductImportsCreate() {
     const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         setError(null);
-        
+
         if (!file) {
             setSelectedFile(null);
             return;
@@ -90,33 +90,29 @@ export default function ProductImportsCreate() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Nueva Importación de Productos" />
-            
+            <Head title="Nueva importación de Productos" />
+
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
                     <Button variant="outline" size="sm" asChild>
                         <Link href={index().url}>
-                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            <ArrowLeft className="mr-2 h-4 w-4" />
                             Volver
                         </Link>
                     </Button>
-                    
+
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Nueva Importación</h1>
-                        <p className="text-muted-foreground">
-                            Suba un archivo Excel para importar productos de manera masiva
-                        </p>
+                        <h1 className="text-3xl font-bold tracking-tight">Nueva importación</h1>
+                        <p className="text-muted-foreground">Suba un archivo Excel para importar productos de manera masiva</p>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <div className="lg:col-span-2">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Cargar Archivo</CardTitle>
-                                <CardDescription>
-                                    Seleccione un archivo Excel (.xlsx o .xls) que contenga los datos de los productos
-                                </CardDescription>
+                                <CardTitle>Cargar archivo</CardTitle>
+                                <CardDescription>Seleccione un archivo Excel (.xlsx o .xls) que contenga los datos de los productos</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 <div className="space-y-2">
@@ -129,31 +125,23 @@ export default function ProductImportsCreate() {
                                         disabled={uploading}
                                         className="cursor-pointer"
                                     />
-                                    {error && (
-                                        <p className="text-sm text-red-600">{error}</p>
-                                    )}
+                                    {error && <p className="text-sm text-red-600">{error}</p>}
                                 </div>
 
                                 {selectedFile && (
-                                    <div className="p-4 bg-muted rounded-lg">
+                                    <div className="rounded-lg bg-muted p-4">
                                         <div className="flex items-center gap-3">
                                             <Upload className="h-8 w-8 text-muted-foreground" />
                                             <div className="flex-1">
                                                 <p className="font-medium">{selectedFile.name}</p>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {formatFileSize(selectedFile.size)}
-                                                </p>
+                                                <p className="text-sm text-muted-foreground">{formatFileSize(selectedFile.size)}</p>
                                             </div>
                                         </div>
                                     </div>
                                 )}
 
                                 <div className="flex gap-3">
-                                    <Button
-                                        onClick={handleUpload}
-                                        disabled={!selectedFile || uploading}
-                                        className="flex-1"
-                                    >
+                                    <Button onClick={handleUpload} disabled={!selectedFile || uploading} className="flex-1">
                                         {uploading ? (
                                             <>
                                                 <Upload className="mr-2 h-4 w-4 animate-spin" />
@@ -162,7 +150,7 @@ export default function ProductImportsCreate() {
                                         ) : (
                                             <>
                                                 <Upload className="mr-2 h-4 w-4" />
-                                                Cargar Archivo
+                                                Cargar archivo
                                             </>
                                         )}
                                     </Button>
@@ -175,9 +163,7 @@ export default function ProductImportsCreate() {
                         <Card>
                             <CardHeader>
                                 <CardTitle>Formato del Archivo</CardTitle>
-                                <CardDescription>
-                                    Su archivo Excel debe tener las siguientes columnas
-                                </CardDescription>
+                                <CardDescription>Su archivo Excel debe tener las siguientes columnas</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-3 text-sm">
@@ -220,21 +206,27 @@ export default function ProductImportsCreate() {
                             <CardContent>
                                 <div className="space-y-3 text-sm">
                                     <div className="flex gap-3">
-                                        <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs">1</div>
+                                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                                            1
+                                        </div>
                                         <div>
-                                            <p className="font-medium">Cargar Archivo</p>
+                                            <p className="font-medium">Cargar archivo</p>
                                             <p className="text-muted-foreground">Suba su archivo Excel</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-3">
-                                        <div className="w-6 h-6 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs">2</div>
+                                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs text-muted-foreground">
+                                            2
+                                        </div>
                                         <div>
                                             <p className="font-medium">Mapear Columnas</p>
                                             <p className="text-muted-foreground">Relacione las columnas de su archivo con los campos</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-3">
-                                        <div className="w-6 h-6 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs">3</div>
+                                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs text-muted-foreground">
+                                            3
+                                        </div>
                                         <div>
                                             <p className="font-medium">Revisar e Importar</p>
                                             <p className="text-muted-foreground">Confirme los datos y procese la importación</p>

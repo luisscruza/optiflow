@@ -31,7 +31,13 @@ interface Notification {
 }
 
 interface Props {
-    notifications: PaginatedData<Notification>;
+    notifications: PaginatedData<Notification> & {
+        links: Array<{
+            url: string | null;
+            label: string;
+            active: boolean;
+        }>;
+    };
     filter: 'all' | 'unread';
 }
 
@@ -112,6 +118,7 @@ export default function NotificationsIndex({ notifications, filter }: Props) {
             contact: '/contacts',
             task: '/tasks',
             project: '/projects',
+            contact_import: '/contact-imports',
             // Add more as needed
         };
 
