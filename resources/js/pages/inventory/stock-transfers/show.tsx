@@ -1,11 +1,12 @@
-import { ArrowLeftRight, Building2, Calendar, Package, User } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { ArrowLeft, ArrowLeftRight, Building2, Package, User } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type StockMovement, type Workspace } from '@/types';
-import { Head, Link } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -13,11 +14,11 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/inventory',
     },
     {
-        title: 'Transferencia de inventario',
+        title: 'Transferencias de inventario',
         href: '/stock-transfers',
     },
     {
-        title: 'Transferencias de inventario',
+        title: 'Detalle',
         href: '#',
     },
 ];
@@ -28,167 +29,118 @@ interface Props {
 }
 
 export default function StockTransfersShow({ transfer, workspace }: Props) {
-    const formatQuantity = (quantity: number) => {
-        return Number(quantity).toLocaleString(undefined, {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 2,
-        });
+    const isIncoming = transfer.to_workspace_id === workspace.id;
+    const transferNote = transfer.notes ?? transfer.note;
+
+    const formatDate = (value: string): string => {
+        return new Date(value).toLocaleDateString('es-DO');
     };
 
-    const isIncoming = transfer.to_workspace_id === workspace.id;
+    const formattedQuantity = new Intl.NumberFormat('es-DO', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+    }).format(Number(transfer.quantity || 0));
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Detalle de transferencia - ${transfer.product?.name}`} />
+            <Head title={`Transferencia ${transfer.reference_number || transfer.id}`} />
 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                <div className="space-y-8">
-                    {/* Header */}
-                    <div className="flex items-center space-x-4">
-                        <div className="flex-1">
-                            <h1 className="text-3xl font-bold tracking-tight">Detalle de transferencia</h1>
-                            <p className="text-muted-foreground">Stock transfer for {transfer.product?.name}</p>
-                        </div>
-                    </div>
-
-                    {/* Transfer Overview */}
-                    <div className="grid gap-6 md:grid-cols-2">
-                        {/* Transfer Information */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center">
-                                    <ArrowLeftRight className="mr-2 h-5 w-5" />
-                                    Información de la transferencia
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Tipo de transferencia</span>
-                                    <Badge variant={isIncoming ? 'default' : 'destructive'}>{isIncoming ? 'Entrante' : 'Saliente'}</Badge>
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Producto</span>
-                                    <div className="text-right">
-                                        <div className="font-medium">{transfer.product?.name}</div>
-                                        <div className="text-sm text-muted-foreground">{transfer.product?.sku}</div>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Cantidad</span>
-                                    <div className="text-right">
-                                        <span className={`text-2xl font-bold ${isIncoming ? 'text-green-600' : 'text-red-600'}`}>
-                                            {isIncoming ? '+' : '-'}
-                                            {formatQuantity(transfer.quantity)}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Referencia</span>
-                                    <span className="font-mono text-sm">{transfer.reference_number || '-'}</span>
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Fecha</span>
-                                    <div className="flex items-center space-x-1">
-                                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                                        <span className="text-sm">{new Date(transfer.created_at).toLocaleString()}</span>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Creado por</span>
-                                    <div className="flex items-center space-x-1">
-                                        <User className="h-4 w-4 text-muted-foreground" />
-                                        <span className="text-sm">{transfer.created_by?.name || 'Unknown'}</span>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Workspace Information */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center">
-                                    <Building2 className="mr-2 h-5 w-5" />
-                                    Detalles del espacio de trabajo
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    <div className="mb-2 text-sm font-medium text-muted-foreground">Desde espacio</div>
-                                    <div className="flex items-center space-x-2 rounded-md bg-muted p-3">
-                                        <Building2 className="h-4 w-4 text-muted-foreground" />
-                                        <span className="font-medium">{transfer.from_workspace?.name}</span>
-                                        {transfer.from_workspace_id === workspace.id && (
-                                            <Badge variant="outline" className="text-xs">
-                                                Actual
-                                            </Badge>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center justify-center">
-                                    <ArrowLeftRight className="h-6 w-6 text-muted-foreground" />
-                                </div>
-
-                                <div>
-                                    <div className="mb-2 text-sm font-medium text-muted-foreground">Hacia espacio</div>
-                                    <div className="flex items-center space-x-2 rounded-md bg-muted p-3">
-                                        <Building2 className="h-4 w-4 text-muted-foreground" />
-                                        <span className="font-medium">{transfer.to_workspace?.name}</span>
-                                        {transfer.to_workspace_id === workspace.id && (
-                                            <Badge variant="outline" className="text-xs">
-                                                Actual
-                                            </Badge>
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Notes */}
-                    {transfer.notes && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Notes</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm whitespace-pre-wrap text-muted-foreground">{transfer.notes}</p>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {/* Actions */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Related Actions</CardTitle>
-                            <CardDescription>Manage inventory and create new transfers</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex flex-wrap gap-2">
-                                <Button asChild variant="outline">
-                                    <Link href={`/stock-adjustments/${transfer.product?.id}`}>
-                                        <Package className="mr-2 h-4 w-4" />
-                                        Ver historial de inventario
-                                    </Link>
-                                </Button>
-                                <Button asChild variant="outline">
-                                    <Link href="/stock-transfers/create">
-                                        <ArrowLeftRight className="mr-2 h-4 w-4" />
-                                        Nueva transferencia
-                                    </Link>
-                                </Button>
-                                <Button asChild variant="outline">
-                                    <Link href="/stock-adjustments/create">Ajustar inventario</Link>
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
+                <div className="mb-6 flex items-center gap-3">
+                    <Button variant="outline" asChild>
+                        <Link href="/stock-transfers">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Volver
+                        </Link>
+                    </Button>
+                    <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                        Transferencia {transfer.reference_number || `TR-${transfer.id}`}
+                    </h1>
                 </div>
+
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-start justify-between gap-4">
+                            <CardTitle className="text-3xl">Detalle de la transferencia</CardTitle>
+                            <Badge variant={isIncoming ? 'default' : 'destructive'}>{isIncoming ? 'Entrante' : 'Saliente'}</Badge>
+                        </div>
+                    </CardHeader>
+
+                    <CardContent className="space-y-6">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                            <div className="space-y-2 border-b pb-4">
+                                <p className="text-sm text-muted-foreground">Producto</p>
+                                <p className="text-lg font-medium text-foreground">{transfer.product?.name ?? '-'}</p>
+                                <p className="text-sm text-muted-foreground">SKU: {transfer.product?.sku ?? '-'}</p>
+                            </div>
+
+                            <div className="space-y-2 border-b pb-4">
+                                <p className="text-sm text-muted-foreground">Fecha</p>
+                                <p className="text-lg font-medium text-foreground">{formatDate(transfer.created_at)}</p>
+                            </div>
+
+                            <div className="space-y-2 border-b pb-4">
+                                <p className="text-sm text-muted-foreground">Creado por</p>
+                                <p className="flex items-center gap-2 text-lg font-medium text-foreground">
+                                    <User className="h-4 w-4 text-muted-foreground" />
+                                    {transfer.created_by?.name ?? '-'}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 rounded-md border bg-muted/20 p-4 md:grid-cols-[1fr_auto_1fr]">
+                            <div className="space-y-1">
+                                <p className="text-xs tracking-wide text-muted-foreground uppercase">Desde</p>
+                                <p className="flex items-center gap-2 font-medium text-foreground">
+                                    <Building2 className="h-4 w-4 text-muted-foreground" />
+                                    {transfer.from_workspace?.name ?? '-'}
+                                </p>
+                            </div>
+
+                            <div className="flex items-center justify-center">
+                                <ArrowLeftRight className="h-5 w-5 text-muted-foreground" />
+                            </div>
+
+                            <div className="space-y-1">
+                                <p className="text-xs tracking-wide text-muted-foreground uppercase">Hacia</p>
+                                <p className="flex items-center gap-2 font-medium text-foreground">
+                                    <Building2 className="h-4 w-4 text-muted-foreground" />
+                                    {transfer.to_workspace?.name ?? '-'}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2 border-b pb-6">
+                            <p className="text-sm text-muted-foreground">Observaciones</p>
+                            <p className="text-base text-foreground">{transferNote || '-'}</p>
+                        </div>
+
+                        <div className="rounded-md border p-4">
+                            <p className="mb-2 text-sm text-muted-foreground">Cantidad transferida</p>
+                            <p className={`text-4xl font-semibold tracking-tight ${isIncoming ? 'text-emerald-600' : 'text-red-600'}`}>
+                                {isIncoming ? '+' : '-'}
+                                {formattedQuantity}
+                            </p>
+                        </div>
+
+                        <Separator />
+
+                        <div className="flex flex-wrap items-center justify-end gap-2">
+                            <Button type="button" variant="outline" asChild>
+                                <Link href="/inventory-adjustments/create">Crear ajuste</Link>
+                            </Button>
+                            <Button type="button" variant="outline" asChild>
+                                <Link href={`/products/${transfer.product_id}`}>
+                                    <Package className="mr-2 h-4 w-4" />
+                                    Ver producto
+                                </Link>
+                            </Button>
+                            <Button type="button" className="bg-yellow-600 text-white hover:bg-yellow-700" asChild>
+                                <Link href="/stock-transfers/create">Nueva transferencia</Link>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </AppLayout>
     );

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Exceptions\ReportableActionException;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\UpdateUserActivity;
@@ -33,6 +34,17 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->respond(function (Response $response, Throwable $exception, Request $request) {
+
+            if ($exception instanceof ReportableActionException) {
+                if ($request->inertia()) {
+                    return redirect()->back()
+                        ->with('error', $exception->getMessage());
+                }
+                return redirect()->route('dashboard')
+                    ->with('error', $exception->getMessage());
+
+            }    
+
             if ($exception instanceof TenantCouldNotBeIdentifiedOnDomainException) {
                 return Inertia::render('error-page', [
                     'status' => 404,

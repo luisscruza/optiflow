@@ -7,7 +7,6 @@ namespace App\Http\Controllers;
 use App\Actions\StockAdjustmentAction;
 use App\Http\Requests\StockAdjustmentRequest;
 use App\Models\Product;
-use App\Models\ProductStock;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
@@ -16,44 +15,14 @@ use Inertia\Response;
 
 final class StockAdjustmentController
 {
-    public function index(): Response
+    public function index(): \Symfony\Component\HttpFoundation\Response
     {
-        $workspace = Context::get('workspace');
-
-        $stockAdjustments = ProductStock::query()
-            ->where('workspace_id', $workspace->id)
-            ->with(['product'])
-            ->paginate(20);
-
-        return Inertia::render('inventory/stock-adjustments/index', [
-            'stockAdjustments' => $stockAdjustments,
-        ]);
+        return Inertia::location(route('inventory-adjustments.index'));
     }
 
-    public function create(): Response
+    public function create(): RedirectResponse
     {
-
-        $products = Product::query()
-            ->where('track_stock', true)
-            ->with(['stocksInCurrentWorkspace'])
-            ->orderBy('name')
-            ->get(['id', 'name', 'sku']);
-
-        // Transform products to include current stock information
-        $products->transform(function ($product) {
-            $stock = $product->stocksInCurrentWorkspace->first();
-            $product->setAttribute('stock_in_current_workspace', [
-                'quantity' => $stock?->quantity ?? 0,
-                'minimum_quantity' => $stock?->minimum_quantity ?? 0,
-            ]);
-            unset($product->stocksInCurrentWorkspace);
-
-            return $product;
-        });
-
-        return Inertia::render('inventory/stock-adjustments/create', [
-            'products' => $products,
-        ]);
+        return redirect()->route('inventory-adjustments.create');
     }
 
     public function store(StockAdjustmentRequest $request, StockAdjustmentAction $stockAdjustmentAction): RedirectResponse

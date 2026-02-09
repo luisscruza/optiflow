@@ -38,6 +38,7 @@ interface SearchableSelectProps {
   className?: string
   triggerClassName?: string
   contentClassName?: string
+  labelClassName?: string
   width?: number | string
   children?: React.ReactNode
 }
@@ -55,6 +56,7 @@ function SearchableSelect({
   className,
   triggerClassName,
   contentClassName,
+  labelClassName,
   width,
   children,
 }: SearchableSelectProps) {
@@ -76,7 +78,7 @@ function SearchableSelect({
               triggerClassName
             )}
           >
-            <span className="truncate">
+            <span className={cn("truncate", labelClassName)}>
               {selectedOption ? selectedOption.label : placeholder}
             </span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -87,7 +89,7 @@ function SearchableSelect({
             "w-full p-0",
             contentClassName
           )}
-          style={{ width: "var(--radix-popover-trigger-width)" }}
+          style={{ width: width ?? "var(--radix-popover-trigger-width)" }}
         >
           <Command className="min-w-48">
             <CommandInput placeholder={searchPlaceholder} />

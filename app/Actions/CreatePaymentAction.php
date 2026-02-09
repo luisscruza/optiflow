@@ -6,13 +6,13 @@ namespace App\Actions;
 
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
+use App\Exceptions\ReportableActionException;
 use App\Jobs\RecalculateBankAccount;
 use App\Models\BankAccount;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\WithholdingType;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 
 final readonly class CreatePaymentAction
 {
@@ -43,11 +43,11 @@ final readonly class CreatePaymentAction
     private function createInvoicePayment(?Invoice $invoice, array $data, BankAccount $account): Payment
     {
         if (! $invoice) {
-            throw new InvalidArgumentException('Invoice is required for invoice payments.');
+            throw new ReportableActionException('La factura es requerida para este tipo de pago.');
         }
 
         if ($invoice->amount_due < $data['amount']) {
-            throw new InvalidArgumentException('Payment amount exceeds the amount due on the invoice.');
+            throw new ReportableActionException('El monto del pago excede el monto adeudado en la factura.');
         }
 
         $payment = Payment::query()->create([

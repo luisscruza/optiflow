@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Enums\UserRole;
+use App\Exceptions\ReportableActionException;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Notifications\WorkspaceUserAssignedNotification;
 use App\Notifications\WorkspaceUserCreatedNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use InvalidArgumentException;
 
 final readonly class AssignUserToWorkspaceAction
 {
@@ -34,7 +34,7 @@ final readonly class AssignUserToWorkspaceAction
 
             if (! $user) {
                 if (in_array($name, [null, '', '0'], true) || (in_array($password, [null, '', '0'], true))) {
-                    throw new InvalidArgumentException('Name and password are required for new users');
+                    throw new ReportableActionException('El nombre y contraseña son requeridos.');
                 }
                 $userData = [
                     'name' => $name,

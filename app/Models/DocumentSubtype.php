@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\DocumentType;
+use App\Exceptions\ReportableActionException;
 use Exception;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -85,7 +86,7 @@ final class DocumentSubtype extends Model
     public function getNextNcfNumber(): string
     {
         if (! $this->isValid()) {
-            throw new Exception("NCF sequence for {$this->name} is invalid or expired");
+            throw new ReportableActionException("La secuencia de NCF para {$this->name} es inválida o ha expirado. Por favor, actualice la configuración de NCF para este tipo de documento.");
         }
 
         $ncfNumber = $this->prefix.mb_str_pad((string) $this->next_number, 8, '0', STR_PAD_LEFT);
@@ -104,7 +105,7 @@ final class DocumentSubtype extends Model
     public function generateNCF(): string
     {
         if (! $this->isValid()) {
-            throw new Exception("NCF sequence for {$this->name} is invalid or expired");
+            throw new ReportableActionException("La secuencia de NCF para {$this->name} es inválida o ha expirado. Por favor, actualice la configuración de NCF para este tipo de documento.");
         }
 
         return $this->prefix.mb_str_pad((string) $this->next_number, 8, '0', STR_PAD_LEFT);
@@ -204,9 +205,6 @@ final class DocumentSubtype extends Model
         $query->where(function ($q): void {
             $q->whereNull('valid_until_date')
                 ->orWhere('valid_until_date', '>', now());
-        })->where(function ($q): void {
-            $q->whereNull('end_number')
-                ->orWhereColumn('next_number', '<=', 'end_number');
         });
     }
 

@@ -10,7 +10,7 @@ import prescriptions from '@/routes/prescriptions';
 import products from '@/routes/products';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BarChart3, BookOpen, Eye, Folder, FolderSync, Bell,  Kanban, LayoutGrid, Package, Receipt, RotateCcw, Settings, Users2 } from 'lucide-react';
+import { BarChart3, Bell, BookOpen, Eye, Folder, FolderSync, Kanban, LayoutGrid, Package, Receipt, RotateCcw, Settings, Users2 } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
@@ -23,7 +23,7 @@ export function AppSidebar() {
             href: dashboard(),
             icon: LayoutGrid,
         },
-                {
+        {
             title: 'Notificaciones',
             href: '/notifications',
             icon: Bell,
@@ -102,6 +102,16 @@ export function AppSidebar() {
                                         href: inventory.index(),
                                         icon: RotateCcw,
                                     },
+                                    {
+                                        title: 'Ajustes de inventario',
+                                        href: '/inventory-adjustments',
+                                        icon: RotateCcw,
+                                    },
+                                    {
+                                        title: 'Transferencias de inventario',
+                                        href: '/stock-transfers',
+                                        icon: RotateCcw,
+                                    },
                                 ]
                               : []),
                       ],
@@ -133,11 +143,11 @@ export function AppSidebar() {
         },
         ...(can('view configuration')
             ? [
-                {
-                    title: 'Automatizaciones',
-                    href: '/automations',
-                    icon: FolderSync,
-                },
+                  {
+                      title: 'Automatizaciones',
+                      href: '/automations',
+                      icon: FolderSync,
+                  },
                   {
                       title: 'Configuración',
                       href: '/configuration',

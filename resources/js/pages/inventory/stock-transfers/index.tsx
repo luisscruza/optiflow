@@ -1,224 +1,107 @@
-import { ArrowLeftRight, Building2, Calendar, Eye, Plus, Search, User } from 'lucide-react';
-import { useState } from 'react';
+import { Head, Link } from '@inertiajs/react';
+import { ArrowLeftRight, Plus } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DataTable, type TableResource } from '@/components/ui/datatable';
+import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
-import { StockMovement, type BreadcrumbItem, type PaginatedStockMovements, type Workspace } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { type BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Inventario',
-        href: '#',
+        href: '/inventory',
     },
     {
-        title: 'Transferencia de inventario',
+        title: 'Transferencias de inventario',
         href: '/stock-transfers',
     },
 ];
 
-interface Props {
-    transfers: PaginatedStockMovements;
-    workspace: Workspace;
+interface StockTransferRow {
+    id: number;
+    from_workspace_id: number | null;
+    to_workspace_id: number | null;
+    quantity: number;
+    direction?: string;
+    counterpart_workspace?: string;
 }
 
-export default function StockTransfersIndex({ transfers, workspace }: Props) {
-    const [search, setSearch] = useState('');
+interface Props {
+    transfers: TableResource<StockTransferRow>;
+    current_workspace_id: number;
+}
 
-    const handleSearch = (value: string) => {
-        setSearch(value);
-        router.get('/stock-transfers', { search: value || undefined }, { preserveState: true, replace: true });
-    };
-
-    const formatQuantity = (quantity: number) => {
-        return Number(quantity).toLocaleString(undefined, {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 2,
-        });
-    };
-
-    const getTransferBadge = (type: string) => {
-        if (type === 'transfer_in') {
-            return <Badge variant="default">Entrante</Badge>;
-        }
-        if (type === 'transfer_out') {
-            return <Badge variant="destructive">Saliente</Badge>;
-        }
-        return <Badge variant="outline">Transferencia</Badge>;
-    };
-
-    const getTransferDirection = (movement: StockMovement, currentWorkspaceId: number) => {
-        if (movement.from_workspace_id === currentWorkspaceId) {
-            return {
-                direction: 'outgoing',
-                otherWorkspace: movement.to_workspace,
-                label: 'Hacia',
-            };
-        } else {
-            return {
-                direction: 'incoming',
-                otherWorkspace: movement.from_workspace,
-                label: 'Desde',
-            };
-        }
-    };
+export default function StockTransfersIndex({ transfers, current_workspace_id }: Props) {
+    const { can } = usePermissions();
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Transferencia de inventario" />
+            <Head title="Transferencias de inventario" />
 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                <div className="space-y-8">
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-3xl font-bold tracking-tight">Transferencia de inventario</h1>
-                            <p className="text-muted-foreground">Gestiona transferencias de inventario entre espacios de trabajo</p>
-                        </div>
+                <div className="mb-8 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Transferencias de inventario</h1>
+                        <p className="text-gray-600 dark:text-gray-400">Consulta entradas y salidas entre almacenes con busqueda rapida.</p>
+                    </div>
 
+                    {can('transfer inventory') && (
                         <Button asChild>
                             <Link href="/stock-transfers/create">
                                 <Plus className="mr-2 h-4 w-4" />
                                 Nueva transferencia
                             </Link>
                         </Button>
-                    </div>
-
-                    {/* Transfers */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Historial de transferencias</CardTitle>
-                            <CardDescription>Transferencias de inventario que involucran {workspace.name}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="mb-6 flex items-center space-x-4">
-                                <div className="relative flex-1">
-                                    <Search className="absolute top-2.5 left-2 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        placeholder="Buscar transferencias..."
-                                        value={search}
-                                        onChange={(e) => handleSearch(e.target.value)}
-                                        className="pl-8"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Transfers Table */}
-                            <div className="rounded-md border">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Producto</TableHead>
-                                            <TableHead>Dirección</TableHead>
-                                            <TableHead>Espacio de trabajo</TableHead>
-                                            <TableHead className="text-right">Cantidad</TableHead>
-                                            <TableHead>Referencia</TableHead>
-                                            <TableHead>Creado por</TableHead>
-                                            <TableHead>Fecha</TableHead>
-                                            <TableHead className="text-right">Acciones</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {transfers.data.length === 0 ? (
-                                            <TableRow>
-                                                <TableCell colSpan={8} className="py-8 text-center">
-                                                    <div className="flex flex-col items-center space-y-2">
-                                                        <ArrowLeftRight className="h-8 w-8 text-muted-foreground" />
-                                                        <p className="text-muted-foreground">No se encontraron transferencias de inventario</p>
-                                                        <Button asChild size="sm" variant="outline">
-                                                            <Link href="/stock-transfers/create">Create your first transfer</Link>
-                                                        </Button>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        ) : (
-                                            transfers.data.map((transfer) => {
-                                                const direction = getTransferDirection(transfer, workspace.id);
-
-                                                return (
-                                                    <TableRow key={transfer.id}>
-                                                        <TableCell className="font-medium">
-                                                            <div className="flex items-center space-x-2">
-                                                                <ArrowLeftRight className="h-4 w-4 text-muted-foreground" />
-                                                                <span>{transfer.product?.name}</span>
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell>{getTransferBadge(transfer.type)}</TableCell>
-                                                        <TableCell>
-                                                            <div className="flex items-center space-x-2">
-                                                                <Building2 className="h-4 w-4 text-muted-foreground" />
-                                                                <div>
-                                                                    <p className="font-medium">{direction.otherWorkspace?.name}</p>
-                                                                    <p className="text-sm text-muted-foreground">{direction.label}</p>
-                                                                </div>
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell className="text-right font-mono">
-                                                            <span
-                                                                className={`font-semibold ${
-                                                                    direction.direction === 'incoming' ? 'text-green-600' : 'text-red-600'
-                                                                }`}
-                                                            >
-                                                                {direction.direction === 'incoming' ? '+' : '-'}
-                                                                {formatQuantity(transfer.quantity)}
-                                                            </span>
-                                                        </TableCell>
-                                                        <TableCell className="text-muted-foreground">{transfer.reference_number || '-'}</TableCell>
-                                                        <TableCell>
-                                                            <div className="flex items-center space-x-1">
-                                                                <User className="h-3 w-3" />
-                                                                <span className="text-sm">{transfer.created_by?.name || 'Desconocido'}</span>
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell className="text-muted-foreground">
-                                                            <div className="flex items-center space-x-1">
-                                                                <Calendar className="h-3 w-3" />
-                                                                <span className="text-sm">{new Date(transfer.created_at).toLocaleDateString()}</span>
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell className="text-right">
-                                                            <Button asChild size="sm" variant="outline">
-                                                                <Link href={`/stock-transfers/${transfer.id}`}>
-                                                                    <Eye className="mr-1 h-3 w-3" />
-                                                                    Ver
-                                                                </Link>
-                                                            </Button>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                );
-                                            })
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </div>
-
-                            {/* Pagination */}
-                            {transfers.last_page > 1 && (
-                                <div className="flex items-center justify-between space-x-2 py-4">
-                                    <div className="text-sm text-muted-foreground">
-                                        Mostrando {transfers.from} a {transfers.to} de {transfers.total} resultados
-                                    </div>
-                                    <div className="flex space-x-2">
-                                        {transfers.links.prev && (
-                                            <Button variant="outline" size="sm" onClick={() => router.get(transfers.links.prev!)}>
-                                                Anterior
-                                            </Button>
-                                        )}
-                                        {transfers.links.next && (
-                                            <Button variant="outline" size="sm" onClick={() => router.get(transfers.links.next!)}>
-                                                Siguiente
-                                            </Button>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                    )}
                 </div>
+
+                <DataTable<StockTransferRow>
+                    resource={transfers}
+                    baseUrl="/stock-transfers"
+                    getRowKey={(transfer) => transfer.id}
+                    emptyMessage="No se encontraron transferencias de inventario"
+                    emptyState={
+                        can('transfer inventory') ? (
+                            <div className="py-8 text-center">
+                                <div className="mb-4 flex items-center justify-center gap-2 text-muted-foreground">
+                                    <ArrowLeftRight className="h-4 w-4" />
+                                    No se encontraron transferencias
+                                </div>
+                                <Button asChild>
+                                    <Link href="/stock-transfers/create">
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Crear transferencia
+                                    </Link>
+                                </Button>
+                            </div>
+                        ) : undefined
+                    }
+                    renderCell={(key, value, row) => {
+                        if (key === 'direction') {
+                            return row.from_workspace_id === current_workspace_id ? (
+                                <Badge variant="destructive">Saliente</Badge>
+                            ) : (
+                                <Badge variant="default">Entrante</Badge>
+                            );
+                        }
+
+                        if (key === 'quantity') {
+                            const isIncoming = row.to_workspace_id === current_workspace_id;
+                            const amount = Number(value ?? 0);
+
+                            return (
+                                <span className={`font-semibold ${isIncoming ? 'text-emerald-600' : 'text-red-600'}`}>
+                                    {isIncoming ? '+' : '-'}
+                                    {new Intl.NumberFormat('es-DO', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount)}
+                                </span>
+                            );
+                        }
+
+                        return undefined;
+                    }}
+                />
             </div>
         </AppLayout>
     );

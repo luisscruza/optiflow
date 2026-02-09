@@ -34,6 +34,7 @@ final class ProductsTable extends Table
                 ->cellClassName('w-20 text-gray-500'),
 
             TextColumn::make('name', 'Producto')
+                ->pinned()
                 ->sortable()
                 ->cellClassName('font-medium')
                 ->formatUsing(function ($value, Product $product) {
@@ -53,7 +54,6 @@ final class ProductsTable extends Table
             CurrencyColumn::make('price', 'Precio')
                 ->sortable()
                 ->cellClassName('font-medium'),
-
 
             ActionColumn::make()
                 ->actions([

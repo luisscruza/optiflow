@@ -1,23 +1,22 @@
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeftRight, Building2, Package } from 'lucide-react';
-import { FormEventHandler, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/searchable-select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Product, type Workspace } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { type BreadcrumbItem, type Product, type ProductStock, type Workspace } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Inventario',
-        href: '#',
+        href: '/inventory',
     },
     {
-        title: 'Transferencia de inventario',
+        title: 'Transferencias de inventario',
         href: '/stock-transfers',
     },
     {
@@ -29,10 +28,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface Props {
     products: Product[];
     availableWorkspaces: Workspace[];
-    workspace: {
-        current: Workspace;
-        available: Workspace[];
-    };
+    initial_product_id?: number | null;
 }
 
 interface FormData {
@@ -40,59 +36,54 @@ interface FormData {
     from_workspace_id: string;
     to_workspace_id: string;
     quantity: string;
-    note: string;
+    reference: string;
+    notes: string;
 }
 
-export default function StockTransfersCreate({ products, availableWorkspaces, workspace }: Props) {
-    const { data, setData, post, processing, errors, reset } = useForm<FormData>({
-        product_id: '',
-        from_workspace_id: workspace?.current?.id?.toString(),
+export default function StockTransfersCreate({ products, availableWorkspaces, initial_product_id }: Props) {
+    const page = usePage();
+    const workspace = (page.props as { workspace?: { current?: Workspace } }).workspace;
+    const currentWorkspace = workspace?.current;
+
+    const { data, setData, post, processing, errors } = useForm<FormData>({
+        product_id: initial_product_id ? initial_product_id.toString() : '',
+        from_workspace_id: currentWorkspace?.id?.toString() ?? '',
         to_workspace_id: '',
         quantity: '',
-        note: '',
+        reference: '',
+        notes: '',
     });
 
-    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const selectedProduct = products.find((product) => product.id.toString() === data.product_id) ?? null;
 
-    const handleSubmit: FormEventHandler = (e) => {
-        e.preventDefault();
-        post('/stock-transfers', {
-            onSuccess: () => reset(),
-        });
-    };
-
-    const handleProductChange = (productId: string) => {
-        setData('product_id', productId);
-        const product = products.find((p) => p.id.toString() === productId);
-        setSelectedProduct(product || null);
-    };
-
-    const getAvailableStock = () => {
-        console.log('=== getAvailableStock DEBUG ===');
-        console.log('selectedProduct:', selectedProduct);
-        console.log('workspace:', workspace);
-        console.log('workspace.current.id:', workspace?.current?.id);
-        console.log('workspace.current.id type:', typeof workspace?.current?.id);
-
-        if (!selectedProduct || !selectedProduct.stocks) {
-            console.log('No selectedProduct or stocks');
-            return 0;
+    const getCurrentWorkspaceStock = (product: Product | null): ProductStock | undefined => {
+        if (!product) {
+            return undefined;
         }
 
-        console.log('selectedProduct.stocks:', selectedProduct.stocks);
+        return product.stocks?.find((stock) => stock.workspace_id === currentWorkspace?.id);
+    };
 
-        selectedProduct.stocks.forEach((s, index) => {
-            console.log(`Stock ${index}:`, s);
-            console.log(`  workspace_id: ${s.workspace_id} (type: ${typeof s.workspace_id})`);
-            console.log(`  quantity: ${s.quantity}`);
-            console.log(`  Match with workspace.current.id (${workspace.current.id})?`, s.workspace_id === Number(workspace.current.id));
-        });
+    const availableStock = Number(getCurrentWorkspaceStock(selectedProduct)?.quantity ?? 0);
+    const destinationWorkspace = availableWorkspaces.find((ws) => ws.id.toString() === data.to_workspace_id);
 
-        const stock = selectedProduct.stocks.find((s) => s.workspace_id === Number(workspace.current.id));
-        console.log('Found stock:', stock);
-        const result = stock ? Number(stock.quantity) : 0;
-        console.log('Result:', result);
-        return result;
+    const productOptions: SearchableSelectOption[] = products.map((product) => {
+        const stock = Number(product.stocks?.[0]?.quantity ?? 0);
+
+        return {
+            value: product.id.toString(),
+            label: `${product.name} (${product.sku}) · Stock ${stock}`,
+        };
+    });
+
+    const workspaceOptions: SearchableSelectOption[] = availableWorkspaces.map((ws) => ({
+        value: ws.id.toString(),
+        label: ws.name,
+    }));
+
+    const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+        event.preventDefault();
+        post('/stock-transfers');
     };
 
     return (
@@ -100,188 +91,156 @@ export default function StockTransfersCreate({ products, availableWorkspaces, wo
             <Head title="Nueva transferencia de inventario" />
 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                <div className="space-y-8">
-                    {/* Header */}
-                    <div className="flex items-center space-x-4">
-                        <div>
-                            <h1 className="text-3xl font-bold tracking-tight">Nueva transferencia de inventario</h1>
-                            <p className="text-muted-foreground">Transfiere stock desde {workspace.current.name} a otro espacio de trabajo</p>
-                        </div>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Transferencia de inventario</h1>
+                        <p className="text-muted-foreground">Mueve existencias entre almacenes con un flujo rapido y controlado.</p>
                     </div>
 
-                    {/* Form */}
-                    <div className="max-w-2xl">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Detalles de la transferencia</CardTitle>
-                                <CardDescription>Selecciona un producto y el espacio de trabajo de destino para la transferencia</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    {/* Product Selection */}
-                                    <div className="space-y-2">
-                                        <Label htmlFor="product_id">Producto *</Label>
-                                        <Select value={data.product_id} onValueChange={handleProductChange}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecciona un producto con stock disponible" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {products.map((product) => {
-                                                    console.log('=== Product in dropdown ===');
-                                                    console.log('Product:', product);
-                                                    console.log('Product.stocks:', product.stocks);
-                                                    console.log(
-                                                        'workspace.current.id:',
-                                                        workspace?.current?.id,
-                                                        'type:',
-                                                        typeof workspace?.current?.id,
-                                                    );
-
-                                                    const stock = product.stocks?.find((s) => {
-                                                        console.log(
-                                                            `Comparing: ${s.workspace_id} (${typeof s.workspace_id}) === ${Number(workspace.current.id)} (number)`,
-                                                        );
-                                                        return s.workspace_id === Number(workspace.current.id);
-                                                    });
-                                                    console.log('Found stock for product:', stock);
-
-                                                    const availableQty = stock ? Number(stock.quantity) : 0;
-                                                    console.log('Available qty:', availableQty);
-
-                                                    return (
-                                                        <SelectItem key={product.id} value={product.id.toString()}>
-                                                            <div className="flex w-full items-center justify-between">
-                                                                <div className="flex items-center space-x-2">
-                                                                    <Package className="h-4 w-4" />
-                                                                    <span>{product.name}</span>
-                                                                    <span className="text-muted-foreground">({product.sku})</span>
-                                                                </div>
-                                                                <span className="text-sm text-muted-foreground">Stock: {availableQty}</span>
-                                                            </div>
-                                                        </SelectItem>
-                                                    );
-                                                })}
-                                            </SelectContent>
-                                        </Select>
-                                        {errors.product_id && <p className="text-sm text-destructive">{errors.product_id}</p>}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Detalle de la transferencia</CardTitle>
+                            <CardDescription>Selecciona origen y destino para la transferencia.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-5">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div className="space-y-2">
+                                    <Label>Desde almacen</Label>
+                                    <div className="flex h-10 items-center gap-2 rounded-md border bg-muted/40 px-3 text-sm">
+                                        <Building2 className="h-4 w-4 text-muted-foreground" />
+                                        <span>{currentWorkspace?.name ?? '-'}</span>
                                     </div>
+                                </div>
 
-                                    {/* Current Stock Display */}
-                                    {selectedProduct && (
-                                        <div className="rounded-lg bg-muted p-4">
-                                            <div className="flex items-center justify-between">
-                                                <div>
-                                                    <p className="font-medium">{selectedProduct.name}</p>
-                                                    <p className="text-sm text-muted-foreground">SKU: {selectedProduct.sku}</p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-sm text-muted-foreground">Stock disponible</p>
-                                                    <p className="text-2xl font-bold">{getAvailableStock()}</p>
-                                                </div>
-                                            </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="to_workspace_id">Hacia almacen *</Label>
+                                    <SearchableSelect
+                                        options={workspaceOptions}
+                                        value={data.to_workspace_id}
+                                        onValueChange={(value) => setData('to_workspace_id', value)}
+                                        placeholder="Buscar sucursal de destino..."
+                                        searchPlaceholder="Escribe para buscar sucursal..."
+                                        emptyText="No se encontro ninguna sucursal."
+                                        triggerClassName="h-10"
+                                    />
+                                    {errors.to_workspace_id && <p className="text-sm text-red-600 dark:text-red-400">{errors.to_workspace_id}</p>}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Producto y cantidad</CardTitle>
+                            <CardDescription>Usa el buscador para seleccionar el producto y define la cantidad a mover.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-5">
+                            <div className="space-y-2">
+                                <Label htmlFor="product_id">Producto *</Label>
+                                <SearchableSelect
+                                    options={productOptions}
+                                    value={data.product_id}
+                                    onValueChange={(value) => setData('product_id', value)}
+                                    placeholder="Buscar producto con stock..."
+                                    searchPlaceholder="Escribe para buscar producto..."
+                                    emptyText="No se encontraron productos con stock."
+                                    triggerClassName="h-10"
+                                />
+                                {errors.product_id && <p className="text-sm text-red-600 dark:text-red-400">{errors.product_id}</p>}
+                            </div>
+
+                            {selectedProduct && (
+                                <div className="rounded-lg border border-yellow-500/40 bg-yellow-50/50 p-4 dark:bg-yellow-900/10">
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div>
+                                            <p className="font-medium text-foreground">{selectedProduct.name}</p>
+                                            <p className="text-sm text-muted-foreground">SKU: {selectedProduct.sku}</p>
                                         </div>
-                                    )}
-
-                                    {/* From Workspace (read-only) */}
-                                    <div className="space-y-2">
-                                        <Label>Desde espacio de trabajo</Label>
-                                        <div className="flex items-center space-x-2 rounded-md bg-muted p-3">
-                                            <Building2 className="h-4 w-4 text-muted-foreground" />
-                                            <span className="font-medium">{workspace.current.name}</span>
-                                            <span className="text-sm text-muted-foreground">(Actual)</span>
+                                        <div className="text-right">
+                                            <p className="text-sm text-muted-foreground">Stock disponible</p>
+                                            <p className="text-2xl font-semibold text-foreground">{availableStock}</p>
                                         </div>
                                     </div>
+                                </div>
+                            )}
 
-                                    {/* To Workspace */}
-                                    <div className="space-y-2">
-                                        <Label htmlFor="to_workspace_id">Al espacio de trabajo *</Label>
-                                        <Select value={data.to_workspace_id} onValueChange={(value) => setData('to_workspace_id', value)}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecciona el espacio de trabajo de destino" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {availableWorkspaces.map((ws) => (
-                                                    <SelectItem key={ws.id} value={ws.id.toString()}>
-                                                        <div className="flex items-center space-x-2">
-                                                            <Building2 className="h-4 w-4" />
-                                                            <span>{ws.name}</span>
-                                                        </div>
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        {errors.to_workspace_id && <p className="text-sm text-destructive">{errors.to_workspace_id}</p>}
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div className="space-y-2">
+                                    <Label htmlFor="quantity">Cantidad *</Label>
+                                    <Input
+                                        id="quantity"
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        max={availableStock}
+                                        value={data.quantity}
+                                        onChange={(event) => setData('quantity', event.target.value)}
+                                        placeholder="Ingresa cantidad a transferir"
+                                        required
+                                    />
+                                    {selectedProduct && <p className="text-xs text-muted-foreground">Maximo disponible: {availableStock}</p>}
+                                    {errors.quantity && <p className="text-sm text-red-600 dark:text-red-400">{errors.quantity}</p>}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="reference">Referencia</Label>
+                                    <Input
+                                        id="reference"
+                                        value={data.reference}
+                                        onChange={(event) => setData('reference', event.target.value)}
+                                        placeholder="Opcional: codigo o referencia"
+                                    />
+                                    {errors.reference && <p className="text-sm text-red-600 dark:text-red-400">{errors.reference}</p>}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="notes">Nota</Label>
+                                    <Textarea
+                                        id="notes"
+                                        value={data.notes}
+                                        onChange={(event) => setData('notes', event.target.value)}
+                                        placeholder="Opcional: agrega una nota de referencia"
+                                        rows={3}
+                                    />
+                                    {errors.notes && <p className="text-sm text-red-600 dark:text-red-400">{errors.notes}</p>}
+                                </div>
+                            </div>
+
+                            {selectedProduct && destinationWorkspace && data.quantity && (
+                                <div className="rounded-lg border bg-background p-4">
+                                    <h4 className="mb-2 flex items-center text-sm font-semibold text-foreground">
+                                        <ArrowLeftRight className="mr-2 h-4 w-4" />
+                                        Resumen
+                                    </h4>
+                                    <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground md:grid-cols-2">
+                                        <p>
+                                            <span className="font-medium text-foreground">Producto:</span> {selectedProduct.name}
+                                        </p>
+                                        <p>
+                                            <span className="font-medium text-foreground">Cantidad:</span> {data.quantity}
+                                        </p>
+                                        <p>
+                                            <span className="font-medium text-foreground">Desde:</span> {currentWorkspace?.name ?? '-'}
+                                        </p>
+                                        <p>
+                                            <span className="font-medium text-foreground">Hacia:</span> {destinationWorkspace.name}
+                                        </p>
                                     </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
 
-                                    {/* Quantity */}
-                                    <div className="space-y-2">
-                                        <Label htmlFor="quantity">Cantidad *</Label>
-                                        <Input
-                                            id="quantity"
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            max={getAvailableStock()}
-                                            value={data.quantity}
-                                            onChange={(e) => setData('quantity', e.target.value)}
-                                            placeholder="Ingresa la cantidad a transferir"
-                                        />
-                                        {selectedProduct && <p className="text-sm text-muted-foreground">Máximo disponible: {getAvailableStock()}</p>}
-                                        {errors.quantity && <p className="text-sm text-destructive">{errors.quantity}</p>}
-                                    </div>
-
-                                    {/* Note */}
-                                    <div className="space-y-2">
-                                        <Label htmlFor="note">Nota</Label>
-                                        <Textarea
-                                            id="note"
-                                            value={data.note}
-                                            onChange={(e) => setData('note', e.target.value)}
-                                            placeholder="Nota opcional sobre esta transferencia"
-                                            rows={3}
-                                        />
-                                        {errors.note && <p className="text-sm text-destructive">{errors.note}</p>}
-                                    </div>
-
-                                    {/* Transfer Summary */}
-                                    {selectedProduct && data.quantity && data.to_workspace_id && (
-                                        <div className="rounded-lg border bg-background p-4 dark:bg-blue-950/20">
-                                            <h4 className="mb-2 flex items-center font-medium">
-                                                <ArrowLeftRight className="mr-2 h-4 w-4" />
-                                                Resumen de la transferencia
-                                            </h4>
-                                            <div className="space-y-1 text-sm">
-                                                <p>
-                                                    <span className="text-muted-foreground">Producto:</span> {selectedProduct.name}
-                                                </p>
-                                                <p>
-                                                    <span className="text-muted-foreground">Cantidad:</span> {data.quantity}
-                                                </p>
-                                                <p>
-                                                    <span className="text-muted-foreground">Desde:</span> {workspace.current.name}
-                                                </p>
-                                                <p>
-                                                    <span className="text-muted-foreground">Hacia:</span>{' '}
-                                                    {availableWorkspaces.find((w) => w.id.toString() === data.to_workspace_id)?.name}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Actions */}
-                                    <div className="flex items-center justify-end space-x-2">
-                                        <Button variant="outline" asChild>
-                                            <Link href="/stock-transfers">Cancelar</Link>
-                                        </Button>
-                                        <Button type="submit" disabled={processing}>
-                                            {processing ? 'Procesando...' : 'Crear transferencia'}
-                                        </Button>
-                                    </div>
-                                </form>
-                            </CardContent>
-                        </Card>
+                    <div className="flex items-center justify-end gap-2">
+                        <Button type="button" variant="outline" asChild>
+                            <Link href="/stock-transfers">Cancelar</Link>
+                        </Button>
+                        <Button type="submit" className="bg-yellow-600 text-white hover:bg-yellow-700" disabled={processing}>
+                            <Package className="mr-2 h-4 w-4" />
+                            {processing ? 'Guardando...' : 'Guardar transferencia'}
+                        </Button>
                     </div>
-                </div>
+                </form>
             </div>
         </AppLayout>
     );

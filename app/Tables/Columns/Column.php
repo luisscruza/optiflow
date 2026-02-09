@@ -40,6 +40,8 @@ abstract class Column
 
     protected ?Closure $copyUsing = null;
 
+    protected bool $pinned = false;
+
     public function __construct(string $name, ?string $label = null)
     {
         $this->name = $name;
@@ -161,6 +163,13 @@ abstract class Column
         return $this;
     }
 
+    public function pinned(bool $pinned = true): static
+    {
+        $this->pinned = $pinned;
+
+        return $this;
+    }
+
     public function getName(): string
     {
         return $this->name;
@@ -264,6 +273,7 @@ abstract class Column
             'cellClassName' => $this->cellClassName,
             'tooltip' => $this->tooltip,
             'copiable' => $this->copiable,
+            'pinned' => $this->pinned,
         ];
     }
 }

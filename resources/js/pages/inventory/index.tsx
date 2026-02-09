@@ -110,7 +110,7 @@ export default function InventoryOverview({ stats }: Props) {
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                                 {can('adjust inventory') && (
                                     <Button asChild className="h-auto p-6">
-                                        <Link href="/stock-adjustments">
+                                        <Link href="/inventory-adjustments">
                                             <div className="flex flex-col items-center space-y-3">
                                                 <RotateCcw className="h-8 w-8" />
                                                 <div className="text-center">
@@ -182,9 +182,9 @@ export default function InventoryOverview({ stats }: Props) {
                                 {can('view inventory') && (
                                     <>
                                         <Button asChild variant="outline" className="w-full justify-start">
-                                            <Link href="/stock-adjustments">
+                                            <Link href="/inventory-adjustments">
                                                 <RotateCcw className="mr-2 h-4 w-4" />
-                                                Ver inventario actual
+                                                Ver ajustes de inventario
                                             </Link>
                                         </Button>
                                         <Button asChild variant="outline" className="w-full justify-start">
@@ -197,7 +197,7 @@ export default function InventoryOverview({ stats }: Props) {
                                 )}
                                 {can('adjust inventory') && (
                                     <Button asChild variant="outline" className="w-full justify-start">
-                                        <Link href="/stock-adjustments/create">
+                                        <Link href="/inventory-adjustments/create">
                                             <Plus className="mr-2 h-4 w-4" />
                                             Crear ajuste
                                         </Link>

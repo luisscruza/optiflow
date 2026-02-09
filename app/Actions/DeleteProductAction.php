@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Exceptions\ReportableActionException;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 
 final class DeleteProductAction
 {
@@ -17,8 +17,8 @@ final class DeleteProductAction
     {
         return DB::transaction(function () use ($product): bool {
             if ($product->invoiceItems()->exists()) {
-                throw new InvalidArgumentException(
-                    'Cannot delete product that has been used in invoices or quotations.'
+                throw new ReportableActionException(
+                    'No se puede eliminar un producto que ha sido incluido en facturas.'
                 );
             }
 
@@ -27,8 +27,8 @@ final class DeleteProductAction
                 ->exists();
 
             if ($hasMovements) {
-                throw new InvalidArgumentException(
-                    'Cannot delete product with stock movement history.'
+                throw new ReportableActionException(
+                    'No se puede eliminar un producto que tiene movimientos de stock registrados.'
                 );
             }
 

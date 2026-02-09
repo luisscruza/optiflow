@@ -47,8 +47,8 @@ final class InvoiceController
 
         return Inertia::render('invoices/index', [
             'invoices' => InvoicesTable::make($request),
-            'bankAccounts' => Inertia::optional(fn () => BankAccount::onlyActive()->with('currency')->orderBy('name')->get()),
-            'paymentMethods' => Inertia::optional(fn (): array => PaymentMethod::options()),
+            'bankAccounts' => Inertia::optional(fn() => BankAccount::onlyActive()->with('currency')->orderBy('name')->get()),
+            'paymentMethods' => Inertia::optional(fn(): array => PaymentMethod::options()),
         ]);
     }
 
@@ -71,7 +71,7 @@ final class InvoiceController
             ->get()
             ->map(function ($contact) {
                 $phone = $contact->phone_primary ?? null;
-                $contact->name = "{$contact->name}".($phone ? " ({$phone})" : '');
+                $contact->name = "{$contact->name}" . ($phone ? " ({$phone})" : '');
 
                 return $contact;
             });
@@ -108,7 +108,7 @@ final class InvoiceController
             ->orderBy('name')
             ->get()
             ->groupBy('type')
-            ->mapWithKeys(fn ($taxes, $type): array => [
+            ->mapWithKeys(fn($taxes, $type): array => [
                 $type => [
                     'label' => TaxType::tryFrom($type)?->label() ?? $type,
                     'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,
@@ -121,7 +121,7 @@ final class InvoiceController
             ->orderBy('name')
             ->orderBy('surname')
             ->get()
-            ->map(fn ($salesman) => [
+            ->map(fn($salesman) => [
                 'id' => $salesman->id,
                 'name' => $salesman->name,
                 'surname' => $salesman->surname,
@@ -208,9 +208,9 @@ final class InvoiceController
         // Collect field labels from all auditable models
         $fieldLabels = collect([
             $invoice->getActivityFieldLabels(),
-            ...$invoice->items->map(fn ($item) => $item->getActivityFieldLabels()),
-            ...$invoice->payments->map(fn ($payment) => $payment->getActivityFieldLabels()),
-        ])->reduce(fn ($carry, $labels) => array_merge($carry, $labels), []);
+            ...$invoice->items->map(fn($item) => $item->getActivityFieldLabels()),
+            ...$invoice->payments->map(fn($payment) => $payment->getActivityFieldLabels()),
+        ])->reduce(fn($carry, $labels) => array_merge($carry, $labels), []);
 
         // Get bank accounts and payment methods for payment registration
         $bankAccounts = BankAccount::onlyActive()->with('currency')->get();
@@ -290,7 +290,7 @@ final class InvoiceController
             ->orderBy('name')
             ->get()
             ->groupBy('type')
-            ->mapWithKeys(fn ($taxes, $type): array => [
+            ->mapWithKeys(fn($taxes, $type): array => [
                 $type => [
                     'label' => TaxType::tryFrom($type)?->label() ?? $type,
                     'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,
@@ -303,7 +303,7 @@ final class InvoiceController
             ->orderBy('name')
             ->orderBy('surname')
             ->get()
-            ->map(fn ($salesman) => [
+            ->map(fn($salesman) => [
                 'id' => $salesman->id,
                 'name' => $salesman->name,
                 'surname' => $salesman->surname,
@@ -389,6 +389,13 @@ final class InvoiceController
 
             if ($workspacePreferred instanceof DocumentSubtype && $workspacePreferred->isValid()) {
                 return $workspacePreferred;
+            } else {
+
+                return DocumentSubtype::active()
+                    ->forInvoice()
+                    ->where('is_default', 1)
+                    ->first();
+
             }
         }
 

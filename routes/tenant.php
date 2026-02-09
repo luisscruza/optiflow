@@ -48,6 +48,7 @@ use App\Http\Controllers\ProcessContactImportController;
 use App\Http\Controllers\ProcessProductImportController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImportController;
+use App\Http\Controllers\ProductInventoryAdjustmentController;
 use App\Http\Controllers\QuickProductCreate;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\ReportController;
@@ -217,6 +218,9 @@ Route::middleware([
             Route::resource('stock-adjustments', StockAdjustmentController::class)->only(['index', 'create', 'store', 'show'])->parameters([
                 'stock-adjustments' => 'product',
             ]);
+            Route::resource('inventory-adjustments', ProductInventoryAdjustmentController::class)
+                ->only(['index', 'create', 'store', 'show'])
+                ->parameters(['inventory-adjustments' => 'inventoryAdjustment']);
             Route::resource('stock-transfers', StockTransferController::class)->only(['index', 'create', 'store', 'show'])->parameters([
                 'stock-transfers' => 'stockMovement',
             ]);

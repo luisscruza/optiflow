@@ -136,7 +136,7 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
                                 {can('adjust inventory') && (
                                     <>
                                         <Button variant="outline" asChild>
-                                            <Link href="/stock-adjustments/create">
+                                            <Link href="/inventory-adjustments/create">
                                                 <TrendingUp className="mr-2 h-4 w-4" />
                                                 Ajustar stock
                                             </Link>
@@ -151,7 +151,7 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
                                         )}
                                     </>
                                 )}
-                                {can('transfer inventory') && (
+                                {can('transfer inventory') && (product.stock_in_current_workspace?.quantity ?? 0) > 0 && (
                                     <Button variant="outline" asChild>
                                         <Link href="/stock-transfers/create">
                                             <ArrowLeftRight className="mr-2 h-4 w-4" />

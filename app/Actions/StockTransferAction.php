@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Enums\StockMovementType;
+use App\Exceptions\ReportableActionException;
 use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\StockMovement;
@@ -12,7 +13,6 @@ use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 
 final class StockTransferAction
 {
@@ -26,15 +26,15 @@ final class StockTransferAction
         $product = Product::query()->findOrFail($data['product_id']);
 
         if (! $product->track_stock) {
-            throw new InvalidArgumentException('Cannot transfer stock for products that do not track inventory.');
+            throw new ReportableActionException('No se puede transferir stock de un producto que no tiene el seguimiento de inventario habilitado.');
         }
 
         if ($data['from_workspace_id'] === $data['to_workspace_id']) {
-            throw new InvalidArgumentException('Cannot transfer stock to the same workspace.');
+            throw new ReportableActionException('No se puede transferir stock a la misma ubicación de trabajo.');
         }
 
         if ($data['quantity'] <= 0) {
-            throw new InvalidArgumentException('Transfer quantity must be greater than zero.');
+            throw new ReportableActionException('La cantidad a transferir debe ser mayor que cero.');
         }
 
         // Verify user has access to both workspaces
@@ -42,7 +42,7 @@ final class StockTransferAction
         $toWorkspace = Workspace::query()->findOrFail($data['to_workspace_id']);
 
         if (! $user->workspaces()->whereIn('workspaces.id', [$fromWorkspace->id, $toWorkspace->id])->count() === 2) {
-            throw new InvalidArgumentException('User does not have access to one or both workspaces.');
+            throw new ReportableActionException('El usuario no tiene acceso a ambas ubicaciones de trabajo para realizar la transferencia.');
         }
 
         return DB::transaction(function () use ($product, $data, $fromWorkspace, $toWorkspace): array {
@@ -54,8 +54,8 @@ final class StockTransferAction
 
             if (! $fromStock || $fromStock->quantity < $data['quantity']) {
                 $available = $fromStock?->quantity ?? 0;
-                throw new InvalidArgumentException(
-                    "Insufficient stock in source workspace. Available: {$available}, Requested: {$data['quantity']}"
+                throw new ReportableActionException(
+                    "No hay suficiente stock en la ubicación de trabajo de origen. Disponible: {$available}, Requerido: {$data['quantity']}."
                 );
             }
 

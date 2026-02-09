@@ -9,6 +9,7 @@ export interface TableColumn {
     label: string;
     type: string;
     sortable: boolean;
+    pinned?: boolean;
     align?: 'left' | 'center' | 'right';
     headerClassName?: string;
     cellClassName?: string;

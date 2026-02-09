@@ -149,7 +149,7 @@ export default function StockAdjustmentsShow({ product, currentStock, stockHisto
                             </p>
                         </div>
                         <Button asChild>
-                            <Link href="/stock-adjustments/create">Nuevo ajuste</Link>
+                            <Link href={`/inventory-adjustments/create?product_id=${product.id}`}>Nuevo ajuste</Link>
                         </Button>
                     </div>
 

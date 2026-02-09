@@ -1,13 +1,13 @@
 import { Head, Link } from '@inertiajs/react';
 import { AlertTriangle, Package, Plus } from 'lucide-react';
 
-import { usePermissions } from '@/hooks/use-permissions';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { DataTable, type TableResource } from '@/components/ui/datatable';
+import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
-import { Product, type BreadcrumbItem } from '@/types';
 import { create, index } from '@/routes/products';
+import { Product, type BreadcrumbItem } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -38,7 +38,7 @@ export default function ProductsIndex({ products }: Props) {
                     <div className="flex items-center gap-2">
                         {can('view inventory') && (
                             <Button variant="outline" asChild>
-                                <Link href="/stock-adjustments">
+                                <Link href="/inventory-adjustments">
                                     <Package className="mr-2 h-4 w-4" />
                                     Gestión de inventario
                                 </Link>
@@ -64,9 +64,7 @@ export default function ProductsIndex({ products }: Props) {
                         can('create products') ? (
                             <div className="py-8 text-center">
                                 <Package className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-                                <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
-                                    No se encontraron productos
-                                </h3>
+                                <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">No se encontraron productos</h3>
                                 <p className="mb-6 text-gray-600 dark:text-gray-400">Comienza agregando tu primer producto al catálogo.</p>
                                 <Button asChild>
                                     <Link prefetch href={create().url}>
@@ -78,7 +76,7 @@ export default function ProductsIndex({ products }: Props) {
                         ) : undefined
                     }
                     handlers={{}}
-                    renderCell={(key, value, row) => {
+                    renderCell={(key, value) => {
                         if (key === 'inventory') {
                             const inventoryData = value as { quantity: number; isLow: boolean } | string;
 

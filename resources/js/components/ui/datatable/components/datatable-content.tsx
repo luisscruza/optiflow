@@ -34,6 +34,17 @@ interface DataTableContentProps<T> {
     renderCell?: RenderCellFn<T>;
 }
 
+function offsetsAreEqual(previous: Record<string, number>, next: Record<string, number>): boolean {
+    const previousKeys = Object.keys(previous);
+    const nextKeys = Object.keys(next);
+
+    if (previousKeys.length !== nextKeys.length) {
+        return false;
+    }
+
+    return nextKeys.every((key) => previous[key] === next[key]);
+}
+
 function fallbackCopyToClipboard(text: string): boolean {
     if (typeof document === 'undefined') {
         return false;
@@ -74,6 +85,11 @@ export function DataTableContent<T>({
     onActionClick,
     renderCell,
 }: DataTableContentProps<T>) {
+    const pinnedColumns = React.useMemo(() => columns.filter((column) => column.pinned), [columns]);
+    const pinnedColumnKeys = React.useMemo(() => pinnedColumns.map((column) => column.key), [pinnedColumns]);
+    const pinnedHeaderRefs = React.useRef<Record<string, HTMLTableCellElement | null>>({});
+    const [pinnedOffsets, setPinnedOffsets] = React.useState<Record<string, number>>({});
+
     const resolveCopyValue = React.useCallback((row: T, column: TableColumn): string | null => {
         if (!column.copiable || column.type === 'actions') {
             return null;
@@ -112,6 +128,86 @@ export function DataTableContent<T>({
             toast.error('No se pudo copiar el valor.');
         }
     }, []);
+
+    const calculatePinnedOffsets = React.useCallback((): void => {
+        if (pinnedColumnKeys.length === 0) {
+            setPinnedOffsets((currentOffsets) => {
+                if (Object.keys(currentOffsets).length === 0) {
+                    return currentOffsets;
+                }
+
+                return {};
+            });
+
+            return;
+        }
+
+        const nextOffsets: Record<string, number> = {};
+        let currentOffset = 0;
+
+        for (const key of pinnedColumnKeys) {
+            nextOffsets[key] = currentOffset;
+            currentOffset += pinnedHeaderRefs.current[key]?.offsetWidth ?? 0;
+        }
+
+        setPinnedOffsets((currentOffsets) => {
+            if (offsetsAreEqual(currentOffsets, nextOffsets)) {
+                return currentOffsets;
+            }
+
+            return nextOffsets;
+        });
+    }, [pinnedColumnKeys]);
+
+    React.useEffect(() => {
+        calculatePinnedOffsets();
+    }, [calculatePinnedOffsets, columns]);
+
+    React.useEffect(() => {
+        if (pinnedColumnKeys.length === 0) {
+            return;
+        }
+
+        const observer =
+            typeof ResizeObserver !== 'undefined'
+                ? new ResizeObserver(() => {
+                      calculatePinnedOffsets();
+                  })
+                : null;
+
+        for (const key of pinnedColumnKeys) {
+            const element = pinnedHeaderRefs.current[key];
+
+            if (element && observer) {
+                observer.observe(element);
+            }
+        }
+
+        if (typeof window !== 'undefined') {
+            window.addEventListener('resize', calculatePinnedOffsets);
+        }
+
+        return () => {
+            observer?.disconnect();
+
+            if (typeof window !== 'undefined') {
+                window.removeEventListener('resize', calculatePinnedOffsets);
+            }
+        };
+    }, [calculatePinnedOffsets, pinnedColumnKeys]);
+
+    const getPinnedStyles = React.useCallback(
+        (column: TableColumn): React.CSSProperties | undefined => {
+            if (!column.pinned) {
+                return undefined;
+            }
+
+            return {
+                left: `${pinnedOffsets[column.key] ?? 0}px`,
+            };
+        },
+        [pinnedOffsets],
+    );
 
     const renderCellContent = React.useCallback(
         (row: T, column: TableColumn): React.ReactNode => {
@@ -194,11 +290,22 @@ export function DataTableContent<T>({
                         const header = (
                             <TableHead
                                 key={column.key}
+                                ref={(element) => {
+                                    if (column.pinned) {
+                                        pinnedHeaderRefs.current[column.key] = element;
+
+                                        return;
+                                    }
+
+                                    delete pinnedHeaderRefs.current[column.key];
+                                }}
+                                style={getPinnedStyles(column)}
                                 className={cn(
                                     'group',
                                     column.align === 'right' && 'text-right',
                                     column.align === 'center' && 'text-center',
                                     column.sortable && 'cursor-pointer select-none hover:bg-muted/50',
+                                    column.pinned && 'sticky z-30 border-r border-border/60 bg-background',
                                     column.headerClassName,
                                 )}
                                 onClick={() => column.sortable && onSort(column.key)}
@@ -254,6 +361,7 @@ export function DataTableContent<T>({
                             <TableRow
                                 key={rowKey}
                                 className={cn(
+                                    'group',
                                     href && 'cursor-pointer',
                                     href && !isSelected && 'hover:bg-gray-50 dark:hover:bg-gray-800/50',
                                     isSelected && 'bg-yellow-50 dark:bg-yellow-950/20',
@@ -308,9 +416,16 @@ export function DataTableContent<T>({
                                     return (
                                         <TableCell
                                             key={column.key}
+                                            style={getPinnedStyles(column)}
                                             className={cn(
                                                 column.align === 'right' && 'text-right',
                                                 column.align === 'center' && 'text-center',
+                                                column.pinned &&
+                                                    cn(
+                                                        'sticky z-20 border-r border-border/60',
+                                                        isSelected ? 'bg-yellow-50 dark:bg-yellow-950/20' : 'bg-background',
+                                                        href && !isSelected && 'group-hover:bg-gray-50 dark:group-hover:bg-gray-800/50',
+                                                    ),
                                                 column.cellClassName,
                                             )}
                                         >

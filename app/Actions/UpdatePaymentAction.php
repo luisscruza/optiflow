@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Enums\PaymentType;
+use App\Exceptions\ReportableActionException;
 use App\Jobs\RecalculateBankAccount;
 use App\Models\BankAccount;
 use App\Models\Payment;
 use App\Models\Tax;
 use App\Models\WithholdingType;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 
 final readonly class UpdatePaymentAction
 {
@@ -48,7 +48,6 @@ final readonly class UpdatePaymentAction
         $invoice = $payment->invoice;
 
         if ($invoice) {
-            // Calculate the new amount due considering this payment update
             $otherPaymentsTotal = $invoice->payments()
                 ->where('id', '!=', $payment->id)
                 ->sum('amount');
@@ -56,7 +55,7 @@ final readonly class UpdatePaymentAction
             $newAmountDue = $invoice->total_amount - $otherPaymentsTotal;
 
             if ($newAmountDue < $data['amount']) {
-                throw new InvalidArgumentException('Payment amount exceeds the amount due on the invoice.');
+                throw new ReportableActionException('El monto del pago excede el monto adeudado en la factura después de esta actualización.');
             }
         }
 

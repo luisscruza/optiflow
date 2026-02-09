@@ -227,6 +227,7 @@ export interface StockMovement {
     type: 'in' | 'out' | 'adjustment' | 'transfer' | 'initial' | 'transfer_in' | 'transfer_out' | 'set_quantity' | 'add_quantity' | 'remove_quantity';
     quantity: number;
     reference_number?: string | null;
+    note?: string | null;
     notes?: string | null;
     unit_cost?: number | null;
     created_at: string;
@@ -299,6 +300,35 @@ export interface PaginatedStockAdjustments {
         prev?: string;
         next?: string;
     };
+}
+
+export interface ProductInventoryAdjustmentItem {
+    id: number;
+    product_inventory_adjustment_id: number;
+    product_id: number;
+    adjustment_type: 'increment' | 'decrement';
+    quantity: number;
+    current_quantity: number;
+    final_quantity: number;
+    average_cost: number;
+    total_adjusted: number;
+    product?: Product;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface ProductInventoryAdjustment {
+    id: number;
+    workspace_id: number;
+    user_id: number;
+    adjustment_date: string;
+    notes?: string | null;
+    total_adjusted: number;
+    workspace?: Workspace;
+    created_by?: User;
+    items?: ProductInventoryAdjustmentItem[];
+    created_at: string;
+    updated_at: string;
 }
 
 export interface Product {

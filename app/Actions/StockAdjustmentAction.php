@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Enums\Permission;
+use App\Exceptions\ReportableActionException;
 use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\StockMovement;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 
 final class StockAdjustmentAction
 {
@@ -24,13 +24,13 @@ final class StockAdjustmentAction
         $product = Product::query()->findOrFail($data['product_id']);
 
         if (! $product->track_stock) {
-            throw new InvalidArgumentException('Cannot Ajustar inventario for products that do not track inventory.');
+            throw new ReportableActionException('No se puede ajustar el inventario para productos que no rastrean inventario.');
         }
 
         $workspaceId = isset($data['workspace_id']) ? (int) $data['workspace_id'] : $user->current_workspace_id;
 
         if (! $workspaceId) {
-            throw new InvalidArgumentException('User must have an active workspace.');
+            throw new ReportableActionException('User must have an active workspace.');
         }
 
         if (
@@ -38,7 +38,7 @@ final class StockAdjustmentAction
             && ! $user->can(Permission::ViewAllLocations)
             && ! $user->workspaces()->where('workspaces.id', $workspaceId)->exists()
         ) {
-            throw new InvalidArgumentException('User does not have access to the selected workspace.');
+            throw new ReportableActionException('User does not have access to the selected workspace.');
         }
 
         return DB::transaction(function () use ($workspaceId, $product, $data): StockMovement {
@@ -56,14 +56,14 @@ final class StockAdjustmentAction
                 'set_quantity' => $data['quantity'] - $stock->quantity,
                 'add_quantity' => $data['quantity'],
                 'remove_quantity' => -abs((float) $data['quantity']),
-                default => throw new InvalidArgumentException('Invalid adjustment type. Must be: set_quantity, add_quantity, or remove_quantity.')
+                default => throw new ReportableActionException('Tipo de ajuste inválido. Debe ser: set_quantity, add_quantity, o remove_quantity.')
             };
 
             // Validate we don't go below zero
             $newQuantity = $stock->quantity + $adjustmentQuantity;
             if ($newQuantity < 0) {
-                throw new InvalidArgumentException(
-                    "Cannot Ajustar inventario to negative quantity. Current: {$stock->quantity}, Adjustment: {$adjustmentQuantity}"
+                throw new ReportableActionException(
+                    "No se puede ajustar el stock a un valor negativo. Stock actual: {$stock->quantity}, intento de ajuste: {$adjustmentQuantity}."
                 );
             }
 
