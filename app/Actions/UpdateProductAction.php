@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Enums\ProductType;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -20,9 +21,12 @@ final class UpdateProductAction
                 'name' => $data['name'],
                 'sku' => $data['sku'],
                 'description' => $data['description'] ?? null,
+                'product_type' => $data['product_type'] ?? ProductType::Product->value,
                 'price' => $data['price'],
                 'cost' => $data['cost'] ?? null,
-                'track_stock' => $data['track_stock'] ?? true,
+                'track_stock' => $data['track_stock']
+                    ?? (($data['product_type'] ?? ProductType::Product->value) === ProductType::Product->value),
+                'allow_negative_stock' => $data['allow_negative_stock'] ?? false,
                 'default_tax_id' => $data['default_tax_id'] ?? null,
             ]);
 

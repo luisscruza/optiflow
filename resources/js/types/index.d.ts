@@ -306,9 +306,12 @@ export interface Product {
     name: string;
     sku: string;
     description?: string | null;
+    product_type: 'product' | 'service';
     price: number;
     cost?: number | null;
     track_stock: boolean;
+    allow_negative_stock?: boolean;
+    unit?: string | null;
     default_tax_id?: number | null;
     created_at: string;
     updated_at: string;

@@ -18,6 +18,7 @@ use App\Tables\ProductsTable;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -44,8 +45,15 @@ final class ProductController
     {
         abort_unless($user->can(Permission::ProductsCreate), 403);
 
+        $workspaces = $this->availableWorkspaces($user);
+
         return Inertia::render('products/create', [
             'taxes' => Tax::query()->select('id', 'name', 'rate', 'is_default')->get(),
+            'workspace_stocks' => $workspaces->map(fn (Workspace $workspace): array => [
+                'workspace_id' => $workspace->id,
+                'workspace_name' => $workspace->name,
+                'current_quantity' => 0.0,
+            ])->values(),
         ]);
     }
 
@@ -71,36 +79,9 @@ final class ProductController
 
         $product->load(['defaultTax', 'stockInCurrentWorkspace', 'stockMovements.createdBy']);
 
-        $workspaceStocks = collect();
-
-        if ($product->track_stock) {
-            $stockByWorkspace = $product->stocks()
-                ->withoutWorkspaceScope()
-                ->get(['workspace_id', 'quantity', 'minimum_quantity'])
-                ->keyBy('workspace_id');
-
-            $workspacesQuery = Workspace::query()->select(['id', 'name'])->orderBy('name');
-
-            if (! $user->can(Permission::ViewAllLocations)) {
-                $workspacesQuery->whereIn('id', $user->workspaces()->select('workspaces.id'));
-            }
-
-            $workspaceStocks = $workspacesQuery
-                ->get()
-                ->map(function (Workspace $workspace) use ($stockByWorkspace): array {
-                    $stock = $stockByWorkspace->get($workspace->id);
-
-                    return [
-                        'workspace_id' => $workspace->id,
-                        'workspace_name' => $workspace->name,
-                        'initial_quantity' => 0,
-                        'current_quantity' => (float) ($stock?->quantity ?? 0),
-                        'minimum_quantity' => (float) ($stock?->minimum_quantity ?? 0),
-                        'maximum_quantity' => null,
-                    ];
-                })
-                ->values();
-        }
+        $workspaceStocks = $product->track_stock
+            ? $this->workspaceStockSnapshot($product, $user)
+            : collect();
 
         return Inertia::render('products/show', [
             'product' => $product,
@@ -117,9 +98,20 @@ final class ProductController
 
         $product->load(['defaultTax']);
 
+        $workspaces = $this->availableWorkspaces($user);
+        $stockByWorkspace = $product->stocks()
+            ->withoutWorkspaceScope()
+            ->get(['workspace_id', 'quantity'])
+            ->keyBy('workspace_id');
+
         return Inertia::render('products/edit', [
             'product' => $product,
             'taxes' => Tax::query()->select('id', 'name', 'rate')->get(),
+            'workspace_stocks' => $workspaces->map(fn (Workspace $workspace): array => [
+                'workspace_id' => $workspace->id,
+                'workspace_name' => $workspace->name,
+                'current_quantity' => (float) ($stockByWorkspace->get($workspace->id)?->quantity ?? 0),
+            ])->values(),
         ]);
     }
 
@@ -152,5 +144,45 @@ final class ProductController
             return redirect()->back()
                 ->with('error', $e->getMessage());
         }
+    }
+
+    /**
+     * @return Collection<int, Workspace>
+     */
+    private function availableWorkspaces(User $user): Collection
+    {
+        $workspacesQuery = Workspace::query()->select(['id', 'name'])->orderBy('name');
+
+        if (! $user->can(Permission::ViewAllLocations)) {
+            $workspacesQuery->whereIn('id', $user->workspaces()->select('workspaces.id'));
+        }
+
+        return $workspacesQuery->get();
+    }
+
+    /**
+     * @return Collection<int, array<string, float|int|string|null>>
+     */
+    private function workspaceStockSnapshot(Product $product, User $user): Collection
+    {
+        $stockByWorkspace = $product->stocks()
+            ->withoutWorkspaceScope()
+            ->get(['workspace_id', 'quantity', 'minimum_quantity'])
+            ->keyBy('workspace_id');
+
+        return $this->availableWorkspaces($user)
+            ->map(function (Workspace $workspace) use ($stockByWorkspace): array {
+                $stock = $stockByWorkspace->get($workspace->id);
+
+                return [
+                    'workspace_id' => $workspace->id,
+                    'workspace_name' => $workspace->name,
+                    'initial_quantity' => 0,
+                    'current_quantity' => (float) ($stock?->quantity ?? 0),
+                    'minimum_quantity' => (float) ($stock?->minimum_quantity ?? 0),
+                    'maximum_quantity' => null,
+                ];
+            })
+            ->values();
     }
 }

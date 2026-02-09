@@ -31,6 +31,11 @@ final class StockAdjustmentRequest extends FormRequest
                 'integer',
                 'exists:products,id',
             ],
+            'workspace_id' => [
+                'nullable',
+                'integer',
+                'exists:workspaces,id',
+            ],
             'adjustment_type' => [
                 'required',
                 'string',
@@ -56,6 +61,10 @@ final class StockAdjustmentRequest extends FormRequest
                 'numeric',
                 'min:0',
             ],
+            'redirect_back' => [
+                'sometimes',
+                'boolean',
+            ],
         ];
     }
 
@@ -68,6 +77,7 @@ final class StockAdjustmentRequest extends FormRequest
     {
         return [
             'product_id' => 'product',
+            'workspace_id' => 'workspace',
             'adjustment_type' => 'adjustment type',
             'unit_cost' => 'unit cost',
         ];

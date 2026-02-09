@@ -26,6 +26,7 @@ final class ProductFactory extends Factory
             'name' => fake()->words(2, true),
             'sku' => fake()->unique()->regexify('[A-Z]{3}-[0-9]{4}'),
             'description' => fake()->sentence(),
+            'product_type' => 'product',
             'price' => round($cost * $markup, 2),
             'cost' => $cost,
             'track_stock' => fake()->boolean(80), // 80% chance of tracking stock
@@ -39,6 +40,7 @@ final class ProductFactory extends Factory
     public function tracksStock(): static
     {
         return $this->state(fn (array $attributes): array => [
+            'product_type' => 'product',
             'track_stock' => true,
         ]);
     }
@@ -49,6 +51,7 @@ final class ProductFactory extends Factory
     public function doesntTrackStock(): static
     {
         return $this->state(fn (array $attributes): array => [
+            'product_type' => 'product',
             'track_stock' => false,
         ]);
     }
@@ -62,6 +65,7 @@ final class ProductFactory extends Factory
             'name' => fake()->randomElement([
                 'Consulting', 'Support', 'Installation', 'Training', 'Maintenance',
             ]).' Service',
+            'product_type' => 'service',
             'track_stock' => false,
             'cost' => null,
             'price' => fake()->randomFloat(2, 50, 500),
@@ -78,6 +82,7 @@ final class ProductFactory extends Factory
         return $this->state(fn (array $attributes): array => [
             'cost' => $cost,
             'price' => fake()->randomFloat(2, $min, $max),
+            'product_type' => 'product',
             'track_stock' => true,
         ]);
     }

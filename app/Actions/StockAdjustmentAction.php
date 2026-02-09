@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Enums\Permission;
 use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\StockMovement;
@@ -16,7 +17,7 @@ final class StockAdjustmentAction
     /**
      * Ajustar inventario quantity for a product in a workspace.
      *
-     * @param  array{product_id: int, adjustment_type: string, quantity: float, reason: string, reference?: string, unit_cost?: float}  $data
+     * @param  array{product_id: int, workspace_id?: int, adjustment_type: string, quantity: float, reason: string, reference?: string, unit_cost?: float}  $data
      */
     public function handle(User $user, array $data): StockMovement
     {
@@ -26,15 +27,25 @@ final class StockAdjustmentAction
             throw new InvalidArgumentException('Cannot Ajustar inventario for products that do not track inventory.');
         }
 
-        if (! $user->current_workspace_id) {
+        $workspaceId = isset($data['workspace_id']) ? (int) $data['workspace_id'] : $user->current_workspace_id;
+
+        if (! $workspaceId) {
             throw new InvalidArgumentException('User must have an active workspace.');
         }
 
-        return DB::transaction(function () use ($user, $product, $data): StockMovement {
+        if (
+            isset($data['workspace_id'])
+            && ! $user->can(Permission::ViewAllLocations)
+            && ! $user->workspaces()->where('workspaces.id', $workspaceId)->exists()
+        ) {
+            throw new InvalidArgumentException('User does not have access to the selected workspace.');
+        }
+
+        return DB::transaction(function () use ($workspaceId, $product, $data): StockMovement {
             // Get or create stock record for this workspace
             $stock = ProductStock::query()->firstOrCreate([
                 'product_id' => $product->id,
-                'workspace_id' => $user->current_workspace_id,
+                'workspace_id' => $workspaceId,
             ], [
                 'quantity' => 0,
                 'minimum_quantity' => 0,
@@ -62,7 +73,7 @@ final class StockAdjustmentAction
 
             // Create stock movement record
             $movement = StockMovement::query()->create([
-                'workspace_id' => $user->current_workspace_id,
+                'workspace_id' => $workspaceId,
                 'product_id' => $product->id,
                 'type' => 'adjustment',
                 'quantity' => $adjustmentQuantity,

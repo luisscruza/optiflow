@@ -1,16 +1,15 @@
 import { Button } from '@/components/ui/button';
-import { router } from '@inertiajs/react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useState, useEffect } from 'react';
-import { Search, Plus, X, User, UserPlus } from 'lucide-react';
+import { router } from '@inertiajs/react';
+import { Plus, Search, User, UserPlus, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface Props {
     roles: Record<string, string>;
-    availableWorkspaces: Array<{id: number, name: string}>;
+    availableWorkspaces: Array<{ id: number; name: string }>;
     onSuccess?: () => void;
 }
 
@@ -43,7 +42,7 @@ export function InviteUserForm({ roles, availableWorkspaces, onSuccess }: Props)
     useEffect(() => {
         if (email && email.includes('@') && mode === 'search') {
             setSearchingUser(true);
-            
+
             // Simulate API call - in real app, you'd make a request to search users
             const searchUsers = async () => {
                 try {
@@ -52,11 +51,9 @@ export function InviteUserForm({ roles, availableWorkspaces, onSuccess }: Props)
                     if (response.ok) {
                         const users = await response.json();
                         setUserSearchResults(users);
-                        
+
                         // If exact match found, auto-select
-                        const exactMatch = users.find((user: ExistingUser) => 
-                            user.email.toLowerCase() === email.toLowerCase()
-                        );
+                        const exactMatch = users.find((user: ExistingUser) => user.email.toLowerCase() === email.toLowerCase());
                         if (exactMatch) {
                             setExistingUser(exactMatch);
                             setName(exactMatch.name);
@@ -86,12 +83,15 @@ export function InviteUserForm({ roles, availableWorkspaces, onSuccess }: Props)
         if (availableWorkspaces.length > 0) {
             const firstWorkspace = availableWorkspaces[0];
             const firstRole = Object.keys(roles)[0];
-            
-            setWorkspaceAssignments([...workspaceAssignments, {
-                workspace_id: firstWorkspace.id,
-                workspace_name: firstWorkspace.name,
-                role: firstRole,
-            }]);
+
+            setWorkspaceAssignments([
+                ...workspaceAssignments,
+                {
+                    workspace_id: firstWorkspace.id,
+                    workspace_name: firstWorkspace.name,
+                    role: firstRole,
+                },
+            ]);
         }
     };
 
@@ -102,7 +102,7 @@ export function InviteUserForm({ roles, availableWorkspaces, onSuccess }: Props)
     const updateWorkspaceAssignment = (index: number, field: 'workspace_id' | 'role', value: string) => {
         const updated = [...workspaceAssignments];
         if (field === 'workspace_id') {
-            const workspace = availableWorkspaces.find(w => w.id === Number(value));
+            const workspace = availableWorkspaces.find((w) => w.id === Number(value));
             updated[index] = {
                 ...updated[index],
                 workspace_id: Number(value),
@@ -138,15 +138,15 @@ export function InviteUserForm({ roles, availableWorkspaces, onSuccess }: Props)
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!email || workspaceAssignments.length === 0) return;
-        
+
         // If creating new user, validate required fields
         if (!existingUser && (!name || !password || !passwordConfirmation)) return;
 
         setProcessing(true);
-        
+
         const data: any = {
             email,
-            workspace_assignments: workspaceAssignments.map(assignment => ({
+            workspace_assignments: workspaceAssignments.map((assignment) => ({
                 workspace_id: assignment.workspace_id,
                 role: assignment.role,
             })),
@@ -175,19 +175,19 @@ export function InviteUserForm({ roles, availableWorkspaces, onSuccess }: Props)
             },
             onFinish: () => {
                 setProcessing(false);
-            }
+            },
         });
     };
 
-    const isFormValid = email && workspaceAssignments.length > 0 && 
-        (existingUser || (name && password && passwordConfirmation && password === passwordConfirmation));
+    const isFormValid =
+        email && workspaceAssignments.length > 0 && (existingUser || (name && password && passwordConfirmation && password === passwordConfirmation));
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             {/* User Selection */}
             <Card>
                 <CardHeader className="pb-3">
-                    <CardTitle className="text-lg flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-lg">
                         <User className="h-5 w-5" />
                         Seleccionar Usuario
                     </CardTitle>
@@ -231,24 +231,22 @@ export function InviteUserForm({ roles, availableWorkspaces, onSuccess }: Props)
                                 required
                             />
                             {searchingUser && (
-                                <div className="absolute right-2 top-3">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                <div className="absolute top-3 right-2">
+                                    <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-blue-600"></div>
                                 </div>
                             )}
                         </div>
-                        {errors.email && (
-                            <p className="text-sm text-red-600 mt-1">{errors.email}</p>
-                        )}
+                        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
                     </div>
 
                     {/* User Search Results */}
                     {mode === 'search' && userSearchResults.length > 0 && !existingUser && (
-                        <div className="border rounded-md p-2 space-y-2">
+                        <div className="space-y-2 rounded-md border p-2">
                             <p className="text-sm text-gray-600">Usuarios encontrados:</p>
                             {userSearchResults.map((user) => (
                                 <div
                                     key={user.id}
-                                    className="flex items-center justify-between p-2 hover:bg-gray-50 rounded cursor-pointer"
+                                    className="flex cursor-pointer items-center justify-between rounded p-2 hover:bg-gray-50"
                                     onClick={() => selectExistingUser(user)}
                                 >
                                     <div>
@@ -265,7 +263,7 @@ export function InviteUserForm({ roles, availableWorkspaces, onSuccess }: Props)
 
                     {/* Selected User Display */}
                     {existingUser && (
-                        <div className="border border-green-200 bg-green-50 rounded-md p-3">
+                        <div className="rounded-md border border-green-200 bg-green-50 p-3">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="font-medium text-green-800">Usuario seleccionado:</p>
@@ -302,9 +300,7 @@ export function InviteUserForm({ roles, availableWorkspaces, onSuccess }: Props)
                                     className="mt-1"
                                     required={!existingUser}
                                 />
-                                {errors.name && (
-                                    <p className="text-sm text-red-600 mt-1">{errors.name}</p>
-                                )}
+                                {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
                             </div>
 
                             <div>
@@ -319,9 +315,7 @@ export function InviteUserForm({ roles, availableWorkspaces, onSuccess }: Props)
                                     minLength={8}
                                     required={!existingUser}
                                 />
-                                {errors.password && (
-                                    <p className="text-sm text-red-600 mt-1">{errors.password}</p>
-                                )}
+                                {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
                             </div>
 
                             <div>
@@ -335,11 +329,9 @@ export function InviteUserForm({ roles, availableWorkspaces, onSuccess }: Props)
                                     className="mt-1"
                                     required={!existingUser}
                                 />
-                                {errors.password_confirmation && (
-                                    <p className="text-sm text-red-600 mt-1">{errors.password_confirmation}</p>
-                                )}
+                                {errors.password_confirmation && <p className="mt-1 text-sm text-red-600">{errors.password_confirmation}</p>}
                                 {password && passwordConfirmation && password !== passwordConfirmation && (
-                                    <p className="text-sm text-red-600 mt-1">Las contraseñas no coinciden</p>
+                                    <p className="mt-1 text-sm text-red-600">Las contraseñas no coinciden</p>
                                 )}
                             </div>
                         </>
@@ -352,13 +344,7 @@ export function InviteUserForm({ roles, availableWorkspaces, onSuccess }: Props)
                 <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-lg">Asignación de sucursales</CardTitle>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={addWorkspaceAssignment}
-                            className="gap-2"
-                        >
+                        <Button type="button" variant="outline" size="sm" onClick={addWorkspaceAssignment} className="gap-2">
                             <Plus className="h-4 w-4" />
                             Agregar sucursal
                         </Button>
@@ -366,13 +352,11 @@ export function InviteUserForm({ roles, availableWorkspaces, onSuccess }: Props)
                 </CardHeader>
                 <CardContent className="space-y-3">
                     {workspaceAssignments.length === 0 && (
-                        <p className="text-gray-500 text-center py-4">
-                            Agregue al menos un workspace para continuar
-                        </p>
+                        <p className="py-4 text-center text-gray-500">Agregue al menos un workspace para continuar</p>
                     )}
 
                     {workspaceAssignments.map((assignment, index) => (
-                        <div key={index} className="flex gap-3 items-start p-3 border rounded-lg">
+                        <div key={index} className="flex items-start gap-3 rounded-lg border p-3">
                             <div className="flex-1 space-y-3">
                                 <div>
                                     <Label>Workspace</Label>
@@ -395,10 +379,7 @@ export function InviteUserForm({ roles, availableWorkspaces, onSuccess }: Props)
 
                                 <div>
                                     <Label>Rol</Label>
-                                    <Select
-                                        value={assignment.role}
-                                        onValueChange={(value) => updateWorkspaceAssignment(index, 'role', value)}
-                                    >
+                                    <Select value={assignment.role} onValueChange={(value) => updateWorkspaceAssignment(index, 'role', value)}>
                                         <SelectTrigger className="mt-1">
                                             <SelectValue placeholder="Seleccionar rol" />
                                         </SelectTrigger>
@@ -418,34 +399,23 @@ export function InviteUserForm({ roles, availableWorkspaces, onSuccess }: Props)
                                 variant="outline"
                                 size="sm"
                                 onClick={() => removeWorkspaceAssignment(index)}
-                                className="text-red-600 hover:text-red-700 mt-6"
+                                className="mt-6 text-red-600 hover:text-red-700"
                             >
                                 <X className="h-4 w-4" />
                             </Button>
                         </div>
                     ))}
 
-                    {errors.workspace_assignments && (
-                        <p className="text-sm text-red-600">{errors.workspace_assignments}</p>
-                    )}
+                    {errors.workspace_assignments && <p className="text-sm text-red-600">{errors.workspace_assignments}</p>}
                 </CardContent>
             </Card>
 
             {/* Actions */}
             <div className="flex gap-2 pt-4">
-                <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={onSuccess}
-                    className="flex-1"
-                >
+                <Button type="button" variant="outline" onClick={onSuccess} className="flex-1">
                     Cancelar
                 </Button>
-                <Button 
-                    type="submit" 
-                    disabled={processing || !isFormValid}
-                    className="flex-1 bg-teal-600 hover:bg-teal-700"
-                >
+                <Button type="submit" disabled={processing || !isFormValid} className="flex-1 bg-yellow-600 hover:bg-yellow-700">
                     {processing ? 'Procesando...' : existingUser ? 'Asignar usuario' : 'Crear y asignar'}
                 </Button>
             </div>

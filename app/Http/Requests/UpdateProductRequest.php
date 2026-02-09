@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\ProductType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -36,9 +37,11 @@ final class UpdateProductRequest extends FormRequest
                 Rule::unique('products', 'sku')->ignore($productId),
             ],
             'description' => ['nullable', 'string', 'max:1000'],
+            'product_type' => ['required', Rule::enum(ProductType::class)],
             'price' => ['required', 'numeric', 'min:0', 'decimal:0,2'],
             'cost' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
             'track_stock' => ['boolean'],
+            'allow_negative_stock' => ['boolean'],
             'default_tax_id' => ['nullable', 'exists:taxes,id'],
         ];
     }
@@ -54,6 +57,7 @@ final class UpdateProductRequest extends FormRequest
             'name.required' => 'Product name is required.',
             'sku.required' => 'SKU is required.',
             'sku.unique' => 'This SKU is already in use by another product.',
+            'product_type.required' => 'Product type is required.',
             'price.required' => 'Price is required.',
             'price.min' => 'Price must be greater than or equal to 0.',
             'cost.min' => 'Cost must be greater than or equal to 0.',
@@ -70,7 +74,9 @@ final class UpdateProductRequest extends FormRequest
     {
         return [
             'default_tax_id' => 'default tax rate',
+            'product_type' => 'product type',
             'track_stock' => 'stock tracking',
+            'allow_negative_stock' => 'allow negative stock',
         ];
     }
 
@@ -79,8 +85,14 @@ final class UpdateProductRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
+        $productType = $this->input('product_type', ProductType::Product->value);
+
         $this->merge([
-            'track_stock' => $this->boolean('track_stock', true),
+            'product_type' => $productType,
+            'track_stock' => $productType === ProductType::Product->value
+                ? $this->boolean('track_stock', true)
+                : false,
+            'allow_negative_stock' => $this->boolean('allow_negative_stock', false),
         ]);
     }
 }

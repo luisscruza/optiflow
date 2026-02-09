@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { AlertTriangle, CreditCard, FileText, Plus, Save, Trash2 } from 'lucide-react';
+import { AlertTriangle, CreditCard, Plus, Save, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
@@ -309,7 +309,15 @@ export default function InvoiceForm({
             const updatedItems = data.items.map((item) => {
                 if (item.id === itemId) {
                     const taxes: SelectedTax[] = product.default_tax
-                        ? [{ id: product.default_tax.id, name: product.default_tax.name, type: product.default_tax.type, rate: product.default_tax.rate, amount: 0 }]
+                        ? [
+                              {
+                                  id: product.default_tax.id,
+                                  name: product.default_tax.name,
+                                  type: product.default_tax.type,
+                                  rate: product.default_tax.rate,
+                                  amount: 0,
+                              },
+                          ]
                         : item.taxes;
 
                     const updatedItem: InvoiceItem = {
@@ -337,7 +345,15 @@ export default function InvoiceForm({
             const updatedItems = data.items.map((item) => {
                 if (item.id === activeProductItemId) {
                     const taxes: SelectedTax[] = newProduct.default_tax
-                        ? [{ id: newProduct.default_tax.id, name: newProduct.default_tax.name, type: newProduct.default_tax.type, rate: newProduct.default_tax.rate, amount: 0 }]
+                        ? [
+                              {
+                                  id: newProduct.default_tax.id,
+                                  name: newProduct.default_tax.name,
+                                  type: newProduct.default_tax.type,
+                                  rate: newProduct.default_tax.rate,
+                                  amount: 0,
+                              },
+                          ]
                         : item.taxes;
 
                     const updatedItem: InvoiceItem = {
@@ -412,7 +428,12 @@ export default function InvoiceForm({
                                         title="Editar NCF manualmente"
                                     >
                                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                                            />
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         </svg>
                                     </button>
@@ -457,7 +478,13 @@ export default function InvoiceForm({
                                             searchPlaceholder="Escribir para buscar..."
                                             emptyText="No se encontró ningún contacto."
                                             noEmptyAction={
-                                                <Button type="button" variant="outline" size="sm" onClick={() => setShowContactModal(true)} className="text-primary hover:bg-primary/10">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => setShowContactModal(true)}
+                                                    className="text-primary hover:bg-primary/10"
+                                                >
                                                     <Plus className="mr-1 h-4 w-4" />
                                                     Crear nuevo contacto
                                                 </Button>
@@ -465,7 +492,13 @@ export default function InvoiceForm({
                                             className="flex-1"
                                             triggerClassName={`h-10 ${errors.contact_id ? 'border-red-300 ring-red-500/20' : 'border-gray-300'}`}
                                         />
-                                        <Button type="button" variant="outline" size="sm" onClick={() => setShowContactModal(true)} className="h-10 border-gray-300 px-3 text-primary hover:bg-primary/10">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setShowContactModal(true)}
+                                            className="h-10 border-gray-300 px-3 text-primary hover:bg-primary/10"
+                                        >
                                             <Plus className="mr-1 h-4 w-4" />
                                             Nuevo
                                         </Button>
@@ -475,12 +508,24 @@ export default function InvoiceForm({
 
                                 <div className="space-y-3">
                                     <Label className="text-sm font-medium text-gray-900">RNC o Cédula</Label>
-                                    <Input value={selectedContact?.identification_number || ''} placeholder="RNC o número de cédula" className="h-10 border-gray-300" readOnly disabled />
+                                    <Input
+                                        value={selectedContact?.identification_number || ''}
+                                        placeholder="RNC o número de cédula"
+                                        className="h-10 border-gray-300"
+                                        readOnly
+                                        disabled
+                                    />
                                 </div>
 
                                 <div className="space-y-3">
                                     <Label className="text-sm font-medium text-gray-900">Teléfono</Label>
-                                    <Input value={selectedContact?.phone_primary || ''} placeholder="Número de teléfono" className="h-10 border-gray-300" readOnly disabled />
+                                    <Input
+                                        value={selectedContact?.phone_primary || ''}
+                                        placeholder="Número de teléfono"
+                                        className="h-10 border-gray-300"
+                                        readOnly
+                                        disabled
+                                    />
                                 </div>
 
                                 <div className="space-y-3">
@@ -508,9 +553,21 @@ export default function InvoiceForm({
                                                 const salesman = salesmen.find((s) => s.id === salesmanId);
                                                 if (!salesman) return null;
                                                 return (
-                                                    <div key={salesmanId} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">
+                                                    <div
+                                                        key={salesmanId}
+                                                        className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm text-primary"
+                                                    >
                                                         {salesman.full_name}
-                                                        <button type="button" onClick={() => setData('salesmen_ids', data.salesmen_ids.filter((id) => id !== salesmanId))} className="ml-1 text-primary hover:text-primary/80">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                setData(
+                                                                    'salesmen_ids',
+                                                                    data.salesmen_ids.filter((id) => id !== salesmanId),
+                                                                )
+                                                            }
+                                                            className="ml-1 text-primary hover:text-primary/80"
+                                                        >
                                                             ×
                                                         </button>
                                                     </div>
@@ -528,7 +585,12 @@ export default function InvoiceForm({
                                         Fecha
                                         <span className="text-red-500">*</span>
                                     </Label>
-                                    <Input type="date" value={data.issue_date} onChange={(e) => handleIssueDateChange(e.target.value)} className={`h-10 border-gray-300 ${errors.issue_date ? 'border-red-300' : ''}`} />
+                                    <Input
+                                        type="date"
+                                        value={data.issue_date}
+                                        onChange={(e) => handleIssueDateChange(e.target.value)}
+                                        className={`h-10 border-gray-300 ${errors.issue_date ? 'border-red-300' : ''}`}
+                                    />
                                     {errors.issue_date && <p className="text-sm text-red-600">{errors.issue_date}</p>}
                                 </div>
 
@@ -555,7 +617,13 @@ export default function InvoiceForm({
                                         Vencimiento
                                         <span className="text-red-500">*</span>
                                     </Label>
-                                    <Input type="date" value={data.due_date} min={data.issue_date} onChange={(e) => handleDueDateChange(e.target.value)} className={`h-10 border-gray-300 ${errors.due_date ? 'border-red-300' : ''}`} />
+                                    <Input
+                                        type="date"
+                                        value={data.due_date}
+                                        min={data.issue_date}
+                                        onChange={(e) => handleDueDateChange(e.target.value)}
+                                        className={`h-10 border-gray-300 ${errors.due_date ? 'border-red-300' : ''}`}
+                                    />
                                     {errors.due_date && <p className="text-sm text-red-600">{errors.due_date}</p>}
                                     {data.due_date && data.issue_date && data.due_date < data.issue_date && (
                                         <p className="text-sm text-red-600">La fecha de vencimiento no puede ser anterior a la fecha de emisión</p>
@@ -582,7 +650,10 @@ export default function InvoiceForm({
                                 {/* Items */}
                                 <div className="space-y-2">
                                     {data.items.map((item) => (
-                                        <div key={item.id} className="grid grid-cols-12 items-center gap-3 border-b border-gray-100 py-3 last:border-b-0">
+                                        <div
+                                            key={item.id}
+                                            className="grid grid-cols-12 items-center gap-3 border-b border-gray-100 py-3 last:border-b-0"
+                                        >
                                             {/* Product Selection */}
                                             <div className="col-span-2">
                                                 <SearchableSelect
@@ -593,7 +664,16 @@ export default function InvoiceForm({
                                                     searchPlaceholder="Buscar producto..."
                                                     emptyText="No se encontró ningún producto."
                                                     footerAction={
-                                                        <Button type="button" variant="outline" size="sm" onClick={() => { setActiveProductItemId(item.id); setShowProductModal(true); }} className="w-full text-primary hover:bg-primary/10">
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                setActiveProductItemId(item.id);
+                                                                setShowProductModal(true);
+                                                            }}
+                                                            className="w-full text-primary hover:bg-primary/10"
+                                                        >
                                                             <Plus className="mr-1 h-4 w-4" />
                                                             Crear producto
                                                         </Button>
@@ -604,18 +684,39 @@ export default function InvoiceForm({
 
                                             {/* Description */}
                                             <div className="col-span-2">
-                                                <Input placeholder="Descripción..." value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} className="h-9 border-gray-200" disabled={!item.product_id} />
+                                                <Input
+                                                    placeholder="Descripción..."
+                                                    value={item.description}
+                                                    onChange={(e) => updateItem(item.id, 'description', e.target.value)}
+                                                    className="h-9 border-gray-200"
+                                                    disabled={!item.product_id}
+                                                />
                                             </div>
 
                                             {/* Quantity */}
                                             <div className="relative col-span-1">
-                                                <Input type="number" min="1" step="1" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)} className={`h-9 border-gray-200 text-center ${(() => { const warning = getStockWarning(item); if (warning?.type === 'error') return 'border-red-300'; if (warning?.type === 'warning') return 'border-yellow-300'; return ''; })()}`} disabled={!item.product_id} />
+                                                <Input
+                                                    type="number"
+                                                    min="1"
+                                                    step="1"
+                                                    value={item.quantity}
+                                                    onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                                                    className={`h-9 border-gray-200 text-center ${(() => {
+                                                        const warning = getStockWarning(item);
+                                                        if (warning?.type === 'error') return 'border-red-300';
+                                                        if (warning?.type === 'warning') return 'border-yellow-300';
+                                                        return '';
+                                                    })()}`}
+                                                    disabled={!item.product_id}
+                                                />
                                                 {(() => {
                                                     const warning = getStockWarning(item);
                                                     if (warning) {
                                                         return (
                                                             <div className="group absolute -top-1 -right-1">
-                                                                <AlertTriangle className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-yellow-500'}`} />
+                                                                <AlertTriangle
+                                                                    className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-yellow-500'}`}
+                                                                />
                                                                 <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 transform rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                                                                     {warning.message}
                                                                 </div>
@@ -628,16 +729,38 @@ export default function InvoiceForm({
 
                                             {/* Unit Price */}
                                             <div className="col-span-1">
-                                                <Input type="number" min="0" step="0.01" value={item.unit_price} onChange={(e) => updateItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)} className="h-9 border-gray-200 text-right" disabled={!item.product_id} />
+                                                <Input
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    value={item.unit_price}
+                                                    onChange={(e) => updateItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)}
+                                                    className="h-9 border-gray-200 text-right"
+                                                    disabled={!item.product_id}
+                                                />
                                             </div>
 
                                             {/* Discount Rate */}
                                             <div className="group relative col-span-1">
-                                                <Input type="number" min="0" max="100" step="0.01" value={item.discount_rate} onChange={(e) => updateItem(item.id, 'discount_rate', parseFloat(e.target.value) || 0)} className="h-9 border-gray-200 text-right" disabled={!item.product_id} />
+                                                <Input
+                                                    type="number"
+                                                    min="0"
+                                                    max="100"
+                                                    step="0.01"
+                                                    value={item.discount_rate}
+                                                    onChange={(e) => updateItem(item.id, 'discount_rate', parseFloat(e.target.value) || 0)}
+                                                    className="h-9 border-gray-200 text-right"
+                                                    disabled={!item.product_id}
+                                                />
                                                 {item.product_id && (
                                                     <div className="absolute -bottom-7 left-1/2 z-10 hidden -translate-x-1/2 gap-1 rounded-md bg-white p-1 shadow-lg ring-1 ring-gray-200 group-hover:flex">
                                                         {[5, 10, 15, 20].map((discount) => (
-                                                            <button key={discount} type="button" onClick={() => updateItem(item.id, 'discount_rate', discount)} className={`rounded px-2 py-0.5 text-xs font-medium transition-colors ${item.discount_rate === discount ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary/10 hover:text-primary'}`}>
+                                                            <button
+                                                                key={discount}
+                                                                type="button"
+                                                                onClick={() => updateItem(item.id, 'discount_rate', discount)}
+                                                                className={`rounded px-2 py-0.5 text-xs font-medium transition-colors ${item.discount_rate === discount ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary/10 hover:text-primary'}`}
+                                                            >
                                                                 {discount}%
                                                             </button>
                                                         ))}
@@ -647,18 +770,36 @@ export default function InvoiceForm({
 
                                             {/* Tax Multi-Select */}
                                             <div className="col-span-2">
-                                                <TaxMultiSelect taxesGroupedByType={taxesGroupedByType} selectedTaxes={item.taxes} onSelectionChange={(taxes) => updateItem(item.id, 'taxes', taxes)} taxableAmount={item.quantity * item.unit_price - item.discount_amount} disabled={!item.product_id} placeholder="—" className="h-9" />
+                                                <TaxMultiSelect
+                                                    taxesGroupedByType={taxesGroupedByType}
+                                                    selectedTaxes={item.taxes}
+                                                    onSelectionChange={(taxes) => updateItem(item.id, 'taxes', taxes)}
+                                                    taxableAmount={item.quantity * item.unit_price - item.discount_amount}
+                                                    disabled={!item.product_id}
+                                                    placeholder="—"
+                                                    className="h-9"
+                                                />
                                             </div>
 
                                             {/* Total */}
                                             <div className="col-span-2">
-                                                <Input value={formatCurrency(item.total)} disabled className="h-9 border-gray-200 bg-gray-50 text-right font-semibold text-gray-900" />
+                                                <Input
+                                                    value={formatCurrency(item.total)}
+                                                    disabled
+                                                    className="h-9 border-gray-200 bg-gray-50 text-right font-semibold text-gray-900"
+                                                />
                                             </div>
 
                                             {/* Remove Button */}
                                             <div className="col-span-1 flex justify-end">
                                                 {data.items.length > 1 && (
-                                                    <Button type="button" variant="ghost" size="sm" onClick={() => removeItem(item.id)} className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-700">
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => removeItem(item.id)}
+                                                        className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-700"
+                                                    >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 )}
@@ -669,7 +810,13 @@ export default function InvoiceForm({
 
                                 {/* Add Item Button */}
                                 <div className="flex items-center justify-between">
-                                    <Button type="button" variant="outline" size="sm" onClick={addItem} className="flex items-center gap-2 border-primary bg-background text-primary hover:border-primary hover:bg-primary/10">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={addItem}
+                                        className="flex items-center gap-2 border-primary bg-background text-primary hover:border-primary hover:bg-primary/10"
+                                    >
                                         <Plus className="h-4 w-4" />
                                         Agregar línea
                                     </Button>
@@ -715,12 +862,14 @@ export default function InvoiceForm({
                                 <div className="mb-6 flex items-center justify-between">
                                     <div>
                                         <h3 className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-100 text-yellow-600">
                                                 <CreditCard className="h-4 w-4" />
                                             </div>
                                             Registrar pago inmediato
                                         </h3>
-                                        <p className="mt-1 text-sm text-gray-600">Si el cliente paga de inmediato, registra el pago junto con la factura.</p>
+                                        <p className="mt-1 text-sm text-gray-600">
+                                            Si el cliente paga de inmediato, registra el pago junto con la factura.
+                                        </p>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <Checkbox
@@ -743,16 +892,20 @@ export default function InvoiceForm({
 
                                 {data.register_payment && (
                                     <div className="space-y-6">
-                                        <div className="rounded-lg border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-5 shadow-sm">
+                                        <div className="rounded-lg border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100/50 p-5 shadow-sm">
                                             <div className="flex items-center justify-between">
                                                 <div>
-                                                    <p className="text-xs font-medium tracking-wide text-emerald-700 uppercase">Total de la factura</p>
-                                                    <p className="text-2xl font-bold text-emerald-600">{formatCurrency(data.total)}</p>
+                                                    <p className="text-xs font-medium tracking-wide text-yellow-700 uppercase">Total de la factura</p>
+                                                    <p className="text-2xl font-bold text-yellow-600">{formatCurrency(data.total)}</p>
                                                 </div>
                                                 {data.payment_amount > 0 && data.payment_amount < data.total && (
                                                     <div className="text-right">
-                                                        <p className="text-xs font-medium tracking-wide text-gray-600 uppercase">Pendiente después del pago</p>
-                                                        <p className="text-lg font-bold text-gray-700">{formatCurrency(data.total - data.payment_amount)}</p>
+                                                        <p className="text-xs font-medium tracking-wide text-gray-600 uppercase">
+                                                            Pendiente después del pago
+                                                        </p>
+                                                        <p className="text-lg font-bold text-gray-700">
+                                                            {formatCurrency(data.total - data.payment_amount)}
+                                                        </p>
                                                     </div>
                                                 )}
                                             </div>
@@ -764,8 +917,13 @@ export default function InvoiceForm({
                                                     Cuenta bancaria
                                                     <span className="text-red-500">*</span>
                                                 </Label>
-                                                <Select value={data.payment_bank_account_id?.toString() || ''} onValueChange={(value) => setData('payment_bank_account_id', parseInt(value))}>
-                                                    <SelectTrigger className={`h-11 ${data.payment_bank_account_id ? 'border-emerald-300 bg-emerald-50/30' : 'border-gray-300'}`}>
+                                                <Select
+                                                    value={data.payment_bank_account_id?.toString() || ''}
+                                                    onValueChange={(value) => setData('payment_bank_account_id', parseInt(value))}
+                                                >
+                                                    <SelectTrigger
+                                                        className={`h-11 ${data.payment_bank_account_id ? 'border-yellow-300 bg-yellow-50/30' : 'border-gray-300'}`}
+                                                    >
                                                         <SelectValue placeholder="Selecciona una cuenta" />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -784,7 +942,9 @@ export default function InvoiceForm({
                                                     <span className="text-red-500">*</span>
                                                 </Label>
                                                 <Select value={data.payment_method} onValueChange={(value) => setData('payment_method', value)}>
-                                                    <SelectTrigger className={`h-11 ${data.payment_method ? 'border-emerald-300 bg-emerald-50/30' : 'border-gray-300'}`}>
+                                                    <SelectTrigger
+                                                        className={`h-11 ${data.payment_method ? 'border-yellow-300 bg-yellow-50/30' : 'border-gray-300'}`}
+                                                    >
                                                         <SelectValue placeholder="Selecciona un método" />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -803,20 +963,44 @@ export default function InvoiceForm({
                                                         Monto del pago
                                                         <span className="text-red-500">*</span>
                                                     </Label>
-                                                    <Button type="button" variant="outline" size="sm" onClick={() => setData('payment_amount', data.total)} className="h-7 border-emerald-300 px-3 py-1 text-xs text-emerald-700 hover:bg-emerald-50">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => setData('payment_amount', data.total)}
+                                                        className="h-7 border-yellow-300 px-3 py-1 text-xs text-yellow-700 hover:bg-yellow-50"
+                                                    >
                                                         Monto completo
                                                     </Button>
                                                 </div>
                                                 <div className="relative">
-                                                    <Input type="number" step="0.01" min="0.01" max={data.total} value={data.payment_amount || ''} onChange={(e) => setData('payment_amount', parseFloat(e.target.value) || 0)} placeholder="0.00" className={`h-12 pl-14 text-lg font-semibold ${data.payment_amount > 0 ? 'border-emerald-300 bg-emerald-50/30 text-emerald-700' : 'border-gray-300'}`} />
-                                                    <span className="absolute top-1/2 left-4 -translate-y-1/2 text-lg font-semibold text-gray-500">RD$</span>
+                                                    <Input
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0.01"
+                                                        max={data.total}
+                                                        value={data.payment_amount || ''}
+                                                        onChange={(e) => setData('payment_amount', parseFloat(e.target.value) || 0)}
+                                                        placeholder="0.00"
+                                                        className={`h-12 pl-14 text-lg font-semibold ${data.payment_amount > 0 ? 'border-yellow-300 bg-yellow-50/30 text-yellow-700' : 'border-gray-300'}`}
+                                                    />
+                                                    <span className="absolute top-1/2 left-4 -translate-y-1/2 text-lg font-semibold text-gray-500">
+                                                        RD$
+                                                    </span>
                                                 </div>
-                                                {data.payment_amount > data.total && <p className="text-sm text-amber-600">⚠️ El monto excede el total de la factura</p>}
+                                                {data.payment_amount > data.total && (
+                                                    <p className="text-sm text-amber-600">⚠️ El monto excede el total de la factura</p>
+                                                )}
                                             </div>
 
                                             <div className="space-y-2">
                                                 <Label className="text-sm font-semibold text-gray-900">Nota del pago (opcional)</Label>
-                                                <Input value={data.payment_notes} onChange={(e) => setData('payment_notes', e.target.value)} placeholder="Información adicional sobre el pago" className="h-11 border-gray-300" />
+                                                <Input
+                                                    value={data.payment_notes}
+                                                    onChange={(e) => setData('payment_notes', e.target.value)}
+                                                    placeholder="Información adicional sobre el pago"
+                                                    className="h-11 border-gray-300"
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -827,9 +1011,7 @@ export default function InvoiceForm({
                         {/* Notes Section */}
                         <div className="mt-8 border-t border-gray-200 pt-8">
                             <div className="mb-6">
-                                <h3 className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                    Notas adicionales
-                                </h3>
+                                <h3 className="flex items-center gap-3 text-lg font-semibold text-gray-900">Notas adicionales</h3>
                                 <p className="mt-1 text-sm text-gray-600">Información adicional que aparecerá en la factura (opcional).</p>
                             </div>
 
@@ -837,7 +1019,14 @@ export default function InvoiceForm({
                                 <Label htmlFor="notes" className="text-sm font-medium text-gray-900">
                                     Notas o comentarios
                                 </Label>
-                                <Textarea id="notes" placeholder="Ej: Términos de pago, instrucciones especiales, agradecimientos..." value={data.notes} onChange={(e) => setData('notes', e.target.value)} rows={4} className="resize-none border-gray-200" />
+                                <Textarea
+                                    id="notes"
+                                    placeholder="Ej: Términos de pago, instrucciones especiales, agradecimientos..."
+                                    value={data.notes}
+                                    onChange={(e) => setData('notes', e.target.value)}
+                                    rows={4}
+                                    className="resize-none border-gray-200"
+                                />
                                 <p className="text-xs text-gray-500">Estas notas aparecerán al final de la factura</p>
                             </div>
                         </div>
@@ -846,12 +1035,23 @@ export default function InvoiceForm({
 
                 {/* Actions */}
                 <div className="mt-8 flex justify-end gap-3">
-                    <Button type="button" variant="outline" size="lg" asChild className="border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="lg"
+                        asChild
+                        className="border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50"
+                    >
                         <a href="/invoices" className="flex items-center justify-center gap-2">
                             Cancelar
                         </a>
                     </Button>
-                    <Button type="submit" size="lg" disabled={processing || !ncf || !data.contact_id || data.items.length === 0} className={`flex min-w-[160px] items-center justify-center gap-2 ${processing || !ncf ? 'bg-gray-400 hover:bg-gray-400' : 'bg-primary hover:bg-primary/90'}`}>
+                    <Button
+                        type="submit"
+                        size="lg"
+                        disabled={processing || !ncf || !data.contact_id || data.items.length === 0}
+                        className={`flex min-w-[160px] items-center justify-center gap-2 ${processing || !ncf ? 'bg-gray-400 hover:bg-gray-400' : 'bg-primary hover:bg-primary/90'}`}
+                    >
                         {processing ? (
                             <>
                                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
@@ -867,7 +1067,12 @@ export default function InvoiceForm({
                 </div>
             </form>
 
-            <QuickContactModal open={showContactModal} onOpenChange={setShowContactModal} onSuccess={handleContactCreated} onAdvancedForm={() => router.visit('/contacts/create')} />
+            <QuickContactModal
+                open={showContactModal}
+                onOpenChange={setShowContactModal}
+                onSuccess={handleContactCreated}
+                onAdvancedForm={() => router.visit('/contacts/create')}
+            />
 
             <EditNcfModal
                 isOpen={showNcfModal}
@@ -879,7 +1084,12 @@ export default function InvoiceForm({
                 invoiceId={invoiceId}
             />
 
-            <QuickProductModal open={showProductModal} onOpenChange={setShowProductModal} onSuccess={handleProductCreated} onAdvancedForm={() => router.visit('/products/create')} />
+            <QuickProductModal
+                open={showProductModal}
+                onOpenChange={setShowProductModal}
+                onSuccess={handleProductCreated}
+                onAdvancedForm={() => router.visit('/products/create')}
+            />
         </>
     );
 }

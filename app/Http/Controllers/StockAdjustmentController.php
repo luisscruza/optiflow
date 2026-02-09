@@ -62,6 +62,7 @@ final class StockAdjustmentController
             user: Auth::user(),
             data: [
                 'product_id' => $request->validated('product_id'),
+                'workspace_id' => $request->validated('workspace_id'),
                 'adjustment_type' => $request->validated('adjustment_type'),
                 'quantity' => $request->validated('quantity'),
                 'reason' => $request->validated('reason'),
@@ -69,6 +70,10 @@ final class StockAdjustmentController
                 'unit_cost' => $request->validated('unit_cost'),
             ]
         );
+
+        if ($request->boolean('redirect_back')) {
+            return redirect()->back()->with('success', 'Stock adjustment completed successfully.');
+        }
 
         return redirect()
             ->route('stock-adjustments.index')

@@ -84,7 +84,7 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
 
         const stock = product.stock_in_current_workspace;
         if (!stock) {
-            return { status: 'no_data', label: 'Sin datos de stock', variant: 'destructive' as const };
+            return { status: 'no_data', label: 'Sin stock en la sucursal actual', variant: 'outline' as const };
         }
 
         if (stock.quantity <= 0) {
@@ -106,7 +106,7 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
     const priceWithTax = basePrice + taxAmount;
     const categoryLabel =
         product.product_category?.name ?? (product.product_category_id ? `Categoría #${product.product_category_id}` : 'Sin categoría');
-    const productTypeLabel = product.track_stock ? 'Producto' : 'Servicio';
+    const productTypeLabel = product.product_type === 'service' ? 'Servicio' : 'Producto';
     const unitLabel = product.unit || 'Unidad';
 
     return (
@@ -213,11 +213,11 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
                                 <Separator />
 
                                 <div className="grid gap-6 sm:grid-cols-2">
-                                    <div className="flex items-start gap-3 rounded-lg border border-emerald-200/60 bg-emerald-50/60 p-4 dark:border-emerald-900 dark:bg-emerald-900/20">
+                                    <div className="flex items-start gap-3 rounded-lg border border-yellow-200/60 bg-yellow-50/60 p-4 dark:border-yellow-900 dark:bg-yellow-900/20">
                                         <Package
                                             className={cn(
                                                 'mt-0.5 h-5 w-5',
-                                                product.track_stock ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground',
+                                                product.track_stock ? 'text-yellow-600 dark:text-yellow-400' : 'text-muted-foreground',
                                             )}
                                         />
                                         <div>
@@ -225,18 +225,18 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
                                             <p
                                                 className={cn(
                                                     'text-sm',
-                                                    product.track_stock ? 'text-emerald-700 dark:text-emerald-300' : 'text-muted-foreground',
+                                                    product.track_stock ? 'text-yellow-700 dark:text-yellow-300' : 'text-muted-foreground',
                                                 )}
                                             >
                                                 {product.track_stock ? 'Activado' : 'Desactivado'}
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex items-start gap-3 rounded-lg border border-emerald-200/60 bg-emerald-50/60 p-4 dark:border-emerald-900 dark:bg-emerald-900/20">
+                                    <div className="flex items-start gap-3 rounded-lg border border-yellow-200/60 bg-yellow-50/60 p-4 dark:border-yellow-900 dark:bg-yellow-900/20">
                                         <ArrowLeftRight
                                             className={cn(
                                                 'mt-0.5 h-5 w-5',
-                                                product.allow_negative_stock ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground',
+                                                product.allow_negative_stock ? 'text-yellow-600 dark:text-yellow-400' : 'text-muted-foreground',
                                             )}
                                         />
                                         <div>
@@ -244,7 +244,7 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
                                             <p
                                                 className={cn(
                                                     'text-sm',
-                                                    product.allow_negative_stock ? 'text-emerald-700 dark:text-emerald-300' : 'text-muted-foreground',
+                                                    product.allow_negative_stock ? 'text-yellow-700 dark:text-yellow-300' : 'text-muted-foreground',
                                                 )}
                                             >
                                                 {product.allow_negative_stock ? 'Activado' : 'Desactivado'}
@@ -409,9 +409,6 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
                                             <p className="mt-1 text-lg font-semibold text-foreground">
                                                 {product.cost ? formatCurrency(product.cost) : 'No definido'}
                                             </p>
-                                        </div>
-                                        <div className="self-end sm:text-right">
-                                            <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Cargar costo promedio</span>
                                         </div>
                                     </div>
                                 </div>

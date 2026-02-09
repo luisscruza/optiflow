@@ -51,7 +51,7 @@ export function TotalSalesWidget({ data, formatCurrency, onRemove }: TotalSalesW
                     <p className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-100">{label}</p>
                     {payload.map((entry, index) => (
                         <div key={index} className="flex items-center gap-2 text-sm">
-                            <div className={`h-2 w-2 rounded-full ${entry.dataKey === 'current' ? 'bg-blue-600' : 'bg-emerald-500'}`} />
+                            <div className={`h-2 w-2 rounded-full ${entry.dataKey === 'current' ? 'bg-blue-600' : 'bg-yellow-500'}`} />
                             <span className="text-gray-600 dark:text-gray-400">
                                 {entry.dataKey === 'current' ? 'Período actual' : 'Período anterior'}:
                             </span>

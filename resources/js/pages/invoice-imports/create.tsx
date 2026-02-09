@@ -209,10 +209,10 @@ export default function InvoiceImportsCreate() {
                                 </div>
 
                                 {uploaded && (
-                                    <div className="space-y-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+                                    <div className="space-y-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
                                         <div>
                                             <p className="font-medium">Archivo listo para importar</p>
-                                            <p className="mt-1 text-emerald-700">Use esta ruta en el comando de importacion:</p>
+                                            <p className="mt-1 text-yellow-700">Use esta ruta en el comando de importacion:</p>
                                             <div className="mt-3 rounded-md bg-white p-3 font-mono text-xs text-slate-700">
                                                 php artisan import:invoices {uploaded.absolute_path}
                                             </div>

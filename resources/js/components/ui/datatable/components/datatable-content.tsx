@@ -256,7 +256,7 @@ export function DataTableContent<T>({
                                 className={cn(
                                     href && 'cursor-pointer',
                                     href && !isSelected && 'hover:bg-gray-50 dark:hover:bg-gray-800/50',
-                                    isSelected && 'bg-teal-50 dark:bg-teal-950/20',
+                                    isSelected && 'bg-yellow-50 dark:bg-yellow-950/20',
                                 )}
                                 onClick={
                                     href

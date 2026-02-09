@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Building2, Calendar, CreditCard, DownloadCloud, Edit, FileText, Plus, Printer, ShoppingCart, Trash2 } from 'lucide-react';
+import { Calendar, CreditCard, DownloadCloud, Edit, FileText, Plus, Printer, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { usePermissions } from '@/hooks/use-permissions';
@@ -10,7 +10,7 @@ import { CompanyHeader } from '@/components/company-header';
 import { PaymentRegistrationModal } from '@/components/payment-registration-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import { ActivityLog, BankAccount, Invoice, Payment, type BreadcrumbItem, type SharedData } from '@/types';
@@ -186,7 +186,7 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                 {/* Amount Collected */}
                                 <div className="space-y-1 px-4 py-3 sm:py-0">
                                     <p className="text-sm font-medium text-gray-600">Cobrado</p>
-                                    <p className="text-2xl font-bold text-teal-600">{formatCurrency(invoice.amount_paid)}</p>
+                                    <p className="text-2xl font-bold text-yellow-600">{formatCurrency(invoice.amount_paid)}</p>
                                 </div>
 
                                 {/* Amount Due */}
@@ -414,17 +414,13 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                         </CardContent>
                     </Card>
 
-
-
                     {/* Payments Section */}
                     {invoice.payments && invoice.payments.length > 0 && (
                         <Card className="mb-8 border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
                             <CardHeader className="bg-gray-50/50 px-6 py-5">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                            Pagos recibidos
-                                        </CardTitle>
+                                        <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">Pagos recibidos</CardTitle>
                                     </div>
                                     {invoice.amount_due > 0 && can('create payments') && (
                                         <Button
@@ -583,9 +579,7 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                             <CardHeader className="bg-gray-50/50 px-6 py-5">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                            Pagos recibidos
-                                        </CardTitle>
+                                        <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">Pagos recibidos</CardTitle>
                                     </div>
                                 </div>
                             </CardHeader>

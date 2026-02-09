@@ -743,7 +743,7 @@ export default function CreateQuotation({
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-100 text-yellow-600">
                                                 <ShoppingCart className="h-4 w-4" />
                                             </div>
                                             Líneas de productos

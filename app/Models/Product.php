@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ProductType;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
  * @property string $name
  * @property string $sku
  * @property string|null $description
+ * @property ProductType $product_type
  * @property numeric $price
  * @property numeric|null $cost
  * @property bool $track_stock
@@ -48,6 +50,7 @@ use Illuminate\Support\Facades\Auth;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product wherePrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereProductType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereSku($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereTrackStock($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereUpdatedAt($value)
@@ -222,6 +225,7 @@ final class Product extends Model
             'price' => 'decimal:2',
             'cost' => 'decimal:2',
             'track_stock' => 'boolean',
+            'product_type' => ProductType::class,
         ];
     }
 }
