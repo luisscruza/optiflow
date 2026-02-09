@@ -13,6 +13,7 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use App\Models\Tax;
 use App\Models\User;
+use App\Models\Workspace;
 use App\Tables\ProductsTable;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
@@ -70,8 +71,40 @@ final class ProductController
 
         $product->load(['defaultTax', 'stockInCurrentWorkspace', 'stockMovements.createdBy']);
 
+        $workspaceStocks = collect();
+
+        if ($product->track_stock) {
+            $stockByWorkspace = $product->stocks()
+                ->withoutWorkspaceScope()
+                ->get(['workspace_id', 'quantity', 'minimum_quantity'])
+                ->keyBy('workspace_id');
+
+            $workspacesQuery = Workspace::query()->select(['id', 'name'])->orderBy('name');
+
+            if (! $user->can(Permission::ViewAllLocations)) {
+                $workspacesQuery->whereIn('id', $user->workspaces()->select('workspaces.id'));
+            }
+
+            $workspaceStocks = $workspacesQuery
+                ->get()
+                ->map(function (Workspace $workspace) use ($stockByWorkspace): array {
+                    $stock = $stockByWorkspace->get($workspace->id);
+
+                    return [
+                        'workspace_id' => $workspace->id,
+                        'workspace_name' => $workspace->name,
+                        'initial_quantity' => 0,
+                        'current_quantity' => (float) ($stock?->quantity ?? 0),
+                        'minimum_quantity' => (float) ($stock?->minimum_quantity ?? 0),
+                        'maximum_quantity' => null,
+                    ];
+                })
+                ->values();
+        }
+
         return Inertia::render('products/show', [
             'product' => $product,
+            'workspace_stocks' => $workspaceStocks,
         ]);
     }
 
