@@ -241,6 +241,12 @@ abstract class Table implements Arrayable, JsonSerializable
             if ($tooltip) {
                 $row[$column->getName().'_tooltip'] = $tooltip;
             }
+
+            $copyValue = $column->getCopyValue($record);
+
+            if ($copyValue !== null && $copyValue !== '') {
+                $row[$column->getName().'_copy'] = $copyValue;
+            }
         }
 
         return $row;

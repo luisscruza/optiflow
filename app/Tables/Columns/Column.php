@@ -36,6 +36,10 @@ abstract class Column
 
     protected ?Closure $cellTooltip = null;
 
+    protected bool $copiable = false;
+
+    protected ?Closure $copyUsing = null;
+
     public function __construct(string $name, ?string $label = null)
     {
         $this->name = $name;
@@ -137,6 +141,26 @@ abstract class Column
         return $this;
     }
 
+    public function copiable(bool $copiable = true): static
+    {
+        $this->copiable = $copiable;
+
+        return $this;
+    }
+
+    public function copyable(bool $copyable = true): static
+    {
+        return $this->copiable($copyable);
+    }
+
+    public function copyUsing(Closure $callback): static
+    {
+        $this->copyUsing = $callback;
+        $this->copiable = true;
+
+        return $this;
+    }
+
     public function getName(): string
     {
         return $this->name;
@@ -186,6 +210,27 @@ abstract class Column
         return (string) $this->tooltip;
     }
 
+    public function getCopyValue(Model $record): ?string
+    {
+        if (! $this->copiable) {
+            return null;
+        }
+
+        $value = $this->copyUsing
+            ? call_user_func($this->copyUsing, $record)
+            : $this->getValue($record);
+
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_scalar($value)) {
+            return (string) $value;
+        }
+
+        return null;
+    }
+
     public function getHref(Model $record): ?string
     {
         if ($this->hrefUsing) {
@@ -218,6 +263,7 @@ abstract class Column
             'headerClassName' => $this->headerClassName,
             'cellClassName' => $this->cellClassName,
             'tooltip' => $this->tooltip,
+            'copiable' => $this->copiable,
         ];
     }
 }

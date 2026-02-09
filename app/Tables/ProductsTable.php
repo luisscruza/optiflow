@@ -45,53 +45,15 @@ final class ProductsTable extends Table
                 })
                 ->cellTooltip(fn (Product $product) => $product->description ? $product->name.' - '.$product->description : $product->name),
 
-            TextColumn::make('sku', 'SKU')
+            TextColumn::make('sku', 'Referencia')
                 ->sortable()
+                ->copiable()
                 ->cellClassName('font-mono text-sm'),
 
             CurrencyColumn::make('price', 'Precio')
                 ->sortable()
                 ->cellClassName('font-medium'),
 
-            TextColumn::make('cost', 'Costo')
-                ->formatUsing(function ($value) {
-                    if ($value) {
-                        return number_format((float) $value, 2);
-                    }
-
-                    return '-';
-                })
-                ->cellClassName('text-sm text-gray-500'),
-
-            TextColumn::make('inventory', 'Inventario')
-                ->formatUsing(function ($value, Product $product) {
-                    if (! $product->track_stock) {
-                        return 'Sin seguimiento';
-                    }
-
-                    if (! $product->stockInCurrentWorkspace) {
-                        return 'Sin datos';
-                    }
-
-                    $stock = $product->stockInCurrentWorkspace;
-                    $quantity = $stock->quantity;
-                    $isLow = $quantity <= $stock->minimum_quantity;
-
-                    return [
-                        'quantity' => $quantity,
-                        'isLow' => $isLow,
-                    ];
-                }),
-
-            TextColumn::make('tax', 'Impuesto')
-                ->formatUsing(function ($value, Product $product) {
-                    if ($product->defaultTax) {
-                        return $product->defaultTax->name.' ('.$product->defaultTax->rate.'%)';
-                    }
-
-                    return 'Sin impuesto';
-                })
-                ->cellClassName('text-sm'),
 
             ActionColumn::make()
                 ->actions([

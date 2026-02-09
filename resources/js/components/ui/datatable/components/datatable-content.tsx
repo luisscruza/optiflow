@@ -1,6 +1,7 @@
 import { Link, router } from '@inertiajs/react';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import * as React from 'react';
+import { toast } from 'sonner';
 
 import { cn } from '@/lib/utils';
 
@@ -33,6 +34,26 @@ interface DataTableContentProps<T> {
     renderCell?: RenderCellFn<T>;
 }
 
+function fallbackCopyToClipboard(text: string): boolean {
+    if (typeof document === 'undefined') {
+        return false;
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'absolute';
+    textarea.style.left = '-9999px';
+
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    const didCopy = document.execCommand('copy');
+    document.body.removeChild(textarea);
+
+    return didCopy;
+}
+
 export function DataTableContent<T>({
     data,
     columns,
@@ -53,6 +74,45 @@ export function DataTableContent<T>({
     onActionClick,
     renderCell,
 }: DataTableContentProps<T>) {
+    const resolveCopyValue = React.useCallback((row: T, column: TableColumn): string | null => {
+        if (!column.copiable || column.type === 'actions') {
+            return null;
+        }
+
+        const rowData = row as Record<string, unknown>;
+        const copyValue = rowData[`${column.key}_copy`] ?? rowData[column.key];
+
+        if (copyValue === null || copyValue === undefined) {
+            return null;
+        }
+
+        if (typeof copyValue === 'string' || typeof copyValue === 'number' || typeof copyValue === 'boolean') {
+            return String(copyValue);
+        }
+
+        return null;
+    }, []);
+
+    const handleCopyToClipboard = React.useCallback(async (text: string): Promise<void> => {
+        try {
+            if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(text);
+            } else if (!fallbackCopyToClipboard(text)) {
+                throw new Error('Clipboard API unavailable.');
+            }
+
+            toast.success('Copiado al portapapeles.');
+        } catch {
+            if (fallbackCopyToClipboard(text)) {
+                toast.success('Copiado al portapapeles.');
+
+                return;
+            }
+
+            toast.error('No se pudo copiar el valor.');
+        }
+    }, []);
+
     const renderCellContent = React.useCallback(
         (row: T, column: TableColumn): React.ReactNode => {
             const rowData = row as Record<string, unknown>;
@@ -64,7 +124,7 @@ export function DataTableContent<T>({
                 const customContent = renderCell(column.key, value, row);
                 if (customContent !== undefined) {
                     // If custom renderer returns content, use it
-                    if (href && column.type !== 'actions') {
+                    if (href && column.type !== 'actions' && !column.copiable) {
                         return (
                             <Link href={href} className="font-medium text-primary hover:underline">
                                 {customContent}
@@ -107,7 +167,7 @@ export function DataTableContent<T>({
                     content = value !== null && value !== undefined ? String(value) : '-';
             }
 
-            if (href && column.type !== 'actions') {
+            if (href && column.type !== 'actions' && !column.copiable) {
                 return (
                     <Link href={href} className="font-medium text-primary hover:underline">
                         {content}
@@ -228,6 +288,22 @@ export function DataTableContent<T>({
                                     const rowData = row as Record<string, unknown>;
                                     const cellTooltip = rowData[`${column.key}_tooltip`] as string | undefined;
                                     const cellContent = renderCellContent(row, column);
+                                    const copyValue = resolveCopyValue(row, column);
+                                    const copyableContent = copyValue ? (
+                                        <button
+                                            type="button"
+                                            className="cursor-copy text-left focus-visible:outline-none"
+                                            onClick={(event) => {
+                                                event.preventDefault();
+                                                event.stopPropagation();
+                                                void handleCopyToClipboard(copyValue);
+                                            }}
+                                        >
+                                            {cellContent}
+                                        </button>
+                                    ) : (
+                                        cellContent
+                                    );
 
                                     return (
                                         <TableCell
@@ -241,12 +317,12 @@ export function DataTableContent<T>({
                                             {cellTooltip ? (
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <div className="cursor-help">{cellContent}</div>
+                                                        {copyValue ? copyableContent : <div className="cursor-help">{copyableContent}</div>}
                                                     </TooltipTrigger>
                                                     <TooltipContent>{cellTooltip}</TooltipContent>
                                                 </Tooltip>
                                             ) : (
-                                                cellContent
+                                                copyableContent
                                             )}
                                         </TableCell>
                                     );

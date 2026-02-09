@@ -13,6 +13,7 @@ export interface TableColumn {
     headerClassName?: string;
     cellClassName?: string;
     tooltip?: string;
+    copiable?: boolean;
 }
 
 export type RenderCellFn<T> = (columnKey: string, value: unknown, row: T) => React.ReactNode | undefined;
