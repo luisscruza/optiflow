@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react';
 import { Loader2, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -8,6 +8,7 @@ import { ImageUpload } from '@/components/ui/image-upload';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import { ServerSearchableSelect, type ServerSearchableSelectOption } from '@/components/ui/server-searchable-select';
 import { Textarea } from '@/components/ui/textarea';
 import { usePermissions } from '@/hooks/use-permissions';
 import {
@@ -43,6 +44,10 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
 
     // New job form state
     const [newJobContactId, setNewJobContactId] = useState<string>('');
+    const [selectedJobContact, setSelectedJobContact] = useState<Contact | null>(null);
+    const [contactSearchQuery, setContactSearchQuery] = useState('');
+    const [isSearchingContacts, setIsSearchingContacts] = useState(false);
+    const contactSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [newJobInvoiceId, setNewJobInvoiceId] = useState<string>('');
     const [newJobPrescriptionId, setNewJobPrescriptionId] = useState<string>('');
     const [newJobPriority, setNewJobPriority] = useState<WorkflowJobPriority | ''>('');
@@ -56,6 +61,14 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
     const [newStageName, setNewStageName] = useState('');
     const [newStageDescription, setNewStageDescription] = useState('');
     const [newStageColor, setNewStageColor] = useState('#3B82F6');
+
+    useEffect(() => {
+        return () => {
+            if (contactSearchTimeoutRef.current) {
+                clearTimeout(contactSearchTimeoutRef.current);
+            }
+        };
+    }, []);
 
     const handleContactChange = (contactId: string) => {
         setNewJobContactId(contactId);
@@ -71,6 +84,39 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
             });
         }
     };
+
+    const handleContactSearch = (query: string) => {
+        if (contactSearchTimeoutRef.current) {
+            clearTimeout(contactSearchTimeoutRef.current);
+        }
+
+        const normalizedQuery = query.trim();
+        setContactSearchQuery(normalizedQuery);
+
+        if (normalizedQuery.length < 2) {
+            setIsSearchingContacts(false);
+
+            return;
+        }
+
+        contactSearchTimeoutRef.current = setTimeout(() => {
+            setIsSearchingContacts(true);
+            router.reload({
+                only: ['contactSearchResults'],
+                data: { contact_search: normalizedQuery },
+                onFinish: () => setIsSearchingContacts(false),
+            });
+        }, 300);
+    };
+
+    const formatContactOptionLabel = (contact: Contact): string => {
+        return contact.identification_number ? `${contact.name} (${contact.identification_number})` : contact.name;
+    };
+
+    const contactOptions: ServerSearchableSelectOption[] = (contactSearchQuery.length >= 2 ? contacts : []).map((contact) => ({
+        value: contact.id.toString(),
+        label: formatContactOptionLabel(contact),
+    }));
 
     const handleDragStart = (e: React.DragEvent, job: WorkflowJob) => {
         setDraggedJob(job);
@@ -190,6 +236,8 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
 
     const resetNewJobForm = () => {
         setNewJobContactId('');
+        setSelectedJobContact(null);
+        setContactSearchQuery('');
         setNewJobInvoiceId('');
         setNewJobPrescriptionId('');
         setNewJobPriority('');
@@ -259,16 +307,22 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
                             <Label htmlFor="job-contact">
                                 Cliente <span className="text-destructive">*</span>
                             </Label>
-                            <SearchableSelect
-                                options={contacts.map((contact) => ({
-                                    value: contact.id.toString(),
-                                    label: `${contact.name}${contact.identification_number ? ` (${contact.identification_number})` : ''}`,
-                                }))}
+                            <ServerSearchableSelect
+                                options={contactOptions}
                                 value={newJobContactId}
-                                onValueChange={handleContactChange}
+                                selectedLabel={selectedJobContact ? formatContactOptionLabel(selectedJobContact) : undefined}
+                                onValueChange={(value) => {
+                                    const selected = contacts.find((contact) => contact.id === parseInt(value));
+                                    setSelectedJobContact(selected || null);
+                                    handleContactChange(value);
+                                }}
+                                onSearchChange={handleContactSearch}
                                 placeholder="Seleccionar cliente"
                                 searchPlaceholder="Buscar cliente..."
+                                searchPromptText="Escribe al menos 2 caracteres para buscar clientes."
                                 emptyText="No se encontraron clientes"
+                                loadingText="Buscando clientes..."
+                                isLoading={isSearchingContacts}
                             />
                         </div>
 

@@ -17,12 +17,20 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 interface Props {
-    customers: Contact[];
-    optometrists: Contact[];
+    initialContact?: Contact | null;
+    customerSearchResults?: Contact[];
+    initialOptometrist?: Contact | null;
+    optometristSearchResults?: Contact[];
     masterTables: Record<string, MasterTableData>;
 }
 
-export default function CreatePrescription({ customers, optometrists, masterTables }: Props) {
+export default function CreatePrescription({
+    initialContact,
+    customerSearchResults,
+    initialOptometrist,
+    optometristSearchResults,
+    masterTables,
+}: Props) {
     const { workspace } = usePage().props as { workspace?: { current: Workspace | null; available: Workspace[] } };
 
     if (!workspace || !workspace.available?.length) {
@@ -36,8 +44,10 @@ export default function CreatePrescription({ customers, optometrists, masterTabl
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div>
                     <PrescriptionForm
-                        customers={customers}
-                        optometrists={optometrists}
+                        initialContact={initialContact}
+                        customerSearchResults={customerSearchResults}
+                        initialOptometrist={initialOptometrist}
+                        optometristSearchResults={optometristSearchResults}
                         masterTables={masterTables}
                         workspace={workspace}
                         submitUrl={prescriptions.store().url}

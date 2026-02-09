@@ -1,13 +1,13 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, Building2, CalendarIcon, Edit, Filter, LayoutGrid, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ServerSearchableSelect, type ServerSearchableSelectOption } from '@/components/ui/server-searchable-select';
 import { KanbanBoard } from '@/components/workflows/kanban-board';
 import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
@@ -37,7 +37,8 @@ interface Props {
     filters?: Filters;
     showAllWorkspaces?: boolean;
     invoices?: Invoice[];
-    contacts?: Contact[];
+    selectedContact?: Contact | null;
+    contactSearchResults?: Contact[];
     prescriptions?: Prescription[];
     // Stage jobs are passed as flat props like stage_{uuid}_jobs
     [key: `stage_${string}_jobs`]: CursorPaginatedData<WorkflowJob>;
@@ -48,7 +49,8 @@ export default function WorkflowShow({
     filters = {},
     showAllWorkspaces = false,
     invoices = [],
-    contacts = [],
+    selectedContact = null,
+    contactSearchResults = [],
     prescriptions = [],
     ...rest
 }: Props) {
@@ -56,6 +58,24 @@ export default function WorkflowShow({
 
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [localFilters, setLocalFilters] = useState<Filters>(filters);
+    const [selectedFilterContact, setSelectedFilterContact] = useState<Contact | null>(selectedContact);
+    const [contactSearchQuery, setContactSearchQuery] = useState('');
+    const [isSearchingContacts, setIsSearchingContacts] = useState(false);
+    const contactSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        if (selectedContact && filters.contact_id && String(selectedContact.id) === filters.contact_id) {
+            setSelectedFilterContact(selectedContact);
+        }
+    }, [selectedContact, filters.contact_id]);
+
+    useEffect(() => {
+        return () => {
+            if (contactSearchTimeoutRef.current) {
+                clearTimeout(contactSearchTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Extract stage jobs from the flat props
     const stageJobs: Record<string, CursorPaginatedData<WorkflowJob>> = {};
@@ -147,15 +167,43 @@ export default function WorkflowShow({
     };
 
     const getContactName = (contactId: string) => {
-        return contacts.find((c) => String(c.id) === contactId)?.name || contactId;
+        return selectedFilterContact && String(selectedFilterContact.id) === contactId ? selectedFilterContact.name : contactId;
+    };
+
+    const handleContactSearch = (query: string) => {
+        if (contactSearchTimeoutRef.current) {
+            clearTimeout(contactSearchTimeoutRef.current);
+        }
+
+        const normalizedQuery = query.trim();
+        setContactSearchQuery(normalizedQuery);
+
+        if (normalizedQuery.length < 2) {
+            setIsSearchingContacts(false);
+
+            return;
+        }
+
+        contactSearchTimeoutRef.current = setTimeout(() => {
+            setIsSearchingContacts(true);
+            router.reload({
+                only: ['contactSearchResults'],
+                data: { contact_search: normalizedQuery },
+                onFinish: () => setIsSearchingContacts(false),
+            });
+        }, 300);
+    };
+
+    const formatContactOptionLabel = (contact: Contact): string => {
+        return contact.identification_number ? `${contact.name} (${contact.identification_number})` : contact.name;
     };
 
     // Build searchable options for contacts
-    const contactOptions = [
+    const contactOptions: ServerSearchableSelectOption[] = [
         { value: 'all', label: 'Todos los clientes' },
-        ...contacts.map((contact) => ({
+        ...(contactSearchQuery.length >= 2 ? contactSearchResults : []).map((contact) => ({
             value: String(contact.id),
-            label: contact.name,
+            label: formatContactOptionLabel(contact),
         })),
     ];
 
@@ -249,13 +297,30 @@ export default function WorkflowShow({
                                     {/* Client Filter */}
                                     <div className="space-y-2">
                                         <label className="text-sm font-medium">Cliente</label>
-                                        <SearchableSelect
+                                        <ServerSearchableSelect
                                             options={contactOptions}
                                             value={localFilters.contact_id || 'all'}
-                                            onValueChange={(v) => setLocalFilters({ ...localFilters, contact_id: v === 'all' ? undefined : v })}
+                                            minSearchLength={0}
+                                            selectedLabel={selectedFilterContact ? formatContactOptionLabel(selectedFilterContact) : undefined}
+                                            onValueChange={(v) => {
+                                                if (v === 'all') {
+                                                    setLocalFilters({ ...localFilters, contact_id: undefined });
+                                                    setSelectedFilterContact(null);
+
+                                                    return;
+                                                }
+
+                                                const selected = contactSearchResults.find((contact) => String(contact.id) === v);
+                                                setLocalFilters({ ...localFilters, contact_id: v });
+                                                setSelectedFilterContact(selected || null);
+                                            }}
+                                            onSearchChange={handleContactSearch}
                                             placeholder="Todos los clientes"
                                             searchPlaceholder="Buscar cliente..."
+                                            searchPromptText="Escribe al menos 2 caracteres para buscar clientes."
                                             emptyText="No se encontraron clientes"
+                                            loadingText="Buscando clientes..."
+                                            isLoading={isSearchingContacts}
                                         />
                                     </div>
 
@@ -460,7 +525,13 @@ export default function WorkflowShow({
 
                 {/* Kanban Board */}
                 <div className="flex-1 overflow-hidden">
-                    <KanbanBoard workflow={workflow} stageJobs={stageJobs} invoices={invoices} contacts={contacts} prescriptions={prescriptions} />
+                    <KanbanBoard
+                        workflow={workflow}
+                        stageJobs={stageJobs}
+                        invoices={invoices}
+                        contacts={contactSearchResults}
+                        prescriptions={prescriptions}
+                    />
                 </div>
             </div>
         </AppLayout>

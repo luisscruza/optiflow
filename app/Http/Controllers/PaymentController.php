@@ -14,13 +14,13 @@ use App\Http\Requests\StorePaymentRequest;
 use App\Http\Requests\UpdatePaymentRequest;
 use App\Models\BankAccount;
 use App\Models\ChartAccount;
-use App\Models\Contact;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\PaymentConcept;
 use App\Models\Tax;
 use App\Models\User;
 use App\Models\WithholdingType;
+use App\Support\ContactSearch;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -81,7 +81,7 @@ final class PaymentController
     /**
      * Show the form for creating a new payment.
      */
-    public function create(Request $request, #[CurrentUser] User $user): Response
+    public function create(Request $request, #[CurrentUser] User $user, ContactSearch $contactSearch): Response
     {
         abort_unless($user->can(Permission::PaymentsCreate), 403);
 
@@ -102,7 +102,8 @@ final class PaymentController
 
         return Inertia::render('payments/create', [
             'pendingInvoices' => $pendingInvoices,
-            'contacts' => Contact::query()->orderBy('name')->get(),
+            'initialContact' => $contactSearch->findById($request->integer('contact_id')),
+            'contactSearchResults' => Inertia::optional(fn (): array => $contactSearch->search((string) $request->string('contact_search'))),
             'bankAccounts' => BankAccount::onlyActive()->with('currency')->orderBy('name')->get(),
             'paymentMethods' => PaymentMethod::options(),
             'paymentTypes' => PaymentType::options(),
@@ -172,7 +173,7 @@ final class PaymentController
     /**
      * Show the form for editing the specified payment.
      */
-    public function edit(Payment $payment, #[CurrentUser] User $user): Response
+    public function edit(Request $request, Payment $payment, #[CurrentUser] User $user, ContactSearch $contactSearch): Response
     {
         abort_unless($user->can(Permission::PaymentsEdit), 403);
 
@@ -189,7 +190,8 @@ final class PaymentController
 
         return Inertia::render('payments/edit', [
             'payment' => $payment,
-            'contacts' => Contact::query()->orderBy('name')->get(),
+            'initialContact' => $payment->contact ? $contactSearch->toOption($payment->contact) : null,
+            'contactSearchResults' => Inertia::optional(fn (): array => $contactSearch->search((string) $request->string('contact_search'))),
             'bankAccounts' => BankAccount::onlyActive()->with('currency')->orderBy('name')->get(),
             'paymentMethods' => PaymentMethod::options(),
             'paymentTypes' => PaymentType::options(),

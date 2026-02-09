@@ -7,12 +7,21 @@ import { MasterTableData, Prescription, type BreadcrumbItem, type Contact, type 
 
 interface Props {
     prescription: Prescription;
-    customers: Contact[];
-    optometrists: Contact[];
+    initialContact?: Contact | null;
+    customerSearchResults?: Contact[];
+    initialOptometrist?: Contact | null;
+    optometristSearchResults?: Contact[];
     masterTables: Record<string, MasterTableData>;
 }
 
-export default function EditPrescription({ prescription, customers, optometrists, masterTables }: Props) {
+export default function EditPrescription({
+    prescription,
+    initialContact,
+    customerSearchResults,
+    initialOptometrist,
+    optometristSearchResults,
+    masterTables,
+}: Props) {
     const { workspace } = usePage().props as { workspace?: { current: Workspace | null; available: Workspace[] } };
 
     if (!workspace || !workspace.available?.length) {
@@ -50,8 +59,10 @@ export default function EditPrescription({ prescription, customers, optometrists
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div>
                     <PrescriptionForm
-                        customers={customers}
-                        optometrists={optometrists}
+                        initialContact={initialContact}
+                        customerSearchResults={customerSearchResults}
+                        initialOptometrist={initialOptometrist}
+                        optometristSearchResults={optometristSearchResults}
                         masterTables={masterTables}
                         workspace={workspace}
                         initialData={initialData}

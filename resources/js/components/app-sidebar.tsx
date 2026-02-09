@@ -5,12 +5,11 @@ import { WorkspaceSwitcher } from '@/components/workspace-switcher';
 import { usePermissions } from '@/hooks/use-permissions';
 import { dashboard } from '@/routes';
 import contacts from '@/routes/contacts';
-import inventory from '@/routes/inventory';
 import prescriptions from '@/routes/prescriptions';
 import products from '@/routes/products';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BarChart3, Bell, BookOpen, Eye, Folder, FolderSync, Kanban, LayoutGrid, Package, Receipt, RotateCcw, Settings, Users2 } from 'lucide-react';
+import { BarChart3, Bell, BookOpen, ChevronsLeftRightEllipsis, Eye, Folder, FolderSync, Kanban, LayoutGrid, Package, Receipt, RotateCcw, Settings, Users2 } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
@@ -62,15 +61,6 @@ export function AppSidebar() {
                                     },
                                 ]
                               : []),
-                          //   ...(can('view payments')
-                          //       ? [
-                          //             {
-                          //                 title: 'Pagos recibidos',
-                          //                 href: payments.index(),
-                          //                 icon: DollarSign,
-                          //             },
-                          //         ]
-                          //       : []),
                       ],
                   } as NavItem,
               ]
@@ -84,7 +74,7 @@ export function AppSidebar() {
                           ...(can('view products')
                               ? [
                                     {
-                                        title: 'Productos/Servicios',
+                                        title: 'Productos y servicios',
                                         href: products.index(),
                                         icon: Package,
                                     },
@@ -98,19 +88,14 @@ export function AppSidebar() {
                           ...(can('view inventory')
                               ? [
                                     {
-                                        title: 'Inventario',
-                                        href: inventory.index(),
-                                        icon: RotateCcw,
-                                    },
-                                    {
                                         title: 'Ajustes de inventario',
                                         href: '/inventory-adjustments',
-                                        icon: RotateCcw,
+                                        icon: FolderSync,
                                     },
                                     {
-                                        title: 'Transferencias de inventario',
+                                        title: 'Transferencias',
                                         href: '/stock-transfers',
-                                        icon: RotateCcw,
+                                        icon: ChevronsLeftRightEllipsis,
                                     },
                                 ]
                               : []),

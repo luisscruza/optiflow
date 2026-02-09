@@ -16,15 +16,14 @@ use App\Http\Requests\CreateInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\BankAccount;
 use App\Models\CompanyDetail;
-use App\Models\Contact;
 use App\Models\DocumentSubtype;
 use App\Models\Invoice;
-use App\Models\Product;
-use App\Models\ProductStock;
 use App\Models\Salesman;
 use App\Models\Tax;
 use App\Models\User;
 use App\Models\Workspace;
+use App\Support\ContactSearch;
+use App\Support\ProductSearch;
 use App\Tables\InvoicesTable;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
@@ -47,15 +46,15 @@ final class InvoiceController
 
         return Inertia::render('invoices/index', [
             'invoices' => InvoicesTable::make($request),
-            'bankAccounts' => Inertia::optional(fn() => BankAccount::onlyActive()->with('currency')->orderBy('name')->get()),
-            'paymentMethods' => Inertia::optional(fn(): array => PaymentMethod::options()),
+            'bankAccounts' => Inertia::optional(fn () => BankAccount::onlyActive()->with('currency')->orderBy('name')->get()),
+            'paymentMethods' => Inertia::optional(fn (): array => PaymentMethod::options()),
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request, #[CurrentUser] User $user): Response
+    public function create(Request $request, #[CurrentUser] User $user, ContactSearch $contactSearch, ProductSearch $productSearch): Response
     {
         abort_unless($user->can(Permission::InvoicesCreate), 403);
 
@@ -65,36 +64,6 @@ final class InvoiceController
             ->forInvoice()
             ->orderBy('name')
             ->get();
-
-        $customers = Contact::query()
-            ->orderBy('name')
-            ->get()
-            ->map(function ($contact) {
-                $phone = $contact->phone_primary ?? null;
-                $contact->name = "{$contact->name}" . ($phone ? " ({$phone})" : '');
-
-                return $contact;
-            });
-
-        $products = Product::with(['defaultTax'])
-            ->when($currentWorkspace, function ($query) use ($currentWorkspace): void {
-                $query->with(['stocks' => function ($stockQuery) use ($currentWorkspace): void {
-                    $stockQuery->where('workspace_id', $currentWorkspace->id);
-                }]);
-            })
-            ->orderBy('name')
-            ->get()
-            ->map(function ($product) use ($currentWorkspace): Product {
-                $stock = $currentWorkspace ? $product->stocks->first() : null;
-                $product->setAttribute('current_stock', $stock);
-                $product->setAttribute('stock_quantity', $stock ? $stock->quantity : 0);
-                $product->setAttribute('minimum_quantity', $stock ? $stock->minimum_quantity : 0);
-                $product->setAttribute('stock_status', $this->getStockStatus($product, $stock));
-
-                unset($product->stocks);
-
-                return $product;
-            });
 
         $documentSubtype = $request->filled('document_subtype_id')
             ? DocumentSubtype::query()->findOrFail($request->get('document_subtype_id'))
@@ -108,7 +77,7 @@ final class InvoiceController
             ->orderBy('name')
             ->get()
             ->groupBy('type')
-            ->mapWithKeys(fn($taxes, $type): array => [
+            ->mapWithKeys(fn ($taxes, $type): array => [
                 $type => [
                     'label' => TaxType::tryFrom($type)?->label() ?? $type,
                     'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,
@@ -121,21 +90,28 @@ final class InvoiceController
             ->orderBy('name')
             ->orderBy('surname')
             ->get()
-            ->map(fn($salesman) => [
+            ->map(fn ($salesman) => [
                 'id' => $salesman->id,
                 'name' => $salesman->name,
                 'surname' => $salesman->surname,
                 'full_name' => $salesman->full_name,
             ]);
 
+        $initialContactId = $request->integer('contact_id');
+        $initialContact = $contactSearch->findCustomerById($initialContactId > 0 ? $initialContactId : null);
+
         return Inertia::render('invoices/create', [
             'documentSubtypes' => $documentSubtypes,
-            'customers' => $customers,
-            'products' => $products,
+            'products' => [],
+            'productSearchResults' => Inertia::optional(
+                fn (): array => $productSearch->search((string) $request->string('product_search'), $currentWorkspace)
+            ),
             'ncf' => $documentSubtype?->generateNCF(),
             'document_subtype_id' => $documentSubtype->id,
             'currentWorkspace' => $currentWorkspace,
             'availableWorkspaces' => $availableWorkspaces,
+            'initialContact' => $initialContact,
+            'customerSearchResults' => Inertia::optional(fn (): array => $contactSearch->searchCustomers((string) $request->string('contact_search'))),
             'defaultNote' => CompanyDetail::getByKey('terms_conditions'),
             'bankAccounts' => BankAccount::onlyActive()->with('currency')->orderBy('name')->get(),
             'paymentMethods' => PaymentMethod::options(),
@@ -208,9 +184,9 @@ final class InvoiceController
         // Collect field labels from all auditable models
         $fieldLabels = collect([
             $invoice->getActivityFieldLabels(),
-            ...$invoice->items->map(fn($item) => $item->getActivityFieldLabels()),
-            ...$invoice->payments->map(fn($payment) => $payment->getActivityFieldLabels()),
-        ])->reduce(fn($carry, $labels) => array_merge($carry, $labels), []);
+            ...$invoice->items->map(fn ($item) => $item->getActivityFieldLabels()),
+            ...$invoice->payments->map(fn ($payment) => $payment->getActivityFieldLabels()),
+        ])->reduce(fn ($carry, $labels) => array_merge($carry, $labels), []);
 
         // Get bank accounts and payment methods for payment registration
         $bankAccounts = BankAccount::onlyActive()->with('currency')->get();
@@ -235,7 +211,7 @@ final class InvoiceController
     /**
      * Show the form for editing the specified invoice.
      */
-    public function edit(Request $request, Invoice $invoice, #[CurrentUser] User $user): Response|RedirectResponse
+    public function edit(Request $request, Invoice $invoice, #[CurrentUser] User $user, ContactSearch $contactSearch, ProductSearch $productSearch): Response|RedirectResponse
     {
         abort_unless($user->can(Permission::InvoicesEdit), 403);
 
@@ -252,28 +228,9 @@ final class InvoiceController
             ->orderBy('name')
             ->get();
 
-        $customers = Contact::customers()->orderBy('name')->get();
-
-        $products = Product::with(['defaultTax'])
-            ->when($currentWorkspace, function ($query) use ($currentWorkspace): void {
-                $query->with(['stocks' => function ($stockQuery) use ($currentWorkspace): void {
-                    $stockQuery->where('workspace_id', $currentWorkspace->id);
-                }]);
-            })
-            ->orderBy('name')
-            ->get()
-            ->map(function ($product) use ($currentWorkspace): Product {
-                $stock = $currentWorkspace ? $product->stocks->first() : null;
-
-                $product->setAttribute('current_stock', $stock);
-                $product->setAttribute('stock_quantity', $stock ? $stock->quantity : 0);
-                $product->setAttribute('minimum_quantity', $stock ? $stock->minimum_quantity : 0);
-                $product->setAttribute('stock_status', $this->getStockStatus($product, $stock));
-
-                unset($product->stocks);
-
-                return $product;
-            });
+        $initialProductIds = $invoice->items
+            ->pluck('product_id')
+            ->all();
 
         $taxes = Tax::query()->orderBy('name')->get();
 
@@ -290,7 +247,7 @@ final class InvoiceController
             ->orderBy('name')
             ->get()
             ->groupBy('type')
-            ->mapWithKeys(fn($taxes, $type): array => [
+            ->mapWithKeys(fn ($taxes, $type): array => [
                 $type => [
                     'label' => TaxType::tryFrom($type)?->label() ?? $type,
                     'isExclusive' => TaxType::tryFrom($type)?->isExclusive() ?? false,
@@ -303,7 +260,7 @@ final class InvoiceController
             ->orderBy('name')
             ->orderBy('surname')
             ->get()
-            ->map(fn($salesman) => [
+            ->map(fn ($salesman) => [
                 'id' => $salesman->id,
                 'name' => $salesman->name,
                 'surname' => $salesman->surname,
@@ -313,11 +270,15 @@ final class InvoiceController
         return Inertia::render('invoices/Edit', [
             'invoice' => $invoice,
             'documentSubtypes' => $documentSubtypes,
-            'customers' => $customers,
-            'products' => $products,
+            'products' => $productSearch->findByIds($initialProductIds, $currentWorkspace),
+            'productSearchResults' => Inertia::optional(
+                fn (): array => $productSearch->search((string) $request->string('product_search'), $currentWorkspace)
+            ),
             'taxes' => $taxes,
             'taxesGroupedByType' => $taxesGroupedByType,
             'ncf' => $ncf,
+            'initialContact' => $invoice->contact ? $contactSearch->toOption($invoice->contact) : null,
+            'customerSearchResults' => Inertia::optional(fn (): array => $contactSearch->searchCustomers((string) $request->string('contact_search'))),
             'salesmen' => $salesmen,
         ]);
     }
@@ -362,26 +323,6 @@ final class InvoiceController
             ->with('success', 'Factura eliminada exitosamente.');
     }
 
-    /**
-     * Get stock status for a product.
-     */
-    private function getStockStatus(Product $product, ?ProductStock $stock): string
-    {
-        if (! $product->track_stock) {
-            return 'not_tracked';
-        }
-
-        if (! $stock instanceof ProductStock || $stock->quantity <= 0) {
-            return 'out_of_stock';
-        }
-
-        if ($stock->quantity <= $stock->minimum_quantity) {
-            return 'low_stock';
-        }
-
-        return 'in_stock';
-    }
-
     private function getDefaultDocumentSubtype(?Workspace $workspace): ?DocumentSubtype
     {
         if ($workspace instanceof Workspace) {
@@ -389,14 +330,13 @@ final class InvoiceController
 
             if ($workspacePreferred instanceof DocumentSubtype && $workspacePreferred->isValid()) {
                 return $workspacePreferred;
-            } else {
-
-                return DocumentSubtype::active()
-                    ->forInvoice()
-                    ->where('is_default', 1)
-                    ->first();
-
             }
+
+            return DocumentSubtype::active()
+                ->forInvoice()
+                ->where('is_default', 1)
+                ->first();
+
         }
 
         return DocumentSubtype::active()

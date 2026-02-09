@@ -9,16 +9,16 @@ use App\Enums\Permission;
 use App\Enums\TaxType;
 use App\Models\BankAccount;
 use App\Models\CompanyDetail;
-use App\Models\Contact;
 use App\Models\DocumentSubtype;
-use App\Models\Product;
-use App\Models\ProductStock;
 use App\Models\Quotation;
 use App\Models\Salesman;
 use App\Models\Tax;
 use App\Models\User;
 use App\Models\Workspace;
+use App\Support\ContactSearch;
+use App\Support\ProductSearch;
 use Illuminate\Container\Attributes\CurrentUser;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
 use Inertia\Inertia;
@@ -29,7 +29,7 @@ final class CreateInvoiceFromQuotationController
     /**
      * Show the form for creating an invoice from a quotation.
      */
-    public function __invoke(Quotation $quotation, #[CurrentUser] User $user): Response
+    public function __invoke(Request $request, Quotation $quotation, #[CurrentUser] User $user, ContactSearch $contactSearch, ProductSearch $productSearch): Response
     {
         abort_unless($user->can(Permission::InvoicesCreate), 403);
 
@@ -41,36 +41,6 @@ final class CreateInvoiceFromQuotationController
             ->forInvoice()
             ->orderBy('name')
             ->get();
-
-        $customers = Contact::query()
-            ->orderBy('name')
-            ->get()
-            ->map(function ($contact) {
-                $phone = $contact->phone_primary ?? null;
-                $contact->name = "{$contact->name}".($phone ? " ({$phone})" : '');
-
-                return $contact;
-            });
-
-        $products = Product::with(['defaultTax'])
-            ->when($currentWorkspace, function ($query) use ($currentWorkspace): void {
-                $query->with(['stocks' => function ($stockQuery) use ($currentWorkspace): void {
-                    $stockQuery->where('workspace_id', $currentWorkspace->id);
-                }]);
-            })
-            ->orderBy('name')
-            ->get()
-            ->map(function ($product) use ($currentWorkspace): Product {
-                $stock = $currentWorkspace ? $product->stocks->first() : null;
-                $product->setAttribute('current_stock', $stock);
-                $product->setAttribute('stock_quantity', $stock ? $stock->quantity : 0);
-                $product->setAttribute('minimum_quantity', $stock ? $stock->minimum_quantity : 0);
-                $product->setAttribute('stock_status', $this->getStockStatus($product, $stock));
-
-                unset($product->stocks);
-
-                return $product;
-            });
 
         $availableWorkspaces = Auth::user()?->workspaces ?? collect();
 
@@ -121,12 +91,16 @@ final class CreateInvoiceFromQuotationController
 
         return Inertia::render('invoices/create', [
             'documentSubtypes' => $documentSubtypes,
-            'customers' => $customers,
-            'products' => $products,
+            'products' => $productSearch->findByIds($quotation->items->pluck('product_id')->all(), $currentWorkspace),
+            'productSearchResults' => Inertia::optional(
+                fn (): array => $productSearch->search((string) $request->string('product_search'), $currentWorkspace)
+            ),
             'ncf' => $documentSubtype?->generateNCF(),
             'document_subtype_id' => $documentSubtype->id,
             'currentWorkspace' => $currentWorkspace,
             'availableWorkspaces' => $availableWorkspaces,
+            'initialContact' => $quotation->contact ? $contactSearch->toOption($quotation->contact) : null,
+            'customerSearchResults' => Inertia::optional(fn (): array => $contactSearch->searchCustomers((string) $request->string('contact_search'))),
             'defaultNote' => CompanyDetail::getByKey('terms_conditions'),
             'bankAccounts' => BankAccount::onlyActive()->with('currency')->orderBy('name')->get(),
             'paymentMethods' => PaymentMethod::options(),
@@ -150,26 +124,6 @@ final class CreateInvoiceFromQuotationController
                 'total' => (float) $quotation->total_amount,
             ],
         ]);
-    }
-
-    /**
-     * Get stock status for a product.
-     */
-    private function getStockStatus(Product $product, ?ProductStock $stock): string
-    {
-        if (! $product->track_stock) {
-            return 'not_tracked';
-        }
-
-        if (! $stock instanceof ProductStock || $stock->quantity <= 0) {
-            return 'out_of_stock';
-        }
-
-        if ($stock->quantity <= $stock->minimum_quantity) {
-            return 'low_stock';
-        }
-
-        return 'in_stock';
     }
 
     private function getDefaultDocumentSubtype(?Workspace $workspace): ?DocumentSubtype

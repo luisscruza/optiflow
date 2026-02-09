@@ -1,8 +1,12 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { useEffect } from 'react';
 
-import InvoiceForm, { type DocumentSubtype, type InvoiceFormData, type InvoiceItem } from '@/components/invoices/invoice-form';
-import { type SelectedTax } from '@/components/taxes/tax-multi-select';
+import InvoiceForm, {
+    type ContactSearchResult,
+    type DocumentSubtype,
+    type InvoiceFormData,
+    type InvoiceItem,
+} from '@/components/invoices/invoice-form';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Contact, type Product, type Salesman, type TaxesGroupedByType, type Workspace } from '@/types';
 
@@ -50,8 +54,10 @@ interface Invoice {
 interface Props {
     invoice: Invoice;
     documentSubtypes: DocumentSubtype[];
-    customers: Contact[];
+    initialContact?: ContactSearchResult | null;
+    customerSearchResults?: ContactSearchResult[];
     products: Product[];
+    productSearchResults?: Product[];
     currentWorkspace?: Workspace | null;
     availableWorkspaces?: Workspace[];
     ncf?: string | null;
@@ -95,8 +101,10 @@ const convertInvoiceItems = (items: Invoice['items']): InvoiceItem[] => {
 export default function EditInvoice({
     invoice,
     documentSubtypes,
-    customers,
+    initialContact,
+    customerSearchResults,
     products,
+    productSearchResults,
     currentWorkspace,
     availableWorkspaces,
     ncf,
@@ -161,8 +169,10 @@ export default function EditInvoice({
                     processing={processing}
                     onSubmit={handleSubmit}
                     documentSubtypes={documentSubtypes}
-                    customers={customers}
+                    initialContact={initialContact ?? invoice.contact}
+                    customerSearchResults={customerSearchResults}
                     products={products}
+                    productSearchResults={productSearchResults}
                     ncf={ncf}
                     currentWorkspace={currentWorkspace}
                     availableWorkspaces={availableWorkspaces}

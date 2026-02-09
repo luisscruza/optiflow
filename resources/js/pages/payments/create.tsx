@@ -1,12 +1,13 @@
-import { Form, Link } from '@inertiajs/react';
+import { Form, Link, router } from '@inertiajs/react';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ServerSearchableSelect, type ServerSearchableSelectOption } from '@/components/ui/server-searchable-select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
@@ -40,7 +41,8 @@ interface PaymentWithholding {
 
 interface Props {
     pendingInvoices: Array<Invoice & { amount_due: number }>;
-    contacts: Contact[];
+    initialContact?: Contact | null;
+    contactSearchResults?: Contact[];
     bankAccounts: BankAccount[];
     paymentMethods: Record<string, string>;
     paymentTypes: Record<string, string>;
@@ -52,7 +54,8 @@ interface Props {
 
 export default function PaymentCreate({
     pendingInvoices,
-    contacts,
+    initialContact = null,
+    contactSearchResults = [],
     bankAccounts,
     paymentMethods,
     paymentTypes,
@@ -69,7 +72,11 @@ export default function PaymentCreate({
 
     const [paymentType, setPaymentType] = useState('other_income');
     const [selectedInvoice, setSelectedInvoice] = useState('');
-    const [selectedContact, setSelectedContact] = useState('');
+    const [selectedContact, setSelectedContact] = useState(initialContact ? initialContact.id.toString() : '');
+    const [selectedContactOption, setSelectedContactOption] = useState<Contact | null>(initialContact);
+    const [contactSearchQuery, setContactSearchQuery] = useState('');
+    const [isSearchingContacts, setIsSearchingContacts] = useState(false);
+    const contactSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [selectedBankAccount, setSelectedBankAccount] = useState('');
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
     const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
@@ -98,6 +105,57 @@ export default function PaymentCreate({
         equity: 'Patrimonio',
         expense: 'Gastos',
     };
+
+    useEffect(() => {
+        return () => {
+            if (contactSearchTimeoutRef.current) {
+                clearTimeout(contactSearchTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    const handleContactSearch = (query: string) => {
+        if (contactSearchTimeoutRef.current) {
+            clearTimeout(contactSearchTimeoutRef.current);
+        }
+
+        const normalizedQuery = query.trim();
+        setContactSearchQuery(normalizedQuery);
+
+        if (normalizedQuery.length < 2) {
+            setIsSearchingContacts(false);
+
+            return;
+        }
+
+        contactSearchTimeoutRef.current = setTimeout(() => {
+            setIsSearchingContacts(true);
+            router.reload({
+                only: ['contactSearchResults'],
+                data: { contact_search: normalizedQuery },
+                onFinish: () => setIsSearchingContacts(false),
+            });
+        }, 300);
+    };
+
+    const formatContactLabel = (contact: Contact): string => {
+        return contact.phone_primary ? `${contact.name} (${contact.phone_primary})` : contact.name;
+    };
+
+    const handleContactSelect = (value: string) => {
+        const parsedContactId = parseInt(value);
+        const contact =
+            contactSearchResults.find((option) => option.id === parsedContactId) ??
+            (selectedContactOption?.id === parsedContactId ? selectedContactOption : null);
+
+        setSelectedContact(value);
+        setSelectedContactOption(contact || null);
+    };
+
+    const contactOptions: ServerSearchableSelectOption[] = (contactSearchQuery.length >= 2 ? contactSearchResults : []).map((contact) => ({
+        value: contact.id.toString(),
+        label: formatContactLabel(contact),
+    }));
 
     // Calculate totals
     const subtotal = lines.reduce((sum, line) => sum + line.quantity * line.unit_price, 0);
@@ -151,7 +209,9 @@ export default function PaymentCreate({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-<div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">                <div className="flex items-center gap-4">
+            <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                {' '}
+                <div className="flex items-center gap-4">
                     <Button variant="ghost" size="sm" asChild>
                         <Link href="/payments">
                             <ArrowLeft className="mr-2 size-4" />
@@ -163,7 +223,6 @@ export default function PaymentCreate({
                         <p className="text-sm text-muted-foreground">Crea un nuevo registro de pago recibido</p>
                     </div>
                 </div>
-
                 <Form action="/payments" method="post" className="space-y-4">
                     {/* Payment Type Tabs */}
                     <Card>
@@ -242,18 +301,20 @@ export default function PaymentCreate({
 
                                     <div className="space-y-2">
                                         <Label htmlFor="contact_id">Contacto (Opcional)</Label>
-                                        <Select value={selectedContact} onValueChange={setSelectedContact} name="contact_id">
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecciona un contacto (opcional)" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {contacts.map((contact) => (
-                                                    <SelectItem key={contact.id} value={contact.id.toString()}>
-                                                        {contact.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        <input type="hidden" name="contact_id" value={selectedContact} />
+                                        <ServerSearchableSelect
+                                            options={contactOptions}
+                                            value={selectedContact}
+                                            selectedLabel={selectedContactOption ? formatContactLabel(selectedContactOption) : undefined}
+                                            onValueChange={handleContactSelect}
+                                            onSearchChange={handleContactSearch}
+                                            placeholder="Seleccionar contacto (opcional)..."
+                                            searchPlaceholder="Buscar contacto..."
+                                            searchPromptText="Escribe al menos 2 caracteres para buscar contactos."
+                                            emptyText="No se encontró ningún contacto."
+                                            loadingText="Buscando contactos..."
+                                            isLoading={isSearchingContacts}
+                                        />
                                     </div>
 
                                     {/* Lines Section */}

@@ -1,7 +1,12 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { useEffect } from 'react';
 
-import InvoiceForm, { type DocumentSubtype, type InvoiceFormData, type InvoiceItem } from '@/components/invoices/invoice-form';
+import InvoiceForm, {
+    type ContactSearchResult,
+    type DocumentSubtype,
+    type InvoiceFormData,
+    type InvoiceItem,
+} from '@/components/invoices/invoice-form';
 import AppLayout from '@/layouts/app-layout';
 import { type BankAccount, type BreadcrumbItem, type Contact, type Product, type Salesman, type TaxesGroupedByType, type Workspace } from '@/types';
 
@@ -23,8 +28,10 @@ interface FromQuotation {
 
 interface Props {
     documentSubtypes: DocumentSubtype[];
-    customers: Contact[];
+    initialContact?: ContactSearchResult | null;
+    customerSearchResults?: ContactSearchResult[];
     products: Product[];
+    productSearchResults?: Product[];
     ncf?: string | null;
     document_subtype_id?: number | null;
     currentWorkspace?: Workspace | null;
@@ -38,15 +45,53 @@ interface Props {
 }
 
 const createDefaultItems = (): InvoiceItem[] => [
-    { id: '1', product_id: null, description: '', quantity: 1, unit_price: 0, discount_rate: 0, discount_amount: 0, tax_rate: 0, tax_amount: 0, total: 0, taxes: [] },
-    { id: '2', product_id: null, description: '', quantity: 1, unit_price: 0, discount_rate: 0, discount_amount: 0, tax_rate: 0, tax_amount: 0, total: 0, taxes: [] },
-    { id: '3', product_id: null, description: '', quantity: 1, unit_price: 0, discount_rate: 0, discount_amount: 0, tax_rate: 0, tax_amount: 0, total: 0, taxes: [] },
+    {
+        id: '1',
+        product_id: null,
+        description: '',
+        quantity: 1,
+        unit_price: 0,
+        discount_rate: 0,
+        discount_amount: 0,
+        tax_rate: 0,
+        tax_amount: 0,
+        total: 0,
+        taxes: [],
+    },
+    {
+        id: '2',
+        product_id: null,
+        description: '',
+        quantity: 1,
+        unit_price: 0,
+        discount_rate: 0,
+        discount_amount: 0,
+        tax_rate: 0,
+        tax_amount: 0,
+        total: 0,
+        taxes: [],
+    },
+    {
+        id: '3',
+        product_id: null,
+        description: '',
+        quantity: 1,
+        unit_price: 0,
+        discount_rate: 0,
+        discount_amount: 0,
+        tax_rate: 0,
+        tax_amount: 0,
+        total: 0,
+        taxes: [],
+    },
 ];
 
 export default function CreateInvoice({
     documentSubtypes,
-    customers,
+    initialContact,
+    customerSearchResults,
     products,
+    productSearchResults,
     ncf,
     document_subtype_id,
     currentWorkspace,
@@ -62,10 +107,10 @@ export default function CreateInvoice({
 
     const { data, setData, post, processing, errors } = useForm<InvoiceFormData>({
         document_subtype_id: document_subtype_id || null,
-        contact_id: fromQuotation?.contact_id ?? null,
+        contact_id: fromQuotation?.contact_id ?? initialContact?.id ?? null,
         workspace_id: currentWorkspace?.id || null,
         issue_date: fromQuotation?.issue_date ?? new Date().toISOString().split('T')[0],
-        due_date: fromQuotation?.due_date ?? '',
+        due_date: fromQuotation?.due_date ?? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Default to 7 days from now
         payment_term: fromQuotation?.payment_term ?? 'manual',
         notes: fromQuotation?.notes ?? defaultNote ?? '',
         ncf: ncf || '',
@@ -123,8 +168,10 @@ export default function CreateInvoice({
                     processing={processing}
                     onSubmit={handleSubmit}
                     documentSubtypes={documentSubtypes}
-                    customers={customers}
+                    initialContact={fromQuotation?.contact ?? initialContact ?? null}
+                    customerSearchResults={customerSearchResults}
                     products={products}
+                    productSearchResults={productSearchResults}
                     ncf={ncf}
                     currentWorkspace={currentWorkspace}
                     availableWorkspaces={availableWorkspaces}

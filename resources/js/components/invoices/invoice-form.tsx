@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react';
 import { AlertTriangle, CreditCard, Plus, Save, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import { EditNcfModal } from '@/components/invoices/edit-ncf-modal';
@@ -11,8 +11,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/searchable-select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ServerSearchableSelect, type ServerSearchableSelectOption } from '@/components/ui/server-searchable-select';
 import { Textarea } from '@/components/ui/textarea';
 import { type BankAccount, type Contact, type Product, type Salesman, type TaxesGroupedByType, type Workspace } from '@/types';
 import { useCurrency } from '@/utils/currency';
@@ -62,6 +63,8 @@ export interface InvoiceFormData {
     salesmen_ids: number[];
 }
 
+export type ContactSearchResult = Pick<Contact, 'id' | 'name' | 'phone_primary' | 'identification_number' | 'email'>;
+
 interface InvoiceFormProps {
     mode: 'create' | 'edit';
     invoiceId?: number;
@@ -72,8 +75,10 @@ interface InvoiceFormProps {
     processing: boolean;
     onSubmit: (e: React.FormEvent) => void;
     documentSubtypes: DocumentSubtype[];
-    customers: Contact[];
+    initialContact?: ContactSearchResult | null;
+    customerSearchResults?: ContactSearchResult[];
     products: Product[];
+    productSearchResults?: Product[];
     ncf?: string | null;
     currentWorkspace?: Workspace | null;
     availableWorkspaces?: Workspace[];
@@ -144,8 +149,10 @@ export default function InvoiceForm({
     processing,
     onSubmit,
     documentSubtypes,
-    customers,
+    initialContact = null,
+    customerSearchResults = [],
     products,
+    productSearchResults = [],
     ncf,
     currentWorkspace,
     availableWorkspaces,
@@ -164,14 +171,14 @@ export default function InvoiceForm({
     const [showProductModal, setShowProductModal] = useState(false);
     const [activeProductItemId, setActiveProductItemId] = useState<string | null>(null);
     const [showNcfModal, setShowNcfModal] = useState(false);
-    const [contactsList, setContactsList] = useState<Contact[]>(customers);
-    const [selectedContact, setSelectedContact] = useState<Contact | null>(() => {
-        if (data.contact_id) {
-            return customers.find((c) => c.id === data.contact_id) || null;
-        }
-        return null;
-    });
+    const [selectedContact, setSelectedContact] = useState<ContactSearchResult | null>(initialContact);
+    const [contactSearchQuery, setContactSearchQuery] = useState('');
+    const [isSearchingContacts, setIsSearchingContacts] = useState(false);
+    const contactSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [productsList, setProductsList] = useState<Product[]>(products);
+    const [productSearchQuery, setProductSearchQuery] = useState('');
+    const [isSearchingProducts, setIsSearchingProducts] = useState(false);
+    const productSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const { format: formatCurrency } = useCurrency();
 
@@ -181,6 +188,38 @@ export default function InvoiceForm({
             setData('ncf', ncf);
         }
     }, [ncf]);
+
+    useEffect(() => {
+        if (initialContact && data.contact_id === initialContact.id && selectedContact?.id !== initialContact.id) {
+            setSelectedContact(initialContact);
+        }
+    }, [initialContact, data.contact_id, selectedContact?.id]);
+
+    useEffect(() => {
+        if (productSearchResults.length > 0) {
+            setProductsList((previous) => {
+                const nextById = new Map(previous.map((product) => [product.id, product]));
+
+                productSearchResults.forEach((product) => {
+                    nextById.set(product.id, product);
+                });
+
+                return Array.from(nextById.values());
+            });
+        }
+    }, [productSearchResults]);
+
+    useEffect(() => {
+        return () => {
+            if (contactSearchTimeoutRef.current) {
+                clearTimeout(contactSearchTimeoutRef.current);
+            }
+
+            if (productSearchTimeoutRef.current) {
+                clearTimeout(productSearchTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Calculate totals
     const calculateTotals = (items: InvoiceItem[]) => {
@@ -376,26 +415,82 @@ export default function InvoiceForm({
     };
 
     const handleContactCreated = (newContact: Contact) => {
-        setContactsList((prev) => [...prev, newContact]);
         setData('contact_id', newContact.id);
         setSelectedContact(newContact);
     };
 
     const handleContactSelect = (contactId: string) => {
-        const contact = contactsList.find((c) => c.id === parseInt(contactId));
-        setData('contact_id', parseInt(contactId));
+        const parsedContactId = parseInt(contactId);
+        const contact =
+            customerSearchResults.find((c) => c.id === parsedContactId) ?? (selectedContact?.id === parsedContactId ? selectedContact : null);
+
+        setData('contact_id', parsedContactId);
         setSelectedContact(contact || null);
     };
 
-    const contactOptions: SearchableSelectOption[] = contactsList.map((contact) => ({
+    const handleContactSearch = (query: string) => {
+        if (contactSearchTimeoutRef.current) {
+            clearTimeout(contactSearchTimeoutRef.current);
+        }
+
+        const normalizedQuery = query.trim();
+        setContactSearchQuery(normalizedQuery);
+
+        if (normalizedQuery.length < 2) {
+            setIsSearchingContacts(false);
+
+            return;
+        }
+
+        contactSearchTimeoutRef.current = setTimeout(() => {
+            setIsSearchingContacts(true);
+            router.reload({
+                only: ['customerSearchResults'],
+                data: { contact_search: normalizedQuery },
+                onFinish: () => setIsSearchingContacts(false),
+            });
+        }, 300);
+    };
+
+    const formatContactOptionLabel = (contact: ContactSearchResult): string => {
+        return contact.phone_primary ? `${contact.name} (${contact.phone_primary})` : contact.name;
+    };
+
+    const contactOptions: ServerSearchableSelectOption[] = (contactSearchQuery.length >= 2 ? customerSearchResults : []).map((contact) => ({
         value: contact.id.toString(),
-        label: contact.name,
+        label: formatContactOptionLabel(contact),
     }));
 
-    const getProductOptions = (): SearchableSelectOption[] =>
-        productsList.map((product) => ({
+    const handleProductSearch = (query: string) => {
+        if (productSearchTimeoutRef.current) {
+            clearTimeout(productSearchTimeoutRef.current);
+        }
+
+        const normalizedQuery = query.trim();
+        setProductSearchQuery(normalizedQuery);
+
+        if (normalizedQuery.length < 2) {
+            setIsSearchingProducts(false);
+
+            return;
+        }
+
+        productSearchTimeoutRef.current = setTimeout(() => {
+            setIsSearchingProducts(true);
+            router.reload({
+                only: ['productSearchResults'],
+                data: { product_search: normalizedQuery },
+                onFinish: () => setIsSearchingProducts(false),
+            });
+        }, 300);
+    };
+
+    const formatProductOptionLabel = (product: Product): string => `${product.name} - ${formatCurrency(product.price)}`;
+
+    const getProductOptions = (): ServerSearchableSelectOption[] =>
+        (productSearchQuery.length >= 2 ? productSearchResults : []).map((product) => ({
             value: product.id.toString(),
-            label: `${product.name} - ${formatCurrency(product.price)}`,
+            label: formatProductOptionLabel(product),
             disabled: product.track_stock && product.stock_status === 'out_of_stock',
         }));
 
@@ -470,13 +565,18 @@ export default function InvoiceForm({
                                         <span className="text-red-500">*</span>
                                     </Label>
                                     <div className="flex gap-2">
-                                        <SearchableSelect
+                                        <ServerSearchableSelect
                                             options={contactOptions}
                                             value={data.contact_id?.toString() || ''}
+                                            selectedLabel={selectedContact ? formatContactOptionLabel(selectedContact) : undefined}
                                             onValueChange={handleContactSelect}
-                                            placeholder="Buscar contacto..."
-                                            searchPlaceholder="Escribir para buscar..."
+                                            onSearchChange={handleContactSearch}
+                                            placeholder="Seleccionar contacto..."
+                                            searchPlaceholder="Buscar por nombre, teléfono o RNC..."
+                                            searchPromptText="Escribe al menos 2 caracteres para buscar contactos."
                                             emptyText="No se encontró ningún contacto."
+                                            loadingText="Buscando contactos..."
+                                            isLoading={isSearchingContacts}
                                             noEmptyAction={
                                                 <Button
                                                     type="button"
@@ -656,13 +756,22 @@ export default function InvoiceForm({
                                         >
                                             {/* Product Selection */}
                                             <div className="col-span-2">
-                                                <SearchableSelect
+                                                <ServerSearchableSelect
                                                     options={getProductOptions()}
                                                     value={item.product_id?.toString() || ''}
+                                                    selectedLabel={(() => {
+                                                        const selectedProduct = getSelectedProduct(item);
+
+                                                        return selectedProduct ? formatProductOptionLabel(selectedProduct) : undefined;
+                                                    })()}
                                                     onValueChange={(value) => handleProductSelect(item.id, value)}
+                                                    onSearchChange={handleProductSearch}
                                                     placeholder="Seleccionar..."
                                                     searchPlaceholder="Buscar producto..."
+                                                    searchPromptText="Escribe al menos 2 caracteres para buscar productos."
                                                     emptyText="No se encontró ningún producto."
+                                                    loadingText="Buscando productos..."
+                                                    isLoading={isSearchingProducts}
                                                     footerAction={
                                                         <Button
                                                             type="button"

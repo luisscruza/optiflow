@@ -1,6 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import { Plus, Save } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import BiomicroscopiaModal from '@/components/prescriptions/biomicroscopia-modal';
@@ -13,7 +13,7 @@ import RefraccionModal from '@/components/prescriptions/refraccion-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/searchable-select';
+import { ServerSearchableSelect, type ServerSearchableSelectOption } from '@/components/ui/server-searchable-select';
 import { MasterTableData, type Contact, type Workspace } from '@/types';
 import RefraccionSubjetivo from './refraccion-subjetivo';
 
@@ -197,8 +197,10 @@ interface PrescriptionFormData {
 }
 
 interface PrescriptionFormProps {
-    customers: Contact[];
-    optometrists: Contact[];
+    initialContact?: Contact | null;
+    customerSearchResults?: Contact[];
+    initialOptometrist?: Contact | null;
+    optometristSearchResults?: Contact[];
     masterTables: Record<string, MasterTableData>;
     workspace: { current: Workspace | null; available: Workspace[] };
     initialData?: Partial<PrescriptionFormData>;
@@ -209,8 +211,10 @@ interface PrescriptionFormProps {
 }
 
 export default function PrescriptionForm({
-    customers,
-    optometrists,
+    initialContact = null,
+    customerSearchResults = [],
+    initialOptometrist = null,
+    optometristSearchResults = [],
     masterTables,
     workspace,
     initialData = {},
@@ -221,19 +225,32 @@ export default function PrescriptionForm({
 }: PrescriptionFormProps) {
     const [showContactModal, setShowContactModal] = useState(false);
     const [showRefraccionModal, setShowRefraccionModal] = useState(false);
-    const [contactsList, setContactsList] = useState<Contact[]>(customers);
-    const [selectedContact, setSelectedContact] = useState<Contact | null>(
-        initialData.contact_id ? customers.find((c) => c.id === initialData.contact_id) || null : null,
-    );
-    const [selectedOptometrist, setSelectedOptometrist] = useState<Contact | null>(
-        initialData.optometrist_id ? optometrists.find((o) => o.id === initialData.optometrist_id) || null : null,
-    );
+    const [selectedContact, setSelectedContact] = useState<Contact | null>(initialContact);
+    const [selectedOptometrist, setSelectedOptometrist] = useState<Contact | null>(initialOptometrist);
+    const [contactSearchQuery, setContactSearchQuery] = useState('');
+    const [optometristSearchQuery, setOptometristSearchQuery] = useState('');
+    const [isSearchingContacts, setIsSearchingContacts] = useState(false);
+    const [isSearchingOptometrists, setIsSearchingOptometrists] = useState(false);
+    const contactSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const optometristSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     if (!workspace || !workspace.available?.length) {
         return null;
     }
 
     const { current, available } = workspace;
+
+    useEffect(() => {
+        return () => {
+            if (contactSearchTimeoutRef.current) {
+                clearTimeout(contactSearchTimeoutRef.current);
+            }
+
+            if (optometristSearchTimeoutRef.current) {
+                clearTimeout(optometristSearchTimeoutRef.current);
+            }
+        };
+    }, []);
 
     const { data, setData, post, put, processing, errors } = useForm<PrescriptionFormData>({
         contact_id: initialData.contact_id || null,
@@ -431,21 +448,92 @@ export default function PrescriptionForm({
     };
 
     const handleContactCreated = (newContact: Contact) => {
-        setContactsList((prev) => [...prev, newContact]);
         setData('contact_id', newContact.id);
         setSelectedContact(newContact);
     };
 
     const handleContactSelect = (contactId: string) => {
-        const contact = contactsList.find((c) => c.id === parseInt(contactId));
-        setData('contact_id', parseInt(contactId));
+        const parsedContactId = parseInt(contactId);
+        const contact =
+            customerSearchResults.find((c) => c.id === parsedContactId) ?? (selectedContact?.id === parsedContactId ? selectedContact : null);
+
+        setData('contact_id', parsedContactId);
         setSelectedContact(contact || null);
     };
 
-    const contactOptions: SearchableSelectOption[] = contactsList.map((contact) => ({
+    const handleContactSearch = (query: string) => {
+        if (contactSearchTimeoutRef.current) {
+            clearTimeout(contactSearchTimeoutRef.current);
+        }
+
+        const normalizedQuery = query.trim();
+        setContactSearchQuery(normalizedQuery);
+
+        if (normalizedQuery.length < 2) {
+            setIsSearchingContacts(false);
+
+            return;
+        }
+
+        contactSearchTimeoutRef.current = setTimeout(() => {
+            setIsSearchingContacts(true);
+            router.reload({
+                only: ['customerSearchResults'],
+                data: { contact_search: normalizedQuery },
+                onFinish: () => setIsSearchingContacts(false),
+            });
+        }, 300);
+    };
+
+    const handleOptometristSearch = (query: string) => {
+        if (optometristSearchTimeoutRef.current) {
+            clearTimeout(optometristSearchTimeoutRef.current);
+        }
+
+        const normalizedQuery = query.trim();
+        setOptometristSearchQuery(normalizedQuery);
+
+        if (normalizedQuery.length < 2) {
+            setIsSearchingOptometrists(false);
+
+            return;
+        }
+
+        optometristSearchTimeoutRef.current = setTimeout(() => {
+            setIsSearchingOptometrists(true);
+            router.reload({
+                only: ['optometristSearchResults'],
+                data: { optometrist_search: normalizedQuery },
+                onFinish: () => setIsSearchingOptometrists(false),
+            });
+        }, 300);
+    };
+
+    const formatContactOptionLabel = (contact: Contact): string => {
+        return contact.phone_primary ? `${contact.name} (${contact.phone_primary})` : contact.name;
+    };
+
+    const contactOptions: ServerSearchableSelectOption[] = (contactSearchQuery.length >= 2 ? customerSearchResults : []).map((contact) => ({
         value: contact.id.toString(),
-        label: contact.name,
+        label: formatContactOptionLabel(contact),
     }));
+
+    const optometristOptions: ServerSearchableSelectOption[] = (optometristSearchQuery.length >= 2 ? optometristSearchResults : []).map(
+        (optometrist) => ({
+            value: optometrist.id.toString(),
+            label: formatContactOptionLabel(optometrist),
+        }),
+    );
+
+    const handleOptometristSelect = (value: string) => {
+        const parsedOptometristId = parseInt(value);
+        const optometrist =
+            optometristSearchResults.find((o) => o.id === parsedOptometristId) ??
+            (selectedOptometrist?.id === parsedOptometristId ? selectedOptometrist : null);
+
+        setData('optometrist_id', parsedOptometristId);
+        setSelectedOptometrist(optometrist || null);
+    };
 
     const isFormValid = data.contact_id && data.optometrist_id && data.workspace_id;
 
@@ -466,13 +554,18 @@ export default function PrescriptionForm({
                                         <span className="text-red-500">*</span>
                                     </Label>
                                     <div className="flex gap-2">
-                                        <SearchableSelect
+                                        <ServerSearchableSelect
                                             options={contactOptions}
                                             value={data.contact_id?.toString() || ''}
+                                            selectedLabel={selectedContact ? formatContactOptionLabel(selectedContact) : undefined}
                                             onValueChange={handleContactSelect}
-                                            placeholder="Buscar contacto..."
-                                            searchPlaceholder="Escribir para buscar..."
+                                            onSearchChange={handleContactSearch}
+                                            placeholder="Seleccionar contacto..."
+                                            searchPlaceholder="Buscar por nombre, teléfono o RNC..."
+                                            searchPromptText="Escribe al menos 2 caracteres para buscar contactos."
                                             emptyText="No se encontró ningún contacto."
+                                            loadingText="Buscando contactos..."
+                                            isLoading={isSearchingContacts}
                                             noEmptyAction={
                                                 <Button
                                                     type="button"
@@ -509,20 +602,18 @@ export default function PrescriptionForm({
                                         Evaluador
                                         <span className="text-red-500">*</span>
                                     </Label>
-                                    <SearchableSelect
-                                        options={optometrists.map((optometrist) => ({
-                                            value: optometrist.id.toString(),
-                                            label: optometrist.name,
-                                        }))}
+                                    <ServerSearchableSelect
+                                        options={optometristOptions}
                                         value={data.optometrist_id?.toString() || ''}
-                                        onValueChange={(value) => {
-                                            const optometrist = optometrists.find((o) => o.id === parseInt(value));
-                                            setData('optometrist_id', parseInt(value));
-                                            setSelectedOptometrist(optometrist || null);
-                                        }}
-                                        placeholder="Buscar optometra..."
-                                        searchPlaceholder="Escribir para buscar..."
+                                        selectedLabel={selectedOptometrist ? formatContactOptionLabel(selectedOptometrist) : undefined}
+                                        onValueChange={handleOptometristSelect}
+                                        onSearchChange={handleOptometristSearch}
+                                        placeholder="Seleccionar evaluador..."
+                                        searchPlaceholder="Buscar evaluador..."
+                                        searchPromptText="Escribe al menos 2 caracteres para buscar evaluadores."
                                         emptyText="No se encontró ningún Evaluador."
+                                        loadingText="Buscando evaluadores..."
+                                        isLoading={isSearchingOptometrists}
                                         className="flex-1"
                                         triggerClassName={`h-10 ${errors.optometrist_id ? 'border-red-300 ring-red-500/20' : 'border-gray-300'}`}
                                     />
@@ -583,7 +674,7 @@ export default function PrescriptionForm({
                             </div>
 
                             {/* Middle - Examen Externo/Biomicroscopía */}
-                            <div className="flex flex-col gap-2" >
+                            <div className="flex flex-col gap-2">
                                 <BiomicroscopiaModal
                                     data={{
                                         biomicroscopia_od_cejas: data.biomicroscopia_od_cejas,
@@ -637,7 +728,6 @@ export default function PrescriptionForm({
                                     errors={errors}
                                 />
                             </div>
-
                         </div>
 
                         {/* Queratometría y Refracción - Bottom Row */}

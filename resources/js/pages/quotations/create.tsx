@@ -1,6 +1,6 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { AlertTriangle, FileText, Plus, Save, ShoppingCart, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import { type SelectedTax, TaxMultiSelect } from '@/components/taxes/tax-multi-select';
@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/searchable-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ServerSearchableSelect, type ServerSearchableSelectOption } from '@/components/ui/server-searchable-select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Contact, type Product, type TaxesGroupedByType, type Workspace } from '@/types';
@@ -72,8 +72,10 @@ interface FormData {
 
 interface Props {
     documentSubtypes: DocumentSubtype[];
-    customers: Contact[];
+    initialContact?: Contact | null;
+    customerSearchResults?: Contact[];
     products: Product[];
+    productSearchResults?: Product[];
     ncf?: string | null;
     document_subtype_id?: number | null;
     currentWorkspace?: Workspace | null;
@@ -83,8 +85,10 @@ interface Props {
 
 export default function CreateQuotation({
     documentSubtypes,
-    customers,
+    initialContact = null,
+    customerSearchResults = [],
     products,
+    productSearchResults = [],
     ncf,
     document_subtype_id,
     currentWorkspace,
@@ -93,10 +97,42 @@ export default function CreateQuotation({
 }: Props) {
     const [itemId, setItemId] = useState(3);
     const [showContactModal, setShowContactModal] = useState(false);
-    const [contactsList, setContactsList] = useState<Contact[]>(customers);
-    const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+    const [selectedContact, setSelectedContact] = useState<Contact | null>(initialContact);
+    const [contactSearchQuery, setContactSearchQuery] = useState('');
+    const [isSearchingContacts, setIsSearchingContacts] = useState(false);
+    const contactSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const [productsList, setProductsList] = useState<Product[]>(products);
+    const [productSearchQuery, setProductSearchQuery] = useState('');
+    const [isSearchingProducts, setIsSearchingProducts] = useState(false);
+    const productSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const { format: formatCurrency } = useCurrency();
+
+    useEffect(() => {
+        if (productSearchResults.length > 0) {
+            setProductsList((previous) => {
+                const nextById = new Map(previous.map((product) => [product.id, product]));
+
+                productSearchResults.forEach((product) => {
+                    nextById.set(product.id, product);
+                });
+
+                return Array.from(nextById.values());
+            });
+        }
+    }, [productSearchResults]);
+
+    useEffect(() => {
+        return () => {
+            if (contactSearchTimeoutRef.current) {
+                clearTimeout(contactSearchTimeoutRef.current);
+            }
+
+            if (productSearchTimeoutRef.current) {
+                clearTimeout(productSearchTimeoutRef.current);
+            }
+        };
+    }, []);
 
     const calculateDueDate = (issueDate: string, paymentTerm: string): string => {
         if (!issueDate || paymentTerm === 'manual') return '';
@@ -112,7 +148,7 @@ export default function CreateQuotation({
 
     const { data, setData, post, processing, errors } = useForm<FormData>({
         document_subtype_id: document_subtype_id || null,
-        contact_id: null,
+        contact_id: initialContact?.id ?? null,
         workspace_id: currentWorkspace?.id || null,
         issue_date: new Date().toISOString().split('T')[0],
         due_date: new Date(new Date().setDate(new Date().getDate() + 15)).toISOString().split('T')[0],
@@ -293,7 +329,7 @@ export default function CreateQuotation({
     // Get selected product for an item
     const getSelectedProduct = (item: QuotationItem): Product | null => {
         if (!item.product_id) return null;
-        return products.find((p) => p.id === item.product_id) || null;
+        return productsList.find((p) => p.id === item.product_id) || null;
     };
 
     // Get stock warning for a specific item
@@ -363,7 +399,7 @@ export default function CreateQuotation({
 
     // Handle product selection - Fixed to prevent clearing
     const handleProductSelect = (itemId: string, productId: string) => {
-        const product = products.find((p) => p.id === parseInt(productId));
+        const product = productsList.find((p) => p.id === parseInt(productId));
         if (product) {
             const updatedItems = data.items.map((item) => {
                 if (item.id === itemId) {
@@ -448,45 +484,102 @@ export default function CreateQuotation({
     };
 
     const handleContactCreated = (newContact: Contact) => {
-        // Add the new contact to the list
-        setContactsList((prev) => [...prev, newContact]);
         // Auto-select the new contact
         setData('contact_id', newContact.id);
         setSelectedContact(newContact);
     };
 
     const handleContactSelect = (contactId: string) => {
-        const contact = contactsList.find((c) => c.id === parseInt(contactId));
-        setData('contact_id', parseInt(contactId));
+        const parsedContactId = parseInt(contactId);
+        const contact =
+            customerSearchResults.find((c) => c.id === parsedContactId) ?? (selectedContact?.id === parsedContactId ? selectedContact : null);
+
+        setData('contact_id', parsedContactId);
         setSelectedContact(contact || null);
     };
 
+    const handleContactSearch = (query: string) => {
+        if (contactSearchTimeoutRef.current) {
+            clearTimeout(contactSearchTimeoutRef.current);
+        }
+
+        const normalizedQuery = query.trim();
+        setContactSearchQuery(normalizedQuery);
+
+        if (normalizedQuery.length < 2) {
+            setIsSearchingContacts(false);
+
+            return;
+        }
+
+        contactSearchTimeoutRef.current = setTimeout(() => {
+            setIsSearchingContacts(true);
+            router.reload({
+                only: ['customerSearchResults'],
+                data: { contact_search: normalizedQuery },
+                onFinish: () => setIsSearchingContacts(false),
+            });
+        }, 300);
+    };
+
+    const formatContactOptionLabel = (contact: Contact): string => {
+        return contact.phone_primary ? `${contact.name} (${contact.phone_primary})` : contact.name;
+    };
+
     // Helper function to convert contacts to SearchableSelectOption format
-    const contactOptions: SearchableSelectOption[] = contactsList.map((contact) => ({
+    const contactOptions: ServerSearchableSelectOption[] = (contactSearchQuery.length >= 2 ? customerSearchResults : []).map((contact) => ({
         value: contact.id.toString(),
-        label: contact.name,
+        label: formatContactOptionLabel(contact),
     }));
+
+    const handleProductSearch = (query: string) => {
+        if (productSearchTimeoutRef.current) {
+            clearTimeout(productSearchTimeoutRef.current);
+        }
+
+        const normalizedQuery = query.trim();
+        setProductSearchQuery(normalizedQuery);
+
+        if (normalizedQuery.length < 2) {
+            setIsSearchingProducts(false);
+
+            return;
+        }
+
+        productSearchTimeoutRef.current = setTimeout(() => {
+            setIsSearchingProducts(true);
+            router.reload({
+                only: ['productSearchResults'],
+                data: { product_search: normalizedQuery },
+                onFinish: () => setIsSearchingProducts(false),
+            });
+        }, 300);
+    };
+
+    const formatProductOptionLabel = (product: Product): string => {
+        let stockLabel = '';
+
+        if (product.track_stock) {
+            if (product.stock_status === 'out_of_stock') {
+                stockLabel = ' ⚠️ Sin stock';
+            } else if (product.stock_status === 'low_stock') {
+                stockLabel = ` ⚠️ Stock bajo (${product.stock_quantity})`;
+            } else {
+                stockLabel = ` (${product.stock_quantity} disp.)`;
+            }
+        }
+
+        return `${product.name} - ${formatCurrency(product.price)}${stockLabel}`;
+    };
 
     // Helper function to convert products to SearchableSelectOption format
     // For quotations, we allow selecting out-of-stock items but show stock status
-    const getProductOptions = (): SearchableSelectOption[] =>
-        products.map((product) => {
-            let stockLabel = '';
-            if (product.track_stock) {
-                if (product.stock_status === 'out_of_stock') {
-                    stockLabel = ' ⚠️ Sin stock';
-                } else if (product.stock_status === 'low_stock') {
-                    stockLabel = ` ⚠️ Stock bajo (${product.stock_quantity})`;
-                } else {
-                    stockLabel = ` (${product.stock_quantity} disp.)`;
-                }
-            }
-            return {
-                value: product.id.toString(),
-                label: `${product.name} - ${formatCurrency(product.price)}${stockLabel}`,
-                disabled: false, // Allow selection even if out of stock for quotations
-            };
-        });
+    const getProductOptions = (): ServerSearchableSelectOption[] =>
+        (productSearchQuery.length >= 2 ? productSearchResults : []).map((product) => ({
+            value: product.id.toString(),
+            label: formatProductOptionLabel(product),
+            disabled: false,
+        }));
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -569,13 +662,18 @@ export default function CreateQuotation({
                                                 <span className="text-red-500">*</span>
                                             </Label>
                                             <div className="flex gap-2">
-                                                <SearchableSelect
+                                                <ServerSearchableSelect
                                                     options={contactOptions}
                                                     value={data.contact_id?.toString() || ''}
+                                                    selectedLabel={selectedContact ? formatContactOptionLabel(selectedContact) : undefined}
                                                     onValueChange={handleContactSelect}
-                                                    placeholder="Buscar contacto..."
-                                                    searchPlaceholder="Escribir para buscar..."
+                                                    onSearchChange={handleContactSearch}
+                                                    placeholder="Seleccionar contacto..."
+                                                    searchPlaceholder="Buscar por nombre, teléfono o RNC..."
+                                                    searchPromptText="Escribe al menos 2 caracteres para buscar contactos."
                                                     emptyText="No se encontró ningún contacto."
+                                                    loadingText="Buscando contactos..."
+                                                    isLoading={isSearchingContacts}
                                                     noEmptyAction={
                                                         <Button
                                                             type="button"
@@ -805,13 +903,22 @@ export default function CreateQuotation({
                                                     <div className="space-y-3">
                                                         <div>
                                                             <Label className="text-xs font-medium text-gray-700">Producto</Label>
-                                                            <SearchableSelect
+                                                            <ServerSearchableSelect
                                                                 options={getProductOptions()}
                                                                 value={item.product_id?.toString() || ''}
+                                                                selectedLabel={(() => {
+                                                                    const selectedProduct = getSelectedProduct(item);
+
+                                                                    return selectedProduct ? formatProductOptionLabel(selectedProduct) : undefined;
+                                                                })()}
                                                                 onValueChange={(value) => handleProductSelect(item.id, value)}
+                                                                onSearchChange={handleProductSearch}
                                                                 placeholder="Seleccionar producto"
                                                                 searchPlaceholder="Buscar producto..."
+                                                                searchPromptText="Escribe al menos 2 caracteres para buscar productos."
                                                                 emptyText="No se encontró ningún producto."
+                                                                loadingText="Buscando productos..."
+                                                                isLoading={isSearchingProducts}
                                                                 triggerClassName="h-10 mt-1"
                                                             />
                                                         </div>
@@ -958,13 +1065,22 @@ export default function CreateQuotation({
                                                 <div className="hidden items-center gap-3 border-b border-gray-100 py-3 last:border-b-0 lg:grid lg:grid-cols-12">
                                                     {/* Product Selection */}
                                                     <div className="col-span-2">
-                                                        <SearchableSelect
+                                                        <ServerSearchableSelect
                                                             options={getProductOptions()}
                                                             value={item.product_id?.toString() || ''}
+                                                            selectedLabel={(() => {
+                                                                const selectedProduct = getSelectedProduct(item);
+
+                                                                return selectedProduct ? formatProductOptionLabel(selectedProduct) : undefined;
+                                                            })()}
                                                             onValueChange={(value) => handleProductSelect(item.id, value)}
+                                                            onSearchChange={handleProductSearch}
                                                             placeholder="Seleccionar..."
                                                             searchPlaceholder="Buscar producto..."
+                                                            searchPromptText="Escribe al menos 2 caracteres para buscar productos."
                                                             emptyText="No se encontró ningún producto."
+                                                            loadingText="Buscando productos..."
+                                                            isLoading={isSearchingProducts}
                                                             triggerClassName="h-9 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
                                                         />
                                                     </div>

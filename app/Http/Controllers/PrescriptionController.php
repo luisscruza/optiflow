@@ -9,29 +9,27 @@ use App\Actions\UpdatePrescriptionAction;
 use App\Enums\Permission;
 use App\Http\Requests\CreatePrescriptionRequest;
 use App\Http\Requests\UpdatePrescriptionRequest;
-use App\Models\Contact;
 use App\Models\Mastertable;
 use App\Models\MastertableItem;
 use App\Models\Prescription;
 use App\Models\User;
+use App\Support\ContactSearch;
 use App\Tables\PrescriptionsTable;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
+use Inertia\Inertia;
 use Inertia\Response;
 
 final class PrescriptionController
 {
-    public function create(#[CurrentUser] User $user): Response
+    public function create(Request $request, #[CurrentUser] User $user, ContactSearch $contactSearch): Response
     {
         abort_unless($user->can(Permission::PrescriptionsCreate), 403);
 
-        $customers = Contact::query()->orderBy('name')
-            ->get();
-
-        $optometrists = Contact::query()->optometrists()->orderBy('name')
-            ->get();
+        $initialContactId = $request->integer('contact_id');
+        $initialOptometristId = $request->integer('optometrist_id');
 
         $masterTables = Mastertable::with('items')
             ->whereIn('alias', [
@@ -61,8 +59,10 @@ final class PrescriptionController
             ])->all();
 
         return inertia('prescriptions/create', [
-            'customers' => $customers,
-            'optometrists' => $optometrists,
+            'initialContact' => $contactSearch->findById($initialContactId > 0 ? $initialContactId : null, ['customer']),
+            'customerSearchResults' => Inertia::optional(fn (): array => $contactSearch->search((string) $request->string('contact_search'), ['customer'])),
+            'initialOptometrist' => $contactSearch->findById($initialOptometristId > 0 ? $initialOptometristId : null, ['optometrist']),
+            'optometristSearchResults' => Inertia::optional(fn (): array => $contactSearch->search((string) $request->string('optometrist_search'), ['optometrist'])),
             'masterTables' => $masterTables,
         ]);
     }
@@ -106,7 +106,7 @@ final class PrescriptionController
         ]);
     }
 
-    public function edit(Prescription $prescription, #[CurrentUser] User $user): Response
+    public function edit(Request $request, Prescription $prescription, #[CurrentUser] User $user, ContactSearch $contactSearch): Response
     {
         abort_unless($user->can(Permission::PrescriptionsEdit), 403);
 
@@ -118,12 +118,6 @@ final class PrescriptionController
             'estadoActual',
             'historiaOcularFamiliar',
         ]);
-
-        $customers = Contact::query()->orderBy('name')
-            ->get();
-
-        $optometrists = Contact::query()->optometrists()->orderBy('name')
-            ->get();
 
         $masterTables = Mastertable::with('items')
             ->whereIn('alias', [
@@ -160,8 +154,10 @@ final class PrescriptionController
 
         return inertia('prescriptions/edit', [
             'prescription' => $prescriptionData,
-            'customers' => $customers,
-            'optometrists' => $optometrists,
+            'initialContact' => $prescription->patient ? $contactSearch->toOption($prescription->patient) : null,
+            'customerSearchResults' => Inertia::optional(fn (): array => $contactSearch->search((string) $request->string('contact_search'), ['customer'])),
+            'initialOptometrist' => $prescription->optometrist ? $contactSearch->toOption($prescription->optometrist) : null,
+            'optometristSearchResults' => Inertia::optional(fn (): array => $contactSearch->search((string) $request->string('optometrist_search'), ['optometrist'])),
             'masterTables' => $masterTables,
         ]);
     }

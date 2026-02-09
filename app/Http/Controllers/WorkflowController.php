@@ -17,12 +17,12 @@ use App\Http\Requests\CreateWorkflowRequest;
 use App\Http\Requests\DeleteWorkflowRequest;
 use App\Http\Requests\ShowWorkflowRequest;
 use App\Http\Requests\UpdateWorkflowRequest;
-use App\Models\Contact;
 use App\Models\Invoice;
 use App\Models\Mastertable;
 use App\Models\Prescription;
 use App\Models\Workflow;
 use App\Models\WorkflowJob;
+use App\Support\ContactSearch;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pipeline\Pipeline;
@@ -86,7 +86,7 @@ final class WorkflowController
             ->with('success', 'Flujo de trabajo creado exitosamente.');
     }
 
-    public function show(ShowWorkflowRequest $request, Workflow $workflow): Response
+    public function show(ShowWorkflowRequest $request, Workflow $workflow, ContactSearch $contactSearch): Response
     {
 
         $filters = $request->getFilters();
@@ -152,11 +152,10 @@ final class WorkflowController
             'workflow' => $workflow,
             'filters' => array_filter($filters),
             'showAllWorkspaces' => $showAllWorkspaces,
-            'contacts' => fn () => Contact::query()
-                ->customers()
-                ->where('status', 'active')
-                ->orderBy('name')
-                ->get(),
+            'selectedContact' => $contactSearch->findById((int) ($filters['contact_id'] ?? 0), ['customer'], 'active'),
+            'contactSearchResults' => Inertia::optional(
+                fn (): array => $contactSearch->search((string) $request->string('contact_search'), ['customer'], 25, 'active')
+            ),
             'invoices' => Inertia::lazy(fn () => $request->getContactId()
                 ? Invoice::query()
                     ->where('contact_id', $request->getContactId())

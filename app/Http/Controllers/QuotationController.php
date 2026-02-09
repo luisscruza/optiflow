@@ -12,13 +12,12 @@ use App\Enums\TaxType;
 use App\Exceptions\ActionValidationException;
 use App\Http\Requests\CreateQuotationRequest;
 use App\Http\Requests\UpdateQuotationRequest;
-use App\Models\Contact;
 use App\Models\DocumentSubtype;
-use App\Models\Product;
-use App\Models\ProductStock;
 use App\Models\Quotation;
 use App\Models\Tax;
 use App\Models\User;
+use App\Support\ContactSearch;
+use App\Support\ProductSearch;
 use App\Tables\QuotationsTable;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
@@ -47,7 +46,7 @@ final class QuotationController
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request, #[CurrentUser] User $user): Response
+    public function create(Request $request, #[CurrentUser] User $user, ContactSearch $contactSearch, ProductSearch $productSearch): Response
     {
         abort_unless($user->can(Permission::QuotationsCreate), 403);
 
@@ -58,34 +57,12 @@ final class QuotationController
             ->forQuotation()
             ->orderBy('name')->get();
 
-        $customers = Contact::customers()
-            ->orderBy('name')
-            ->get();
-
-        // Include stock information to help users see available stock when creating quotations
-        $products = Product::with(['defaultTax'])
-            ->when($currentWorkspace, function ($query) use ($currentWorkspace): void {
-                $query->with(['stocks' => function ($stockQuery) use ($currentWorkspace): void {
-                    $stockQuery->where('workspace_id', $currentWorkspace->id);
-                }]);
-            })
-            ->orderBy('name')
-            ->get()
-            ->map(function ($product) use ($currentWorkspace): Product {
-                $stock = $currentWorkspace ? $product->stocks->first() : null;
-                $product->setAttribute('current_stock', $stock);
-                $product->setAttribute('stock_quantity', $stock ? $stock->quantity : 0);
-                $product->setAttribute('minimum_quantity', $stock ? $stock->minimum_quantity : 0);
-                $product->setAttribute('stock_status', $this->getStockStatus($product, $stock));
-
-                unset($product->stocks);
-
-                return $product;
-            });
-
         $documentSubtype = $request->filled('document_subtype_id')
             ? DocumentSubtype::query()->findOrFail($request->get('document_subtype_id'))
             : DocumentSubtype::forQuotation()->active()->first();
+
+        $initialContactId = $request->integer('contact_id');
+        $initialContact = $contactSearch->findCustomerById($initialContactId > 0 ? $initialContactId : null);
 
         $availableWorkspaces = Auth::user()?->workspaces ?? collect();
 
@@ -106,12 +83,16 @@ final class QuotationController
 
         return Inertia::render('quotations/create', [
             'documentSubtypes' => $documentSubtypes,
-            'customers' => $customers,
-            'products' => $products,
+            'products' => [],
+            'productSearchResults' => Inertia::optional(
+                fn (): array => $productSearch->search((string) $request->string('product_search'), $currentWorkspace)
+            ),
             'ncf' => $documentSubtype?->generateNCF(),
             'document_subtype_id' => $documentSubtype->id,
             'currentWorkspace' => $currentWorkspace,
             'availableWorkspaces' => $availableWorkspaces,
+            'initialContact' => $initialContact,
+            'customerSearchResults' => Inertia::optional(fn (): array => $contactSearch->searchCustomers((string) $request->string('contact_search'))),
             'taxesGroupedByType' => $taxesGroupedByType,
         ]);
     }
@@ -156,7 +137,7 @@ final class QuotationController
     /**
      * Show the form for editing the specified quotation.
      */
-    public function edit(Quotation $quotation, #[CurrentUser] User $user): Response
+    public function edit(Request $request, Quotation $quotation, #[CurrentUser] User $user, ContactSearch $contactSearch, ProductSearch $productSearch): Response
     {
         abort_unless($user->can(Permission::QuotationsEdit), 403);
 
@@ -167,30 +148,11 @@ final class QuotationController
             ->forQuotation()
             ->orderBy('name')->get();
 
-        $customers = Contact::customers()->orderBy('name')->get();
-
         $currentWorkspace = Context::get('workspace');
 
-        // Include stock information to help users see available stock when editing quotations
-        $products = Product::with(['defaultTax'])
-            ->when($currentWorkspace, function ($query) use ($currentWorkspace): void {
-                $query->with(['stocks' => function ($stockQuery) use ($currentWorkspace): void {
-                    $stockQuery->where('workspace_id', $currentWorkspace->id);
-                }]);
-            })
-            ->orderBy('name')
-            ->get()
-            ->map(function ($product) use ($currentWorkspace): Product {
-                $stock = $currentWorkspace ? $product->stocks->first() : null;
-                $product->setAttribute('current_stock', $stock);
-                $product->setAttribute('stock_quantity', $stock ? $stock->quantity : 0);
-                $product->setAttribute('minimum_quantity', $stock ? $stock->minimum_quantity : 0);
-                $product->setAttribute('stock_status', $this->getStockStatus($product, $stock));
-
-                unset($product->stocks);
-
-                return $product;
-            });
+        $initialProductIds = $quotation->items
+            ->pluck('product_id')
+            ->all();
 
         $taxes = Tax::query()->orderBy('name')->get();
 
@@ -212,10 +174,14 @@ final class QuotationController
         return Inertia::render('quotations/Edit', [
             'quotation' => $quotation,
             'documentSubtypes' => $documentSubtypes,
-            'customers' => $customers,
-            'products' => $products,
+            'products' => $productSearch->findByIds($initialProductIds, $currentWorkspace),
+            'productSearchResults' => Inertia::optional(
+                fn (): array => $productSearch->search((string) $request->string('product_search'), $currentWorkspace)
+            ),
             'taxes' => $taxes,
             'taxesGroupedByType' => $taxesGroupedByType,
+            'initialContact' => $quotation->contact ? $contactSearch->toOption($quotation->contact) : null,
+            'customerSearchResults' => Inertia::optional(fn (): array => $contactSearch->searchCustomers((string) $request->string('contact_search'))),
         ]);
     }
 
@@ -256,25 +222,5 @@ final class QuotationController
 
         return redirect()->route('quotations.index')
             ->with('success', 'Cotización eliminada exitosamente.');
-    }
-
-    /**
-     * Get stock status for a product.
-     */
-    private function getStockStatus(Product $product, ?ProductStock $stock): string
-    {
-        if (! $product->track_stock) {
-            return 'not_tracked';
-        }
-
-        if (! $stock instanceof ProductStock || $stock->quantity <= 0) {
-            return 'out_of_stock';
-        }
-
-        if ($stock->quantity <= $stock->minimum_quantity) {
-            return 'low_stock';
-        }
-
-        return 'in_stock';
     }
 }
