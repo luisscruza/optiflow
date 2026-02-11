@@ -156,6 +156,8 @@ export interface Workspace {
     owner_id: number;
     settings?: Record<string, unknown> | null;
     is_active: boolean;
+    address?: string | null;
+    phone?: string | null;
     created_at: string;
     updated_at: string;
     owner?: User;
@@ -426,6 +428,7 @@ export interface Contact {
     documents_count?: number;
     supplied_stocks_count?: number;
     comments?: CommentData[];
+    age?: number | null;
     // Related data counts for stats
     invoices_count?: number;
     quotations_count?: number;
@@ -816,6 +819,23 @@ export interface Prescription {
     refraccion_subjetivo_cerca_oi_eje?: string;
     refraccion_subjetivo_cerca_oi_adicion?: string;
     refraccion_subjetivo_cerca_oi_av?: string;
+
+    // Subjetivo (Rx Final)
+    subjetivo_od_esfera?: string;
+    subjetivo_od_cilindro?: string;
+    subjetivo_od_eje?: string;
+    subjetivo_od_add?: string;
+    subjetivo_od_dp?: string;
+    subjetivo_od_av_lejos?: string;
+    subjetivo_od_av_cerca?: string;
+
+    subjetivo_oi_esfera?: string;
+    subjetivo_oi_cilindro?: string;
+    subjetivo_oi_eje?: string;
+    subjetivo_oi_add?: string;
+    subjetivo_oi_dp?: string;
+    subjetivo_oi_av_lejos?: string;
+    subjetivo_oi_av_cerca?: string;
 }
 
 export interface InvoiceStatusConfig {

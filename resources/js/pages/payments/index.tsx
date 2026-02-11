@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { DollarSign, Eye, Filter, Plus, Search } from 'lucide-react';
+import { DollarSign, Eye, Filter, Plus, Printer, Search } from 'lucide-react';
 import { useState } from 'react';
 
 import { usePermissions } from '@/hooks/use-permissions';
@@ -227,13 +227,27 @@ export default function PaymentsIndex({ payments, filters, paymentTypes, bankAcc
                                                 <TableCell className="capitalize">{payment.payment_method}</TableCell>
                                                 <TableCell className="text-right font-medium">{formatCurrency(payment.amount)}</TableCell>
                                                 <TableCell className="text-right">
-                                                    {can('payments:view') && (
-                                                        <Button variant="ghost" size="sm" asChild>
-                                                            <Link href={`/payments/${payment.id}`}>
-                                                                <Eye className="size-4" />
-                                                            </Link>
-                                                        </Button>
-                                                    )}
+                                                    <div className="flex items-center justify-end gap-1">
+                                                        {can('payments:view') && (
+                                                            <Button variant="ghost" size="sm" asChild>
+                                                                <a
+                                                                    href={`/payments/${payment.id}/pdf`}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    title="Imprimir recibo"
+                                                                >
+                                                                    <Printer className="size-4" />
+                                                                </a>
+                                                            </Button>
+                                                        )}
+                                                        {can('payments:view') && (
+                                                            <Button variant="ghost" size="sm" asChild>
+                                                                <Link href={`/payments/${payment.id}`}>
+                                                                    <Eye className="size-4" />
+                                                                </Link>
+                                                            </Button>
+                                                        )}
+                                                    </div>
                                                 </TableCell>
                                             </TableRow>
                                         ))}

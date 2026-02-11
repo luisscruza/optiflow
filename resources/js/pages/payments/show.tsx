@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Calendar, CreditCard, DollarSign, Edit, FileText, User, XCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, CreditCard, DollarSign, Edit, FileText, Printer, User, XCircle } from 'lucide-react';
 
 import { usePermissions } from '@/hooks/use-permissions';
 
@@ -81,7 +81,7 @@ export default function PaymentShow({ payment }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Pago ${payment.payment_number}`} />
 
-            <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-4">
+            <div className="max-w-7xl space-y-4 px-4 py-8 sm:px-6 lg:px-8">
                 {' '}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -98,6 +98,14 @@ export default function PaymentShow({ payment }: Props) {
                         {getStatusBadge(payment.status)}
                     </div>
                     <div className="flex items-center gap-2">
+                        {can('view payments') && (
+                            <Button variant="outline" asChild>
+                                <a href={`/payments/${payment.id}/pdf`} target="_blank" rel="noopener noreferrer">
+                                    <Printer className="mr-2 size-4" />
+                                    Imprimir recibo
+                                </a>
+                            </Button>
+                        )}
                         {payment.status === 'completed' && can('edit payments') && (
                             <Button variant="outline" asChild>
                                 <Link href={`/payments/${payment.id}/edit`}>
@@ -162,7 +170,7 @@ export default function PaymentShow({ payment }: Props) {
                 </div>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Detalles delpago</CardTitle>
+                        <CardTitle>Detalles del pago</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid gap-4 md:grid-cols-2">

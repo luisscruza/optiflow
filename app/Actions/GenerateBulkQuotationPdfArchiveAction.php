@@ -20,10 +20,11 @@ final class GenerateBulkQuotationPdfArchiveAction
     public function handle(array $ids): array
     {
         $quotations = Quotation::with([
-            'contact',
+            'contact.primaryAddress',
             'documentSubtype',
             'items.product',
             'items.tax',
+            'items.taxes',
         ])->findMany($ids);
 
         if ($quotations->isEmpty()) {

@@ -509,6 +509,11 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                                 {/* Actions */}
                                                 <div className="col-span-1 lg:col-span-2">
                                                     <div className="flex items-center justify-end gap-2 lg:justify-center">
+                                                        <Button variant="ghost" size="sm" asChild className="h-8 w-8 p-0" title="Imprimir recibo">
+                                                            <a href={`/payments/${payment.id}/pdf`} target="_blank" rel="noopener noreferrer">
+                                                                <Printer className="h-4 w-4" />
+                                                            </a>
+                                                        </Button>
                                                         {can('edit payments') && (
                                                             <Button
                                                                 variant="ghost"

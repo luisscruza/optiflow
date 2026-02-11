@@ -1,9 +1,10 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { Landmark, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import { usePermissions } from '@/hooks/use-permissions';
 
+import { CashRegisterCloseModal } from '@/components/cash-register-close-modal';
 import { PaymentRegistrationModal } from '@/components/payment-registration-modal';
 import { Button } from '@/components/ui/button';
 import { DataTable, type TableResource } from '@/components/ui/datatable';
@@ -27,6 +28,7 @@ export default function InvoicesIndex({ invoices, bankAccounts = [], paymentMeth
     const { can } = usePermissions();
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+    const [cashCloseModalOpen, setCashCloseModalOpen] = useState(false);
 
     const handleOpenPaymentModal = (invoice: Invoice) => {
         setSelectedInvoice(invoice);
@@ -53,14 +55,23 @@ export default function InvoicesIndex({ invoices, bankAccounts = [], paymentMeth
                         <p className="text-gray-600 dark:text-gray-400">Gestiona tus facturas y realiza un seguimiento de los pagos.</p>
                     </div>
 
-                    {can('create invoices') && (
-                        <Button asChild className="bg-primary hover:bg-primary/90">
-                            <Link href="/invoices/create">
-                                <Plus className="mr-2 h-4 w-4" />
-                                Nueva factura
-                            </Link>
-                        </Button>
-                    )}
+                    <div className="flex items-center gap-2">
+                        {can('view payments') && (
+                            <Button variant="outline" onClick={() => setCashCloseModalOpen(true)}>
+                                <Landmark className="mr-2 h-4 w-4" />
+                                Cierre de caja
+                            </Button>
+                        )}
+
+                        {can('create invoices') && (
+                            <Button asChild className="bg-primary hover:bg-primary/90">
+                                <Link href="/invoices/create">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Nueva factura
+                                </Link>
+                            </Button>
+                        )}
+                    </div>
                 </div>
 
                 <DataTable<Invoice>
@@ -96,6 +107,8 @@ export default function InvoicesIndex({ invoices, bankAccounts = [], paymentMeth
                     paymentMethods={paymentMethods}
                 />
             )}
+
+            <CashRegisterCloseModal isOpen={cashCloseModalOpen} onClose={() => setCashCloseModalOpen(false)} />
         </AppLayout>
     );
 }

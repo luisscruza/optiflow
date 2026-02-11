@@ -14,6 +14,7 @@ use App\Http\Controllers\BusinessUserController;
 use App\Http\Controllers\BusinessUserInvitationController;
 use App\Http\Controllers\BusinessUserWorkspaceController;
 use App\Http\Controllers\BusinessUserWorkspaceRoleController;
+use App\Http\Controllers\CashRegisterCloseController;
 use App\Http\Controllers\CompanyDetailsController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\ContactController;
@@ -60,6 +61,7 @@ use App\Http\Controllers\SetWorkspacePreferredDocumentSubtypeController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\StreamInvoicePdfController;
+use App\Http\Controllers\StreamPaymentPdfController;
 use App\Http\Controllers\SyncGlobalRoleController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\TelegramBotController;
@@ -196,6 +198,8 @@ Route::middleware([
 
             Route::post('invoices/bulk/pdf', BulkDownloadInvoicePdfController::class)->name('invoices.bulk.pdf');
 
+            Route::get('cash-register-close', CashRegisterCloseController::class)->name('cash-register-close');
+
             Route::post('payments', [PaymentController::class, 'store'])->name('payments.store');
             Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
             Route::get('payments/create', [PaymentController::class, 'create'])->name('payments.create');
@@ -203,6 +207,7 @@ Route::middleware([
             Route::get('payments/{payment}/edit', [PaymentController::class, 'edit'])->name('payments.edit');
             Route::patch('payments/{payment}', [PaymentController::class, 'update'])->name('payments.update');
             Route::delete('payments/{payment}', [PaymentController::class, 'destroy'])->name('payments.destroy');
+            Route::get('payments/{payment}/pdf', StreamPaymentPdfController::class)->name('payments.pdf');
 
             Route::resource('quotations', QuotationController::class);
             Route::get('quotations/{quotation}/pdf', DownloadQuotationPdfController::class)->name('quotations.pdf');

@@ -9,6 +9,7 @@ use App\Actions\UpdatePrescriptionAction;
 use App\Enums\Permission;
 use App\Http\Requests\CreatePrescriptionRequest;
 use App\Http\Requests\UpdatePrescriptionRequest;
+use App\Models\CompanyDetail;
 use App\Models\Mastertable;
 use App\Models\MastertableItem;
 use App\Models\Prescription;
@@ -99,10 +100,12 @@ final class PrescriptionController
             'motivos',
             'estadoActual',
             'historiaOcularFamiliar',
+            'lentesRecomendados',
         ]);
 
         return inertia('prescriptions/show', [
             'prescription' => $prescription,
+            'company' => CompanyDetail::getAll(),
         ]);
     }
 
