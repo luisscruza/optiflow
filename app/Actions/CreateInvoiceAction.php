@@ -41,7 +41,7 @@ final readonly class CreateInvoiceAction
                 return new InvoiceResult(error: 'El NCF proporcionado no es válido.');
             }
 
-            $invoice = $this->createDocument($workspace, $data);
+            $invoice = $this->createDocument($workspace, $data, $documentSubtype);
 
             if (! empty($data['quotation_id'])) {
                 Quotation::query()
@@ -98,12 +98,13 @@ final readonly class CreateInvoiceAction
     /**
      * @param  array<string, mixed>  $data
      */
-    private function createDocument(Workspace $workspace, array $data): Invoice
+    private function createDocument(Workspace $workspace, array $data, DocumentSubtype $documentSubtype): Invoice
     {
         return Invoice::query()->create([
             'workspace_id' => $workspace->id,
             'contact_id' => $data['contact_id'],
-            'document_subtype_id' => $data['document_subtype_id'],
+            'document_subtype_id' => $documentSubtype->id,
+            'document_due_date' => $documentSubtype->valid_until_date ?? '-',
             'status' => InvoiceStatus::PendingPayment,
             'document_number' => $data['ncf'],
             'issue_date' => $data['issue_date'],

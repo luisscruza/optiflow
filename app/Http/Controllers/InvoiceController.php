@@ -12,6 +12,7 @@ use App\Enums\PaymentMethod;
 use App\Enums\Permission;
 use App\Enums\TaxType;
 use App\Exceptions\ActionValidationException;
+use App\Exceptions\ReportableActionException;
 use App\Http\Requests\CreateInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\BankAccount;
@@ -99,6 +100,7 @@ final class InvoiceController
 
         $initialContactId = $request->integer('contact_id');
         $initialContact = $contactSearch->findCustomerById($initialContactId > 0 ? $initialContactId : null);
+        $ncf = $this->previewNcf($documentSubtype);
 
         return Inertia::render('invoices/create', [
             'documentSubtypes' => $documentSubtypes,
@@ -106,7 +108,7 @@ final class InvoiceController
             'productSearchResults' => Inertia::optional(
                 fn (): array => $productSearch->search((string) $request->string('product_search'), $currentWorkspace)
             ),
-            'ncf' => $documentSubtype?->generateNCF(),
+            'ncf' => $ncf,
             'document_subtype_id' => $documentSubtype->id,
             'currentWorkspace' => $currentWorkspace,
             'availableWorkspaces' => $availableWorkspaces,
@@ -159,9 +161,9 @@ final class InvoiceController
             'payments.currency',
             'comments',
             'salesmen',
+            'workspace',
         ]);
 
-        // Get activity logs for the invoice, its items, and related payments (using morph map values)
         $activities = \Spatie\Activitylog\Models\Activity::query()
             ->where(function ($query) use ($invoice) {
                 $query->where(function ($q) use ($invoice) {
@@ -181,14 +183,12 @@ final class InvoiceController
             ->orderBy('created_at')
             ->get();
 
-        // Collect field labels from all auditable models
         $fieldLabels = collect([
             $invoice->getActivityFieldLabels(),
             ...$invoice->items->map(fn ($item) => $item->getActivityFieldLabels()),
             ...$invoice->payments->map(fn ($payment) => $payment->getActivityFieldLabels()),
         ])->reduce(fn ($carry, $labels) => array_merge($carry, $labels), []);
 
-        // Get bank accounts and payment methods for payment registration
         $bankAccounts = BankAccount::onlyActive()->with('currency')->get();
         $paymentMethods = [
             'cash' => 'Efectivo',
@@ -343,5 +343,25 @@ final class InvoiceController
             ->forInvoice()
             ->where('is_default', true)
             ->first();
+    }
+
+    private function previewNcf(?DocumentSubtype $documentSubtype): ?string
+    {
+        if (! $documentSubtype instanceof DocumentSubtype) {
+            return null;
+        }
+
+        try {
+            return $documentSubtype->generateNCF();
+        } catch (ReportableActionException $exception) {
+           Session::flash('error', [
+            'message' => $exception->getMessage(),
+            'action' => [
+                'label' => 'Configurar NCF',
+                'href' => route('document-subtypes.edit', $documentSubtype),
+            ],
+        ]);
+            return null;
+        }
     }
 }

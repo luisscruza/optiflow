@@ -7,11 +7,16 @@ set -euo pipefail
 
 VERSION_BUMP=${1:-patch}
 
-# Get latest v-* tag
-CURRENT_TAG=$(git describe --tags --abbrev=0 --match "alpha-*" || echo "alpha-0.0.0")
+echo "Fetching latest tags from origin..."
+git fetch origin --tags --prune
 
-# Strip prefix v-
-VERSION=${CURRENT_TAG#v-}
+
+# Get latest v-* tag
+PREFIX="alpha-"
+CURRENT_TAG=$(git describe --tags --abbrev=0 --match "${PREFIX}*" || echo "${PREFIX}0.0.0")
+
+VERSION=$(echo "$CURRENT_TAG" | sed -E 's/^(alpha-)+//')
+
 
 IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
 

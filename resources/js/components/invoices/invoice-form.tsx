@@ -184,10 +184,12 @@ export default function InvoiceForm({
 
     // Sync NCF prop changes to form data
     useEffect(() => {
-        if (ncf && ncf !== data.ncf) {
-            setData('ncf', ncf);
+        const nextNcf = ncf ?? '';
+
+        if (nextNcf !== data.ncf) {
+            setData('ncf', nextNcf);
         }
-    }, [ncf]);
+    }, [ncf, data.ncf, setData]);
 
     useEffect(() => {
         if (initialContact && data.contact_id === initialContact.id && selectedContact?.id !== initialContact.id) {
@@ -265,7 +267,7 @@ export default function InvoiceForm({
         const subtypeId = parseInt(value);
         setData('document_subtype_id', subtypeId);
         router.reload({
-            only: ['ncf'],
+            only: ['ncf', 'flash'],
             data: { document_subtype_id: subtypeId },
         });
     };

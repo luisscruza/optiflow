@@ -71,6 +71,7 @@ final class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
+                'persistentError' => $request->session()->get('persistentError'),
             ],
             'impersonating' => Impersonator::isImpersonating(),
             'gitVersion' => $gitReleaseVersion !== '' ? $gitReleaseVersion : null,

@@ -117,10 +117,11 @@ export interface SharedData {
     unreadNotifications: number;
     impersonating: boolean;
     flash?: {
-        success?: string;
-        error?: string;
-        info?: string;
-        warning?: string;
+        success?: string | { message: string; action?: { label: string; href: string } };
+        error?: string | { message: string; action?: { label: string; href: string } };
+        info?: string | { message: string; action?: { label: string; href: string } };
+        warning?: string | { message: string; action?: { label: string; href: string } };
+        persistentError?: string | { message: string; action?: { label: string; href: string } };
     };
     [key: string]: unknown;
 }
@@ -574,6 +575,7 @@ export interface Invoice {
         | 'pending_payment'
         | 'partially_paid';
     amount_due: number;
+    amount_paid: number;
     document_number: string;
     issue_date: string;
     human_readable_issue_date: string;
@@ -596,6 +598,7 @@ export interface Invoice {
     payments?: Payment[];
     comments?: CommentData[];
     salesmen?: Salesman[];
+    workspace?: Workspace;
 }
 
 export interface Quotation {

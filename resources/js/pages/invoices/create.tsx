@@ -130,10 +130,12 @@ export default function CreateInvoice({
 
     // Sync NCF prop changes to form data
     useEffect(() => {
-        if (ncf && ncf !== data.ncf) {
-            setData('ncf', ncf);
+        const nextNcf = ncf ?? '';
+
+        if (nextNcf !== data.ncf) {
+            setData('ncf', nextNcf);
         }
-    }, [ncf]);
+    }, [ncf, data.ncf, setData]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

@@ -1,9 +1,11 @@
 import { usePage } from '@inertiajs/react';
 
-import type { SharedData } from '@/types';
+import type { SharedData, Workspace } from '@/types';
 
-export function CompanyHeader() {
+export function CompanyHeader({ workspace }: { workspace?: Workspace }) {
     const { companyDetails } = usePage<SharedData>().props;
+    const address = workspace?.address ?? companyDetails.address;
+    const phone = workspace?.phone ?? companyDetails.phone;
 
     return (
         <div className="flex items-start gap-6">
@@ -17,10 +19,10 @@ export function CompanyHeader() {
             {/* Company Details */}
             <div className="space-y-1">
                 <h1 className="text-2xl font-bold text-gray-900">{companyDetails.company_name || 'Nombre de la empresa'}</h1>
+                <p className="text-sm text-gray-600"> {workspace?.name || ''}</p>
                 {companyDetails.tax_id && <p className="text-sm text-gray-600">RNC o Cédula: {companyDetails.tax_id}</p>}
-                {companyDetails.address && <p className="text-sm text-gray-600">{companyDetails.address}</p>}
-                {companyDetails.phone && <p className="text-sm text-gray-600">{companyDetails.phone}</p>}
-                {companyDetails.email && <p className="text-sm text-gray-600">{companyDetails.email}</p>}
+                {address && <p className="text-sm text-gray-600">{address}</p>}
+                {phone && <p className="text-sm text-gray-600">{phone}</p>}
             </div>
         </div>
     );

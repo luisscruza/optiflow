@@ -50,6 +50,6 @@ final class WorkspaceController
         $action->handle($workspace, $request->validated());
 
         return redirect()->back()
-            ->with('success', 'Workspace updated successfully!');
+            ->with('success', '¡Sucursal actualizada correctamente!');
     }
 }

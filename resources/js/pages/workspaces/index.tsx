@@ -341,7 +341,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                                 id="create-phone"
                                 value={formData.phone}
                                 onChange={(e) => handleInputChange('phone', e.target.value)}
-                                placeholder="Ej: +52 55 1234 5678"
+                                placeholder="Ej: 809 533 7019"
                             />
                             {errors.phone && <p className="text-sm text-red-600 dark:text-red-400">{errors.phone}</p>}
                         </div>
@@ -412,7 +412,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                                 id="edit-phone"
                                 value={formData.phone}
                                 onChange={(e) => handleInputChange('phone', e.target.value)}
-                                placeholder="Ej: +52 55 1234 5678"
+                                placeholder="Ej: 809 533 7019"
                             />
                             {errors.phone && <p className="text-sm text-red-600 dark:text-red-400">{errors.phone}</p>}
                         </div>

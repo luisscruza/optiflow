@@ -27,13 +27,6 @@ final class WorkspaceContextController
 
         $workspace = $user->refresh()->currentWorkspace;
 
-        $previousRoute = url()->previous();
-
-        if ($previousRoute && ! str_contains($previousRoute, route('workspaces.index'))) {
-            return redirect()->to($previousRoute)
-                ->with('success', "Ahora estás en {$workspace->name}.");
-        }
-
         return redirect()->route('dashboard')
             ->with('success', "Ahora estás en {$workspace->name}.");
     }
