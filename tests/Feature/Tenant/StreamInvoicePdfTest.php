@@ -6,6 +6,7 @@ use App\Models\CompanyDetail;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\User;
+use App\Models\Workspace;
 
 test('invoice pdf streams successfully with all sections', function (): void {
     $user = User::factory()->create();
@@ -16,7 +17,14 @@ test('invoice pdf streams successfully with all sections', function (): void {
     CompanyDetail::setByKey('address', 'Santo Domingo, DN');
     CompanyDetail::setByKey('email', 'info@opticatest.com');
 
+    $workspace = Workspace::factory()->create([
+        'name' => 'Sucursal Central',
+        'address' => 'Ave. Principal 123',
+        'phone' => '8090000000',
+    ]);
+
     $invoice = Invoice::factory()->create([
+        'workspace_id' => $workspace->id,
         'notes' => 'Test note for invoice',
         'payment_term' => 'Se debe abonar el 50% del monto total.',
     ]);

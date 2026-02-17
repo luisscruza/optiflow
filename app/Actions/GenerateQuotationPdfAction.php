@@ -21,6 +21,7 @@ final class GenerateQuotationPdfAction
             'items.product',
             'items.tax',
             'items.taxes',
+            'workspace',
         ]);
 
         $pdf = Pdf::loadView('quotations.pdf', [

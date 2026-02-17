@@ -17,7 +17,7 @@ class StreamInvoicePdfController
      */
     public function __invoke(Invoice $invoice): Response
     {
-        $invoice->load(['contact.primaryAddress', 'documentSubtype', 'items.product', 'items.tax', 'items.taxes', 'payments']);
+        $invoice->load(['contact.primaryAddress', 'documentSubtype', 'items.product', 'items.tax', 'items.taxes', 'payments', 'workspace']);
 
         $pdf = Pdf::loadView('invoices.pdf', [
             'invoice' => $invoice,

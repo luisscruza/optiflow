@@ -11,12 +11,17 @@
             box-sizing: border-box;
         }
 
+        @page {
+            margin: 7mm 16mm 142mm 16mm;
+        }
+
         body {
             font-family: Arial, Helvetica, sans-serif;
             font-size: 13px;
             line-height: 1.4;
             color: #1a1a2e;
-            padding: 40px 40px 30px;
+            margin: 0;
+            padding: 0px 20px;
         }
 
         /* ── Header ── */
@@ -43,7 +48,7 @@
         }
 
         .company-name {
-            font-size: 18px;
+            font-size: 12px;
             font-weight: bold;
             color: #1a1a2e;
             text-align: center;
@@ -144,6 +149,14 @@
             margin-bottom: 5px;
         }
 
+        .items-table thead {
+            display: table-header-group;
+        }
+
+        .items-table tbody tr {
+            page-break-inside: avoid;
+        }
+
         .items-table thead th {
             background-color: #d0d0d8;
             color: #1a1a2e;
@@ -160,17 +173,12 @@
             border-left: 1px solid #999;
             border-right: 1px solid #999;
             vertical-align: top;
-            min-height: 200px;
         }
 
         .items-table tbody tr:last-child td {
             border-bottom: 1px solid #999;
         }
 
-        .items-body-row td {
-            height: 200px;
-            vertical-align: top;
-        }
 
         .text-right {
             text-align: right;
@@ -189,6 +197,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 40px;
+            page-break-inside: avoid;
         }
 
         .totals-table td {
@@ -220,6 +229,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 60px;
+            page-break-inside: avoid;
         }
 
         .signatures-table td {
@@ -242,6 +252,10 @@
 
     @php
         $contact = null;
+        $workspace = $workspace ?? null;
+        $workspaceName = $workspace?->name;
+        $companyAddress = $workspace?->address ?? ($company['address'] ?? null);
+        $companyPhone = $workspace?->phone ?? ($company['phone'] ?? null);
 
         if ($payment->isInvoicePayment() && $payment->invoice) {
             $contact = $payment->invoice->contact;
@@ -271,17 +285,17 @@
             @endif
             <td style="text-align: center;">
                 <div class="company-name">{{ $company['company_name'] ?? 'Empresa' }}</div>
-                @if(!empty($company['address']))
-                    <div class="company-detail">{{ $company['address'] }}</div>
+                @if(!empty($workspaceName))
+                    <div class="company-detail">{{ $workspaceName }}</div>
                 @endif
                 @if(!empty($company['tax_id']))
                     <div class="company-detail">RNC {{ $company['tax_id'] }}</div>
                 @endif
-                @if(!empty($company['phone']))
-                    <div class="company-detail">{{ $company['phone'] }}</div>
+                @if(!empty($companyAddress))
+                    <div class="company-detail">{{ $companyAddress }}</div>
                 @endif
-                @if(!empty($company['email']))
-                    <div class="company-detail">{{ $company['email'] }}</div>
+                @if(!empty($companyPhone))
+                    <div class="company-detail">{{ $companyPhone }}</div>
                 @endif
             </td>
             <td style="width: 180px; vertical-align: middle;">
@@ -334,25 +348,43 @@
             </tr>
         </thead>
         <tbody>
-            <tr class="items-body-row">
-                <td>
-                    @if($payment->isInvoicePayment() && $payment->invoice)
-                        Pago a factura No. {{ $payment->invoice->document_number }}
-                    @elseif($payment->isOtherIncome() && $payment->lines && $payment->lines->count() > 0)
-                        @foreach($payment->lines as $line)
-                            <div style="margin-bottom: 4px;">{{ $line->description }}</div>
-                        @endforeach
-                    @else
-                        {{ $payment->note ?? 'Pago recibido' }}
-                    @endif
-                </td>
-                <td class="text-right">
-                    @if($payment->tax_amount > 0)
-                        RD${{ number_format($payment->tax_amount, 2) }}
-                    @endif
-                </td>
-                <td class="text-right">RD${{ number_format($payment->isOtherIncome() ? $payment->subtotal_amount : $payment->amount, 2) }}</td>
-            </tr>
+            @if($payment->isInvoicePayment() && $payment->invoice)
+                <tr>
+                    <td>Pago a factura No. {{ $payment->invoice->document_number }}</td>
+                    <td class="text-right">
+                        @if($payment->tax_amount > 0)
+                            RD${{ number_format($payment->tax_amount, 2) }}
+                        @endif
+                    </td>
+                    <td class="text-right">RD${{ number_format($payment->amount, 2) }}</td>
+                </tr>
+            @elseif($payment->isOtherIncome() && $payment->lines && $payment->lines->count() > 0)
+                @foreach($payment->lines as $lineIndex => $line)
+                    <tr>
+                        <td>{{ $line->description }}</td>
+                        <td class="text-right">
+                            @if($lineIndex === 0 && $payment->tax_amount > 0)
+                                RD${{ number_format($payment->tax_amount, 2) }}
+                            @endif
+                        </td>
+                        <td class="text-right">
+                            @if($lineIndex === 0)
+                                RD${{ number_format($payment->subtotal_amount, 2) }}
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            @else
+                <tr>
+                    <td>{{ $payment->note ?? 'Pago recibido' }}</td>
+                    <td class="text-right">
+                        @if($payment->tax_amount > 0)
+                            RD${{ number_format($payment->tax_amount, 2) }}
+                        @endif
+                    </td>
+                    <td class="text-right">RD${{ number_format($payment->amount, 2) }}</td>
+                </tr>
+            @endif
         </tbody>
     </table>
 
@@ -398,6 +430,18 @@
             </td>
         </tr>
     </table>
+
+    <script type="text/php">
+        if (isset($pdf)) {
+            $text = "{PAGE_NUM} DE {PAGE_COUNT}";
+            $font = $fontMetrics->get_font("Helvetica", "normal");
+            $size = 9;
+            $width = $fontMetrics->get_text_width($text, $font, $size);
+            $x = ($pdf->get_width() - $width) / 2;
+            $y = ($pdf->get_height() / 2) - 20;
+            $pdf->page_text($x, $y, $text, $font, $size, [0.2, 0.2, 0.2]);
+        }
+    </script>
 
 </body>
 </html>

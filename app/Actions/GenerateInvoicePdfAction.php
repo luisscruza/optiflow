@@ -20,6 +20,7 @@ final class GenerateInvoicePdfAction
             'documentSubtype',
             'items.product',
             'items.tax',
+            'workspace',
         ]);
 
         $pdf = Pdf::loadView('invoices.pdf', [

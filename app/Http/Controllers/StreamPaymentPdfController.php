@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\CompanyDetail;
 use App\Models\Payment;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Context;
 use Symfony\Component\HttpFoundation\Response;
 
 class StreamPaymentPdfController
@@ -26,9 +27,12 @@ class StreamPaymentPdfController
             'withholdings',
         ]);
 
+        $workspace = Context::get('workspace');
+
         $pdf = Pdf::loadView('payments.pdf', [
             'payment' => $payment,
             'company' => CompanyDetail::getAll(),
+            'workspace' => $workspace,
         ])->setPaper('a4', 'portrait');
 
         $filename = "recibo-{$payment->payment_number}.pdf";
