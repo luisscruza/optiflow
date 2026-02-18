@@ -1,3 +1,5 @@
+import type { ChangeEvent } from 'react';
+
 import { Input } from '../ui/input';
 
 interface QueratometriaPresionData {
@@ -29,6 +31,45 @@ interface QueratometriaPresionProps {
 }
 
 export default function QueratometriaPresion({ data, onChange, errors }: QueratometriaPresionProps) {
+    const handleDecimalChange =
+        (field: string, maxIntegers = 2, maxDecimals = 2) =>
+        (event: ChangeEvent<HTMLInputElement>) => {
+            const raw = event.target.value.replace(/[^\d.,]/g, '');
+            const hasSeparator = raw.includes('.') || raw.includes(',');
+            const [rawIntegers, rawDecimals = ''] = raw.split(/[.,]/, 2);
+            const integers = rawIntegers.replace(/\D/g, '').slice(0, maxIntegers);
+            const decimals = rawDecimals.replace(/\D/g, '').slice(0, maxDecimals);
+
+            if (!hasSeparator) {
+                onChange(field, integers);
+                return;
+            }
+
+            if (!integers && !decimals) {
+                onChange(field, '');
+                return;
+            }
+
+            if (!integers) {
+                onChange(field, decimals ? `0.${decimals}` : '0.');
+                return;
+            }
+
+            onChange(field, `${integers}.${decimals}`);
+        };
+
+    const handleIntegerChange = (field: string, maxLength: number, maxValue?: number) => (event: ChangeEvent<HTMLInputElement>) => {
+        const digits = event.target.value.replace(/\D/g, '').slice(0, maxLength);
+
+        if (!digits) {
+            onChange(field, '');
+            return;
+        }
+
+        const numericValue = maxValue === undefined ? digits : Math.min(parseInt(digits, 10), maxValue).toString();
+        onChange(field, numericValue);
+    };
+
     return (
         <div className="rounded-lg border border-gray-200 bg-white p-4">
             <h1 className="mb-4 text-lg font-semibold text-gray-900">Queratometría/PIO</h1>
@@ -52,28 +93,37 @@ export default function QueratometriaPresion({ data, onChange, errors }: Querato
                                 <td className="px-2 py-2">
                                     <Input
                                         type="text"
+                                        inputMode="decimal"
+                                        pattern="\d*[.,]?\d*"
+                                        maxLength={5}
                                         value={data.quera_od_horizontal || ''}
-                                        onChange={(e) => onChange('quera_od_horizontal', e.target.value)}
+                                        onChange={handleDecimalChange('quera_od_horizontal')}
                                         className="h-6 w-full px-1 text-center text-xs"
-                                        placeholder="45,50"
+                                        placeholder="45.50"
                                     />
                                     {errors?.quera_od_horizontal && <p className="mt-1 text-xs text-red-600">{errors.quera_od_horizontal}</p>}
                                 </td>
                                 <td className="px-2 py-2">
                                     <Input
                                         type="text"
+                                        inputMode="decimal"
+                                        pattern="\d*[.,]?\d*"
+                                        maxLength={5}
                                         value={data.quera_od_vertical || ''}
-                                        onChange={(e) => onChange('quera_od_vertical', e.target.value)}
+                                        onChange={handleDecimalChange('quera_od_vertical')}
                                         className="h-6 w-full px-1 text-center text-xs"
-                                        placeholder="42,00"
+                                        placeholder="42.00"
                                     />
                                     {errors?.quera_od_vertical && <p className="mt-1 text-xs text-red-600">{errors.quera_od_vertical}</p>}
                                 </td>
                                 <td className="px-2 py-2">
                                     <Input
                                         type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        maxLength={3}
                                         value={data.quera_od_eje || ''}
-                                        onChange={(e) => onChange('quera_od_eje', e.target.value)}
+                                        onChange={handleIntegerChange('quera_od_eje', 3, 180)}
                                         className="h-6 w-full px-1 text-center text-xs"
                                         placeholder="10"
                                     />
@@ -82,10 +132,13 @@ export default function QueratometriaPresion({ data, onChange, errors }: Querato
                                 <td className="px-2 py-2">
                                     <Input
                                         type="text"
+                                        inputMode="decimal"
+                                        pattern="\d*[.,]?\d*"
+                                        maxLength={5}
                                         value={data.quera_od_dif || ''}
-                                        onChange={(e) => onChange('quera_od_dif', e.target.value)}
+                                        onChange={handleDecimalChange('quera_od_dif')}
                                         className="h-6 w-full px-1 text-center text-xs"
-                                        placeholder="3,50"
+                                        placeholder="3.50"
                                     />
                                     {errors?.quera_od_dif && <p className="mt-1 text-xs text-red-600">{errors.quera_od_dif}</p>}
                                 </td>
@@ -95,28 +148,37 @@ export default function QueratometriaPresion({ data, onChange, errors }: Querato
                                 <td className="px-2 py-2">
                                     <Input
                                         type="text"
+                                        inputMode="decimal"
+                                        pattern="\d*[.,]?\d*"
+                                        maxLength={5}
                                         value={data.quera_oi_horizontal || ''}
-                                        onChange={(e) => onChange('quera_oi_horizontal', e.target.value)}
+                                        onChange={handleDecimalChange('quera_oi_horizontal')}
                                         className="h-6 w-full px-1 text-center text-xs"
-                                        placeholder="42,50"
+                                        placeholder="42.50"
                                     />
                                     {errors?.quera_oi_horizontal && <p className="mt-1 text-xs text-red-600">{errors.quera_oi_horizontal}</p>}
                                 </td>
                                 <td className="px-2 py-2">
                                     <Input
                                         type="text"
+                                        inputMode="decimal"
+                                        pattern="\d*[.,]?\d*"
+                                        maxLength={5}
                                         value={data.quera_oi_vertical || ''}
-                                        onChange={(e) => onChange('quera_oi_vertical', e.target.value)}
+                                        onChange={handleDecimalChange('quera_oi_vertical')}
                                         className="h-6 w-full px-1 text-center text-xs"
-                                        placeholder="42,00"
+                                        placeholder="42.00"
                                     />
                                     {errors?.quera_oi_vertical && <p className="mt-1 text-xs text-red-600">{errors.quera_oi_vertical}</p>}
                                 </td>
                                 <td className="px-2 py-2">
                                     <Input
                                         type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        maxLength={3}
                                         value={data.quera_oi_eje || ''}
-                                        onChange={(e) => onChange('quera_oi_eje', e.target.value)}
+                                        onChange={handleIntegerChange('quera_oi_eje', 3, 180)}
                                         className="h-6 w-full px-1 text-center text-xs"
                                         placeholder="10"
                                     />
@@ -125,10 +187,13 @@ export default function QueratometriaPresion({ data, onChange, errors }: Querato
                                 <td className="px-2 py-2">
                                     <Input
                                         type="text"
+                                        inputMode="decimal"
+                                        pattern="\d*[.,]?\d*"
+                                        maxLength={5}
                                         value={data.quera_oi_dif || ''}
-                                        onChange={(e) => onChange('quera_oi_dif', e.target.value)}
+                                        onChange={handleDecimalChange('quera_oi_dif')}
                                         className="h-6 w-full px-1 text-center text-xs"
-                                        placeholder="0,50"
+                                        placeholder="0.50"
                                     />
                                     {errors?.quera_oi_dif && <p className="mt-1 text-xs text-red-600">{errors.quera_oi_dif}</p>}
                                 </td>
@@ -147,8 +212,11 @@ export default function QueratometriaPresion({ data, onChange, errors }: Querato
                     <div className="grid-input flex items-center space-x-1">
                         <Input
                             type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            maxLength={2}
                             value={data.presion_od || ''}
-                            onChange={(e) => onChange('presion_od', e.target.value)}
+                            onChange={handleIntegerChange('presion_od', 2, 99)}
                             className="h-6 w-full px-1 text-xs"
                             placeholder=" "
                             aria-label="Presión intraocular OD"
@@ -161,8 +229,11 @@ export default function QueratometriaPresion({ data, onChange, errors }: Querato
                     <div className="grid-input flex items-center space-x-1">
                         <Input
                             type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            maxLength={2}
                             value={data.presion_oi || ''}
-                            onChange={(e) => onChange('presion_oi', e.target.value)}
+                            onChange={handleIntegerChange('presion_oi', 2, 99)}
                             className="h-6 w-full px-1 text-xs"
                             placeholder=" "
                             aria-label="Presión intraocular OI"

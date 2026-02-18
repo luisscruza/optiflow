@@ -81,9 +81,9 @@ final class PrescriptionController
     {
         abort_unless($user->can(Permission::PrescriptionsCreate), 403);
 
-        $action->handle($user, $request->validated());
+        $prescription = $action->handle($user, $request->validated());
 
-        return redirect()->back();
+        return to_route('prescriptions.show', $prescription)->with('success', 'Receta creada exitosamente.');
     }
 
     public function show(Prescription $prescription, #[CurrentUser] User $user): Response
@@ -171,6 +171,6 @@ final class PrescriptionController
 
         $action->handle($prescription, $user, $request->validated());
 
-        return redirect()->route('prescriptions.show', $prescription);
+        return redirect()->route('prescriptions.show', $prescription)->with('success', 'Receta actualizada exitosamente.');
     }
 }

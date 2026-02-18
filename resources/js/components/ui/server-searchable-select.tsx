@@ -20,6 +20,7 @@ interface ServerSearchableSelectProps {
   selectedLabel?: string
   onValueChange?: (value: string) => void
   onSearchChange?: (query: string) => void
+  preload?: boolean
   placeholder?: string
   searchPlaceholder?: string
   searchPromptText?: string
@@ -43,6 +44,7 @@ function ServerSearchableSelect({
   selectedLabel,
   onValueChange,
   onSearchChange,
+  preload = false,
   placeholder = "Select option...",
   searchPlaceholder = "Search...",
   searchPromptText,
@@ -63,12 +65,20 @@ function ServerSearchableSelect({
   const [searchQuery, setSearchQuery] = React.useState("")
 
   const selectedOption = options.find((option) => option.value === value)
-  const hasSearchQuery = searchQuery.trim().length >= minSearchLength
+  const canShowResults = preload || searchQuery.trim().length >= minSearchLength
   const promptText =
     searchPromptText ??
     (minSearchLength > 1
       ? `Escribe al menos ${minSearchLength} caracteres para buscar.`
       : "Escribe para buscar.")
+
+  React.useEffect(() => {
+    if (!open || !preload) {
+      return
+    }
+
+    onSearchChange?.("")
+  }, [open, preload, onSearchChange])
 
   React.useEffect(() => {
     if (open) {
@@ -109,7 +119,7 @@ function ServerSearchableSelect({
               placeholder={searchPlaceholder}
             />
             <CommandList>
-              {!hasSearchQuery ? (
+              {!canShowResults ? (
                 <div className="px-3 py-6 text-center text-sm text-gray-500">
                   {promptText}
                 </div>

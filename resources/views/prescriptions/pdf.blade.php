@@ -286,7 +286,7 @@
                 <td><strong>{{ $prescription->subjetivo_od_cilindro ?? '-' }}</strong></td>
                 <td><strong>{{ $prescription->subjetivo_od_eje ?? '-' }}</strong></td>
                 <td><strong>{{ $prescription->subjetivo_od_add ?? '-' }}</strong></td>
-                <td>-</td>
+                <td><strong>{{ $prescription->alt_bif_od ?? '-' }}</strong></td>
                 <td>{{ $prescription->subjetivo_od_av_lejos ? '20/' . $prescription->subjetivo_od_av_lejos : '-' }}</td>
                 <td>{{ $prescription->subjetivo_od_av_cerca ? '20/' . $prescription->subjetivo_od_av_cerca : '-' }}</td>
             </tr>
@@ -296,7 +296,7 @@
                 <td><strong>{{ $prescription->subjetivo_oi_cilindro ?? '-' }}</strong></td>
                 <td><strong>{{ $prescription->subjetivo_oi_eje ?? '-' }}</strong></td>
                 <td><strong>{{ $prescription->subjetivo_oi_add ?? '-' }}</strong></td>
-                <td>-</td>
+                <td><strong>{{ $prescription->alt_bif_oi ?? '-' }}</strong></td>
                 <td>{{ $prescription->subjetivo_oi_av_lejos ? '20/' . $prescription->subjetivo_oi_av_lejos : '-' }}</td>
                 <td>{{ $prescription->subjetivo_oi_av_cerca ? '20/' . $prescription->subjetivo_oi_av_cerca : '-' }}</td>
             </tr>

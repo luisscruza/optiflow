@@ -37,6 +37,39 @@ export default function RefraccionSubjetivo({ data, onChange, errors }: Refracci
         onChange(field, value);
     };
 
+    const handleAltBifChange = (field: string) => (event: ChangeEvent<HTMLInputElement>) => {
+        const raw = event.target.value.replace(/[^\d.,]/g, '');
+        const hasSeparator = raw.includes('.') || raw.includes(',');
+        const [rawIntegers, rawDecimals = ''] = raw.split(/[.,]/, 2);
+        const integers = rawIntegers.replace(/\D/g, '').slice(0, 3);
+        const decimals = rawDecimals.replace(/\D/g, '').slice(0, 2);
+
+        if (!integers && !decimals) {
+            onChange(field, '');
+            return;
+        }
+
+        const normalized = hasSeparator ? `${integers || '0'}.${decimals}` : integers;
+        const numericValue = Number.parseFloat(normalized);
+
+        if (Number.isNaN(numericValue)) {
+            onChange(field, '');
+            return;
+        }
+
+        if (numericValue > 100) {
+            onChange(field, '100');
+            return;
+        }
+
+        if (hasSeparator && decimals.length === 0) {
+            onChange(field, `${integers || '0'}.`);
+            return;
+        }
+
+        onChange(field, normalized);
+    };
+
     return (
         <div className="rounded-lg border border-gray-200 p-4">
             <div className="rounded-md border">
@@ -118,8 +151,11 @@ export default function RefraccionSubjetivo({ data, onChange, errors }: Refracci
                             <TableCell className="p-2">
                                 <input
                                     type="text"
+                                    inputMode="decimal"
+                                    pattern="\d*[.,]?\d*"
+                                    maxLength={6}
                                     value={data.alt_bif_od || ''}
-                                    onChange={(e) => onChange('alt_bif_od', e.target.value)}
+                                    onChange={handleAltBifChange('alt_bif_od')}
                                     className="h-8 w-full rounded border border-gray-300 px-2 text-center text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                 />
                             </TableCell>
@@ -195,8 +231,11 @@ export default function RefraccionSubjetivo({ data, onChange, errors }: Refracci
                             <TableCell className="p-2">
                                 <input
                                     type="text"
+                                    inputMode="decimal"
+                                    pattern="\d*[.,]?\d*"
+                                    maxLength={6}
                                     value={data.alt_bif_oi || ''}
-                                    onChange={(e) => onChange('alt_bif_oi', e.target.value)}
+                                    onChange={handleAltBifChange('alt_bif_oi')}
                                     className="h-8 w-full rounded border border-gray-300 px-2 text-center text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                 />
                             </TableCell>
