@@ -185,6 +185,8 @@ test('to array', function (): void {
         'created_at',
         'updated_at',
         'deleted_at',
+        'alt_bif_oi',
+        'alt_bif_od',
         'human_readable_date',
     ]);
 });

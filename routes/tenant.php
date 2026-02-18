@@ -27,9 +27,11 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DashboardLayoutController;
 use App\Http\Controllers\DocumentSubtypeController;
 use App\Http\Controllers\DownloadInvoicePdfController;
+use App\Http\Controllers\DownloadOptometryHistoryController;
 use App\Http\Controllers\DownloadPrescriptionController;
 use App\Http\Controllers\DownloadProductImportTemplateController;
 use App\Http\Controllers\DownloadQuotationPdfController;
+use App\Http\Controllers\DownloadVisualCertificateController;
 use App\Http\Controllers\ExportReportController;
 use App\Http\Controllers\GlobalRoleController;
 use App\Http\Controllers\ImpersonationController;
@@ -244,6 +246,10 @@ Route::middleware([
 
             Route::resource('prescriptions', PrescriptionController::class);
             Route::get('prescriptions/{prescription}/pdf', DownloadPrescriptionController::class)->name('prescriptions.pdf');
+            Route::get('prescriptions/{prescription}/visual-certificate', DownloadVisualCertificateController::class)
+                ->name('prescriptions.visual_certificate');
+            Route::get('prescriptions/{prescription}/optometry-history', DownloadOptometryHistoryController::class)
+                ->name('prescriptions.optometry_history');
 
             // Reports routes
             Route::get('reports', [ReportController::class, 'index'])->name('reports.index');

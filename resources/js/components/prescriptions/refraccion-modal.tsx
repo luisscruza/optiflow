@@ -65,6 +65,7 @@ interface RefraccionModalData {
     subjetivo_od_eje?: string;
     subjetivo_od_add?: string;
     subjetivo_od_dp?: string; // Distancia pupilar
+    alt_bif_od?: string;
     subjetivo_od_av_lejos?: string; // 20/
     subjetivo_od_av_cerca?: string;
 
@@ -73,6 +74,7 @@ interface RefraccionModalData {
     subjetivo_oi_eje?: string;
     subjetivo_oi_add?: string;
     subjetivo_oi_dp?: string; // Distancia pupilar
+    alt_bif_oi?: string;
     subjetivo_oi_av_lejos?: string; // 20/
     subjetivo_oi_av_cerca?: string;
 }

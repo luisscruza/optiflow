@@ -182,6 +182,7 @@ interface PrescriptionFormData {
     subjetivo_od_eje?: string;
     subjetivo_od_add?: string;
     subjetivo_od_dp?: string;
+    alt_bif_od?: string;
     subjetivo_od_av_lejos?: string;
     subjetivo_od_av_cerca?: string;
     subjetivo_oi_esfera?: string;
@@ -189,6 +190,7 @@ interface PrescriptionFormData {
     subjetivo_oi_eje?: string;
     subjetivo_oi_add?: string;
     subjetivo_oi_dp?: string;
+    alt_bif_oi?: string;
     subjetivo_oi_av_lejos?: string;
     subjetivo_oi_av_cerca?: string;
 
@@ -417,6 +419,7 @@ export default function PrescriptionForm({
         subjetivo_od_eje: initialData.subjetivo_od_eje || '',
         subjetivo_od_add: initialData.subjetivo_od_add || '',
         subjetivo_od_dp: initialData.subjetivo_od_dp || '',
+        alt_bif_od: initialData.alt_bif_od || '',
         subjetivo_od_av_lejos: initialData.subjetivo_od_av_lejos || '',
         subjetivo_od_av_cerca: initialData.subjetivo_od_av_cerca || '',
         subjetivo_oi_esfera: initialData.subjetivo_oi_esfera || '',
@@ -424,6 +427,7 @@ export default function PrescriptionForm({
         subjetivo_oi_eje: initialData.subjetivo_oi_eje || '',
         subjetivo_oi_add: initialData.subjetivo_oi_add || '',
         subjetivo_oi_dp: initialData.subjetivo_oi_dp || '',
+        alt_bif_oi: initialData.alt_bif_oi || '',
         subjetivo_oi_av_lejos: initialData.subjetivo_oi_av_lejos || '',
         subjetivo_oi_av_cerca: initialData.subjetivo_oi_av_cerca || '',
 
@@ -797,6 +801,7 @@ export default function PrescriptionForm({
                                         subjetivo_od_eje: data.subjetivo_od_eje,
                                         subjetivo_od_add: data.subjetivo_od_add,
                                         subjetivo_od_dp: data.subjetivo_od_dp,
+                                        alt_bif_od: data.alt_bif_od,
                                         subjetivo_od_av_lejos: data.subjetivo_od_av_lejos,
                                         subjetivo_od_av_cerca: data.subjetivo_od_av_cerca,
                                         subjetivo_oi_esfera: data.subjetivo_oi_esfera,
@@ -804,6 +809,7 @@ export default function PrescriptionForm({
                                         subjetivo_oi_eje: data.subjetivo_oi_eje,
                                         subjetivo_oi_add: data.subjetivo_oi_add,
                                         subjetivo_oi_dp: data.subjetivo_oi_dp,
+                                        alt_bif_oi: data.alt_bif_oi,
                                         subjetivo_oi_av_lejos: data.subjetivo_oi_av_lejos,
                                         subjetivo_oi_av_cerca: data.subjetivo_oi_av_cerca,
                                     }}
@@ -881,6 +887,7 @@ export default function PrescriptionForm({
                     subjetivo_od_eje: data.subjetivo_od_eje,
                     subjetivo_od_add: data.subjetivo_od_add,
                     subjetivo_od_dp: data.subjetivo_od_dp,
+                    alt_bif_od: data.alt_bif_od,
                     subjetivo_od_av_lejos: data.subjetivo_od_av_lejos,
                     subjetivo_od_av_cerca: data.subjetivo_od_av_cerca,
                     subjetivo_oi_esfera: data.subjetivo_oi_esfera,
@@ -888,6 +895,7 @@ export default function PrescriptionForm({
                     subjetivo_oi_eje: data.subjetivo_oi_eje,
                     subjetivo_oi_add: data.subjetivo_oi_add,
                     subjetivo_oi_dp: data.subjetivo_oi_dp,
+                    alt_bif_oi: data.alt_bif_oi,
                     subjetivo_oi_av_lejos: data.subjetivo_oi_av_lejos,
                     subjetivo_oi_av_cerca: data.subjetivo_oi_av_cerca,
                 }}

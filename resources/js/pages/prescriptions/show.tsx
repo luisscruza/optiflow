@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Download, Edit } from 'lucide-react';
+import { Download, Edit, FileText, Printer } from 'lucide-react';
 
 import { usePermissions } from '@/hooks/use-permissions';
 
@@ -79,6 +79,18 @@ export default function PrescriptionShow({ prescription, company }: Props) {
                             </Button>
                         </Link>
                     )}
+                    <a target="_blank" href={prescriptions.visual_certificate(prescription).url} rel="noreferrer">
+                        <Button variant="outline" size="sm">
+                            <FileText className="mr-2 h-4 w-4" />
+                            Generar certificado visual
+                        </Button>
+                    </a>
+                    <a target="_blank" href={prescriptions.optometry_history(prescription).url} rel="noreferrer">
+                        <Button variant="outline" size="sm">
+                            <Printer className="mr-2 h-4 w-4" />
+                            Imprimir historia de optometría
+                        </Button>
+                    </a>
                     <a target="_blank" href={prescriptions.pdf(prescription).url} rel="noreferrer">
                         <Button size="sm">
                             <Download className="mr-2 h-4 w-4" />

@@ -9,7 +9,7 @@ use App\Models\Prescription;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
 
-final class DownloadPrescriptionController
+final class DownloadOptometryHistoryController
 {
     /**
      * Handle the incoming request.
@@ -27,17 +27,18 @@ final class DownloadPrescriptionController
             'lentesRecomendados',
             'gotasRecomendadas',
             'monturasRecomendadas',
+            'canalesDeReferimiento',
             'workspace',
             'patient',
             'optometrist',
         ]);
 
-        $pdf = Pdf::loadView('prescriptions.pdf', [
+        $pdf = Pdf::loadView('prescriptions.optometry-history', [
             'prescription' => $prescription,
             'company' => CompanyDetail::getAll(),
         ])->setPaper('a4', 'portrait');
 
-        $filename = "receta-{$prescription->patient->name}-{$prescription->id}.pdf";
+        $filename = "historia-optometria-{$prescription->patient->name}-{$prescription->id}.pdf";
 
         return $pdf->stream($filename);
     }
