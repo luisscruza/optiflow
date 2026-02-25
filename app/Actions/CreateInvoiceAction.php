@@ -104,7 +104,7 @@ final readonly class CreateInvoiceAction
             'workspace_id' => $workspace->id,
             'contact_id' => $data['contact_id'],
             'document_subtype_id' => $documentSubtype->id,
-            'document_due_date' => $documentSubtype->valid_until_date ?? '-',
+            'document_due_date' => $documentSubtype->valid_until_date ?? null,
             'status' => InvoiceStatus::PendingPayment,
             'document_number' => $data['ncf'],
             'issue_date' => $data['issue_date'],
