@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { ArrowLeft, Upload } from 'lucide-react';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 
 import { index as invoicesIndex } from '@/actions/App/Http/Controllers/InvoiceController';
 import UploadInvoiceImportController from '@/actions/App/Http/Controllers/UploadInvoiceImportController';
@@ -31,8 +31,28 @@ type UploadResponse = {
 };
 
 type RunResponse = {
-    exit_code: number;
-    output: string;
+    import: InvoiceImport;
+};
+
+type StatusResponse = {
+    import: InvoiceImport;
+};
+
+type InvoiceImport = {
+    id: number;
+    status: 'pending' | 'processing' | 'completed' | 'failed';
+    limit: number;
+    offset: number;
+    exit_code: number | null;
+    output: string | null;
+    error_message: string | null;
+    started_at: string | null;
+    finished_at: string | null;
+    total_records: number;
+    processed_records: number;
+    imported_records: number;
+    skipped_records: number;
+    error_records: number;
 };
 
 export default function InvoiceImportsCreate() {
@@ -42,14 +62,63 @@ export default function InvoiceImportsCreate() {
     const [error, setError] = useState<string | null>(null);
     const [uploaded, setUploaded] = useState<UploadResponse | null>(null);
     const [runOutput, setRunOutput] = useState<string | null>(null);
+    const [importState, setImportState] = useState<InvoiceImport | null>(null);
     const [limit, setLimit] = useState(50);
     const [offset, setOffset] = useState(0);
+
+    const normalizedStatus = importState?.status ?? 'pending';
+    const isProcessing = importState ? normalizedStatus === 'pending' || normalizedStatus === 'processing' : false;
+    const totalRecords = importState?.total_records ?? 0;
+    const processedRecords = importState?.processed_records ?? 0;
+    const progressPercent = totalRecords > 0 ? Math.min(100, Math.round((processedRecords / totalRecords) * 100)) : 0;
+    const statusLabel: Record<InvoiceImport['status'], string> = {
+        pending: 'En cola',
+        processing: 'Procesando',
+        completed: 'Completado',
+        failed: 'Fallido',
+    };
+
+    useEffect(() => {
+        if (!importState || !isProcessing) {
+            return;
+        }
+
+        const interval = window.setInterval(async () => {
+            try {
+                const response = await axios.get<StatusResponse>(`/invoice-imports/${importState.id}/status`);
+                const latestImport = response.data.import;
+
+                setImportState(latestImport);
+
+                if (latestImport.status === 'completed') {
+                    setRunOutput(latestImport.output || 'Importacion completada.');
+                    setError(null);
+                }
+
+                if (latestImport.status === 'failed') {
+                    setRunOutput(latestImport.output || null);
+                    setError(latestImport.error_message || 'Error al ejecutar la importacion');
+                }
+            } catch (requestError) {
+                if (axios.isAxiosError(requestError)) {
+                    const message =
+                        requestError.response?.data?.message || requestError.response?.data?.errors?.file_path || 'Error al consultar el estado';
+                    setError(message);
+                } else {
+                    setError('Error al consultar el estado');
+                }
+            }
+        }, 3000);
+
+        return () => window.clearInterval(interval);
+    }, [importState, isProcessing]);
 
     const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         setError(null);
         setUploaded(null);
         setRunOutput(null);
+        setImportState(null);
 
         if (!file) {
             setSelectedFile(null);
@@ -79,6 +148,7 @@ export default function InvoiceImportsCreate() {
         setUploading(true);
         setError(null);
         setUploaded(null);
+        setImportState(null);
 
         const formData = new FormData();
         formData.append('file', selectedFile);
@@ -110,15 +180,18 @@ export default function InvoiceImportsCreate() {
         setRunning(true);
         setError(null);
         setRunOutput(null);
+        setImportState(null);
 
         try {
             const response = await axios.post<RunResponse>('/invoice-imports/run', {
                 file_path: uploaded.file_path,
+                filename: uploaded.filename,
+                original_filename: uploaded.original_filename,
                 limit,
                 offset,
             });
 
-            setRunOutput(response.data.output || 'Importacion completada.');
+            setImportState(response.data.import);
         } catch (requestError) {
             if (axios.isAxiosError(requestError)) {
                 const message =
@@ -212,10 +285,9 @@ export default function InvoiceImportsCreate() {
                                     <div className="space-y-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
                                         <div>
                                             <p className="font-medium">Archivo listo para importar</p>
-                                            <p className="mt-1 text-yellow-700">Use esta ruta en el comando de importacion:</p>
-                                            <div className="mt-3 rounded-md bg-white p-3 font-mono text-xs text-slate-700">
-                                                php artisan import:invoices {uploaded.absolute_path}
-                                            </div>
+                                            <p className="mt-1 text-yellow-700">
+                                                Inicia la importación desde aquí. El proceso se ejecuta en segundo plano y podrás ver el avance.
+                                            </p>
                                         </div>
 
                                         <div className="grid gap-3 md:grid-cols-[140px_1fr] md:items-center">
@@ -248,16 +320,53 @@ export default function InvoiceImportsCreate() {
                                             />
                                         </div>
 
-                                        <Button onClick={handleRunImport} disabled={running} className="w-full">
+                                        <Button onClick={handleRunImport} disabled={running || isProcessing} className="w-full">
                                             {running ? (
                                                 <>
                                                     <Upload className="mr-2 h-4 w-4 animate-spin" />
-                                                    Ejecutando importacion...
+                                                    Encolando importacion...
+                                                </>
+                                            ) : isProcessing ? (
+                                                <>
+                                                    <Upload className="mr-2 h-4 w-4 animate-spin" />
+                                                    Importacion en proceso...
                                                 </>
                                             ) : (
                                                 <>Ejecutar importacion</>
                                             )}
                                         </Button>
+
+                                        {importState && (
+                                            <div className="space-y-2 rounded-md bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                                                <div>
+                                                    Estado: <span className="font-medium">{statusLabel[normalizedStatus]}</span>
+                                                </div>
+                                                <div className="text-xs text-slate-600">
+                                                    Límite: {importState.limit} · Offset: {importState.offset}
+                                                </div>
+                                                {totalRecords > 0 && (
+                                                    <div className="space-y-1">
+                                                        <div className="flex items-center justify-between text-xs text-slate-600">
+                                                            <span>
+                                                                Procesadas {processedRecords} / {totalRecords}
+                                                            </span>
+                                                            <span>{progressPercent}%</span>
+                                                        </div>
+                                                        <div className="h-2 w-full rounded-full bg-slate-200">
+                                                            <div
+                                                                className="h-2 rounded-full bg-primary transition-all"
+                                                                style={{ width: `${progressPercent}%` }}
+                                                            />
+                                                        </div>
+                                                        <div className="grid grid-cols-3 gap-2 text-xs text-slate-600">
+                                                            <span>Importadas: {importState.imported_records}</span>
+                                                            <span>Omitidas: {importState.skipped_records}</span>
+                                                            <span>Errores: {importState.error_records}</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
 
                                         {runOutput && (
                                             <div className="rounded-md bg-slate-900/95 p-4 text-xs text-slate-100">

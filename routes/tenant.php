@@ -37,6 +37,7 @@ use App\Http\Controllers\GlobalRoleController;
 use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\InitialStockController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\InvoiceImportStatusController;
 use App\Http\Controllers\ListTelegramBotsController;
 use App\Http\Controllers\ListWhatsappAccountsController;
 use App\Http\Controllers\ListWhatsappAccountTemplatesController;
@@ -197,6 +198,7 @@ Route::middleware([
             Route::get('invoice-imports/create', fn () => Inertia::render('invoice-imports/create'))->name('invoice-imports.create');
             Route::post('invoice-imports/upload', UploadInvoiceImportController::class)->name('invoice-imports.upload');
             Route::post('invoice-imports/run', RunInvoiceImportController::class)->name('invoice-imports.run');
+            Route::get('invoice-imports/{invoice_import}/status', InvoiceImportStatusController::class)->name('invoice-imports.status');
 
             Route::post('invoices/bulk/pdf', BulkDownloadInvoicePdfController::class)->name('invoices.bulk.pdf');
 

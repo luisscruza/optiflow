@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Console\Commands;
+namespace App\Actions;
 
-use App\Actions\CreateWorkspaceAction;
-use App\Actions\ProcessInvoiceImportAction;
+use App\Enums\ContactType;
+use App\Enums\DocumentType;
+use App\Enums\IdentificationType;
 use App\Models\BankAccount;
 use App\Models\Contact;
+use App\Models\Currency;
 use App\Models\DocumentSubtype;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
@@ -17,29 +19,11 @@ use App\Models\User;
 use App\Models\Workspace;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use Stancl\Tenancy\Concerns\HasATenantsOption;
-use Stancl\Tenancy\Concerns\TenantAwareCommand;
+use League\Csv\Reader;
 
-final class ImportInvoice extends Command
+final class ProcessInvoiceImportAction
 {
-    use HasATenantsOption, TenantAwareCommand;
-
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'import:invoices {file : The CSV file path to import} {--limit=50000000 : Number of invoices to import} {--offset=0 : Number of invoices to skip before importing}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Import invoices and invoice items from CSV file';
-
     /**
      * Document subtype names by prefix.
      *
@@ -57,59 +41,109 @@ final class ImportInvoice extends Command
     ];
 
     /**
-     * Execute the console command.
+     * @var null|callable(string): void
      */
-    public function handle(ProcessInvoiceImportAction $action): int
-    {
-        $filePath = $this->argument('file');
-        $limit = (int) $this->option('limit');
-        $offset = (int) $this->option('offset');
+    private $onMessage = null;
 
-        $progressBar = null;
+    /**
+     * @param  null|callable(int $total): void  $onStart
+     * @param  null|callable(int $processed, int $total, int $imported, int $skipped, int $errors): void  $onProgress
+     * @param  null|callable(string $message): void  $onMessage
+     * @return array<string, mixed>
+     */
+    public function handle(
+        string $filePath,
+        int $limit,
+        int $offset,
+        ?callable $onStart = null,
+        ?callable $onProgress = null,
+        ?callable $onMessage = null
+    ): array {
+        $this->onMessage = $onMessage;
 
-        try {
-            $result = $action->handle(
-                filePath: $filePath,
-                limit: $limit,
-                offset: $offset,
-                onStart: function (int $total) use (&$progressBar): void {
-                    $progressBar = $this->output->createProgressBar($total);
-                    $progressBar->start();
-                },
-                onProgress: function (int $processed) use (&$progressBar): void {
-                    if ($progressBar) {
-                        $progressBar->setProgress($processed);
-                    }
-                },
-                onMessage: function (string $message): void {
-                    $this->line($message);
-                }
+        if (! file_exists($filePath)) {
+            throw new Exception("File not found: {$filePath}");
+        }
+
+        $this->message("Empiezando la importación de facturas desde el archivo: {$filePath}");
+        $this->message("Límite: {$limit} facturas");
+        $this->message("Saltando: {$offset} facturas");
+
+        $csv = Reader::createFromPath($filePath, 'r');
+        $csv->setHeaderOffset(0);
+
+        $records = iterator_to_array($csv->getRecords());
+        $this->message('Encontradas totales en el archivo CSV: '.count($records));
+
+        $groupedRecords = $this->groupRecordsByDocumentNumber($records);
+        $this->message('Total de facturas únicas a procesar: '.count($groupedRecords));
+
+        $groupedRecords = array_slice($groupedRecords, $offset, $limit, true);
+        $total = count($groupedRecords);
+        $this->message('Procesando un total de facturas: '.$total);
+
+        if ($onStart) {
+            $onStart($total);
+        }
+
+        $imported = 0;
+        $skipped = 0;
+        $errors = [];
+        $processed = 0;
+
+        $internalBankAccount = BankAccount::query()
+            ->firstOrCreate(
+                ['is_system_account' => true],
+                [
+                    'name' => 'Cuenta Interna',
+                    'description' => 'Cuenta bancaria interna para registros del sistema',
+                    'currency_id' => Currency::first()->id,
+                    'type' => 'cash',
+                    'account_number' => 0,
+                    'initial_balance' => 0.00,
+                    'initial_balance_date' => now(),
+                    'is_active' => false,
+                ]
             );
 
-            if ($progressBar) {
-                $progressBar->finish();
-                $this->newLine();
+        foreach ($groupedRecords as $documentNumber => $invoiceRows) {
+            try {
+                $result = $this->importInvoice($documentNumber, $invoiceRows, $internalBankAccount);
+                if ($result) {
+                    $imported++;
+                } else {
+                    $skipped++;
+                }
+            } catch (Exception $exception) {
+                $skipped++;
+                $errors[] = "Document {$documentNumber}: ".$exception->getMessage();
             }
 
-            $errors = $result['errors'] ?? [];
+            $processed++;
 
-            if ($errors !== []) {
-                $this->newLine();
-                $this->warn('Errores encontrados:');
-                foreach (array_slice($errors, 0, 10) as $error) {
-                    $this->error($error);
-                }
-
-                if (count($errors) > 10) {
-                    $this->warn('... y '.(count($errors) - 10).' errores más');
-                }
+            if ($onProgress) {
+                $onProgress($processed, $total, $imported, $skipped, count($errors));
             }
+        }
 
-            return self::SUCCESS;
-        } catch (Exception $exception) {
-            $this->error('Import failed: '.$exception->getMessage());
+        $this->updateDocumentSubtypeNextNumbers();
 
-            return self::FAILURE;
+        $this->message('Importación completada.');
+        $this->message("✓ Importadas: {$imported}");
+        $this->message("⚠ Omitidas: {$skipped}");
+
+        return [
+            'total' => $total,
+            'imported' => $imported,
+            'skipped' => $skipped,
+            'errors' => $errors,
+        ];
+    }
+
+    private function message(string $message): void
+    {
+        if ($this->onMessage) {
+            ($this->onMessage)($message);
         }
     }
 
@@ -149,41 +183,35 @@ final class ImportInvoice extends Command
             return false;
         }
 
-        // Use first row to get invoice header data
         $firstRow = $invoiceRows[0];
 
-        // Find contact by name
         $contactName = $this->cleanUtf8String(mb_trim($firstRow['CLIENTE'] ?? ''));
         $contact = Contact::query()->where('name', $contactName)->first();
 
         if (! $contact) {
-            // Try partial match
             $contact = Contact::query()->where('name', 'like', '%'.$contactName.'%')->first();
         }
 
         if (! $contact) {
-            // Create the contact if it doesn't exist
             $contact = Contact::query()->create([
                 'name' => $contactName,
-                'contact_type' => \App\Enums\ContactType::Customer,
-                'identification_type' => \App\Enums\IdentificationType::Cedula, // Default to Cédula
-                'identification_number' => null, // We don't have this info from invoice CSV
+                'contact_type' => ContactType::Customer,
+                'identification_type' => IdentificationType::Cedula,
+                'identification_number' => null,
                 'email' => null,
                 'phone_primary' => null,
                 'status' => 'active',
                 'credit_limit' => 0.00,
             ]);
 
-            $this->line("  ℹ Creado contacto faltante: {$contactName}");
+            $this->message("  ℹ Creado contacto faltante: {$contactName}");
         }
 
-        // Get document subtype
         $documentSubtypeId = $this->getDocumentSubtypeId($documentNumber);
         if ($documentSubtypeId === null || $documentSubtypeId === 0) {
             throw new Exception("Could not determine document subtype for: {$documentNumber}");
         }
 
-        // Parse dates
         $issueDate = $this->parseDate($firstRow['FECHA'] ?? '');
         $dueDate = $this->parseDate($firstRow['VENCIMIENTO'] ?? '');
 
@@ -192,7 +220,7 @@ final class ImportInvoice extends Command
         $workspaceId = $this->getWorkspaceIdFromRow($firstRow);
 
         if (Invoice::query()->withoutWorkspaceScope()->where('document_number', $documentNumber)->exists()) {
-            $this->line("  ℹ Se saltó la factura {$documentNumber} porque ya existe");
+            $this->message("  ℹ Se saltó la factura {$documentNumber} porque ya existe");
 
             return false;
         }
@@ -215,7 +243,6 @@ final class ImportInvoice extends Command
             $this->registerPayment($invoice, $internalBankAccount);
         }
 
-        // Create invoice items
         $itemsCreated = 0;
         foreach ($invoiceRows as $row) {
             if ($this->createInvoiceItem($invoice, $row)) {
@@ -223,10 +250,9 @@ final class ImportInvoice extends Command
             }
         }
 
-        // Calculate and update invoice totals from items
         $this->calculateInvoiceTotals($invoice);
 
-        $this->line("  Creada factura {$documentNumber} con {$itemsCreated} items");
+        $this->message("  Creada factura {$documentNumber} con {$itemsCreated} items");
 
         return true;
     }
@@ -240,36 +266,29 @@ final class ImportInvoice extends Command
     {
         $productName = $this->cleanUtf8String(mb_trim($row['PRODUCTO/SERVICIO - NOMBRE'] ?? ''));
         if ($productName === '' || $productName === '0') {
-            return false; // Skip rows without product name
+            return false;
         }
 
-        // Try to find product by reference or name
         $productReference = $this->cleanUtf8String(mb_trim($row['PRODUCTO/SERVICIO - REFERENCIA'] ?? ''));
         $product = null;
 
-        // First try to find by SKU/reference if provided
         if ($productReference !== '' && $productReference !== '0') {
             $product = Product::query()->where('sku', $productReference)->first();
         }
 
-        // Then try to find by exact name match
         if (! $product && ($productName !== '' && $productName !== '0')) {
             $product = Product::query()->where('name', $productName)->first();
         }
 
-        // Finally try partial name match
         if (! $product && ($productName !== '' && $productName !== '0')) {
             $product = Product::query()->where('name', 'like', '%'.$productName.'%')->first();
         }
 
-        // Create product if it doesn't exist
         if (! $product) {
-            // Create a unique SKU to avoid duplicates
             $baseSku = $this->generateSku($productReference, $productName);
             $sku = $baseSku;
             $counter = 1;
 
-            // Ensure SKU is unique
             while (Product::query()->where('sku', $sku)->exists()) {
                 $sku = $baseSku.'-'.$counter;
                 $counter++;
@@ -284,7 +303,7 @@ final class ImportInvoice extends Command
                 'track_stock' => false,
             ]);
 
-            $this->line("    ℹ Creado producto faltante: {$productName} (SKU: {$sku})");
+            $this->message("    ℹ Creado producto faltante: {$productName} (SKU: {$sku})");
         }
 
         $quantity = (float) ($row['CANTIDAD'] ?? 1);
@@ -292,7 +311,6 @@ final class ImportInvoice extends Command
         $discount = (float) ($row['DESCUENTO'] ?? 0);
         $total = (float) ($row['PRODUCTO/SERVICIO - TOTAL'] ?? $row['TOTAL SERVICIO'] ?? 0);
 
-        // Calculate tax amount based on the total and tax rate
         $subtotal = $unitPrice * $quantity;
         $discountAmount = $subtotal * ($discount / 100);
         $subtotalAfterDiscount = $subtotal - $discountAmount;
@@ -410,7 +428,7 @@ final class ImportInvoice extends Command
             ['prefix' => $prefix],
             [
                 'name' => $name,
-                'type' => \App\Enums\DocumentType::Invoice,
+                'type' => DocumentType::Invoice,
                 'is_default' => false,
                 'valid_until_date' => null,
                 'start_number' => 1,
@@ -446,7 +464,6 @@ final class ImportInvoice extends Command
 
         $dateString = mb_trim($dateString);
 
-        // Try common formats with 4-digit years first
         $formats = ['d/m/Y', 'Y-m-d', 'm/d/Y', 'd-m-Y', 'Y/m/d'];
 
         foreach ($formats as $format) {
@@ -456,18 +473,15 @@ final class ImportInvoice extends Command
                     return $date;
                 }
             } catch (Exception) {
-                // Continue to next format
                 continue;
             }
         }
 
-        // Handle 2-digit year formats specially
         $twoDigitFormats = ['d/m/y', 'm/d/y', 'd-m-y'];
 
         foreach ($twoDigitFormats as $format) {
             try {
                 $date = Carbon::createFromFormat($format, $dateString);
-                // Adjust for proper century - assume years 00-30 are 2000-2030, 31-99 are 1931-1999
                 $year = $date->year;
                 if ($year < 100) {
                     if ($year <= 30) {
@@ -480,19 +494,17 @@ final class ImportInvoice extends Command
                     return $date;
                 }
             } catch (Exception) {
-                // Continue to next format
                 continue;
             }
         }
 
-        // Fallback to Carbon's auto-parsing
         try {
             $date = Carbon::parse($dateString);
             if ($this->isValidDate($date)) {
                 return $date;
             }
         } catch (Exception) {
-            // Auto-parsing failed
+            // ignore
         }
 
         return null;
@@ -506,7 +518,6 @@ final class ImportInvoice extends Command
         $currentYear = now()->year;
         $year = $date->year;
 
-        // Accept dates from 1990 to 10 years in the future
         return $year >= 1990 && $year <= ($currentYear + 10);
     }
 
@@ -525,7 +536,7 @@ final class ImportInvoice extends Command
         foreach ($items as $item) {
             $itemSubtotal = $item->quantity * $item->unit_price;
             $itemDiscountAmount = $itemSubtotal * ($item->discount_rate / 100);
-            $itemTaxAmount = $item->tax_amount; // This is already calculated
+            $itemTaxAmount = $item->tax_amount;
 
             $subtotalAmount += $itemSubtotal;
             $discountAmount += $itemDiscountAmount;
@@ -533,7 +544,6 @@ final class ImportInvoice extends Command
             $totalAmount += $item->total;
         }
 
-        // Update the invoice with calculated totals
         $invoice->update([
             'subtotal_amount' => $subtotalAmount,
             'discount_amount' => $discountAmount,
@@ -543,46 +553,23 @@ final class ImportInvoice extends Command
     }
 
     /**
-     * Clean UTF-8 characters from a CSV record.
-     *
-     * @param  array<string, string>  $record
-     * @return array<string, string>
-     */
-    private function cleanUtf8Record(array $record): array
-    {
-        $cleanRecord = [];
-
-        foreach ($record as $key => $value) {
-            $cleanRecord[$this->cleanUtf8String($key)] = $this->cleanUtf8String($value);
-        }
-
-        return $cleanRecord;
-    }
-
-    /**
      * Clean UTF-8 characters from a string.
      */
     private function cleanUtf8String(string $str): string
     {
-        // Remove null bytes and other control characters
         $str = str_replace(["\0", "\x0B"], '', $str);
 
-        // Convert to UTF-8 if it's not already
         if (! mb_check_encoding($str, 'UTF-8')) {
-            // Try to detect encoding and convert
             $encoding = mb_detect_encoding($str, ['UTF-8', 'ISO-8859-1', 'Windows-1252'], true);
             if ($encoding && $encoding !== 'UTF-8') {
                 $str = mb_convert_encoding($str, 'UTF-8', $encoding);
             } else {
-                // If we can't detect encoding, remove invalid UTF-8 sequences
                 $str = mb_convert_encoding($str, 'UTF-8', 'UTF-8');
             }
         }
 
-        // Remove any remaining invalid UTF-8 characters
         $str = filter_var($str, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH);
 
-        // Trim whitespace
         return mb_trim($str);
     }
 
@@ -592,22 +579,18 @@ final class ImportInvoice extends Command
     private function generateSku(string $productReference, string $productName): string
     {
         if ($productReference !== '' && $productReference !== '0') {
-            // Handle scientific notation or large numbers
             if (preg_match('/^\d+\.?\d*[eE][+-]?\d+$/', $productReference)) {
-                // Convert scientific notation back to regular number
                 $productReference = number_format((float) $productReference, 0, '', '');
             }
 
-            // Clean the reference to make it a valid SKU
             $sku = preg_replace('/[^a-zA-Z0-9\-_]/', '-', $productReference);
             $sku = mb_trim((string) $sku, '-');
 
-            if ($sku !== '' && $sku !== '0' && mb_strlen($sku) <= 50) { // Reasonable SKU length limit
+            if ($sku !== '' && $sku !== '0' && mb_strlen($sku) <= 50) {
                 return mb_strtoupper($sku);
             }
         }
 
-        // Fallback to product name slug
         $slug = Str::slug($productName);
         if (mb_strlen($slug) > 50) {
             $slug = mb_substr($slug, 0, 47).'...';
@@ -687,7 +670,6 @@ final class ImportInvoice extends Command
                 ->max('document_number');
 
             if ($maxDocumentNumber) {
-                // Extract numeric part from document number
                 $numberPart = preg_replace('/\D/', '', $maxDocumentNumber);
                 if (is_numeric($numberPart)) {
                     $nextNumber = (int) $numberPart + 1;

@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RunInvoiceImportRequest;
+use App\Jobs\ProcessInvoiceImportJob;
+use App\Models\InvoiceImport;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Throwable;
 
 final class RunInvoiceImportController
 {
@@ -28,24 +29,24 @@ final class RunInvoiceImportController
 
         $limit = (int) ($validated['limit'] ?? 50);
         $offset = (int) ($validated['offset'] ?? 0);
-        $absolutePath = storage_path('app/'.$filePath);
 
-        try {
-            $exitCode = Artisan::call('import:invoices', [
-                'file' => $absolutePath,
-                '--limit' => $limit,
-                '--offset' => $offset,
-            ]);
+        $filename = (string) ($validated['filename'] ?? basename($filePath));
+        $originalFilename = (string) ($validated['original_filename'] ?? $filename);
 
-            return response()->json([
-                'exit_code' => $exitCode,
-                'output' => Artisan::output(),
-            ]);
-        } catch (Throwable $exception) {
-            return response()->json([
-                'message' => 'No se pudo ejecutar la importación.',
-                'error' => $exception->getMessage(),
-            ], 500);
-        }
+        $import = InvoiceImport::query()->create([
+            'user_id' => Auth::id(),
+            'filename' => $filename,
+            'original_filename' => $originalFilename,
+            'file_path' => $filePath,
+            'limit' => $limit,
+            'offset' => $offset,
+            'status' => \App\Enums\InvoiceImportStatus::Pending,
+        ]);
+
+        dispatch(new ProcessInvoiceImportJob(invoiceImportId: $import->id));
+
+        return response()->json([
+            'import' => $import->fresh(),
+        ], 202);
     }
 }

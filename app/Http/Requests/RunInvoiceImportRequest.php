@@ -26,6 +26,8 @@ final class RunInvoiceImportRequest extends FormRequest
     {
         return [
             'file_path' => ['required', 'string', 'starts_with:imports/invoices/'],
+            'filename' => ['nullable', 'string'],
+            'original_filename' => ['nullable', 'string'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:10000'],
             'offset' => ['nullable', 'integer', 'min:0', 'max:1000000'],
         ];
