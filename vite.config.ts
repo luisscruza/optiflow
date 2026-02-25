@@ -20,4 +20,8 @@ export default defineConfig({
     esbuild: {
         jsx: 'automatic',
     },
+    build: {
+        sourcemap: false,
+        chunkSizeWarningLimit: 2000,
+    },
 });
