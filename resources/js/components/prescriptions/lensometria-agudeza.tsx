@@ -94,19 +94,19 @@ export default function LensometriaAgudeza({ data, onChange, errors }: Lensometr
                             <Input
                                 value={data.av_lejos_sc_od || ''}
                                 onChange={(e) => onChange('av_lejos_sc_od', e.target.value)}
-                                maxLength={2}
+                                maxLength={3}
                                 className="h-6 min-w-[2.5rem] border-gray-300 text-center text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                             <Input
                                 value={data.av_lejos_cc_od || ''}
                                 onChange={(e) => onChange('av_lejos_cc_od', e.target.value)}
-                                maxLength={2}
+                                maxLength={3}
                                 className="h-6 min-w-[2.5rem] border-gray-300 text-center text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                             <Input
                                 value={data.av_lejos_ph_od || ''}
                                 onChange={(e) => onChange('av_lejos_ph_od', e.target.value)}
-                                maxLength={2}
+                                maxLength={3}
                                 className="h-6 min-w-[2.5rem] border-gray-300 text-center text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                         </div>
@@ -117,19 +117,19 @@ export default function LensometriaAgudeza({ data, onChange, errors }: Lensometr
                             <Input
                                 value={data.av_lejos_sc_oi || ''}
                                 onChange={(e) => onChange('av_lejos_sc_oi', e.target.value)}
-                                maxLength={2}
+                                maxLength={3}
                                 className="h-6 min-w-[2.5rem] border-gray-300 text-center text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                             <Input
                                 value={data.av_lejos_cc_oi || ''}
                                 onChange={(e) => onChange('av_lejos_cc_oi', e.target.value)}
-                                maxLength={2}
+                                maxLength={3}
                                 className="h-6 min-w-[2.5rem] border-gray-300 text-center text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                             <Input
                                 value={data.av_lejos_ph_oi || ''}
                                 onChange={(e) => onChange('av_lejos_ph_oi', e.target.value)}
-                                maxLength={2}
+                                maxLength={3}
                                 className="h-6 min-w-[2.5rem] border-gray-300 text-center text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                         </div>
@@ -153,19 +153,19 @@ export default function LensometriaAgudeza({ data, onChange, errors }: Lensometr
                             <Input
                                 value={data.av_cerca_sc_od || ''}
                                 onChange={(e) => onChange('av_cerca_sc_od', e.target.value)}
-                                maxLength={2}
+                                maxLength={3}
                                 className="h-6 min-w-[2.5rem] border-gray-300 text-center text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                             <Input
                                 value={data.av_cerca_cc_od || ''}
                                 onChange={(e) => onChange('av_cerca_cc_od', e.target.value)}
-                                maxLength={2}
+                                maxLength={3}
                                 className="h-6 min-w-[2.5rem] border-gray-300 text-center text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                             <Input
                                 value={data.av_cerca_ph_od || ''}
                                 onChange={(e) => onChange('av_cerca_ph_od', e.target.value)}
-                                maxLength={2}
+                                maxLength={3}
                                 className="h-6 min-w-[2.5rem] border-gray-300 text-center text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                         </div>
@@ -176,19 +176,19 @@ export default function LensometriaAgudeza({ data, onChange, errors }: Lensometr
                             <Input
                                 value={data.av_cerca_sc_oi || ''}
                                 onChange={(e) => onChange('av_cerca_sc_oi', e.target.value)}
-                                maxLength={2}
+                                maxLength={3}
                                 className="h-6 min-w-[2.5rem] border-gray-300 text-center text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                             <Input
                                 value={data.av_cerca_cc_oi || ''}
                                 onChange={(e) => onChange('av_cerca_cc_oi', e.target.value)}
-                                maxLength={2}
+                                maxLength={3}
                                 className="h-6 min-w-[2.5rem] border-gray-300 text-center text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                             <Input
                                 value={data.av_cerca_ph_oi || ''}
                                 onChange={(e) => onChange('av_cerca_ph_oi', e.target.value)}
-                                maxLength={2}
+                                maxLength={3}
                                 className="h-6 min-w-[2.5rem] border-gray-300 text-center text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                         </div>

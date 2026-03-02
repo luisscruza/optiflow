@@ -204,6 +204,10 @@
             color: #000;
         }
 
+        .font-bold {
+            font-weight: bold;
+        }
+
     </style>
 </head>
 <body>
@@ -236,7 +240,7 @@
                 </div>
                 <div class="validity-info">
                     <strong>Vigencia:</strong> 2 meses<br>
-                    <strong>Sucursal:</strong> {{ $prescription->workspace->name }} <br>
+                    <strong class="font-bold">Sucursal:</strong> {{ $prescription->workspace->name }} <br>
                                         <strong>Evaluado por:</strong> {{ $prescription->optometrist->name }} <br>
 
                     <strong>Fecha:</strong> {{ \Carbon\Carbon::parse($prescription->created_at)->locale('es')->isoFormat('D [de] MMMM [de] YYYY h:mm A') }}
@@ -317,7 +321,7 @@
     <div class="distances-section">
         @if($showCombinedDP)
             <div class="distance-item">
-                <strong>Distancia Naso Pupilar:</strong> {{ $dpOd }}mm
+                <strong>Distancia Naso Pupilar:</strong> {{ $dpOd + $dpOi }}mm
             </div>
         @else
             @if($dpOd)
@@ -356,7 +360,7 @@
             </div>
         @endif
         @if($prescription->refraccion_observaciones)
-            <div class="footer-line">
+            <div class="footer-line font-bold">
                 <strong>Observaciones Adicionales:</strong> {{ $prescription->refraccion_observaciones }}
             </div>
         @endif
