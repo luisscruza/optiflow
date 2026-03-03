@@ -129,6 +129,32 @@ final class ProductController
     }
 
     /**
+     * Activate the specified product.
+     */
+    public function activate(Product $product, #[CurrentUser] User $user): RedirectResponse
+    {
+        abort_unless($user->can(Permission::ProductsEdit), 403);
+
+        $product->update(['is_active' => true]);
+
+        return redirect()->back()
+            ->with('success', 'Producto activado correctamente.');
+    }
+
+    /**
+     * Deactivate the specified product.
+     */
+    public function deactivate(Product $product, #[CurrentUser] User $user): RedirectResponse
+    {
+        abort_unless($user->can(Permission::ProductsEdit), 403);
+
+        $product->update(['is_active' => false]);
+
+        return redirect()->back()
+            ->with('success', 'Producto desactivado correctamente.');
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(Product $product, #[CurrentUser] User $user, DeleteProductAction $action): RedirectResponse

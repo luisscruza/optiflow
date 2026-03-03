@@ -169,6 +169,8 @@ Route::middleware([
 
             Route::resource('products', ProductController::class);
             Route::post('products/quick-create', QuickProductCreate::class)->name('products.quick-create');
+            Route::post('products/{product}/activate', [ProductController::class, 'activate'])->name('products.activate');
+            Route::post('products/{product}/deactivate', [ProductController::class, 'deactivate'])->name('products.deactivate');
 
             // Product Import routes
             Route::resource('product-imports', ProductImportController::class)->except(['edit']);

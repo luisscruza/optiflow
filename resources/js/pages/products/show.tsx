@@ -1,8 +1,8 @@
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeftRight, BarChart3, DollarSign, Edit, Package, RotateCcw, Tag, Trash2, TrendingUp } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { ArrowLeftRight, BarChart3, DollarSign, Edit, Package, PowerOff, RotateCcw, Tag, Trash2, TrendingUp, Zap } from 'lucide-react';
 import { type ReactNode } from 'react';
 
-import { edit, index } from '@/actions/App/Http/Controllers/ProductController';
+import { activate, deactivate, edit, index } from '@/actions/App/Http/Controllers/ProductController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -118,7 +118,12 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
                 <div className="mb-8 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{product.name}</h1>
+                            <div className="flex items-center gap-3">
+                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{product.name}</h1>
+                                <Badge variant={product.is_active ? 'default' : 'secondary'}>
+                                    {product.is_active ? 'Activo' : 'Inactivo'}
+                                </Badge>
+                            </div>
                             <p className="text-gray-600 dark:text-gray-400">
                                 SKU: <code className="rounded bg-gray-100 px-2 py-1 text-sm dark:bg-gray-800">{product.sku}</code>
                             </p>
@@ -169,6 +174,30 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
                                 </Link>
                             </Button>
                         )}
+                        {can('edit products') &&
+                            (product.is_active ? (
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        if (confirm('¿Seguro que deseas desactivar este producto?')) {
+                                            router.post(deactivate(product.id).url);
+                                        }
+                                    }}
+                                >
+                                    <PowerOff className="mr-2 h-4 w-4" />
+                                    Desactivar
+                                </Button>
+                            ) : (
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        router.post(activate(product.id).url);
+                                    }}
+                                >
+                                    <Zap className="mr-2 h-4 w-4" />
+                                    Activar
+                                </Button>
+                            ))}
                         {can('delete products') && (
                             <Button
                                 variant="destructive"
