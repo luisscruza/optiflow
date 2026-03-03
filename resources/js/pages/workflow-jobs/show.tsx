@@ -30,7 +30,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ImageUpload } from '@/components/ui/image-upload';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
@@ -859,18 +859,17 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
                                                                 )}
 
                                                                 {field.type === 'select' && field.mastertable?.items && (
-                                                                    <Select value={String(currentValue)} onValueChange={(v) => handleFieldChange(v)}>
-                                                                        <SelectTrigger>
-                                                                            <SelectValue placeholder={field.placeholder || 'Seleccionar...'} />
-                                                                        </SelectTrigger>
-                                                                        <SelectContent>
-                                                                            {field.mastertable.items.map((item) => (
-                                                                                <SelectItem key={item.id} value={String(item.id)}>
-                                                                                    {item.name}
-                                                                                </SelectItem>
-                                                                            ))}
-                                                                        </SelectContent>
-                                                                    </Select>
+                                                                    <SearchableSelect
+                                                                        options={field.mastertable.items.map((item) => ({
+                                                                            value: String(item.id),
+                                                                            label: item.name,
+                                                                        }))}
+                                                                        value={String(currentValue)}
+                                                                        onValueChange={(v) => handleFieldChange(v)}
+                                                                        placeholder={field.placeholder || 'Seleccionar...'}
+                                                                        searchPlaceholder="Buscar opción..."
+                                                                        emptyText="No se encontraron opciones"
+                                                                    />
                                                                 )}
 
                                                                 {field.type === 'boolean' && (

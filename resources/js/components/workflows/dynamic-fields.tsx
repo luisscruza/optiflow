@@ -1,7 +1,7 @@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Textarea } from '@/components/ui/textarea';
 import type { WorkflowField } from '@/types';
 
@@ -62,18 +62,17 @@ export function DynamicFields({ fields, values, onChange }: DynamicFieldsProps) 
 
             case 'select':
                 return (
-                    <Select value={String(value)} onValueChange={(v) => onChange(field.key, v || null)}>
-                        <SelectTrigger>
-                            <SelectValue placeholder={field.placeholder ?? 'Seleccionar...'} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {field.mastertable?.items?.map((item) => (
-                                <SelectItem key={item.id} value={String(item.id)}>
-                                    {item.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <SearchableSelect
+                        options={(field.mastertable?.items ?? []).map((item) => ({
+                            value: String(item.id),
+                            label: item.name,
+                        }))}
+                        value={value !== null && value !== undefined ? String(value) : ''}
+                        onValueChange={(v) => onChange(field.key, v || null)}
+                        placeholder={field.placeholder ?? 'Seleccionar...'}
+                        searchPlaceholder="Buscar opción..."
+                        emptyText="No se encontraron opciones"
+                    />
                 );
 
             case 'boolean':
