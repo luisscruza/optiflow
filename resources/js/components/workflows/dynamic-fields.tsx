@@ -68,7 +68,7 @@ export function DynamicFields({ fields, values, onChange }: DynamicFieldsProps) 
                         </SelectTrigger>
                         <SelectContent>
                             {field.mastertable?.items?.map((item) => (
-                                <SelectItem key={item.id} value={item.name}>
+                                <SelectItem key={item.id} value={String(item.id)}>
                                     {item.name}
                                 </SelectItem>
                             ))}
