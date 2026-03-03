@@ -19,6 +19,11 @@ interface Props {
     types?: ContactType[];
 }
 
+interface DuplicateWarnings {
+    email?: { id: number; name: string };
+    phone?: { id: number; name: string };
+}
+
 export default function QuickContactModal({
     open,
     onOpenChange,
@@ -42,6 +47,7 @@ export default function QuickContactModal({
     const [contactName, setContactName] = useState('');
     const [isSearchingRNC, setIsSearchingRNC] = useState(false);
     const [rncSearchError, setRncSearchError] = useState<string | null>(null);
+    const [duplicateWarnings, setDuplicateWarnings] = useState<DuplicateWarnings>({});
 
     const identificationTypeRef = useRef<HTMLSelectElement>(null);
     const identificationNumberRef = useRef<HTMLInputElement>(null);
@@ -58,6 +64,7 @@ export default function QuickContactModal({
             setContactName('');
             setIsSearchingRNC(false);
             setRncSearchError(null);
+            setDuplicateWarnings({});
 
             // Reset form inputs
             if (identificationTypeRef.current) {
@@ -89,6 +96,27 @@ export default function QuickContactModal({
             if (identificationNumberRef.current) {
                 identificationNumberRef.current.value = '';
             }
+        }
+    };
+
+    const checkDuplicates = async (field: 'email' | 'phone', value: string) => {
+        if (!value) {
+            setDuplicateWarnings((prev) => ({ ...prev, [field]: undefined }));
+            return;
+        }
+
+        const params = new URLSearchParams({ [field === 'email' ? 'email' : 'phone']: value });
+
+        try {
+            const response = await fetch(`/api/contacts/check-duplicates?${params}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setDuplicateWarnings((prev) => ({ ...prev, [field]: data[field] }));
+            }
+        } catch {
+            // silently ignore network errors
         }
     };
 
@@ -302,14 +330,37 @@ export default function QuickContactModal({
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="email">Correo electrónico</Label>
-                                    <Input name="email" type="email" placeholder="ejemplo@email.com" />
+                                    <Input
+                                        name="email"
+                                        type="email"
+                                        placeholder="ejemplo@email.com"
+                                        onBlur={(e) => checkDuplicates('email', e.target.value)}
+                                    />
                                     {errors.email && <p className="text-sm text-red-600 dark:text-red-400">{errors.email}</p>}
+                                    {duplicateWarnings.email && (
+                                        <p className="text-sm text-amber-600 dark:text-amber-400">
+                                            ⚠️ Ya existe un contacto con este correo: <strong>{duplicateWarnings.email.name}</strong>. Puede
+                                            continuar de todas formas.
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="phone_primary">Teléfono *</Label>
-                                    <Input name="phone_primary" type="tel" placeholder="000-000-0000" required />
+                                    <Input
+                                        name="phone_primary"
+                                        type="tel"
+                                        placeholder="000-000-0000"
+                                        required
+                                        onBlur={(e) => checkDuplicates('phone', e.target.value)}
+                                    />
                                     {errors.phone_primary && <p className="text-sm text-red-600 dark:text-red-400">{errors.phone_primary}</p>}
+                                    {duplicateWarnings.phone && (
+                                        <p className="text-sm text-amber-600 dark:text-amber-400">
+                                            ⚠️ Ya existe un contacto con este teléfono: <strong>{duplicateWarnings.phone.name}</strong>. Puede
+                                            continuar de todas formas.
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 

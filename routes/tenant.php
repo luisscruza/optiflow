@@ -75,6 +75,7 @@ use App\Http\Controllers\WhatsappAccountController;
 use App\Http\Controllers\WorkflowController;
 use App\Http\Controllers\WorkflowJobController;
 use App\Http\Controllers\WorkflowJobStageController;
+use App\Http\Controllers\CheckContactDuplicatesController;
 use App\Http\Controllers\WorkflowStageController;
 use App\Http\Controllers\WorkspaceContextController;
 use App\Http\Controllers\WorkspaceController;
@@ -178,6 +179,7 @@ Route::middleware([
             Route::resource('taxes', TaxController::class);
 
             Route::resource('contacts', ContactController::class);
+            Route::get('api/contacts/check-duplicates', CheckContactDuplicatesController::class)->name('contacts.check-duplicates');
 
             Route::resource('contact-imports', ContactImportController::class)->only(['create', 'store', 'show', 'update', 'destroy']);
             Route::post('contact-imports/{contact_import}/process', ProcessContactImportController::class)->name('contact-imports.process');
