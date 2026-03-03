@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\ActivateProductController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AutomationController;
 use App\Http\Controllers\AutomationRunController;
@@ -23,6 +24,7 @@ use App\Http\Controllers\ConvertQuotationToInvoiceController;
 use App\Http\Controllers\CreateInvoiceFromQuotationController;
 use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\CurrencyRateController;
+use App\Http\Controllers\DeactivateProductController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DashboardLayoutController;
 use App\Http\Controllers\DocumentSubtypeController;
@@ -169,8 +171,8 @@ Route::middleware([
 
             Route::resource('products', ProductController::class);
             Route::post('products/quick-create', QuickProductCreate::class)->name('products.quick-create');
-            Route::post('products/{product}/activate', [ProductController::class, 'activate'])->name('products.activate');
-            Route::post('products/{product}/deactivate', [ProductController::class, 'deactivate'])->name('products.deactivate');
+            Route::post('products/{product}/activate', ActivateProductController::class)->name('products.activate');
+            Route::post('products/{product}/deactivate', DeactivateProductController::class)->name('products.deactivate');
 
             // Product Import routes
             Route::resource('product-imports', ProductImportController::class)->except(['edit']);
