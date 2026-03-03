@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { Building2, ChevronDown, ChevronRight, Save, Users } from 'lucide-react';
+import { Building2, ChevronDown, ChevronRight, Plus, Save, Trash2, Users } from 'lucide-react';
 import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import countriesData from '@/data/countries.json';
@@ -28,6 +29,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface Props {
     contact_types: Array<{ value: ContactType; label: string }>;
     identification_types: Array<{ value: IdentificationType; label: string }>;
+    available_relationship_contacts: Array<{ id: number; name: string }>;
 }
 
 interface ContactFormData {
@@ -47,13 +49,15 @@ interface ContactFormData {
     province: string;
     postal_code: string;
     country: string;
+    relationships: Array<{ related_contact_id: string; description: string }>;
 }
 
-export default function CreateContact({ contact_types, identification_types }: Props) {
+export default function CreateContact({ contact_types, identification_types, available_relationship_contacts }: Props) {
     const [basicInfoOpen, setBasicInfoOpen] = useState(true);
     const [contactInfoOpen, setContactInfoOpen] = useState(true);
     const [identificationOpen, setIdentificationOpen] = useState(false);
     const [addressOpen, setAddressOpen] = useState(false);
+    const [relationshipsOpen, setRelationshipsOpen] = useState(false);
     const [additionalOpen, setAdditionalOpen] = useState(false);
 
     const countries = Object.keys(countriesData);
@@ -79,6 +83,7 @@ export default function CreateContact({ contact_types, identification_types }: P
         province: '',
         postal_code: '',
         country: 'Dominican Republic',
+        relationships: [],
     });
 
     const selectedCountryProvinces = getProvincesForCountry(data.country);
@@ -109,6 +114,24 @@ export default function CreateContact({ contact_types, identification_types }: P
         if (type === 'customer') return 'Clientes que compran productos o servicios';
         if (type === 'supplier') return 'Proveedores de productos o servicios';
         return 'Selecciona el tipo de contacto';
+    };
+
+    const addRelationship = () => {
+        setData('relationships', [...data.relationships, { related_contact_id: '', description: '' }]);
+    };
+
+    const removeRelationship = (index: number) => {
+        setData(
+            'relationships',
+            data.relationships.filter((_, i) => i !== index),
+        );
+    };
+
+    const updateRelationship = (index: number, key: 'related_contact_id' | 'description', value: string) => {
+        setData(
+            'relationships',
+            data.relationships.map((relationship, i) => (i === index ? { ...relationship, [key]: value } : relationship)),
+        );
     };
 
     return (
@@ -465,6 +488,60 @@ export default function CreateContact({ contact_types, identification_types }: P
                                                 {errors.country && <p className="text-sm text-red-600 dark:text-red-400">{errors.country}</p>}
                                             </div>
                                         </div>
+                                    </CardContent>
+                                </CollapsibleContent>
+                            </Card>
+                        </Collapsible>
+
+                        {/* Relationships - Collapsed by Default */}
+                        <Collapsible open={relationshipsOpen} onOpenChange={setRelationshipsOpen}>
+                            <Card>
+                                <CollapsibleTrigger asChild>
+                                    <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                        <CardTitle className="flex items-center justify-between">
+                                            <span>Añadir relación</span>
+                                            {relationshipsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                        </CardTitle>
+                                        <CardDescription>Vincula este contacto con familiares o relacionados (opcional)</CardDescription>
+                                    </CardHeader>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <CardContent className="space-y-4">
+                                        {data.relationships.map((relationship, index) => (
+                                            <div key={index} className="grid grid-cols-1 gap-3 rounded-lg border p-3 md:grid-cols-[1fr_1fr_auto]">
+                                                <div className="space-y-2">
+                                                    <Label>Contacto relacionado</Label>
+                                                    <SearchableSelect
+                                                        options={available_relationship_contacts
+                                                            .filter((contact) => contact.id.toString() !== relationship.related_contact_id)
+                                                            .map((contact) => ({ value: contact.id.toString(), label: contact.name }))}
+                                                        value={relationship.related_contact_id}
+                                                        onValueChange={(value) => updateRelationship(index, 'related_contact_id', value)}
+                                                        placeholder="Seleccionar contacto"
+                                                        searchPlaceholder="Buscar contacto..."
+                                                        emptyText="No se encontraron contactos"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>Descripción (opcional)</Label>
+                                                    <Input
+                                                        value={relationship.description}
+                                                        onChange={(e) => updateRelationship(index, 'description', e.target.value)}
+                                                        placeholder="Ej: Padre, Hijo, Esposa"
+                                                    />
+                                                </div>
+                                                <div className="flex items-end">
+                                                    <Button type="button" variant="outline" size="icon" onClick={() => removeRelationship(index)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        <Button type="button" variant="outline" onClick={addRelationship}>
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Añadir relación
+                                        </Button>
                                     </CardContent>
                                 </CollapsibleContent>
                             </Card>

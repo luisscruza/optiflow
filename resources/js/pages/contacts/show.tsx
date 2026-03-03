@@ -44,9 +44,10 @@ interface Props {
     prescriptions: Prescription[];
     workflowJobs: WorkflowJob[];
     stats: ContactStats;
+    relatedContacts: Contact[];
 }
 
-export default function ContactShow({ contact, invoices, quotations, prescriptions, workflowJobs, stats }: Props) {
+export default function ContactShow({ contact, invoices, quotations, prescriptions, workflowJobs, stats, relatedContacts }: Props) {
     const { auth } = usePage<SharedData>().props;
     const { can } = usePermissions();
     const { format: formatCurrency } = useCurrency();
@@ -482,6 +483,9 @@ export default function ContactShow({ contact, invoices, quotations, prescriptio
                                                             <div>
                                                                 <p className="text-sm font-medium">{invoice.document_number}</p>
                                                                 <p className="text-xs text-gray-500">{formatDate(invoice.issue_date)}</p>
+                                                                {invoice.contact_id !== contact.id && (
+                                                                    <p className="text-xs text-blue-600">Relacionado: {invoice.contact?.name}</p>
+                                                                )}
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center gap-3">
@@ -665,6 +669,34 @@ export default function ContactShow({ contact, invoices, quotations, prescriptio
                                         </CardContent>
                                     </Card>
 
+                                    {/* Relationships Card */}
+                                    <Card className="border-0 shadow-sm">
+                                        <CardHeader className="pb-3">
+                                            <CardTitle className="flex items-center gap-2 text-lg">
+                                                <Users className="h-5 w-5 text-gray-500" />
+                                                Relaciones
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            {relatedContacts.length > 0 ? (
+                                                <div className="space-y-2">
+                                                    {relatedContacts.map((related) => (
+                                                        <div key={related.id} className="flex items-center justify-between rounded-lg bg-gray-50 p-2 dark:bg-gray-800/50">
+                                                            <Link href={`/contacts/${related.id}`} className="text-sm font-medium text-blue-600 hover:underline">
+                                                                {related.name}
+                                                            </Link>
+                                                            {related.pivot?.description && (
+                                                                <Badge variant="outline">{related.pivot.description}</Badge>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-gray-500">Sin relaciones configuradas</p>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+
                                     {/* Notes Card */}
                                     {contact.observations && (
                                         <Card className="border-0 shadow-sm">
@@ -757,6 +789,11 @@ export default function ContactShow({ contact, invoices, quotations, prescriptio
                                                             <p className="text-sm text-gray-500">
                                                                 {invoice.document_subtype?.name || 'Factura'} • {formatDate(invoice.issue_date)}
                                                             </p>
+                                                            {invoice.contact_id !== contact.id && (
+                                                                <Badge variant="outline" className="mt-1">
+                                                                    Relación: {invoice.contact?.name}
+                                                                </Badge>
+                                                            )}
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-4">
@@ -835,6 +872,11 @@ export default function ContactShow({ contact, invoices, quotations, prescriptio
                                                                 {quotation.document_subtype?.name || 'Cotización'} •{' '}
                                                                 {formatDate(quotation.issue_date)}
                                                             </p>
+                                                            {quotation.contact_id !== contact.id && (
+                                                                <Badge variant="outline" className="mt-1">
+                                                                    Relación: {quotation.contact?.name}
+                                                                </Badge>
+                                                            )}
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-4">

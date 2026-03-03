@@ -45,6 +45,9 @@ final class UpdateContactRequest extends FormRequest
             'address.municipality' => ['nullable', 'string', 'max:255'],
             'address.country' => ['nullable', 'string', 'max:255'],
             'address.description' => ['nullable', 'string'],
+            'relationships' => ['nullable', 'array'],
+            'relationships.*.related_contact_id' => ['nullable', 'integer', 'exists:contacts,id'],
+            'relationships.*.description' => ['nullable', 'string', 'max:255'],
         ];
     }
 

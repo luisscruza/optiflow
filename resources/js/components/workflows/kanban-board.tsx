@@ -340,7 +340,10 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
                                 <SearchableSelect
                                     options={invoices.map((invoice) => ({
                                         value: invoice.id.toString(),
-                                        label: `#${invoice.document_number} - ${formatCurrency(invoice.total_amount)} - Emitida el ${invoice.human_readable_issue_date}`,
+                                        label:
+                                            invoice.contact_id === Number(newJobContactId)
+                                                ? `#${invoice.document_number} - ${formatCurrency(invoice.total_amount)} - Emitida el ${invoice.human_readable_issue_date}`
+                                                : `[Relacionado: ${invoice.contact?.name}] #${invoice.document_number} - ${formatCurrency(invoice.total_amount)} - Emitida el ${invoice.human_readable_issue_date}`,
                                     }))}
                                     value={newJobInvoiceId}
                                     onValueChange={setNewJobInvoiceId}

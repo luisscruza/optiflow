@@ -403,6 +403,10 @@ export interface Address {
     full_address?: string | null;
 }
 
+export interface ContactRelationshipPivot {
+    description?: string | null;
+}
+
 export interface Contact {
     id: number;
     workspace_id: number;
@@ -435,6 +439,8 @@ export interface Contact {
     quotations_count?: number;
     prescriptions_count?: number;
     workflow_jobs_count?: number;
+    pivot?: ContactRelationshipPivot;
+    relationships?: Contact[];
 }
 
 export interface MasterTableData {

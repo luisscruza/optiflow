@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -178,6 +179,35 @@ final class Contact extends Model implements Commentable
     public function workflowJobs(): HasMany
     {
         return $this->hasMany(WorkflowJob::class);
+    }
+
+    /**
+     * Contacts related to this contact.
+     *
+     * @return BelongsToMany<Contact, $this>
+     */
+    public function relationships(): BelongsToMany
+    {
+        return $this->belongsToMany(self::class, 'contact_relationships', 'contact_id', 'related_contact_id')
+            ->withPivot(['description'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get related contact ids plus this contact id.
+     *
+     * @return array<int>
+     */
+    public function relatedContactIdsWithSelf(): array
+    {
+        $relatedIds = $this->relationships()->pluck('contacts.id')->all();
+
+        return collect([$this->id, ...$relatedIds])
+            ->filter(fn ($id) => is_numeric($id))
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**
