@@ -268,7 +268,8 @@ export default function EditContact({ contact, contact_types, identification_typ
                                                     type="tel"
                                                     value={data.phone_primary}
                                                     onChange={(e) => setData('phone_primary', e.target.value)}
-                                                    placeholder="+57 300 123 4567"
+                                                    placeholder="(809) 555 1234"
+                                                    pattern="\(\d{3}\) \d{3} \d{4}"
                                                     className={errors.phone_primary ? 'border-red-500' : ''}
                                                 />
                                                 {errors.phone_primary && (
@@ -283,7 +284,8 @@ export default function EditContact({ contact, contact_types, identification_typ
                                                     type="tel"
                                                     value={data.phone_secondary}
                                                     onChange={(e) => setData('phone_secondary', e.target.value)}
-                                                    placeholder="+57 300 123 4567"
+                                                    placeholder="(809) 555 1234"
+                                                    pattern="\(\d{3}\) \d{3} \d{4}"
                                                     className={errors.phone_secondary ? 'border-red-500' : ''}
                                                 />
                                                 {errors.phone_secondary && (
