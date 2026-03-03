@@ -511,7 +511,12 @@ export default function ContactShow({ contact, invoices, quotations, prescriptio
                                                                 <p className="text-xs text-gray-500">{job.workflow_stage?.name || 'Etapa actual'}</p>
                                                             </div>
                                                         </div>
-                                                        <div className="flex items-center gap-3">{getPriorityBadge(job.priority)}</div>
+                                                        <div className="flex items-center gap-3">
+                                                            {getPriorityBadge(job.priority)}
+                                                            <Link href={`/workflows/${job.workflow_id}/jobs/${job.id}`}>
+                                                                <ChevronRight className="h-4 w-4 text-gray-400" />
+                                                            </Link>
+                                                        </div>
                                                     </div>
                                                 ))}
 
@@ -1012,6 +1017,9 @@ export default function ContactShow({ contact, invoices, quotations, prescriptio
                                                                 Cancelado
                                                             </Badge>
                                                         )}
+                                                        <Link href={`/workflows/${job.workflow_id}/jobs/${job.id}`}>
+                                                            <ChevronRight className="h-4 w-4 text-gray-400" />
+                                                        </Link>
                                                     </div>
                                                 </div>
                                             ))}
