@@ -69,7 +69,21 @@ export default function ProductsCreate({ taxes, workspace_stocks }: Props) {
     };
 
     const normalizeAmount = (value: string): string => {
-        return value.replace(/,/g, '');
+        const raw = value.trim().replace(/\s/g, '');
+        if (raw === '') return '';
+
+        // Locale patterns like 1.234 or 1.234,56 => remove thousand separators and normalize decimal comma.
+        if (/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(raw)) {
+            return raw.replace(/\./g, '').replace(',', '.');
+        }
+
+        // Locale patterns like 1,234 or 1,234.56 => remove thousand separators.
+        if (/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(raw)) {
+            return raw.replace(/,/g, '');
+        }
+
+        // Fallback: keep decimal point style expected by JS Number().
+        return raw.replace(/,/g, '');
     };
 
     const { data, setData, post, processing, errors, reset } = useForm({
