@@ -829,6 +829,7 @@ export interface Prescription {
     subjetivo_od_eje?: string;
     subjetivo_od_add?: string;
     subjetivo_od_dp?: string;
+    alt_bif_od?: string;
     subjetivo_od_av_lejos?: string;
     subjetivo_od_av_cerca?: string;
 
@@ -837,6 +838,7 @@ export interface Prescription {
     subjetivo_oi_eje?: string;
     subjetivo_oi_add?: string;
     subjetivo_oi_dp?: string;
+    alt_bif_oi?: string;
     subjetivo_oi_av_lejos?: string;
     subjetivo_oi_av_cerca?: string;
 }

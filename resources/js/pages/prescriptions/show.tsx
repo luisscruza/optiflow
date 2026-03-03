@@ -225,7 +225,7 @@ export default function PrescriptionShow({ prescription, company }: Props) {
                                         {prescription.subjetivo_od_add ?? '-'}
                                     </td>
                                     <td className="border border-gray-900 px-2 py-2.5 text-center text-sm text-gray-900 dark:border-gray-500 dark:text-gray-100">
-                                        -
+                                        {prescription.alt_bif_od ?? '-'}
                                     </td>
                                     <td className="border border-gray-900 px-2 py-2.5 text-center text-sm text-gray-900 dark:border-gray-500 dark:text-gray-100">
                                         {prescription.subjetivo_od_av_lejos ? `20/${prescription.subjetivo_od_av_lejos}` : '-'}
@@ -251,7 +251,7 @@ export default function PrescriptionShow({ prescription, company }: Props) {
                                         {prescription.subjetivo_oi_add ?? '-'}
                                     </td>
                                     <td className="border border-gray-900 px-2 py-2.5 text-center text-sm text-gray-900 dark:border-gray-500 dark:text-gray-100">
-                                        -
+                                        {prescription.alt_bif_oi ?? '-'}
                                     </td>
                                     <td className="border border-gray-900 px-2 py-2.5 text-center text-sm text-gray-900 dark:border-gray-500 dark:text-gray-100">
                                         {prescription.subjetivo_oi_av_lejos ? `20/${prescription.subjetivo_oi_av_lejos}` : '-'}
