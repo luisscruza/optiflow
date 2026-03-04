@@ -308,14 +308,8 @@ export default function QuickContactModal({
 
                                 <div className="space-y-2">
                                     <Label htmlFor="phone_primary">Teléfono *</Label>
-                                    <Input name="phone_primary" type="tel" placeholder="(809) 555 1234" pattern="\(\d{3}\) \d{3} \d{4}" required />
+                                    <Input name="phone_primary" type="tel" placeholder="000-000-0000" required />
                                     {errors.phone_primary && <p className="text-sm text-red-600 dark:text-red-400">{errors.phone_primary}</p>}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="phone_secondary">Teléfono secundario</Label>
-                                    <Input name="phone_secondary" type="tel" placeholder="(809) 555 1234" pattern="\(\d{3}\) \d{3} \d{4}" />
-                                    {errors.phone_secondary && <p className="text-sm text-red-600 dark:text-red-400">{errors.phone_secondary}</p>}
                                 </div>
                             </div>
 
