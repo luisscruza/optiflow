@@ -12,23 +12,23 @@
         }
 
         @page {
-            margin: 7mm 16mm 142mm 16mm;
+            margin: 5mm 14mm 115mm 14mm;
         }
 
         body {
             font-family: Arial, Helvetica, sans-serif;
             font-size: 13px;
-            line-height: 1.4;
+            line-height: 1.3;
             color: #1a1a2e;
             margin: 0;
-            padding: 0px 20px;
+            padding: 0px 16px;
         }
 
         /* ── Header ── */
         .header-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 25px;
+            margin-bottom: 16px;
         }
 
         .header-table td {
@@ -36,15 +36,15 @@
         }
 
         .logo-cell {
-            width: 120px;
+            width: 100px;
             text-align: center;
             vertical-align: middle;
-            padding-right: 15px;
+            padding-right: 10px;
         }
 
         .logo-cell img {
-            max-height: 80px;
-            max-width: 110px;
+            max-height: 65px;
+            max-width: 95px;
         }
 
         .company-name {
@@ -64,7 +64,7 @@
 
         .receipt-box {
             border: 2px solid #999;
-            padding: 10px 15px;
+            padding: 8px 12px;
             text-align: center;
         }
 
@@ -73,8 +73,8 @@
             font-weight: bold;
             color: #1a1a2e;
             background-color: #d0d0d8;
-            padding: 6px 10px;
-            margin: -10px -15px 8px;
+            padding: 4px 10px;
+            margin: -8px -12px 6px;
         }
 
         .receipt-number {
@@ -87,11 +87,11 @@
         .client-section {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 14px;
         }
 
         .client-section td {
-            padding: 5px 8px;
+            padding: 3px 6px;
             font-size: 12px;
             vertical-align: middle;
         }
@@ -132,14 +132,14 @@
             font-weight: bold;
             font-size: 12px;
             text-align: center;
-            padding: 6px;
+            padding: 4px;
         }
 
         .date-value {
             font-size: 16px;
             font-weight: bold;
             text-align: center;
-            padding: 8px;
+            padding: 5px;
         }
 
         /* ── Items table ── */
@@ -162,13 +162,13 @@
             color: #1a1a2e;
             font-weight: bold;
             font-size: 12px;
-            padding: 10px 8px;
+            padding: 6px 6px;
             text-align: left;
             border: 1px solid #999;
         }
 
         .items-table tbody td {
-            padding: 12px 8px;
+            padding: 8px 6px;
             font-size: 12px;
             border-left: 1px solid #999;
             border-right: 1px solid #999;
@@ -196,12 +196,12 @@
         .totals-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             page-break-inside: avoid;
         }
 
         .totals-table td {
-            padding: 6px 10px;
+            padding: 4px 8px;
             font-size: 13px;
         }
 
@@ -228,19 +228,19 @@
         .signatures-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 60px;
+            margin-top: 40px;
             page-break-inside: avoid;
         }
 
         .signatures-table td {
             width: 50%;
             vertical-align: bottom;
-            padding: 0 20px;
+            padding: 0 16px;
         }
 
         .signature-line {
             border-top: 1px solid #333;
-            padding-top: 8px;
+            padding-top: 6px;
             font-size: 11px;
             font-weight: bold;
             color: #1a1a2e;
@@ -414,7 +414,7 @@
 
     {{-- ── Note ── --}}
     @if($payment->note)
-        <div style="margin-bottom: 20px; font-size: 12px; color: #333;">
+        <div style="margin-bottom: 14px; font-size: 12px; color: #333;">
             <strong>Nota:</strong> {{ $payment->note }}
         </div>
     @endif
