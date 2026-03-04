@@ -57,6 +57,12 @@ final class ContactController
                 ])
                 ->values()
                 ->toArray(),
+            'available_relationship_contacts' => Contact::query()
+                ->select(['id', 'name'])
+                ->where('status', 'active')
+                ->orderBy('name')
+                ->limit(500)
+                ->get(),
         ]);
     }
 
@@ -85,18 +91,23 @@ final class ContactController
             'comments.commentator',
             'comments.comments.commentator',
             'comments.comments.comments.commentator',
+            'relationships',
         ]);
 
-        // Load invoices with basic info, limited to latest 10
-        $invoices = $contact->invoices()
-            ->with(['documentSubtype'])
+        $contactIds = $contact->relatedContactIdsWithSelf();
+
+        // Load invoices with basic info, limited to latest 10 (including related contacts)
+        $invoices = \App\Models\Invoice::query()
+            ->whereIn('contact_id', $contactIds)
+            ->with(['documentSubtype', 'contact'])
             ->orderByDesc('issue_date')
             ->limit(10)
             ->get();
 
-        // Load quotations from the Quotation model, limited to latest 10
-        $quotations = $contact->quotations()
-            ->with(['documentSubtype'])
+        // Load quotations from the Quotation model, limited to latest 10 (including related contacts)
+        $quotations = \App\Models\Quotation::query()
+            ->whereIn('contact_id', $contactIds)
+            ->with(['documentSubtype', 'contact'])
             ->orderByDesc('issue_date')
             ->limit(10)
             ->get();
@@ -116,17 +127,20 @@ final class ContactController
             ->get();
 
         // Calculate summary statistics
+        $invoiceQuery = \App\Models\Invoice::query()->whereIn('contact_id', $contactIds);
+        $quotationQuery = \App\Models\Quotation::query()->whereIn('contact_id', $contactIds);
+
         $stats = [
-            'total_invoices' => $contact->invoices()->count(),
-            'total_quotations' => $contact->quotations()->count(),
+            'total_invoices' => (clone $invoiceQuery)->count(),
+            'total_quotations' => (clone $quotationQuery)->count(),
             'total_prescriptions' => $contact->prescriptions()->count(),
             'total_workflow_jobs' => $contact->workflowJobs()->count(),
-            'total_invoiced' => $contact->invoices()->sum('total_amount'),
-            'total_paid' => $contact->invoices()
+            'total_invoiced' => (clone $invoiceQuery)->sum('total_amount'),
+            'total_paid' => (clone $invoiceQuery)
                 ->whereIn('status', ['paid', 'partially_paid'])
                 ->get()
                 ->sum(fn ($invoice) => $invoice->total_amount - $invoice->amount_due),
-            'pending_amount' => $contact->invoices()
+            'pending_amount' => (clone $invoiceQuery)
                 ->whereNotIn('status', ['paid', 'cancelled'])
                 ->sum('total_amount'),
             'pending_workflow_jobs' => $contact->workflowJobs()
@@ -142,6 +156,7 @@ final class ContactController
             'prescriptions' => $prescriptions,
             'workflowJobs' => $workflowJobs,
             'stats' => $stats,
+            'relatedContacts' => $contact->relationships,
         ]);
     }
 
@@ -152,10 +167,21 @@ final class ContactController
     {
         abort_unless($user->can(Permission::ContactsEdit), 403);
 
-        $contact->load(['primaryAddress']);
+        $contact->load(['primaryAddress', 'relationships']);
 
         return Inertia::render('contacts/edit', [
             'contact' => $contact,
+            'contact_relationships' => $contact->relationships->map(fn ($related): array => [
+                'related_contact_id' => $related->id,
+                'description' => $related->pivot?->description,
+            ])->values()->toArray(),
+            'available_relationship_contacts' => Contact::query()
+                ->select(['id', 'name'])
+                ->where('status', 'active')
+                ->where('id', '!=', $contact->id)
+                ->orderBy('name')
+                ->limit(500)
+                ->get(),
             'identification_types' => collect(IdentificationType::cases())
                 ->map(fn ($type): array => [
                     'value' => $type->value,

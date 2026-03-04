@@ -15,11 +15,11 @@ final readonly class CreateContactAction
      */
     public function handle(User $user, array $data): Contact
     {
-
         return DB::transaction(function () use ($data) {
-            // Extract address data if present
+            // Extract nested data if present
             $addressData = $data['address'] ?? null;
-            unset($data['address']);
+            $relationships = $data['relationships'] ?? [];
+            unset($data['address'], $data['relationships']);
 
             // Create the contact
             $contact = Contact::query()->create($data);
@@ -29,7 +29,48 @@ final readonly class CreateContactAction
                 $contact->addresses()->create($addressData);
             }
 
-            return $contact->load('addresses');
+            $this->syncRelationships($contact, $relationships);
+
+            return $contact->load(['addresses', 'relationships']);
         });
+    }
+
+    /**
+     * @param array<int, array{related_contact_id:int, description?:string|null}> $relationships
+     */
+    private function syncRelationships(Contact $contact, array $relationships): void
+    {
+        $syncData = [];
+
+        foreach ($relationships as $relationship) {
+            $relatedContactId = (int) ($relationship['related_contact_id'] ?? 0);
+            if ($relatedContactId <= 0 || $relatedContactId === $contact->id) {
+                continue;
+            }
+
+            $description = isset($relationship['description']) ? trim((string) $relationship['description']) : null;
+            $syncData[$relatedContactId] = ['description' => $description !== '' ? $description : null];
+        }
+
+        if ($syncData === []) {
+            return;
+        }
+
+        $contact->relationships()->sync($syncData);
+
+        foreach ($syncData as $relatedContactId => $pivotData) {
+            $relatedContact = Contact::query()->find((int) $relatedContactId);
+            if (! $relatedContact) {
+                continue;
+            }
+
+            $reverseData = $relatedContact->relationships()
+                ->where('contacts.id', $contact->id)
+                ->first()
+                ? [$contact->id => $pivotData]
+                : [$contact->id => $pivotData];
+
+            $relatedContact->relationships()->syncWithoutDetaching($reverseData);
+        }
     }
 }

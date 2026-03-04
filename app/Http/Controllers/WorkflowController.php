@@ -156,14 +156,24 @@ final class WorkflowController
             'contactSearchResults' => Inertia::optional(
                 fn (): array => $contactSearch->search((string) $request->string('contact_search'), ['customer'], 25, 'active')
             ),
-            'invoices' => Inertia::lazy(fn () => $request->getContactId()
-                ? Invoice::query()
-                    ->where('contact_id', $request->getContactId())
+            'invoices' => Inertia::lazy(function () use ($request) {
+                $contactId = $request->getContactId();
+                if (! $contactId) {
+                    return [];
+                }
+
+                $contact = \App\Models\Contact::query()->find($contactId);
+                if (! $contact) {
+                    return [];
+                }
+
+                return Invoice::query()
+                    ->whereIn('contact_id', $contact->relatedContactIdsWithSelf())
                     ->with('contact')
                     ->orderBy('created_at', 'desc')
                     ->limit(50)
-                    ->get()
-                : []),
+                    ->get();
+            }),
             'prescriptions' => Inertia::lazy(fn () => $request->getContactId()
                 ? Prescription::query()
                     ->with('patient')

@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Building2, ChevronDown, ChevronRight, DollarSign, Save, Users } from 'lucide-react';
+import { ArrowLeft, Building2, ChevronDown, ChevronRight, DollarSign, Plus, Save, Trash2, Users } from 'lucide-react';
 import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import countriesData from '@/data/countries.json';
@@ -18,6 +19,8 @@ interface Props {
     contact: Contact;
     contact_types: Array<{ value: ContactType; label: string }>;
     identification_types: Array<{ value: IdentificationType; label: string }>;
+    available_relationship_contacts: Array<{ id: number; name: string }>;
+    contact_relationships: Array<{ related_contact_id: number; description?: string | null }>;
 }
 
 interface ContactFormData {
@@ -38,6 +41,7 @@ interface ContactFormData {
     postal_code: string;
     country: string;
     credit_limit: string;
+    relationships: Array<{ related_contact_id: string; description: string }>;
 }
 
 interface DuplicateWarnings {
@@ -45,11 +49,12 @@ interface DuplicateWarnings {
     phone?: { id: number; name: string };
 }
 
-export default function EditContact({ contact, contact_types, identification_types }: Props) {
+export default function EditContact({ contact, contact_types, identification_types, available_relationship_contacts, contact_relationships }: Props) {
     const [basicInfoOpen, setBasicInfoOpen] = useState(true);
     const [contactInfoOpen, setContactInfoOpen] = useState(true);
     const [identificationOpen, setIdentificationOpen] = useState(false);
     const [addressOpen, setAddressOpen] = useState(false);
+    const [relationshipsOpen, setRelationshipsOpen] = useState(false);
     const [financialOpen, setFinancialOpen] = useState(false);
     const [additionalOpen, setAdditionalOpen] = useState(false);
     const [duplicateWarnings, setDuplicateWarnings] = useState<DuplicateWarnings>({});
@@ -97,6 +102,10 @@ export default function EditContact({ contact, contact_types, identification_typ
         postal_code: '',
         country: contact.primary_address?.country || 'Dominican Republic',
         credit_limit: contact.credit_limit?.toString() || '0',
+        relationships: contact_relationships.map((relationship) => ({
+            related_contact_id: relationship.related_contact_id.toString(),
+            description: relationship.description || '',
+        })),
     });
 
     const selectedCountryProvinces = getProvincesForCountry(data.country);
@@ -153,6 +162,24 @@ export default function EditContact({ contact, contact_types, identification_typ
         if (type === 'customer') return 'Clientes que compran productos o servicios';
         if (type === 'supplier') return 'Proveedores de productos o servicios';
         return 'Selecciona el tipo de contacto';
+    };
+
+    const addRelationship = () => {
+        setData('relationships', [...data.relationships, { related_contact_id: '', description: '' }]);
+    };
+
+    const removeRelationship = (index: number) => {
+        setData(
+            'relationships',
+            data.relationships.filter((_, i) => i !== index),
+        );
+    };
+
+    const updateRelationship = (index: number, key: 'related_contact_id' | 'description', value: string) => {
+        setData(
+            'relationships',
+            data.relationships.map((relationship, i) => (i === index ? { ...relationship, [key]: value } : relationship)),
+        );
     };
 
     return (
@@ -318,11 +345,6 @@ export default function EditContact({ contact, contact_types, identification_typ
                                                 />
                                                 {errors.phone_primary && (
                                                     <p className="text-sm text-red-600 dark:text-red-400">{errors.phone_primary}</p>
-                                                )}
-                                                {duplicateWarnings.phone && (
-                                                    <p className="text-sm text-amber-600 dark:text-amber-400">
-                                                        Ya existe un contacto con este telefono: <strong>{duplicateWarnings.phone.name}</strong>.
-                                                    </p>
                                                 )}
                                                 {duplicateWarnings.phone && (
                                                     <p className="text-sm text-amber-600 dark:text-amber-400">
@@ -533,6 +555,60 @@ export default function EditContact({ contact, contact_types, identification_typ
                                                 {errors.country && <p className="text-sm text-red-600 dark:text-red-400">{errors.country}</p>}
                                             </div>
                                         </div>
+                                    </CardContent>
+                                </CollapsibleContent>
+                            </Card>
+                        </Collapsible>
+
+                        {/* Relationships - Collapsed by Default */}
+                        <Collapsible open={relationshipsOpen} onOpenChange={setRelationshipsOpen}>
+                            <Card>
+                                <CollapsibleTrigger asChild>
+                                    <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                        <CardTitle className="flex items-center justify-between">
+                                            <span>Añadir relación</span>
+                                            {relationshipsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                        </CardTitle>
+                                        <CardDescription>Vincula este contacto con familiares o relacionados (opcional)</CardDescription>
+                                    </CardHeader>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <CardContent className="space-y-4">
+                                        {data.relationships.map((relationship, index) => (
+                                            <div key={index} className="grid grid-cols-1 gap-3 rounded-lg border p-3 md:grid-cols-[1fr_1fr_auto]">
+                                                <div className="space-y-2">
+                                                    <Label>Contacto relacionado</Label>
+                                                    <SearchableSelect
+                                                        options={available_relationship_contacts
+                                                            .filter((related) => related.id.toString() !== relationship.related_contact_id)
+                                                            .map((related) => ({ value: related.id.toString(), label: related.name }))}
+                                                        value={relationship.related_contact_id}
+                                                        onValueChange={(value) => updateRelationship(index, 'related_contact_id', value)}
+                                                        placeholder="Seleccionar contacto"
+                                                        searchPlaceholder="Buscar contacto..."
+                                                        emptyText="No se encontraron contactos"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>Descripción (opcional)</Label>
+                                                    <Input
+                                                        value={relationship.description}
+                                                        onChange={(e) => updateRelationship(index, 'description', e.target.value)}
+                                                        placeholder="Ej: Padre, Hijo, Esposa"
+                                                    />
+                                                </div>
+                                                <div className="flex items-end">
+                                                    <Button type="button" variant="outline" size="icon" onClick={() => removeRelationship(index)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        <Button type="button" variant="outline" onClick={addRelationship}>
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Añadir relación
+                                        </Button>
                                     </CardContent>
                                 </CollapsibleContent>
                             </Card>
