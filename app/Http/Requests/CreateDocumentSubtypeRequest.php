@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\DocumentType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 final class CreateDocumentSubtypeRequest extends FormRequest
 {
@@ -25,6 +27,7 @@ final class CreateDocumentSubtypeRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'type' => ['required', Rule::enum(DocumentType::class)],
             'prefix' => 'required|string|max:3|unique:document_subtypes,prefix',
             'start_number' => 'required|integer|min:1',
             'end_number' => 'nullable|integer|gt:start_number',
@@ -43,6 +46,8 @@ final class CreateDocumentSubtypeRequest extends FormRequest
         return [
             'name.required' => 'El nombre es obligatorio.',
             'name.max' => 'El nombre no puede tener más de 255 caracteres.',
+            'type.required' => 'El tipo de documento es obligatorio.',
+            'type.Illuminate\Validation\Rules\Enum' => 'El tipo de documento seleccionado no es válido.',
             'prefix.required' => 'El prefijo es obligatorio.',
             'prefix.max' => 'El prefijo no puede tener más de 3 caracteres.',
             'prefix.unique' => 'Este prefijo ya está en uso.',
@@ -62,6 +67,7 @@ final class CreateDocumentSubtypeRequest extends FormRequest
     {
         return [
             'name' => 'nombre',
+            'type' => 'tipo de documento',
             'prefix' => 'prefijo',
             'start_number' => 'número inicial',
             'end_number' => 'número final',

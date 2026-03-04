@@ -17,7 +17,9 @@ final class CreateDocumentSubtypeAction
     public function handle(User $user, array $validated): DocumentSubtype
     {
         if ($validated['is_default'] ?? false) {
-            DocumentSubtype::query()->update(['is_default' => false]);
+            DocumentSubtype::query()
+                ->where('type', $validated['type'])
+                ->update(['is_default' => false]);
         }
 
         $validated['next_number'] = $validated['start_number'];

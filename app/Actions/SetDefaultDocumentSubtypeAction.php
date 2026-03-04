@@ -14,7 +14,9 @@ final class SetDefaultDocumentSubtypeAction
      */
     public function handle(User $user, DocumentSubtype $documentSubtype): DocumentSubtype
     {
-        DocumentSubtype::query()->update(['is_default' => false]);
+        DocumentSubtype::query()
+            ->where('type', $documentSubtype->type)
+            ->update(['is_default' => false]);
 
         $documentSubtype->update(['is_default' => true]);
 

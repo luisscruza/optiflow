@@ -1,6 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { Calendar, Hash, Save, Type } from 'lucide-react';
-import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +27,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 interface FormData {
     name: string;
+    type: string;
     prefix: string;
     start_number: number;
     end_number: number | null;
@@ -37,16 +37,15 @@ interface FormData {
 
 interface Props {
     documentTypes: Array<{
-        id: string;
-        name: string;
+        value: string;
+        label: string;
     }>;
 }
 
 export default function CreateDocumentSubtype({ documentTypes }: Props) {
-    const [documentType] = useState('Factura de venta'); // Default to invoice for now
-
     const { data, setData, post, processing, errors } = useForm<FormData>({
         name: '',
+        type: 'invoice',
         prefix: '',
         start_number: 1,
         end_number: null,
@@ -56,11 +55,6 @@ export default function CreateDocumentSubtype({ documentTypes }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
-        const submitData = {
-            ...data,
-            document_type: documentType,
-        };
 
         post('/document-subtypes', {
             onSuccess: () => {
@@ -95,16 +89,20 @@ export default function CreateDocumentSubtype({ documentTypes }: Props) {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Document Type */}
                             <div className="space-y-2">
-                                <Label htmlFor="document_type">Tipo de documento</Label>
-                                <Select value={documentType} disabled>
-                                    <SelectTrigger>
-                                        <SelectValue />
+                                <Label htmlFor="document_type">Tipo de documento *</Label>
+                                <Select value={data.type} onValueChange={(value) => setData('type', value)}>
+                                    <SelectTrigger className={errors.type ? 'border-red-500' : ''}>
+                                        <SelectValue placeholder="Seleccionar tipo" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Factura de venta">Factura de venta</SelectItem>
+                                        {documentTypes.map((type) => (
+                                            <SelectItem key={type.value} value={type.value}>
+                                                {type.label}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
-                                <p className="text-xs text-gray-500">Por ahora solo se admiten facturas de venta.</p>
+                                {errors.type && <p className="text-sm text-red-600">{errors.type}</p>}
                             </div>
 
                             {/* Name */}

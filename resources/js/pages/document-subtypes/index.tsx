@@ -13,7 +13,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
-        {
+    {
         title: 'Configuración',
         href: '/configuration',
     },
@@ -26,6 +26,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface DocumentSubtype {
     id: number;
     name: string;
+    type: string;
     prefix: string;
     start_number: number;
     end_number: number | null;
@@ -53,38 +54,54 @@ interface SubtypeFilters {
     document_type?: string;
 }
 
+interface DocumentTypeOption {
+    value: string;
+    label: string;
+}
+
 interface Props {
     subtypes: PaginatedSubtypes;
     filters: SubtypeFilters;
+    documentTypes: DocumentTypeOption[];
 }
 
-export default function DocumentSubtypesIndex({ subtypes, filters }: Props) {
+export default function DocumentSubtypesIndex({ subtypes, filters, documentTypes }: Props) {
     const [search, setSearch] = useState(filters.search || '');
-    const [documentType, setDocumentType] = useState(filters.document_type || 'Factura de venta');
+    const [documentType, setDocumentType] = useState(filters.document_type || 'all');
+
+    const applyFilters = (overrides: Partial<SubtypeFilters> = {}) => {
+        const params: Record<string, string> = {};
+
+        const typeValue = overrides.document_type ?? documentType;
+        if (typeValue && typeValue !== 'all') {
+            params.document_type = typeValue;
+        }
+
+        const searchValue = overrides.search ?? search;
+        if (searchValue) {
+            params.search = searchValue;
+        }
+
+        router.get('/document-subtypes', params, {
+            preserveState: true,
+            replace: true,
+        });
+    };
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        router.get(
-            '/document-subtypes',
-            { search, document_type: documentType },
-            {
-                preserveState: true,
-                replace: true,
-            },
-        );
+        applyFilters();
+    };
+
+    const handleDocumentTypeChange = (value: string) => {
+        setDocumentType(value);
+        applyFilters({ document_type: value });
     };
 
     const handleClearFilters = () => {
         setSearch('');
-        setDocumentType('Factura de venta');
-        router.get(
-            '/document-subtypes',
-            {},
-            {
-                preserveState: true,
-                replace: true,
-            },
-        );
+        setDocumentType('all');
+        applyFilters({ document_type: 'all', search: '' });
     };
 
     const handleSetDefault = (subtypeId: number) => {
@@ -133,12 +150,17 @@ export default function DocumentSubtypesIndex({ subtypes, filters }: Props) {
                                 <label htmlFor="document_type" className="mb-1 block text-sm font-medium text-gray-700">
                                     Tipo de documento
                                 </label>
-                                <Select value={documentType} onValueChange={setDocumentType}>
+                                <Select value={documentType} onValueChange={handleDocumentTypeChange}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Seleccionar tipo" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Factura de venta">Factura de venta</SelectItem>
+                                        <SelectItem value="all">Todos</SelectItem>
+                                        {documentTypes.map((type) => (
+                                            <SelectItem key={type.value} value={type.value}>
+                                                {type.label}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -228,8 +250,9 @@ export default function DocumentSubtypesIndex({ subtypes, filters }: Props) {
                                                         <DropdownMenuContent align="end">
                                                             <DropdownMenuItem asChild>
                                                                 <Link href={`/document-subtypes/${subtype.id}`}>
-                                                                <Eye className="mr-2 h-4 w-4" />
-                                                                Ver detalles</Link>
+                                                                    <Eye className="mr-2 h-4 w-4" />
+                                                                    Ver detalles
+                                                                </Link>
                                                             </DropdownMenuItem>
                                                             <DropdownMenuItem asChild>
                                                                 <Link href={`/document-subtypes/${subtype.id}/edit`}>

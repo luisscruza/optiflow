@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\CreateDocumentSubtypeAction;
 use App\Actions\UpdateDocumentSubtypeAction;
+use App\Enums\DocumentType;
 use App\Http\Requests\CreateDocumentSubtypeRequest;
 use App\Http\Requests\UpdateDocumentSubtypeRequest;
 use App\Models\DocumentSubtype;
@@ -23,9 +24,13 @@ final class DocumentSubtypeController
      */
     public function index(Request $request): Response
     {
-        $documentType = $request->get('document_type', 'Factura de venta');
+        $documentType = DocumentType::tryFrom($request->get('document_type', ''));
 
         $query = DocumentSubtype::query();
+
+        if ($documentType !== null) {
+            $query->where('type', $documentType);
+        }
 
         if ($request->filled('search')) {
             $search = $request->get('search');
@@ -51,8 +56,12 @@ final class DocumentSubtypeController
             'subtypes' => $subtypes,
             'filters' => [
                 'search' => $request->get('search'),
-                'document_type' => $documentType,
+                'document_type' => $documentType?->value ?? 'all',
             ],
+            'documentTypes' => collect(DocumentType::cases())->map(fn (DocumentType $type) => [
+                'value' => $type->value,
+                'label' => $type->label(),
+            ])->values()->all(),
         ]);
     }
 
@@ -61,7 +70,12 @@ final class DocumentSubtypeController
      */
     public function create(): Response
     {
-        return Inertia::render('document-subtypes/create');
+        return Inertia::render('document-subtypes/create', [
+            'documentTypes' => collect(DocumentType::cases())->map(fn (DocumentType $type) => [
+                'value' => $type->value,
+                'label' => $type->label(),
+            ])->values()->all(),
+        ]);
     }
 
     /**
