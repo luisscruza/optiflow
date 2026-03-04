@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Enums\DocumentType;
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
 use App\Exceptions\ReportableActionException;
 use App\Jobs\RecalculateBankAccount;
 use App\Models\BankAccount;
+use App\Models\DocumentSubtype;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\Workspace;
 use App\Models\WithholdingType;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 
 final readonly class CreatePaymentAction
@@ -24,23 +28,25 @@ final readonly class CreatePaymentAction
         return DB::transaction(function () use ($invoice, $data): Payment {
             $paymentType = PaymentType::from($data['payment_type']);
             $account = BankAccount::query()->findOrFail($data['bank_account_id']);
+            /** @var Workspace|null $workspace */
+            $workspace = Context::get('workspace');
 
             if ($paymentType === PaymentType::InvoicePayment) {
-                $payment = $this->createInvoicePayment($invoice, $data, $account);
+                $payment = $this->createInvoicePayment($invoice, $data, $account, $workspace);
 
                 $invoice->updatePaymentStatus();
 
                 return $payment;
             }
 
-            return $this->createOtherIncomePayment($data, $account);
+            return $this->createOtherIncomePayment($data, $account, $workspace);
         });
     }
 
     /**
      * Create a payment for an invoice.
      */
-    private function createInvoicePayment(?Invoice $invoice, array $data, BankAccount $account): Payment
+    private function createInvoicePayment(?Invoice $invoice, array $data, BankAccount $account, ?Workspace $workspace): Payment
     {
         if (! $invoice) {
             throw new ReportableActionException('La factura es requerida para este tipo de pago.');
@@ -52,7 +58,7 @@ final readonly class CreatePaymentAction
 
         $payment = Payment::query()->create([
             'payment_type' => PaymentType::InvoicePayment,
-            'payment_number' => $this->generatePaymentNumber(),
+            'payment_number' => $this->generatePaymentNumber($workspace),
             'invoice_id' => $invoice->id,
             'bank_account_id' => $data['bank_account_id'],
             'currency_id' => $account->currency_id,
@@ -74,7 +80,7 @@ final readonly class CreatePaymentAction
     /**
      * Create a payment for other income (non-invoice).
      */
-    private function createOtherIncomePayment(array $data, BankAccount $account): Payment
+    private function createOtherIncomePayment(array $data, BankAccount $account, ?Workspace $workspace): Payment
     {
         // Calculate totals from lines
         $subtotal = 0;
@@ -105,7 +111,7 @@ final readonly class CreatePaymentAction
 
         $payment = Payment::query()->create([
             'payment_type' => PaymentType::OtherIncome,
-            'payment_number' => $this->generatePaymentNumber(),
+            'payment_number' => $this->generatePaymentNumber($workspace),
             'contact_id' => $data['contact_id'] ?? null,
             'bank_account_id' => $data['bank_account_id'],
             'currency_id' => $account->currency_id,
@@ -171,20 +177,40 @@ final readonly class CreatePaymentAction
     }
 
     /**
-     * Generate a unique payment number.
+     * Generate a payment number using workspace payment series when available.
      */
-    private function generatePaymentNumber(): string
+    private function generatePaymentNumber(?Workspace $workspace): string
     {
+        if ($workspace instanceof Workspace) {
+            $documentSubtype = DocumentSubtype::query()
+                ->where('type', DocumentType::Payment)
+                ->whereHas('workspaces', function ($query) use ($workspace): void {
+                    $query->where('workspaces.id', $workspace->id);
+                })
+                ->orderByDesc('is_default')
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->first();
+
+            if ($documentSubtype instanceof DocumentSubtype) {
+                $paymentNumber = $documentSubtype->prefix.mb_str_pad((string) $documentSubtype->next_number, 4, '0', STR_PAD_LEFT);
+                $documentSubtype->increment('next_number');
+
+                return $paymentNumber;
+            }
+        }
+
         $lastPayment = Payment::query()
             ->select(['id', 'payment_number'])
             ->whereNotNull('payment_number')
             ->orderBy('id', 'desc')
+            ->lockForUpdate()
             ->first();
 
         $lastNumber = 0;
         if ($lastPayment && ! empty($lastPayment->getAttribute('payment_number'))) {
             $paymentNumber = $lastPayment->getAttribute('payment_number');
-            $lastNumber = (int) mb_substr($paymentNumber, 4);
+            $lastNumber = (int) mb_substr((string) $paymentNumber, 4);
         }
 
         return 'PAG-'.mb_str_pad((string) ($lastNumber + 1), 6, '0', STR_PAD_LEFT);

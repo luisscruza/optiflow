@@ -8,6 +8,7 @@ enum DocumentType: string
 {
     case Invoice = 'invoice';
     case Quotation = 'quotation';
+    case Payment = 'payment';
 
     /**
      * Get all document types as an array for form options.
@@ -19,6 +20,7 @@ enum DocumentType: string
         return [
             self::Invoice->value => self::Invoice->label(),
             self::Quotation->value => self::Quotation->label(),
+            self::Payment->value => self::Payment->label(),
         ];
     }
 
@@ -30,6 +32,7 @@ enum DocumentType: string
         return match ($this) {
             self::Invoice => 'Factura',
             self::Quotation => 'Cotización',
+            self::Payment => 'Pago',
         };
     }
 }

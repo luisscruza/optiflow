@@ -301,7 +301,7 @@
             <td style="width: 180px; vertical-align: middle;">
                 <div class="receipt-box">
                     <div class="receipt-title">RECIBO DE CAJA</div>
-                    <div class="receipt-number">No. {{ $payment->id }}</div>
+                    <div class="receipt-number">No. {{ $payment->payment_number ?? $payment->id }}</div>
                 </div>
             </td>
         </tr>
