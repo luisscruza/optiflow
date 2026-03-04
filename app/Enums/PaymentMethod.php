@@ -27,6 +27,7 @@ enum PaymentMethod: string
             self::CreditCard->value => self::CreditCard->label(),
             self::BankTransfer->value => self::BankTransfer->label(),
             self::MobilePayment->value => self::MobilePayment->label(),
+            self::Transfer->value => self::Transfer->label(),
             self::Other->value => self::Other->label(),
         ];
     }
@@ -42,6 +43,7 @@ enum PaymentMethod: string
             self::CreditCard => 'Tarjeta de crédito/débito',
             self::BankTransfer => 'Transferencia bancaria',
             self::MobilePayment => 'Pago móvil',
+            self::Transfer => 'Transferencia',
             self::Other => 'Otro',
         };
     }

@@ -21,6 +21,7 @@ use App\Models\Tax;
 use App\Models\User;
 use App\Models\WithholdingType;
 use App\Support\ContactSearch;
+use App\Tables\PaymentsTable;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,45 +37,8 @@ final class PaymentController
     {
         abort_unless($user->can(Permission::PaymentsView), 403);
 
-        $query = Payment::query()
-            ->with(['bankAccount', 'currency', 'invoice.contact', 'contact'])
-            ->completed()
-            ->orderBy('payment_date', 'desc')
-            ->orderBy('created_at', 'desc');
-
-        if ($request->filled('search')) {
-            $search = $request->get('search');
-            $query->where(function ($q) use ($search): void {
-                $q->where('payment_number', 'like', "%{$search}%")
-                    ->orWhere('note', 'like', "%{$search}%")
-                    ->orWhereHas('contact', function ($contactQuery) use ($search): void {
-                        $contactQuery->where('name', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('invoice.contact', function ($contactQuery) use ($search): void {
-                        $contactQuery->where('name', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        if ($request->filled('payment_type')) {
-            $query->where('payment_type', $request->get('payment_type'));
-        }
-
-        if ($request->filled('bank_account_id')) {
-            $query->where('bank_account_id', $request->get('bank_account_id'));
-        }
-
-        $payments = $query->paginate(30)->withQueryString();
-
         return Inertia::render('payments/index', [
-            'payments' => $payments,
-            'filters' => [
-                'search' => $request->get('search'),
-                'payment_type' => $request->get('payment_type'),
-                'bank_account_id' => $request->get('bank_account_id'),
-            ],
-            'paymentTypes' => PaymentType::options(),
-            'bankAccounts' => BankAccount::onlyActive()->with('currency')->orderBy('name')->get(),
+            'payments' => PaymentsTable::make($request),
         ]);
     }
 

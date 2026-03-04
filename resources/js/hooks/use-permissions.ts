@@ -21,6 +21,7 @@ export type WorkspacePermission =
     | 'edit payments'
     | 'delete payments'
     | 'view payments'
+    | 'list payments'
     | 'view quotations'
     | 'create quotations'
     | 'edit quotations'

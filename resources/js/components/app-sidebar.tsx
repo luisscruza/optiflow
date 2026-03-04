@@ -61,6 +61,14 @@ export function AppSidebar() {
                                     },
                                 ]
                               : []),
+                              ...(can('list payments') ? [
+                                    {
+                                        title: 'Pagos',
+                                        href: '/payments',
+                                        icon: RotateCcw,
+                                    },
+                                ] : []),
+
                       ],
                   } as NavItem,
               ]
