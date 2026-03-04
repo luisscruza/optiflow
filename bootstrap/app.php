@@ -39,10 +39,11 @@ return Application::configure(basePath: dirname(__DIR__))
                     return redirect()->back()
                         ->with('error', $exception->getMessage());
                 }
+
                 return redirect()->route('dashboard')
                     ->with('error', $exception->getMessage());
 
-            }    
+            }
 
             if ($exception instanceof TenantCouldNotBeIdentifiedOnDomainException) {
                 return Inertia::render('error-page', [

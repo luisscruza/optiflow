@@ -354,13 +354,14 @@ final class InvoiceController
         try {
             return $documentSubtype->generateNCF();
         } catch (ReportableActionException $exception) {
-           Session::flash('error', [
-            'message' => $exception->getMessage(),
-            'action' => [
-                'label' => 'Configurar NCF',
-                'href' => route('document-subtypes.edit', $documentSubtype),
-            ],
-        ]);
+            Session::flash('error', [
+                'message' => $exception->getMessage(),
+                'action' => [
+                    'label' => 'Configurar NCF',
+                    'href' => route('document-subtypes.edit', $documentSubtype),
+                ],
+            ]);
+
             return null;
         }
     }

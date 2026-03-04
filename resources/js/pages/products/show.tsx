@@ -2,7 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeftRight, BarChart3, DollarSign, Edit, Package, PowerOff, RotateCcw, Tag, Trash2, TrendingUp, Zap } from 'lucide-react';
 import { type ReactNode } from 'react';
 
-import { activate, deactivate, edit, index } from '@/actions/App/Http/Controllers/ProductController';
+import { edit, index } from '@/actions/App/Http/Controllers/ProductController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,7 @@ import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type Product, type StockMovement } from '@/types';
 import { useCurrency } from '@/utils/currency';
+import { activate, deactivate } from '@/routes/products';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {

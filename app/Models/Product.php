@@ -69,34 +69,15 @@ final class Product extends Model
     use HasFactory;
 
     /**
-     * Boot the model and register global scopes.
-     */
-    protected static function booted(): void
-    {
-        static::addGlobalScope(new ActiveProductScope);
-    }
-
-    /**
      * Retrieve the model for a bound value.
-     *
-     * This bypasses the active scope so inactive products can still be accessed
-     * via routes (e.g., edit, activate).
      *
      * @param  mixed  $value
      * @param  string|null  $field
+     * @return Model|null
      */
-    public function resolveRouteBinding($value, $field = null): ?static
+    public function resolveRouteBinding($value, $field = null)
     {
-        return static::withInactive()->where($field ?? $this->getRouteKeyName(), $value)->first();
-    }
-
-    /**
-     * Scope to include inactive products (remove active scope).
-     */
-    #[Scope]
-    protected function withInactive(Builder $query): void
-    {
-        $query->withoutGlobalScope(ActiveProductScope::class);
+        return $this->withoutGlobalScope(ActiveProductScope::class)->where($field ?? $this->getRouteKeyName(), $value)->first();
     }
 
     /**
@@ -196,6 +177,14 @@ final class Product extends Model
         }
 
         return $this->getStockQuantityForWorkspace($workspace) >= $requiredQuantity;
+    }
+
+    /**
+     * Boot the model and register global scopes.
+     */
+    protected static function booted(): void
+    {
+        self::addGlobalScope(new ActiveProductScope);
     }
 
     /**
