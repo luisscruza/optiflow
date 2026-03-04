@@ -1,6 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Check, ChevronDown, ImagePlus, MoreVertical, Save, Tag } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { create, index, store } from '@/actions/App/Http/Controllers/ProductController';
 import { Button } from '@/components/ui/button';
@@ -69,7 +69,21 @@ export default function ProductsCreate({ taxes, workspace_stocks }: Props) {
     };
 
     const normalizeAmount = (value: string): string => {
-        return value.replace(/,/g, '');
+        const raw = value.trim().replace(/\s/g, '');
+        if (raw === '') return '';
+
+        // Locale patterns like 1.234 or 1.234,56 => remove thousand separators and normalize decimal comma.
+        if (/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(raw)) {
+            return raw.replace(/\./g, '').replace(',', '.');
+        }
+
+        // Locale patterns like 1,234 or 1,234.56 => remove thousand separators.
+        if (/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(raw)) {
+            return raw.replace(/,/g, '');
+        }
+
+        // Fallback: keep decimal point style expected by JS Number().
+        return raw.replace(/,/g, '');
     };
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -120,15 +134,54 @@ export default function ProductsCreate({ taxes, workspace_stocks }: Props) {
         });
     };
 
+    const selectedTax = taxes.find((tax) => tax.id.toString() === data.default_tax_id);
+    const taxRate = Number(selectedTax?.rate ?? 0);
+
+    const [totalPriceInput, setTotalPriceInput] = useState('');
+    const isTotalFocused = useRef(false);
+    // When the user explicitly types a total, we store it here so the sidebar
+    // preview can derive tax = explicitTotal - base instead of base * rate,
+    // avoiding rounding mismatches.
+    const [explicitTotal, setExplicitTotal] = useState<number | null>(null);
+
+    // Sync totalPriceInput from data.price when the total field is NOT focused
+    // (i.e. when the user changes the base price or the tax).
+    useEffect(() => {
+        if (isTotalFocused.current) {
+            return;
+        }
+
+        // If the user set the total explicitly, keep it as-is.
+        if (explicitTotal !== null) {
+            return;
+        }
+
+        if (data.price === '') {
+            setTotalPriceInput('');
+        } else {
+            const base = Number(data.price || 0);
+            const tax = roundCurrency(base * (taxRate / 100));
+            setTotalPriceInput(roundCurrency(base + tax).toString());
+        }
+    }, [data.price, taxRate]);
+
     const handleBasePriceChange = (value: string) => {
+        setExplicitTotal(null);
         setData('price', normalizeAmount(value));
     };
 
-    const handleTotalPriceChange = (value: string) => {
-        const normalizedTotal = normalizeAmount(value);
+    const handleTotalPriceInputChange = (value: string) => {
+        setTotalPriceInput(value);
+    };
+
+    const handleTotalPriceBlur = () => {
+        isTotalFocused.current = false;
+        const normalizedTotal = normalizeAmount(totalPriceInput);
 
         if (normalizedTotal === '') {
             setData('price', '');
+            setTotalPriceInput('');
+            setExplicitTotal(null);
 
             return;
         }
@@ -138,8 +191,11 @@ export default function ProductsCreate({ taxes, workspace_stocks }: Props) {
             return;
         }
 
-        const nextBasePrice = taxRate > 0 ? totalInput / (1 + taxRate / 100) : totalInput;
-        setData('price', roundCurrency(nextBasePrice).toString());
+        const nextBasePrice = taxRate > 0 ? roundCurrency(totalInput / (1 + taxRate / 100)) : totalInput;
+
+        setData('price', nextBasePrice.toString());
+        setTotalPriceInput(normalizedTotal);
+        setExplicitTotal(totalInput);
     };
 
     const handleWorkspaceInitialQuantityChange = (workspaceId: number, value: string) => {
@@ -149,12 +205,11 @@ export default function ProductsCreate({ taxes, workspace_stocks }: Props) {
         });
     };
 
-    const selectedTax = taxes.find((tax) => tax.id.toString() === data.default_tax_id);
-    const taxRate = Number(selectedTax?.rate ?? 0);
     const basePrice = Number(data.price || 0);
-    const taxAmount = roundCurrency(basePrice * (taxRate / 100));
-    const totalPrice = roundCurrency(basePrice + taxAmount);
-    const totalPriceDisplay = data.price === '' ? '' : totalPrice.toString();
+    // When the user typed the total explicitly, honour that exact value and
+    // derive tax as the difference so there is never a rounding mismatch.
+    const totalPrice = explicitTotal !== null ? explicitTotal : roundCurrency(basePrice + roundCurrency(basePrice * (taxRate / 100)));
+    const taxAmount = explicitTotal !== null ? roundCurrency(totalPrice - basePrice) : roundCurrency(basePrice * (taxRate / 100));
     const inventoryEnabled = data.product_type === 'product' && data.track_stock;
 
     return (
@@ -284,7 +339,10 @@ export default function ProductsCreate({ taxes, workspace_stocks }: Props) {
                                             <Label htmlFor="default_tax_id">Impuesto</Label>
                                             <Select
                                                 value={data.default_tax_id || 'none'}
-                                                onValueChange={(value) => setData('default_tax_id', value === 'none' ? '' : value)}
+                                                onValueChange={(value) => {
+                                                    setExplicitTotal(null);
+                                                    setData('default_tax_id', value === 'none' ? '' : value);
+                                                }}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Seleccionar" />
@@ -311,8 +369,12 @@ export default function ProductsCreate({ taxes, workspace_stocks }: Props) {
                                                 id="price_total"
                                                 type="text"
                                                 inputMode="decimal"
-                                                value={totalPriceDisplay}
-                                                onChange={(event) => handleTotalPriceChange(event.target.value)}
+                                                value={totalPriceInput}
+                                                onChange={(event) => handleTotalPriceInputChange(event.target.value)}
+                                                onFocus={() => {
+                                                    isTotalFocused.current = true;
+                                                }}
+                                                onBlur={handleTotalPriceBlur}
                                                 placeholder="0.00"
                                                 required
                                             />

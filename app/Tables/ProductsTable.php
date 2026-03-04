@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Tables;
 
 use App\Models\Product;
+use App\Scopes\ActiveProductScope;
 use App\Tables\Actions\Action;
 use App\Tables\Actions\DeleteAction;
 use App\Tables\Actions\EditAction;
 use App\Tables\Columns\ActionColumn;
+use App\Tables\Columns\BadgeColumn;
 use App\Tables\Columns\CurrencyColumn;
 use App\Tables\Columns\TextColumn;
 use App\Tables\Filters\BooleanFilter;
@@ -55,6 +57,10 @@ final class ProductsTable extends Table
                 ->sortable()
                 ->cellClassName('font-medium'),
 
+            BadgeColumn::make('is_active', 'Estado')
+                ->labels([1 => 'Activo', 0 => 'Inactivo'])
+                ->colors([1 => 'green', 0 => 'red']),
+
             ActionColumn::make()
                 ->actions([
                     Action::make('view', 'Ver producto')
@@ -100,6 +106,13 @@ final class ProductsTable extends Table
                         $query->whereHas('stockInCurrentWorkspace', function ($q) {
                             $q->whereColumn('quantity', '<=', 'minimum_quantity');
                         });
+                    }
+                }),
+
+            BooleanFilter::make('show_inactive', 'Incluir inactivos')
+                ->query(function ($query, $value): void {
+                    if ($value === '1' || $value === 'true' || $value === true) {
+                        $query->withoutGlobalScope(ActiveProductScope::class);
                     }
                 }),
         ];

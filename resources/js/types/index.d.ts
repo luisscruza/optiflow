@@ -343,6 +343,7 @@ export interface Product {
     price: number;
     cost?: number | null;
     track_stock: boolean;
+    is_active: boolean;
     allow_negative_stock?: boolean;
     unit?: string | null;
     default_tax_id?: number | null;

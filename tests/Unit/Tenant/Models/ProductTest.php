@@ -17,6 +17,7 @@ test('to array', function (): void {
         'price',
         'cost',
         'track_stock',
+        'is_active',
         'allow_negative_stock',
         'default_tax_id',
         'created_at',
@@ -24,6 +25,31 @@ test('to array', function (): void {
         'unit',
         'product_category_id',
     ]);
+});
+
+test('is active by default', function (): void {
+    $product = Product::factory()->create();
+
+    expect($product->is_active)->toBeTrue();
+});
+
+test('inactive products are excluded from default queries', function (): void {
+    Product::factory()->create(['is_active' => true]);
+    $inactive = Product::factory()->create(['is_active' => false]);
+
+    $ids = Product::query()->pluck('id')->toArray();
+
+    expect($ids)->not->toContain($inactive->id);
+});
+
+test('withInactive scope includes inactive products', function (): void {
+    $active = Product::factory()->create(['is_active' => true]);
+    $inactive = Product::factory()->create(['is_active' => false]);
+
+    $ids = Product::withInactive()->pluck('id')->toArray();
+
+    expect($ids)->toContain($active->id)
+        ->and($ids)->toContain($inactive->id);
 });
 
 test('calculates stock and profitability', function (): void {

@@ -44,6 +44,11 @@ interface ContactFormData {
     relationships: Array<{ related_contact_id: string; description: string }>;
 }
 
+interface DuplicateWarnings {
+    email?: { id: number; name: string };
+    phone?: { id: number; name: string };
+}
+
 export default function EditContact({ contact, contact_types, identification_types, available_relationship_contacts, contact_relationships }: Props) {
     const [basicInfoOpen, setBasicInfoOpen] = useState(true);
     const [contactInfoOpen, setContactInfoOpen] = useState(true);
@@ -52,6 +57,8 @@ export default function EditContact({ contact, contact_types, identification_typ
     const [relationshipsOpen, setRelationshipsOpen] = useState(false);
     const [financialOpen, setFinancialOpen] = useState(false);
     const [additionalOpen, setAdditionalOpen] = useState(false);
+    const [duplicateWarnings, setDuplicateWarnings] = useState<DuplicateWarnings>({});
+    const [duplicatesAcknowledged, setDuplicatesAcknowledged] = useState(false);
 
     // Get available countries and their provinces/cities
     const countries = Object.keys(countriesData);
@@ -105,6 +112,11 @@ export default function EditContact({ contact, contact_types, identification_typ
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        if ((duplicateWarnings.email || duplicateWarnings.phone) && !duplicatesAcknowledged) {
+            return;
+        }
+
         put(`/contacts/${contact.id}`);
     };
 
@@ -112,6 +124,32 @@ export default function EditContact({ contact, contact_types, identification_typ
         setData('country', country);
         // Clear municipality when country changes since provinces will be different
         setData('municipality', '');
+    };
+
+    const checkDuplicates = async (field: 'email' | 'phone', value: string) => {
+        if (!value) {
+            setDuplicateWarnings((prev) => ({ ...prev, [field]: undefined }));
+            setDuplicatesAcknowledged(false);
+            return;
+        }
+
+        const params = new URLSearchParams({
+            [field === 'email' ? 'email' : 'phone']: value,
+            exclude_id: String(contact.id),
+        });
+
+        try {
+            const response = await fetch(`/api/contacts/check-duplicates?${params}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setDuplicateWarnings((prev) => ({ ...prev, [field]: data[field] }));
+                setDuplicatesAcknowledged(false);
+            }
+        } catch {
+            // silently ignore network errors
+        }
     };
 
     const getContactTypeIcon = (type: ContactType) => {
@@ -282,10 +320,16 @@ export default function EditContact({ contact, contact_types, identification_typ
                                                     type="email"
                                                     value={data.email}
                                                     onChange={(e) => setData('email', e.target.value)}
+                                                    onBlur={(e) => checkDuplicates('email', e.target.value)}
                                                     placeholder="correo@ejemplo.com"
                                                     className={errors.email ? 'border-red-500' : ''}
                                                 />
                                                 {errors.email && <p className="text-sm text-red-600 dark:text-red-400">{errors.email}</p>}
+                                                {duplicateWarnings.email && (
+                                                    <p className="text-sm text-amber-600 dark:text-amber-400">
+                                                        Ya existe un contacto con este correo: <strong>{duplicateWarnings.email.name}</strong>.
+                                                    </p>
+                                                )}
                                             </div>
 
                                             <div className="space-y-2">
@@ -295,11 +339,18 @@ export default function EditContact({ contact, contact_types, identification_typ
                                                     type="tel"
                                                     value={data.phone_primary}
                                                     onChange={(e) => setData('phone_primary', e.target.value)}
+                                                    onBlur={(e) => checkDuplicates('phone', e.target.value)}
                                                     placeholder="+57 300 123 4567"
                                                     className={errors.phone_primary ? 'border-red-500' : ''}
                                                 />
                                                 {errors.phone_primary && (
                                                     <p className="text-sm text-red-600 dark:text-red-400">{errors.phone_primary}</p>
+                                                )}
+                                                {duplicateWarnings.phone && (
+                                                    <p className="text-sm text-amber-600 dark:text-amber-400">
+                                                        ⚠️ Ya existe un contacto con este teléfono: <strong>{duplicateWarnings.phone.name}</strong>.
+                                                        Puede continuar de todas formas.
+                                                    </p>
                                                 )}
                                             </div>
 
@@ -640,12 +691,32 @@ export default function EditContact({ contact, contact_types, identification_typ
                             </Card>
                         </Collapsible>
 
+                        {/* Duplicate Acknowledgment */}
+                        {(duplicateWarnings.email || duplicateWarnings.phone) && (
+                            <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-900/20">
+                                <input
+                                    type="checkbox"
+                                    checked={duplicatesAcknowledged}
+                                    onChange={(e) => setDuplicatesAcknowledged(e.target.checked)}
+                                    className="mt-0.5 h-4 w-4 rounded border-amber-400 text-amber-600 focus:ring-amber-500"
+                                />
+                                <span className="text-sm text-amber-800 dark:text-amber-300">
+                                    Entiendo que ya existe un contacto con datos similares y deseo continuar.
+                                </span>
+                            </label>
+                        )}
+
                         {/* Submit Button */}
                         <div className="flex items-center justify-end space-x-4 pt-6">
                             <Button type="button" variant="outline" onClick={() => router.visit(`/contacts/${contact.id}`)} disabled={processing}>
                                 Cancelar
                             </Button>
-                            <Button type="submit" disabled={processing}>
+                            <Button
+                                type="submit"
+                                disabled={
+                                    processing || (((duplicateWarnings.email || duplicateWarnings.phone) && !duplicatesAcknowledged) as boolean)
+                                }
+                            >
                                 {processing ? (
                                     <>Guardando...</>
                                 ) : (

@@ -19,6 +19,11 @@ interface Props {
     types?: ContactType[];
 }
 
+interface DuplicateWarnings {
+    email?: { id: number; name: string };
+    phone?: { id: number; name: string };
+}
+
 export default function QuickContactModal({
     open,
     onOpenChange,
@@ -42,6 +47,8 @@ export default function QuickContactModal({
     const [contactName, setContactName] = useState('');
     const [isSearchingRNC, setIsSearchingRNC] = useState(false);
     const [rncSearchError, setRncSearchError] = useState<string | null>(null);
+    const [duplicateWarnings, setDuplicateWarnings] = useState<DuplicateWarnings>({});
+    const [duplicatesAcknowledged, setDuplicatesAcknowledged] = useState(false);
 
     const identificationTypeRef = useRef<HTMLSelectElement>(null);
     const identificationNumberRef = useRef<HTMLInputElement>(null);
@@ -58,6 +65,8 @@ export default function QuickContactModal({
             setContactName('');
             setIsSearchingRNC(false);
             setRncSearchError(null);
+            setDuplicateWarnings({});
+            setDuplicatesAcknowledged(false);
 
             // Reset form inputs
             if (identificationTypeRef.current) {
@@ -89,6 +98,29 @@ export default function QuickContactModal({
             if (identificationNumberRef.current) {
                 identificationNumberRef.current.value = '';
             }
+        }
+    };
+
+    const checkDuplicates = async (field: 'email' | 'phone', value: string) => {
+        if (!value) {
+            setDuplicateWarnings((prev) => ({ ...prev, [field]: undefined }));
+            setDuplicatesAcknowledged(false);
+            return;
+        }
+
+        const params = new URLSearchParams({ [field === 'email' ? 'email' : 'phone']: value });
+
+        try {
+            const response = await fetch(`/api/contacts/check-duplicates?${params}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setDuplicateWarnings((prev) => ({ ...prev, [field]: data[field] }));
+                setDuplicatesAcknowledged(false);
+            }
+        } catch {
+            // silently ignore network errors
         }
     };
 
@@ -302,14 +334,35 @@ export default function QuickContactModal({
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="email">Correo electrónico</Label>
-                                    <Input name="email" type="email" placeholder="ejemplo@email.com" />
+                                    <Input
+                                        name="email"
+                                        type="email"
+                                        placeholder="ejemplo@email.com"
+                                        onBlur={(e) => checkDuplicates('email', e.target.value)}
+                                    />
                                     {errors.email && <p className="text-sm text-red-600 dark:text-red-400">{errors.email}</p>}
+                                    {duplicateWarnings.email && (
+                                        <p className="text-sm text-amber-600 dark:text-amber-400">
+                                            Ya existe un contacto con este correo: <strong>{duplicateWarnings.email.name}</strong>.
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="phone_primary">Teléfono *</Label>
-                                    <Input name="phone_primary" type="tel" placeholder="000-000-0000" required />
+                                    <Input
+                                        name="phone_primary"
+                                        type="tel"
+                                        placeholder="000-000-0000"
+                                        required
+                                        onBlur={(e) => checkDuplicates('phone', e.target.value)}
+                                    />
                                     {errors.phone_primary && <p className="text-sm text-red-600 dark:text-red-400">{errors.phone_primary}</p>}
+                                    {duplicateWarnings.phone && (
+                                        <p className="text-sm text-amber-600 dark:text-amber-400">
+                                            Ya existe un contacto con este telefono: <strong>{duplicateWarnings.phone.name}</strong>.
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
@@ -318,6 +371,21 @@ export default function QuickContactModal({
                                 <div className="rounded-lg bg-green-50 p-4 text-green-800 dark:bg-green-900/20 dark:text-green-300">
                                     ¡Contacto creado exitosamente!
                                 </div>
+                            )}
+
+                            {/* Duplicate Acknowledgment */}
+                            {(duplicateWarnings.email || duplicateWarnings.phone) && (
+                                <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-900/20">
+                                    <input
+                                        type="checkbox"
+                                        checked={duplicatesAcknowledged}
+                                        onChange={(e) => setDuplicatesAcknowledged(e.target.checked)}
+                                        className="mt-0.5 h-4 w-4 rounded border-amber-400 text-amber-600 focus:ring-amber-500"
+                                    />
+                                    <span className="text-sm text-amber-800 dark:text-amber-300">
+                                        Entiendo que ya existe un contacto con datos similares y deseo continuar.
+                                    </span>
+                                </label>
                             )}
 
                             {/* Action Buttons */}
@@ -334,7 +402,9 @@ export default function QuickContactModal({
 
                                 <Button
                                     type="submit"
-                                    disabled={processing}
+                                    disabled={
+                                        processing || (((duplicateWarnings.email || duplicateWarnings.phone) && !duplicatesAcknowledged) as boolean)
+                                    }
                                     className="bg-gray-600 hover:bg-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700"
                                 >
                                     {processing ? 'Creando...' : 'Crear contacto'}

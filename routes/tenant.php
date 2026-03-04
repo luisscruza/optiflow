@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\ActivateProductController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AutomationController;
 use App\Http\Controllers\AutomationRunController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\BusinessUserInvitationController;
 use App\Http\Controllers\BusinessUserWorkspaceController;
 use App\Http\Controllers\BusinessUserWorkspaceRoleController;
 use App\Http\Controllers\CashRegisterCloseController;
+use App\Http\Controllers\CheckContactDuplicatesController;
 use App\Http\Controllers\CompanyDetailsController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\ContactController;
@@ -25,6 +27,7 @@ use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\CurrencyRateController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DashboardLayoutController;
+use App\Http\Controllers\DeactivateProductController;
 use App\Http\Controllers\DocumentSubtypeController;
 use App\Http\Controllers\DownloadInvoicePdfController;
 use App\Http\Controllers\DownloadOptometryHistoryController;
@@ -169,6 +172,8 @@ Route::middleware([
 
             Route::resource('products', ProductController::class);
             Route::post('products/quick-create', QuickProductCreate::class)->name('products.quick-create');
+            Route::post('products/{product}/activate', ActivateProductController::class)->name('products.activate');
+            Route::post('products/{product}/deactivate', DeactivateProductController::class)->name('products.deactivate');
 
             // Product Import routes
             Route::resource('product-imports', ProductImportController::class)->except(['edit']);
@@ -178,6 +183,7 @@ Route::middleware([
             Route::resource('taxes', TaxController::class);
 
             Route::resource('contacts', ContactController::class);
+            Route::get('api/contacts/check-duplicates', CheckContactDuplicatesController::class)->name('contacts.check-duplicates');
 
             Route::resource('contact-imports', ContactImportController::class)->only(['create', 'store', 'show', 'update', 'destroy']);
             Route::post('contact-imports/{contact_import}/process', ProcessContactImportController::class)->name('contact-imports.process');

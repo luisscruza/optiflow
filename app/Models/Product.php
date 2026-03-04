@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\ProductType;
+use App\Scopes\ActiveProductScope;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,6 +24,7 @@ use Illuminate\Support\Facades\Auth;
  * @property numeric $price
  * @property numeric|null $cost
  * @property bool $track_stock
+ * @property bool $is_active
  * @property int|null $default_tax_id
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at
@@ -65,6 +67,18 @@ final class Product extends Model
 {
     /** @use HasFactory<\Database\Factories\ProductFactory> */
     use HasFactory;
+
+    /**
+     * Retrieve the model for a bound value.
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return Model|null
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->withoutGlobalScope(ActiveProductScope::class)->where($field ?? $this->getRouteKeyName(), $value)->first();
+    }
 
     /**
      * Get the default tax for this product.
@@ -166,6 +180,14 @@ final class Product extends Model
     }
 
     /**
+     * Boot the model and register global scopes.
+     */
+    protected static function booted(): void
+    {
+        self::addGlobalScope(new ActiveProductScope);
+    }
+
+    /**
      * Get the profit margin percentage.
      */
     protected function profitMargin(): \Illuminate\Database\Eloquent\Casts\Attribute
@@ -225,6 +247,7 @@ final class Product extends Model
             'price' => 'decimal:2',
             'cost' => 'decimal:2',
             'track_stock' => 'boolean',
+            'is_active' => 'boolean',
             'product_type' => ProductType::class,
         ];
     }

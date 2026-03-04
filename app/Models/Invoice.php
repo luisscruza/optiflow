@@ -280,7 +280,7 @@ final class Invoice extends Model implements Auditable, Commentable
         return Attribute::make(get: fn (): float|int => max(0, $this->total_amount - $this->payments()->sum('amount')));
     }
 
-      /**
+    /**
      * Get the status attribute.
      */
     protected function amountPaid(): Attribute
