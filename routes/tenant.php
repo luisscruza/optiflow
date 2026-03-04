@@ -36,6 +36,7 @@ use App\Http\Controllers\DownloadPrescriptionController;
 use App\Http\Controllers\DownloadProductImportTemplateController;
 use App\Http\Controllers\DownloadQuotationPdfController;
 use App\Http\Controllers\DownloadVisualCertificateController;
+use App\Http\Controllers\DownloadWorkflowJobProcessController;
 use App\Http\Controllers\ExportReportController;
 use App\Http\Controllers\GlobalRoleController;
 use App\Http\Controllers\ImpersonationController;
@@ -280,6 +281,7 @@ Route::middleware([
             Route::patch('workflows/{workflow}/jobs/{job}', [WorkflowJobController::class, 'update'])->name('workflows.jobs.update');
             Route::patch('workflows/{workflow}/jobs/{job}/move', [WorkflowJobStageController::class, 'update'])->name('workflows.jobs.move');
             Route::delete('workflows/{workflow}/jobs/{job}', [WorkflowJobController::class, 'destroy'])->name('workflows.jobs.destroy');
+            Route::get('workflows/{workflow}/jobs/{job}/process-pdf', DownloadWorkflowJobProcessController::class)->name('workflows.jobs.process-pdf');
 
             Route::resource('automations', AutomationController::class)->only(['index', 'create', 'store', 'edit', 'update']);
             Route::get('api/automations/test-data', AutomationTestDataController::class)->name('automations.test-data');

@@ -14,6 +14,7 @@ import {
     ImageIcon,
     LayoutGrid,
     Loader2,
+    Printer,
     Receipt,
     Settings2,
     User,
@@ -291,17 +292,31 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
                                             )}
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="text-sm text-gray-500">Creada</p>
-                                        <p className="font-medium text-gray-900">{formatDate(job.created_at)}</p>
-                                        {job.due_date && (
-                                            <>
-                                                <p className="mt-2 text-sm text-gray-500">Fecha límite</p>
-                                                <p className={`font-medium ${isOverdue ? 'text-red-600' : 'text-gray-900'}`}>
-                                                    {formatDate(job.due_date)}
-                                                </p>
-                                            </>
+                                    <div className="flex items-start gap-4 text-right">
+                                        {job.prescription && (
+                                            <a
+                                                href={`/workflows/${workflow.id}/jobs/${job.id}/process-pdf`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                <Button variant="outline" size="sm">
+                                                    <Printer className="mr-2 h-4 w-4" />
+                                                    Imprimir proceso
+                                                </Button>
+                                            </a>
                                         )}
+                                        <div>
+                                            <p className="text-sm text-gray-500">Creada</p>
+                                            <p className="font-medium text-gray-900">{formatDate(job.created_at)}</p>
+                                            {job.due_date && (
+                                                <>
+                                                    <p className="mt-2 text-sm text-gray-500">Fecha límite</p>
+                                                    <p className={`font-medium ${isOverdue ? 'text-red-600' : 'text-gray-900'}`}>
+                                                        {formatDate(job.due_date)}
+                                                    </p>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
