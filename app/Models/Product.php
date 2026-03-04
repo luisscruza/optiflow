@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\ProductType;
+use App\Scopes\ActiveProductScope;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,6 +24,7 @@ use Illuminate\Support\Facades\Auth;
  * @property numeric $price
  * @property numeric|null $cost
  * @property bool $track_stock
+ * @property bool $is_active
  * @property int|null $default_tax_id
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at
@@ -65,6 +67,37 @@ final class Product extends Model
 {
     /** @use HasFactory<\Database\Factories\ProductFactory> */
     use HasFactory;
+
+    /**
+     * Boot the model and register global scopes.
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new ActiveProductScope);
+    }
+
+    /**
+     * Retrieve the model for a bound value.
+     *
+     * This bypasses the active scope so inactive products can still be accessed
+     * via routes (e.g., edit, activate).
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     */
+    public function resolveRouteBinding($value, $field = null): ?static
+    {
+        return static::withInactive()->where($field ?? $this->getRouteKeyName(), $value)->first();
+    }
+
+    /**
+     * Scope to include inactive products (remove active scope).
+     */
+    #[Scope]
+    protected function withInactive(Builder $query): void
+    {
+        $query->withoutGlobalScope(ActiveProductScope::class);
+    }
 
     /**
      * Get the default tax for this product.
@@ -225,6 +258,7 @@ final class Product extends Model
             'price' => 'decimal:2',
             'cost' => 'decimal:2',
             'track_stock' => 'boolean',
+            'is_active' => 'boolean',
             'product_type' => ProductType::class,
         ];
     }
