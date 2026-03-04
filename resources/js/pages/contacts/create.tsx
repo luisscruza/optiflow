@@ -49,12 +49,18 @@ interface ContactFormData {
     country: string;
 }
 
+interface DuplicateWarnings {
+    email?: { id: number; name: string };
+    phone?: { id: number; name: string };
+}
+
 export default function CreateContact({ contact_types, identification_types }: Props) {
     const [basicInfoOpen, setBasicInfoOpen] = useState(true);
     const [contactInfoOpen, setContactInfoOpen] = useState(true);
     const [identificationOpen, setIdentificationOpen] = useState(false);
     const [addressOpen, setAddressOpen] = useState(false);
     const [additionalOpen, setAdditionalOpen] = useState(false);
+    const [duplicateWarnings, setDuplicateWarnings] = useState<DuplicateWarnings>({});
 
     const countries = Object.keys(countriesData);
 
@@ -97,6 +103,27 @@ export default function CreateContact({ contact_types, identification_types }: P
         setData('country', country);
         // Clear municipality when country changes since provinces will be different
         setData('municipality', '');
+    };
+
+    const checkDuplicates = async (field: 'email' | 'phone', value: string) => {
+        if (!value) {
+            setDuplicateWarnings((prev) => ({ ...prev, [field]: undefined }));
+            return;
+        }
+
+        const params = new URLSearchParams({ [field === 'email' ? 'email' : 'phone']: value });
+
+        try {
+            const response = await fetch(`/api/contacts/check-duplicates?${params}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setDuplicateWarnings((prev) => ({ ...prev, [field]: data[field] }));
+            }
+        } catch {
+            // silently ignore network errors
+        }
     };
 
     const getContactTypeIcon = (type: ContactType | undefined) => {
@@ -243,10 +270,17 @@ export default function CreateContact({ contact_types, identification_types }: P
                                                     type="email"
                                                     value={data.email}
                                                     onChange={(e) => setData('email', e.target.value)}
+                                                    onBlur={(e) => checkDuplicates('email', e.target.value)}
                                                     placeholder="correo@ejemplo.com"
                                                     className={errors.email ? 'border-red-500' : ''}
                                                 />
                                                 {errors.email && <p className="text-sm text-red-600 dark:text-red-400">{errors.email}</p>}
+                                                {duplicateWarnings.email && (
+                                                    <p className="text-sm text-amber-600 dark:text-amber-400">
+                                                        ⚠️ Ya existe un contacto con este correo: <strong>{duplicateWarnings.email.name}</strong>.
+                                                        Puede continuar de todas formas.
+                                                    </p>
+                                                )}
                                             </div>
 
                                             <div className="space-y-2">
@@ -256,11 +290,18 @@ export default function CreateContact({ contact_types, identification_types }: P
                                                     type="tel"
                                                     value={data.phone_primary}
                                                     onChange={(e) => setData('phone_primary', e.target.value)}
+                                                    onBlur={(e) => checkDuplicates('phone', e.target.value)}
                                                     placeholder="+57 300 123 4567"
                                                     className={errors.phone_primary ? 'border-red-500' : ''}
                                                 />
                                                 {errors.phone_primary && (
                                                     <p className="text-sm text-red-600 dark:text-red-400">{errors.phone_primary}</p>
+                                                )}
+                                                {duplicateWarnings.phone && (
+                                                    <p className="text-sm text-amber-600 dark:text-amber-400">
+                                                        ⚠️ Ya existe un contacto con este teléfono:{' '}
+                                                        <strong>{duplicateWarnings.phone.name}</strong>. Puede continuar de todas formas.
+                                                    </p>
                                                 )}
                                             </div>
 
