@@ -14,6 +14,7 @@ use App\Http\Requests\CreateContactRequest;
 use App\Http\Requests\UpdateContactRequest;
 use App\Models\Contact;
 use App\Models\User;
+use App\Support\ContactSearch;
 use App\Tables\ContactsTable;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
@@ -38,7 +39,7 @@ final class ContactController
     /**
      * Show the form for creating a new contact.
      */
-    public function create(#[CurrentUser] User $user): Response
+    public function create(Request $request, ContactSearch $contactSearch, #[CurrentUser] User $user): Response
     {
         abort_unless($user->can(Permission::ContactsCreate), 403);
 
@@ -57,12 +58,9 @@ final class ContactController
                 ])
                 ->values()
                 ->toArray(),
-            'available_relationship_contacts' => Contact::query()
-                ->select(['id', 'name'])
-                ->where('status', 'active')
-                ->orderBy('name')
-                ->limit(500)
-                ->get(),
+            'relationshipSearchResults' => Inertia::optional(
+                fn (): array => $contactSearch->searchActive((string) $request->string('relationship_search'))
+            ),
         ]);
     }
 
@@ -81,7 +79,7 @@ final class ContactController
     /**
      * Display the specified contact.
      */
-    public function show(Contact $contact, #[CurrentUser] User $user): Response
+    public function show(Request $request, Contact $contact, ContactSearch $contactSearch, #[CurrentUser] User $user): Response
     {
         abort_unless($user->can(Permission::ContactsView), 403);
 
@@ -157,13 +155,19 @@ final class ContactController
             'workflowJobs' => $workflowJobs,
             'stats' => $stats,
             'relatedContacts' => $contact->relationships,
+            'relationshipSearchResults' => Inertia::optional(
+                fn (): array => $contactSearch->searchActive(
+                    (string) $request->string('relationship_search'),
+                    $contact->id,
+                )
+            ),
         ]);
     }
 
     /**
      * Show the form for editing the specified contact.
      */
-    public function edit(Contact $contact, #[CurrentUser] User $user): Response
+    public function edit(Request $request, Contact $contact, ContactSearch $contactSearch, #[CurrentUser] User $user): Response
     {
         abort_unless($user->can(Permission::ContactsEdit), 403);
 
@@ -173,15 +177,15 @@ final class ContactController
             'contact' => $contact,
             'contact_relationships' => $contact->relationships->map(fn ($related): array => [
                 'related_contact_id' => $related->id,
+                'related_contact_name' => $related->name,
                 'description' => $related->pivot?->description,
             ])->values()->toArray(),
-            'available_relationship_contacts' => Contact::query()
-                ->select(['id', 'name'])
-                ->where('status', 'active')
-                ->where('id', '!=', $contact->id)
-                ->orderBy('name')
-                ->limit(500)
-                ->get(),
+            'relationshipSearchResults' => Inertia::optional(
+                fn (): array => $contactSearch->searchActive(
+                    (string) $request->string('relationship_search'),
+                    $contact->id
+                )
+            ),
             'identification_types' => collect(IdentificationType::cases())
                 ->map(fn ($type): array => [
                     'value' => $type->value,

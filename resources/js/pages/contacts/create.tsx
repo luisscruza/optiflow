@@ -1,15 +1,17 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { Building2, ChevronDown, ChevronRight, Plus, Save, Trash2, Users } from 'lucide-react';
-import { useState } from 'react';
+import { Building2, DollarSign, Plus, Save, Trash2, Users } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import type { Value } from 'react-phone-number-input';
 
-import { Badge } from '@/components/ui/badge';
+import HeadingSmall from '@/components/heading-small';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { SearchableSelect } from '@/components/ui/searchable-select';
+import PhoneInput from '@/components/ui/phone-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { ServerSearchableSelect, type ServerSearchableSelectOption } from '@/components/ui/server-searchable-select';
 import { Textarea } from '@/components/ui/textarea';
 import countriesData from '@/data/countries.json';
 import AppLayout from '@/layouts/app-layout';
@@ -26,29 +28,39 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+export type RelationshipSearchResult = {
+    id: number;
+    name: string;
+    phone_primary: string | null;
+    identification_number: string | null;
+    email: string | null;
+};
+
 interface Props {
     contact_types: Array<{ value: ContactType; label: string }>;
     identification_types: Array<{ value: IdentificationType; label: string }>;
-    available_relationship_contacts: Array<{ id: number; name: string }>;
+    relationshipSearchResults?: RelationshipSearchResult[];
 }
 
 interface ContactFormData {
     contact_type: ContactType | undefined;
     name: string;
     status: 'active' | 'inactive';
+    gender: string;
+    birth_date: string;
     email: string;
     phone_primary: string;
     phone_secondary: string;
-    website: string;
     notes: string;
     identification_type: IdentificationType | undefined;
     identification_number: string;
-    address_line_1: string;
-    address_line_2: string;
-    municipality: string;
-    province: string;
-    postal_code: string;
-    country: string;
+    credit_limit: string;
+    address: {
+        municipality: string;
+        province: string;
+        country: string;
+        description: string;
+    };
     relationships: Array<{ related_contact_id: string; description: string }>;
 }
 
@@ -57,15 +69,13 @@ interface DuplicateWarnings {
     phone?: { id: number; name: string };
 }
 
-export default function CreateContact({ contact_types, identification_types, available_relationship_contacts }: Props) {
-    const [basicInfoOpen, setBasicInfoOpen] = useState(true);
-    const [contactInfoOpen, setContactInfoOpen] = useState(true);
-    const [identificationOpen, setIdentificationOpen] = useState(false);
-    const [addressOpen, setAddressOpen] = useState(false);
-    const [relationshipsOpen, setRelationshipsOpen] = useState(false);
-    const [additionalOpen, setAdditionalOpen] = useState(false);
+export default function CreateContact({ contact_types, identification_types, relationshipSearchResults = [] }: Props) {
     const [duplicateWarnings, setDuplicateWarnings] = useState<DuplicateWarnings>({});
     const [duplicatesAcknowledged, setDuplicatesAcknowledged] = useState(false);
+    const [relationshipSearchQuery, setRelationshipSearchQuery] = useState('');
+    const [isSearchingRelationships, setIsSearchingRelationships] = useState(false);
+    const relationshipSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const [relationshipLabels, setRelationshipLabels] = useState<Record<string, string>>({});
 
     const countries = Object.keys(countriesData);
 
@@ -77,23 +87,25 @@ export default function CreateContact({ contact_types, identification_types, ava
         contact_type: undefined,
         name: '',
         status: 'active',
+        gender: '',
+        birth_date: '',
         email: '',
         phone_primary: '',
         phone_secondary: '',
-        website: '',
         notes: '',
         identification_type: undefined,
         identification_number: '',
-        address_line_1: '',
-        address_line_2: '',
-        municipality: '',
-        province: '',
-        postal_code: '',
-        country: 'Dominican Republic',
+        credit_limit: '',
+        address: {
+            municipality: '',
+            province: '',
+            country: 'Dominican Republic',
+            description: '',
+        },
         relationships: [],
     });
 
-    const selectedCountryProvinces = getProvincesForCountry(data.country);
+    const selectedCountryProvinces = getProvincesForCountry(data.address.country);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -110,9 +122,7 @@ export default function CreateContact({ contact_types, identification_types, ava
     };
 
     const handleCountryChange = (country: string) => {
-        setData('country', country);
-        // Clear municipality when country changes since provinces will be different
-        setData('municipality', '');
+        setData('address', { ...data.address, country, municipality: '' });
     };
 
     const checkDuplicates = async (field: 'email' | 'phone', value: string) => {
@@ -138,18 +148,6 @@ export default function CreateContact({ contact_types, identification_types, ava
         }
     };
 
-    const getContactTypeIcon = (type: ContactType | undefined) => {
-        if (type === 'customer') return <Users className="h-4 w-4" />;
-        if (type === 'supplier') return <Building2 className="h-4 w-4" />;
-        return null;
-    };
-
-    const getContactTypeDescription = (type: ContactType | undefined) => {
-        if (type === 'customer') return 'Clientes que compran productos o servicios';
-        if (type === 'supplier') return 'Proveedores de productos o servicios';
-        return 'Selecciona el tipo de contacto';
-    };
-
     const addRelationship = () => {
         setData('relationships', [...data.relationships, { related_contact_id: '', description: '' }]);
     };
@@ -162,471 +160,409 @@ export default function CreateContact({ contact_types, identification_types, ava
     };
 
     const updateRelationship = (index: number, key: 'related_contact_id' | 'description', value: string) => {
+        if (key === 'related_contact_id') {
+            const searchResult = relationshipSearchResults.find((c) => c.id.toString() === value);
+            if (searchResult) {
+                setRelationshipLabels((prev) => ({ ...prev, [value]: searchResult.name }));
+            }
+        }
+
         setData(
             'relationships',
             data.relationships.map((relationship, i) => (i === index ? { ...relationship, [key]: value } : relationship)),
         );
     };
 
+    const handleRelationshipSearch = (query: string) => {
+        if (relationshipSearchTimeoutRef.current) {
+            clearTimeout(relationshipSearchTimeoutRef.current);
+        }
+
+        const normalizedQuery = query.trim();
+        setRelationshipSearchQuery(normalizedQuery);
+
+        if (normalizedQuery.length < 2) {
+            setIsSearchingRelationships(false);
+            return;
+        }
+
+        relationshipSearchTimeoutRef.current = setTimeout(() => {
+            setIsSearchingRelationships(true);
+            router.reload({
+                only: ['relationshipSearchResults'],
+                data: { relationship_search: normalizedQuery },
+                onFinish: () => setIsSearchingRelationships(false),
+            });
+        }, 300);
+    };
+
+    useEffect(() => {
+        return () => {
+            if (relationshipSearchTimeoutRef.current) {
+                clearTimeout(relationshipSearchTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    const relationshipOptions: ServerSearchableSelectOption[] = (relationshipSearchQuery.length >= 2 ? relationshipSearchResults : [])
+        .filter((contact) => !data.relationships.some((r) => r.related_contact_id === contact.id.toString()))
+        .map((contact) => ({
+            value: contact.id.toString(),
+            label: contact.phone_primary ? `${contact.name} (${contact.phone_primary})` : contact.name,
+        }));
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Crear contacto" />
-            <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                <div className="">
-                    <div className="mb-8 flex items-center justify-between">
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Crear contacto</h1>
-                            <p className="text-gray-600 dark:text-gray-400">Agrega un nuevo cliente o proveedor al sistema</p>
+
+            <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+                <div className="mb-6">
+                    <h1 className="text-xl font-semibold tracking-tight">Crear contacto</h1>
+                    <p className="text-sm text-muted-foreground">Agrega un nuevo cliente o proveedor al sistema.</p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    {/* Contact Type */}
+                    <section className="space-y-4">
+                        <HeadingSmall title="Tipo de contacto" description="Selecciona si es cliente o proveedor." />
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            {contact_types.map((type) => (
+                                <button
+                                    key={type.value}
+                                    type="button"
+                                    onClick={() => setData('contact_type', type.value)}
+                                    className={`flex items-center gap-3 rounded-lg border p-4 text-left transition-colors ${
+                                        data.contact_type === type.value
+                                            ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                                            : 'border-border hover:border-primary/40'
+                                    }`}
+                                >
+                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted">
+                                        {type.value === 'customer' ? <Users className="h-4 w-4" /> : <Building2 className="h-4 w-4" />}
+                                    </div>
+                                    <div>
+                                        <div className="text-sm font-medium">{type.label}</div>
+                                        <div className="text-xs text-muted-foreground">
+                                            {type.value === 'customer'
+                                                ? 'Clientes que compran productos o servicios'
+                                                : 'Proveedores de productos o servicios'}
+                                        </div>
+                                    </div>
+                                </button>
+                            ))}
                         </div>
-                    </div>
+                        <InputError message={errors.contact_type} />
+                    </section>
 
-                    {/* Required Fields Notice */}
-                    <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
-                        <p className="text-sm text-blue-800 dark:text-blue-200">Los campos marcados con asterisco (*) son obligatorios.</p>
-                    </div>
+                    <Separator />
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Contact Type Selection */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center space-x-2">
-                                    {getContactTypeIcon(data.contact_type)}
-                                    <span>Tipo de Contacto (*)</span>
-                                </CardTitle>
-                                <CardDescription>{getContactTypeDescription(data.contact_type)}</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                    {contact_types.map((type) => (
-                                        <div
-                                            key={type.value}
-                                            className={`cursor-pointer rounded-lg border p-4 transition-colors ${
-                                                data.contact_type === type.value
-                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                                    : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
-                                            }`}
-                                            onClick={() => setData('contact_type', type.value)}
-                                        >
-                                            <div className="flex items-center space-x-3">
-                                                {getContactTypeIcon(type.value)}
-                                                <div>
-                                                    <div className="font-medium">{type.label}</div>
-                                                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                                                        {getContactTypeDescription(type.value)}
-                                                    </div>
-                                                </div>
-                                                {data.contact_type === type.value && (
-                                                    <Badge variant="default" className="ml-auto">
-                                                        Seleccionado
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                {errors.contact_type && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.contact_type}</p>}
-                            </CardContent>
-                        </Card>
+                    {/* Basic Information */}
+                    <section className="space-y-4">
+                        <HeadingSmall title="Informacion basica" />
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div className="grid gap-2">
+                                <Label htmlFor="name">
+                                    Nombre <span className="text-destructive">*</span>
+                                </Label>
+                                <Input
+                                    id="name"
+                                    value={data.name}
+                                    onChange={(e) => setData('name', e.target.value)}
+                                    placeholder="Nombre completo o razon social"
+                                />
+                                <InputError message={errors.name} />
+                            </div>
 
-                        {/* Basic Information - Always Open */}
-                        <Collapsible open={basicInfoOpen} onOpenChange={setBasicInfoOpen}>
-                            <Card>
-                                <CollapsibleTrigger asChild>
-                                    <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                        <CardTitle className="flex items-center justify-between">
-                                            <span>Información Básica</span>
-                                            {basicInfoOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                                        </CardTitle>
-                                        <CardDescription>Información fundamental del contacto</CardDescription>
-                                    </CardHeader>
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                    <CardContent className="space-y-4">
-                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="name">Nombre (*)</Label>
-                                                <Input
-                                                    id="name"
-                                                    type="text"
-                                                    value={data.name}
-                                                    onChange={(e) => setData('name', e.target.value)}
-                                                    placeholder="Nombre completo o razón social"
-                                                    className={errors.name ? 'border-red-500' : ''}
-                                                />
-                                                {errors.name && <p className="text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
-                                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="status">
+                                    Estado <span className="text-destructive">*</span>
+                                </Label>
+                                <Select value={data.status} onValueChange={(value: 'active' | 'inactive') => setData('status', value)}>
+                                    <SelectTrigger id="status">
+                                        <SelectValue placeholder="Selecciona el estado" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="active">Activo</SelectItem>
+                                        <SelectItem value="inactive">Inactivo</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.status} />
+                            </div>
 
-                                            <div className="space-y-2">
-                                                <Label htmlFor="status">Estado (*)</Label>
-                                                <Select
-                                                    value={data.status}
-                                                    onValueChange={(value: 'active' | 'inactive') => setData('status', value)}
-                                                >
-                                                    <SelectTrigger className={errors.status ? 'border-red-500' : ''}>
-                                                        <SelectValue placeholder="Selecciona el estado" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="active">Activo</SelectItem>
-                                                        <SelectItem value="inactive">Inactivo</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                {errors.status && <p className="text-sm text-red-600 dark:text-red-400">{errors.status}</p>}
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </CollapsibleContent>
-                            </Card>
-                        </Collapsible>
+                            <div className="grid gap-2">
+                                <Label htmlFor="gender">
+                                    Sexo <span className="text-destructive">*</span>
+                                </Label>
+                                <Select value={data.gender} onValueChange={(value) => setData('gender', value)}>
+                                    <SelectTrigger id="gender">
+                                        <SelectValue placeholder="Seleccionar sexo" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="male">Masculino</SelectItem>
+                                        <SelectItem value="female">Femenino</SelectItem>
+                                        <SelectItem value="-">Prefiero no decirlo</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.gender} />
+                            </div>
 
-                        {/* Contact Information - Always Open */}
-                        <Collapsible open={contactInfoOpen} onOpenChange={setContactInfoOpen}>
-                            <Card>
-                                <CollapsibleTrigger asChild>
-                                    <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                        <CardTitle className="flex items-center justify-between">
-                                            <span>Información de Contacto</span>
-                                            {contactInfoOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                                        </CardTitle>
-                                        <CardDescription>Formas de comunicarse con el contacto</CardDescription>
-                                    </CardHeader>
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                    <CardContent className="space-y-4">
-                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="email">Email</Label>
-                                                <Input
-                                                    id="email"
-                                                    type="email"
-                                                    value={data.email}
-                                                    onChange={(e) => setData('email', e.target.value)}
-                                                    onBlur={(e) => checkDuplicates('email', e.target.value)}
-                                                    placeholder="correo@ejemplo.com"
-                                                    className={errors.email ? 'border-red-500' : ''}
-                                                />
-                                                {errors.email && <p className="text-sm text-red-600 dark:text-red-400">{errors.email}</p>}
-                                                {duplicateWarnings.email && (
-                                                    <p className="text-sm text-amber-600 dark:text-amber-400">
-                                                        Ya existe un contacto con este correo: <strong>{duplicateWarnings.email.name}</strong>.
-                                                    </p>
-                                                )}
-                                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="birth_date">Fecha de nacimiento</Label>
+                                <Input id="birth_date" type="date" value={data.birth_date} onChange={(e) => setData('birth_date', e.target.value)} />
+                                <InputError message={errors.birth_date} />
+                            </div>
+                        </div>
+                    </section>
 
-                                            <div className="space-y-2">
-                                                <Label htmlFor="phone_primary">Teléfono Principal</Label>
-                                                <Input
-                                                    id="phone_primary"
-                                                    type="tel"
-                                                    value={data.phone_primary}
-                                                    onChange={(e) => setData('phone_primary', e.target.value)}
-                                                    onBlur={(e) => checkDuplicates('phone', e.target.value)}
-                                                    placeholder="+57 300 123 4567"
-                                                    className={errors.phone_primary ? 'border-red-500' : ''}
-                                                />
-                                                {errors.phone_primary && (
-                                                    <p className="text-sm text-red-600 dark:text-red-400">{errors.phone_primary}</p>
-                                                )}
-                                                {duplicateWarnings.phone && (
-                                                    <p className="text-sm text-amber-600 dark:text-amber-400">
-                                                        ⚠️ Ya existe un contacto con este teléfono: <strong>{duplicateWarnings.phone.name}</strong>.
-                                                        Puede continuar de todas formas.
-                                                    </p>
-                                                )}
-                                            </div>
+                    <Separator />
 
-                                            <div className="space-y-2">
-                                                <Label htmlFor="phone_secondary">Teléfono Secundario</Label>
-                                                <Input
-                                                    id="phone_secondary"
-                                                    type="tel"
-                                                    value={data.phone_secondary}
-                                                    onChange={(e) => setData('phone_secondary', e.target.value)}
-                                                    placeholder="+57 300 123 4567"
-                                                    className={errors.phone_secondary ? 'border-red-500' : ''}
-                                                />
-                                                {errors.phone_secondary && (
-                                                    <p className="text-sm text-red-600 dark:text-red-400">{errors.phone_secondary}</p>
-                                                )}
-                                            </div>
+                    {/* Contact Information */}
+                    <section className="space-y-4">
+                        <HeadingSmall title="Contacto" />
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div className="grid gap-2">
+                                <Label htmlFor="email">Email</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    value={data.email}
+                                    onChange={(e) => setData('email', e.target.value)}
+                                    onBlur={(e) => checkDuplicates('email', e.target.value)}
+                                    placeholder="correo@ejemplo.com"
+                                />
+                                <InputError message={errors.email} />
+                                {duplicateWarnings.email && (
+                                    <p className="text-sm text-amber-600 dark:text-amber-400">
+                                        Ya existe un contacto con este correo: <strong>{duplicateWarnings.email.name}</strong>.
+                                    </p>
+                                )}
+                            </div>
 
-                                            <div className="space-y-2">
-                                                <Label htmlFor="website">Sitio Web</Label>
-                                                <Input
-                                                    id="website"
-                                                    type="url"
-                                                    value={data.website}
-                                                    onChange={(e) => setData('website', e.target.value)}
-                                                    placeholder="https://ejemplo.com"
-                                                    className={errors.website ? 'border-red-500' : ''}
-                                                />
-                                                {errors.website && <p className="text-sm text-red-600 dark:text-red-400">{errors.website}</p>}
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </CollapsibleContent>
-                            </Card>
-                        </Collapsible>
+                            <div className="grid gap-2">
+                                <Label htmlFor="phone_primary">Telefono principal</Label>
+                                <PhoneInput
+                                    id="phone_primary"
+                                    value={(data.phone_primary as Value) || undefined}
+                                    onChange={(value?: Value) => setData('phone_primary', value || '')}
+                                    onBlur={() => checkDuplicates('phone', data.phone_primary)}
+                                    placeholder="000-000-0000"
+                                />
+                                <InputError message={errors.phone_primary} />
+                                {duplicateWarnings.phone && (
+                                    <p className="text-sm text-amber-600 dark:text-amber-400">
+                                        Ya existe un contacto con este telefono: <strong>{duplicateWarnings.phone.name}</strong>.
+                                    </p>
+                                )}
+                            </div>
 
-                        {/* Identification - Collapsed by Default */}
-                        <Collapsible open={identificationOpen} onOpenChange={setIdentificationOpen}>
-                            <Card>
-                                <CollapsibleTrigger asChild>
-                                    <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                        <CardTitle className="flex items-center justify-between">
-                                            <span>Identificación</span>
-                                            {identificationOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                                        </CardTitle>
-                                        <CardDescription>Documentos de identificación del contacto</CardDescription>
-                                    </CardHeader>
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                    <CardContent className="space-y-4">
-                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="identification_type">Tipo de Identificación</Label>
-                                                <Select
-                                                    value={data.identification_type || ''}
-                                                    onValueChange={(value: IdentificationType) => setData('identification_type', value)}
-                                                >
-                                                    <SelectTrigger className={errors.identification_type ? 'border-red-500' : ''}>
-                                                        <SelectValue placeholder="Selecciona el tipo" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {identification_types.map((type) => (
-                                                            <SelectItem key={type.value} value={type.value}>
-                                                                {type.label}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                {errors.identification_type && (
-                                                    <p className="text-sm text-red-600 dark:text-red-400">{errors.identification_type}</p>
-                                                )}
-                                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="phone_secondary">Telefono secundario</Label>
+                                <PhoneInput
+                                    id="phone_secondary"
+                                    value={(data.phone_secondary as Value) || undefined}
+                                    onChange={(value?: Value) => setData('phone_secondary', value || '')}
+                                    placeholder="000-000-0000"
+                                />
+                                <InputError message={errors.phone_secondary} />
+                            </div>
+                        </div>
+                    </section>
 
-                                            <div className="space-y-2">
-                                                <Label htmlFor="identification_number">Número de Identificación</Label>
-                                                <Input
-                                                    id="identification_number"
-                                                    type="text"
-                                                    value={data.identification_number}
-                                                    onChange={(e) => setData('identification_number', e.target.value)}
-                                                    placeholder="123456789"
-                                                    className={errors.identification_number ? 'border-red-500' : ''}
-                                                />
-                                                {errors.identification_number && (
-                                                    <p className="text-sm text-red-600 dark:text-red-400">{errors.identification_number}</p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </CollapsibleContent>
-                            </Card>
-                        </Collapsible>
+                    <Separator />
 
-                        {/* Address - Collapsed by Default */}
-                        <Collapsible open={addressOpen} onOpenChange={setAddressOpen}>
-                            <Card>
-                                <CollapsibleTrigger asChild>
-                                    <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                        <CardTitle className="flex items-center justify-between">
-                                            <span>Dirección</span>
-                                            {addressOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                                        </CardTitle>
-                                        <CardDescription>Dirección física del contacto</CardDescription>
-                                    </CardHeader>
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                    <CardContent className="space-y-4">
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="address_line_1">Dirección Línea 1</Label>
-                                                <Input
-                                                    id="address_line_1"
-                                                    type="text"
-                                                    value={data.address_line_1}
-                                                    onChange={(e) => setData('address_line_1', e.target.value)}
-                                                    placeholder="Calle, carrera, avenida"
-                                                    className={errors.address_line_1 ? 'border-red-500' : ''}
-                                                />
-                                                {errors.address_line_1 && (
-                                                    <p className="text-sm text-red-600 dark:text-red-400">{errors.address_line_1}</p>
-                                                )}
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <Label htmlFor="address_line_2">Dirección Línea 2</Label>
-                                                <Input
-                                                    id="address_line_2"
-                                                    type="text"
-                                                    value={data.address_line_2}
-                                                    onChange={(e) => setData('address_line_2', e.target.value)}
-                                                    placeholder="Apartamento, oficina, etc."
-                                                    className={errors.address_line_2 ? 'border-red-500' : ''}
-                                                />
-                                                {errors.address_line_2 && (
-                                                    <p className="text-sm text-red-600 dark:text-red-400">{errors.address_line_2}</p>
-                                                )}
-                                            </div>
-
-                                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="municipality">Provincia</Label>
-                                                    <Select value={data.municipality} onValueChange={(value) => setData('municipality', value)}>
-                                                        <SelectTrigger className={errors.municipality ? 'border-red-500' : ''}>
-                                                            <SelectValue placeholder="Seleccionar provincia" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {selectedCountryProvinces.map((province) => (
-                                                                <SelectItem key={province} value={province.toLowerCase().replace(/\s+/g, '-')}>
-                                                                    {province}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    {errors.municipality && (
-                                                        <p className="text-sm text-red-600 dark:text-red-400">{errors.municipality}</p>
-                                                    )}
-                                                </div>
-
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="province">Departamento</Label>
-                                                    <Input
-                                                        id="province"
-                                                        type="text"
-                                                        value={data.province}
-                                                        onChange={(e) => setData('province', e.target.value)}
-                                                        placeholder="Cundinamarca"
-                                                        className={errors.province ? 'border-red-500' : ''}
-                                                    />
-                                                    {errors.province && <p className="text-sm text-red-600 dark:text-red-400">{errors.province}</p>}
-                                                </div>
-
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="postal_code">Código Postal</Label>
-                                                    <Input
-                                                        id="postal_code"
-                                                        type="text"
-                                                        value={data.postal_code}
-                                                        onChange={(e) => setData('postal_code', e.target.value)}
-                                                        placeholder="110111"
-                                                        className={errors.postal_code ? 'border-red-500' : ''}
-                                                    />
-                                                    {errors.postal_code && (
-                                                        <p className="text-sm text-red-600 dark:text-red-400">{errors.postal_code}</p>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <Label htmlFor="country">País</Label>
-                                                <Select value={data.country} onValueChange={handleCountryChange}>
-                                                    <SelectTrigger className={errors.country ? 'border-red-500' : ''}>
-                                                        <SelectValue placeholder="Seleccionar país" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {countries.map((country) => (
-                                                            <SelectItem key={country} value={country}>
-                                                                {country}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                {errors.country && <p className="text-sm text-red-600 dark:text-red-400">{errors.country}</p>}
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </CollapsibleContent>
-                            </Card>
-                        </Collapsible>
-
-                        {/* Relationships - Collapsed by Default */}
-                        <Collapsible open={relationshipsOpen} onOpenChange={setRelationshipsOpen}>
-                            <Card>
-                                <CollapsibleTrigger asChild>
-                                    <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                        <CardTitle className="flex items-center justify-between">
-                                            <span>Añadir relación</span>
-                                            {relationshipsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                                        </CardTitle>
-                                        <CardDescription>Vincula este contacto con familiares o relacionados (opcional)</CardDescription>
-                                    </CardHeader>
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                    <CardContent className="space-y-4">
-                                        {data.relationships.map((relationship, index) => (
-                                            <div key={index} className="grid grid-cols-1 gap-3 rounded-lg border p-3 md:grid-cols-[1fr_1fr_auto]">
-                                                <div className="space-y-2">
-                                                    <Label>Contacto relacionado</Label>
-                                                    <SearchableSelect
-                                                        options={available_relationship_contacts
-                                                            .filter((contact) => contact.id.toString() !== relationship.related_contact_id)
-                                                            .map((contact) => ({ value: contact.id.toString(), label: contact.name }))}
-                                                        value={relationship.related_contact_id}
-                                                        onValueChange={(value) => updateRelationship(index, 'related_contact_id', value)}
-                                                        placeholder="Seleccionar contacto"
-                                                        searchPlaceholder="Buscar contacto..."
-                                                        emptyText="No se encontraron contactos"
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label>Descripción (opcional)</Label>
-                                                    <Input
-                                                        value={relationship.description}
-                                                        onChange={(e) => updateRelationship(index, 'description', e.target.value)}
-                                                        placeholder="Ej: Padre, Hijo, Esposa"
-                                                    />
-                                                </div>
-                                                <div className="flex items-end">
-                                                    <Button type="button" variant="outline" size="icon" onClick={() => removeRelationship(index)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </div>
+                    {/* Identification */}
+                    <section className="space-y-4">
+                        <HeadingSmall title="Identificacion" />
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div className="grid gap-2">
+                                <Label htmlFor="identification_type">Tipo de identificacion</Label>
+                                <Select
+                                    value={data.identification_type || ''}
+                                    onValueChange={(value: IdentificationType) => setData('identification_type', value)}
+                                >
+                                    <SelectTrigger id="identification_type">
+                                        <SelectValue placeholder="Selecciona el tipo" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {identification_types.map((type) => (
+                                            <SelectItem key={type.value} value={type.value}>
+                                                {type.label}
+                                            </SelectItem>
                                         ))}
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.identification_type} />
+                            </div>
 
-                                        <Button type="button" variant="outline" onClick={addRelationship}>
-                                            <Plus className="mr-2 h-4 w-4" />
-                                            Añadir relación
-                                        </Button>
-                                    </CardContent>
-                                </CollapsibleContent>
-                            </Card>
-                        </Collapsible>
+                            <div className="grid gap-2">
+                                <Label htmlFor="identification_number">Numero de identificacion</Label>
+                                <Input
+                                    id="identification_number"
+                                    value={data.identification_number}
+                                    onChange={(e) => setData('identification_number', e.target.value)}
+                                    placeholder="123456789"
+                                />
+                                <InputError message={errors.identification_number} />
+                            </div>
+                        </div>
+                    </section>
 
-                        {/* Additional Information - Collapsed by Default */}
-                        <Collapsible open={additionalOpen} onOpenChange={setAdditionalOpen}>
-                            <Card>
-                                <CollapsibleTrigger asChild>
-                                    <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                        <CardTitle className="flex items-center justify-between">
-                                            <span>Información Adicional</span>
-                                            {additionalOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                                        </CardTitle>
-                                        <CardDescription>Notas y comentarios adicionales</CardDescription>
-                                    </CardHeader>
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                    <CardContent className="space-y-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="notes">Notas</Label>
-                                            <Textarea
-                                                id="notes"
-                                                value={data.notes}
-                                                onChange={(e) => setData('notes', e.target.value)}
-                                                placeholder="Información adicional sobre el contacto..."
-                                                rows={4}
-                                                className={errors.notes ? 'border-red-500' : ''}
-                                            />
-                                            {errors.notes && <p className="text-sm text-red-600 dark:text-red-400">{errors.notes}</p>}
-                                        </div>
-                                    </CardContent>
-                                </CollapsibleContent>
-                            </Card>
-                        </Collapsible>
+                    <Separator />
 
-                        {/* Duplicate Acknowledgment */}
-                        {(duplicateWarnings.email || duplicateWarnings.phone) && (
+                    {/* Address */}
+                    <section className="space-y-4">
+                        <HeadingSmall title="Direccion" />
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div className="grid gap-2">
+                                <Label htmlFor="country">Pais</Label>
+                                <Select value={data.address.country} onValueChange={handleCountryChange}>
+                                    <SelectTrigger id="country">
+                                        <SelectValue placeholder="Seleccionar pais" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {countries.map((country) => (
+                                            <SelectItem key={country} value={country}>
+                                                {country}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="municipality">Provincia</Label>
+                                <Select
+                                    value={data.address.municipality}
+                                    onValueChange={(value) => setData('address', { ...data.address, municipality: value })}
+                                >
+                                    <SelectTrigger id="municipality">
+                                        <SelectValue placeholder="Seleccionar provincia" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {selectedCountryProvinces.map((province) => (
+                                            <SelectItem key={province} value={province.toLowerCase().replace(/\s+/g, '-')}>
+                                                {province}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="grid gap-2 sm:col-span-2">
+                                <Label htmlFor="province">Departamento / Estado</Label>
+                                <Input
+                                    id="province"
+                                    value={data.address.province}
+                                    onChange={(e) => setData('address', { ...data.address, province: e.target.value })}
+                                    placeholder="Santo Domingo"
+                                />
+                            </div>
+
+                            <div className="grid gap-2 sm:col-span-2">
+                                <Label htmlFor="address_description">Direccion</Label>
+                                <Textarea
+                                    id="address_description"
+                                    value={data.address.description}
+                                    onChange={(e) => setData('address', { ...data.address, description: e.target.value })}
+                                    placeholder="Calle, numero, sector, referencia..."
+                                    rows={2}
+                                />
+                            </div>
+                        </div>
+                    </section>
+
+                    <Separator />
+
+                    {/* Financial */}
+                    <section className="space-y-4">
+                        <HeadingSmall title="Informacion financiera" />
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div className="grid gap-2">
+                                <Label htmlFor="credit_limit">Limite de credito</Label>
+                                <div className="relative">
+                                    <DollarSign className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Input
+                                        id="credit_limit"
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={data.credit_limit}
+                                        onChange={(e) => setData('credit_limit', e.target.value)}
+                                        placeholder="0.00"
+                                        className="pl-9"
+                                    />
+                                </div>
+                                <InputError message={errors.credit_limit} />
+                                <p className="text-xs text-muted-foreground">Dejar en 0 para sin limite.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <Separator />
+
+                    {/* Relationships */}
+                    <section className="space-y-4">
+                        <HeadingSmall title="Relaciones" description="Vincula este contacto con familiares o relacionados (opcional)." />
+
+                        {data.relationships.map((relationship, index) => (
+                            <div key={index} className="grid grid-cols-1 gap-3 rounded-lg border p-3 sm:grid-cols-[1fr_1fr_auto]">
+                                <div className="grid gap-2">
+                                    <Label>Contacto relacionado</Label>
+                                    <ServerSearchableSelect
+                                        options={relationshipOptions}
+                                        value={relationship.related_contact_id}
+                                        selectedLabel={relationshipLabels[relationship.related_contact_id]}
+                                        onValueChange={(value) => updateRelationship(index, 'related_contact_id', value)}
+                                        onSearchChange={handleRelationshipSearch}
+                                        isLoading={isSearchingRelationships}
+                                        placeholder="Seleccionar contacto"
+                                        searchPlaceholder="Buscar contacto..."
+                                        emptyText="No se encontraron contactos"
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label>Descripcion (opcional)</Label>
+                                    <Input
+                                        value={relationship.description}
+                                        onChange={(e) => updateRelationship(index, 'description', e.target.value)}
+                                        placeholder="Ej: Padre, Hijo, Esposa"
+                                    />
+                                </div>
+                                <div className="flex items-end">
+                                    <Button type="button" variant="outline" size="icon" onClick={() => removeRelationship(index)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+
+                        <Button type="button" variant="outline" size="sm" onClick={addRelationship}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Anadir relacion
+                        </Button>
+                    </section>
+
+                    <Separator />
+
+                    {/* Notes */}
+                    <section className="space-y-4">
+                        <HeadingSmall title="Notas" />
+                        <div className="grid gap-2">
+                            <Textarea
+                                id="notes"
+                                value={data.notes}
+                                onChange={(e) => setData('notes', e.target.value)}
+                                placeholder="Informacion adicional sobre el contacto..."
+                                rows={3}
+                            />
+                            <InputError message={errors.notes} />
+                        </div>
+                    </section>
+
+                    {/* Duplicate Acknowledgment */}
+                    {(duplicateWarnings.email || duplicateWarnings.phone) && (
+                        <>
+                            <Separator />
                             <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-900/20">
                                 <input
                                     type="checkbox"
@@ -638,31 +574,23 @@ export default function CreateContact({ contact_types, identification_types, ava
                                     Entiendo que ya existe un contacto con datos similares y deseo continuar.
                                 </span>
                             </label>
-                        )}
+                        </>
+                    )}
 
-                        {/* Submit Button */}
-                        <div className="flex items-center justify-end space-x-4 pt-6">
-                            <Button type="button" variant="outline" onClick={() => router.visit('/contacts')} disabled={processing}>
-                                Cancelar
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={
-                                    processing || (((duplicateWarnings.email || duplicateWarnings.phone) && !duplicatesAcknowledged) as boolean)
-                                }
-                            >
-                                {processing ? (
-                                    <>Guardando...</>
-                                ) : (
-                                    <>
-                                        <Save className="mr-2 h-4 w-4" />
-                                        Guardar Contacto
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    </form>
-                </div>
+                    {/* Actions */}
+                    <div className="flex items-center justify-end gap-3 pt-2">
+                        <Button type="button" variant="outline" onClick={() => router.visit('/contacts')} disabled={processing}>
+                            Cancelar
+                        </Button>
+                        <Button
+                            type="submit"
+                            disabled={processing || (((duplicateWarnings.email || duplicateWarnings.phone) && !duplicatesAcknowledged) as boolean)}
+                        >
+                            <Save className="mr-2 h-4 w-4" />
+                            {processing ? 'Guardando...' : 'Guardar contacto'}
+                        </Button>
+                    </div>
+                </form>
             </div>
         </AppLayout>
     );

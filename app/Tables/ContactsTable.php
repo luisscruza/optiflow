@@ -79,7 +79,7 @@ final class ContactsTable extends Table
     {
         return [
             SearchFilter::make('Buscar')
-                ->columns(['name', 'email', 'identification_number'])
+                ->columns(['name', 'email', 'identification_number', 'phone_primary'])
                 ->placeholder('Buscar por nombre, email o identificación...'),
 
             SelectFilter::make('contact_type', 'Tipo')

@@ -11,10 +11,12 @@ import {
     Eye,
     FileText,
     Glasses,
+    Loader2,
     Mail,
     MapPin,
     MessageSquare,
     Phone,
+    Plus,
     ReceiptText,
     Settings2,
     Trash2,
@@ -22,20 +24,32 @@ import {
     Users,
     Workflow,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { CommentList } from '@/components/CommentList';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { ServerSearchableSelect, type ServerSearchableSelectOption } from '@/components/ui/server-searchable-select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { Address, ContactStats, Invoice, Prescription, Quotation, SharedData, WorkflowJob, type BreadcrumbItem, type Contact } from '@/types';
 import { useCurrency } from '@/utils/currency';
+
+type RelationshipSearchResult = {
+    id: number;
+    name: string;
+    phone_primary: string | null;
+    identification_number: string | null;
+    email: string | null;
+};
 
 interface Props {
     contact: Contact;
@@ -45,13 +59,111 @@ interface Props {
     workflowJobs: WorkflowJob[];
     stats: ContactStats;
     relatedContacts: Contact[];
+    relationshipSearchResults?: RelationshipSearchResult[];
 }
 
-export default function ContactShow({ contact, invoices, quotations, prescriptions, workflowJobs, stats, relatedContacts }: Props) {
+export default function ContactShow({
+    contact,
+    invoices,
+    quotations,
+    prescriptions,
+    workflowJobs,
+    stats,
+    relatedContacts,
+    relationshipSearchResults = [],
+}: Props) {
     const { auth } = usePage<SharedData>().props;
     const { can } = usePermissions();
     const { format: formatCurrency } = useCurrency();
     const [activeTab, setActiveTab] = useState('overview');
+
+    // Relationship modal state
+    const [relationshipModalOpen, setRelationshipModalOpen] = useState(false);
+    const [selectedRelatedContactId, setSelectedRelatedContactId] = useState('');
+    const [relationshipDescription, setRelationshipDescription] = useState('');
+    const [relationshipSearchQuery, setRelationshipSearchQuery] = useState('');
+    const [isSearchingRelationships, setIsSearchingRelationships] = useState(false);
+    const [isAddingRelationship, setIsAddingRelationship] = useState(false);
+    const [isDeletingRelationship, setIsDeletingRelationship] = useState<number | null>(null);
+    const [selectedContactLabel, setSelectedContactLabel] = useState('');
+    const relationshipSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const handleRelationshipSearch = (query: string) => {
+        if (relationshipSearchTimeoutRef.current) {
+            clearTimeout(relationshipSearchTimeoutRef.current);
+        }
+
+        const normalizedQuery = query.trim();
+        setRelationshipSearchQuery(normalizedQuery);
+
+        if (normalizedQuery.length < 2) {
+            setIsSearchingRelationships(false);
+            return;
+        }
+
+        relationshipSearchTimeoutRef.current = setTimeout(() => {
+            setIsSearchingRelationships(true);
+            router.reload({
+                only: ['relationshipSearchResults'],
+                data: { relationship_search: normalizedQuery },
+                onFinish: () => setIsSearchingRelationships(false),
+            });
+        }, 300);
+    };
+
+    const handleAddRelationship = () => {
+        if (!selectedRelatedContactId) return;
+
+        setIsAddingRelationship(true);
+        router.post(
+            `/contacts/${contact.id}/relationships`,
+            {
+                related_contact_id: selectedRelatedContactId,
+                description: relationshipDescription,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setSelectedRelatedContactId('');
+                    setRelationshipDescription('');
+                    setSelectedContactLabel('');
+                    setRelationshipModalOpen(false);
+                },
+                onFinish: () => setIsAddingRelationship(false),
+            },
+        );
+    };
+
+    const handleDeleteRelationship = (relatedId: number) => {
+        setIsDeletingRelationship(relatedId);
+        router.delete(`/contacts/${contact.id}/relationships/${relatedId}`, {
+            preserveScroll: true,
+            onFinish: () => setIsDeletingRelationship(null),
+        });
+    };
+
+    const handleSelectRelatedContact = (value: string) => {
+        setSelectedRelatedContactId(value);
+        const searchResult = relationshipSearchResults.find((c) => c.id.toString() === value);
+        if (searchResult) {
+            setSelectedContactLabel(searchResult.name);
+        }
+    };
+
+    const relationshipOptions: ServerSearchableSelectOption[] = (relationshipSearchQuery.length >= 2 ? relationshipSearchResults : [])
+        .filter((c) => !relatedContacts.some((r) => r.id === c.id) && c.id.toString() !== selectedRelatedContactId)
+        .map((c) => ({
+            value: c.id.toString(),
+            label: c.phone_primary ? `${c.name} (${c.phone_primary})` : c.name,
+        }));
+
+    useEffect(() => {
+        return () => {
+            if (relationshipSearchTimeoutRef.current) {
+                clearTimeout(relationshipSearchTimeoutRef.current);
+            }
+        };
+    }, []);
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -672,21 +784,56 @@ export default function ContactShow({ contact, invoices, quotations, prescriptio
                                     {/* Relationships Card */}
                                     <Card className="border-0 shadow-sm">
                                         <CardHeader className="pb-3">
-                                            <CardTitle className="flex items-center gap-2 text-lg">
-                                                <Users className="h-5 w-5 text-gray-500" />
-                                                Relaciones
-                                            </CardTitle>
+                                            <div className="flex items-center justify-between">
+                                                <CardTitle className="flex items-center gap-2 text-lg">
+                                                    <Users className="h-5 w-5 text-gray-500" />
+                                                    Relaciones
+                                                </CardTitle>
+                                                {can('edit contacts') && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8"
+                                                        onClick={() => setRelationshipModalOpen(true)}
+                                                    >
+                                                        <Plus className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </CardHeader>
                                         <CardContent>
                                             {relatedContacts.length > 0 ? (
                                                 <div className="space-y-2">
                                                     {relatedContacts.map((related) => (
-                                                        <div key={related.id} className="flex items-center justify-between rounded-lg bg-gray-50 p-2 dark:bg-gray-800/50">
-                                                            <Link href={`/contacts/${related.id}`} className="text-sm font-medium text-blue-600 hover:underline">
-                                                                {related.name}
-                                                            </Link>
-                                                            {related.pivot?.description && (
-                                                                <Badge variant="outline">{related.pivot.description}</Badge>
+                                                        <div
+                                                            key={related.id}
+                                                            className="flex items-center justify-between rounded-lg bg-gray-50 p-2 dark:bg-gray-800/50"
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <Link
+                                                                    href={`/contacts/${related.id}`}
+                                                                    className="text-sm font-medium text-blue-600 hover:underline"
+                                                                >
+                                                                    {related.name}
+                                                                </Link>
+                                                                {related.pivot?.description && (
+                                                                    <Badge variant="outline">{related.pivot.description}</Badge>
+                                                                )}
+                                                            </div>
+                                                            {can('edit contacts') && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-7 w-7 text-gray-400 hover:text-red-600"
+                                                                    disabled={isDeletingRelationship === related.id}
+                                                                    onClick={() => handleDeleteRelationship(related.id)}
+                                                                >
+                                                                    {isDeletingRelationship === related.id ? (
+                                                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                                    ) : (
+                                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                                    )}
+                                                                </Button>
                                                             )}
                                                         </div>
                                                     ))}
@@ -696,6 +843,55 @@ export default function ContactShow({ contact, invoices, quotations, prescriptio
                                             )}
                                         </CardContent>
                                     </Card>
+
+                                    {/* Relationship Modal */}
+                                    <Dialog open={relationshipModalOpen} onOpenChange={setRelationshipModalOpen}>
+                                        <DialogContent className="sm:max-w-md">
+                                            <DialogHeader>
+                                                <DialogTitle>Agregar relacion</DialogTitle>
+                                                <DialogDescription>Busca un contacto para vincularlo con {contact.name}.</DialogDescription>
+                                            </DialogHeader>
+                                            <div className="space-y-4">
+                                                <div className="space-y-2">
+                                                    <Label>Contacto relacionado</Label>
+                                                    <ServerSearchableSelect
+                                                        options={relationshipOptions}
+                                                        value={selectedRelatedContactId}
+                                                        selectedLabel={selectedContactLabel}
+                                                        onValueChange={handleSelectRelatedContact}
+                                                        onSearchChange={handleRelationshipSearch}
+                                                        isLoading={isSearchingRelationships}
+                                                        placeholder="Buscar contacto..."
+                                                        searchPlaceholder="Nombre, telefono o cedula..."
+                                                        emptyText="No se encontraron contactos"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>Descripcion (opcional)</Label>
+                                                    <Input
+                                                        value={relationshipDescription}
+                                                        onChange={(e) => setRelationshipDescription(e.target.value)}
+                                                        placeholder="Ej: Padre, Hijo, Esposa"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <DialogFooter>
+                                                <Button variant="outline" onClick={() => setRelationshipModalOpen(false)}>
+                                                    Cancelar
+                                                </Button>
+                                                <Button onClick={handleAddRelationship} disabled={!selectedRelatedContactId || isAddingRelationship}>
+                                                    {isAddingRelationship ? (
+                                                        <>
+                                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                            Agregando...
+                                                        </>
+                                                    ) : (
+                                                        'Agregar'
+                                                    )}
+                                                </Button>
+                                            </DialogFooter>
+                                        </DialogContent>
+                                    </Dialog>
 
                                     {/* Notes Card */}
                                     {contact.observations && (

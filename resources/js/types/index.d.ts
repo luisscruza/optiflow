@@ -423,6 +423,8 @@ export interface Contact {
     status: 'active' | 'inactive';
     observations?: string | null;
     credit_limit: number;
+    gender?: 'male' | 'female' | '-' | null;
+    birth_date?: string | null;
     created_at: string;
     updated_at: string;
     addresses?: Address[];

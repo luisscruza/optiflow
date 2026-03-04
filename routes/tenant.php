@@ -21,6 +21,7 @@ use App\Http\Controllers\CompanyDetailsController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ContactImportController;
+use App\Http\Controllers\ContactRelationshipController;
 use App\Http\Controllers\ConvertQuotationToInvoiceController;
 use App\Http\Controllers\CreateInvoiceFromQuotationController;
 use App\Http\Controllers\CurrencyController;
@@ -184,6 +185,10 @@ Route::middleware([
 
             Route::resource('contacts', ContactController::class);
             Route::get('api/contacts/check-duplicates', CheckContactDuplicatesController::class)->name('contacts.check-duplicates');
+
+            Route::get('contacts/{contact}/relationships/create', [ContactRelationshipController::class, 'create'])->name('contacts.relationships.create');
+            Route::post('contacts/{contact}/relationships', [ContactRelationshipController::class, 'store'])->name('contacts.relationships.store');
+            Route::delete('contacts/{contact}/relationships/{related}', [ContactRelationshipController::class, 'destroy'])->name('contacts.relationships.destroy');
 
             Route::resource('contact-imports', ContactImportController::class)->only(['create', 'store', 'show', 'update', 'destroy']);
             Route::post('contact-imports/{contact_import}/process', ProcessContactImportController::class)->name('contact-imports.process');

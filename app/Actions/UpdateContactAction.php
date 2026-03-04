@@ -42,7 +42,7 @@ final readonly class UpdateContactAction
     }
 
     /**
-     * @param array<int, array{related_contact_id:int, description?:string|null}> $relationships
+     * @param  array<int, array{related_contact_id:int, description?:string|null}>  $relationships
      */
     private function syncRelationships(Contact $contact, array $relationships): void
     {
@@ -54,7 +54,7 @@ final readonly class UpdateContactAction
                 continue;
             }
 
-            $description = isset($relationship['description']) ? trim((string) $relationship['description']) : null;
+            $description = isset($relationship['description']) ? mb_trim((string) $relationship['description']) : null;
             $syncData[$relatedContactId] = ['description' => $description !== '' ? $description : null];
         }
 

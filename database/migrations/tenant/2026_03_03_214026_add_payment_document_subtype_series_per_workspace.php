@@ -23,15 +23,15 @@ return new class extends Migration
         $workspaces = Workspace::query()->select(['id', 'name', 'slug'])->get();
 
         foreach ($workspaces as $workspace) {
-            $seed = strtoupper((string) ($workspace->slug ?: $workspace->name));
+            $seed = mb_strtoupper((string) ($workspace->slug ?: $workspace->name));
             $seed = preg_replace('/[^A-Z0-9]/', '', $seed) ?: 'WS';
-            $workspaceCode = substr($seed, 0, 2);
+            $workspaceCode = mb_substr($seed, 0, 2);
             $basePrefix = 'RPS'.$workspaceCode;
 
             $prefix = $basePrefix;
             $suffix = 1;
             while (DocumentSubtype::query()->where('prefix', $prefix)->exists()) {
-                $prefix = substr($basePrefix, 0, 8).$suffix;
+                $prefix = mb_substr($basePrefix, 0, 8).$suffix;
                 $suffix++;
             }
 

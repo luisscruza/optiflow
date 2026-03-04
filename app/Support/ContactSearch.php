@@ -18,6 +18,44 @@ final class ContactSearch
     }
 
     /**
+     * Search all active contacts regardless of contact type.
+     *
+     * @return array<int, array{id: int, name: string, phone_primary: string|null, identification_number: string|null, email: string|null}>
+     */
+    public function searchActive(string $query, ?int $excludeId = null, int $limit = 25): array
+    {
+        $search = mb_trim($query);
+
+        if (mb_strlen($search) < 2) {
+            return [];
+        }
+
+        $builder = $this->baseQuery([], 'active')
+            ->where(function (Builder $builder) use ($search): void {
+                $like = "%{$search}%";
+
+                $builder
+                    ->where('name', 'like', $like)
+                    ->orWhere('phone_primary', 'like', $like)
+                    ->orWhere('identification_number', 'like', $like)
+                    ->orWhere('email', 'like', $like)
+                    ->orWhere('mobile', 'like', $like);
+            });
+
+        if (is_int($excludeId) && $excludeId > 0) {
+            $builder->where('id', '!=', $excludeId);
+        }
+
+        return $builder
+            ->orderBy('name')
+            ->limit($limit)
+            ->get()
+            ->map(fn (Contact $contact): array => $this->toOption($contact))
+            ->values()
+            ->all();
+    }
+
+    /**
      * @param  array<int, string>  $contactTypes
      * @return array<int, array{id: int, name: string, phone_primary: string|null, identification_number: string|null, email: string|null}>
      */
