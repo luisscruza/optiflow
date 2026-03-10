@@ -42,6 +42,10 @@ final class Prescription extends Model
 {
     use BelongsToWorkspace;
 
+    protected $casts = [
+        'proximo_control_visual' => 'date',
+    ];
+
     protected $appends = [
         'human_readable_date',
     ];

@@ -12,6 +12,7 @@ import Refraccion from '@/components/prescriptions/refraccion';
 import RefraccionModal from '@/components/prescriptions/refraccion-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ServerSearchableSelect, type ServerSearchableSelectOption } from '@/components/ui/server-searchable-select';
 import { MasterTableData, type Contact, type Workspace } from '@/types';
@@ -21,6 +22,8 @@ interface PrescriptionFormData {
     workspace_id: number | null;
     contact_id: number | null;
     optometrist_id: number | null;
+    created_at?: string;
+    proximo_control_visual: string;
     motivos_consulta: number[];
     estado_salud_actual: number[];
     historia_ocular_familiar: number[];
@@ -254,10 +257,14 @@ export default function PrescriptionForm({
         };
     }, []);
 
+    const baseDate = initialData.created_at ? new Date(initialData.created_at as string) : new Date();
+    const defaultNextVisualControlDate = new Date(new Date(baseDate).setFullYear(baseDate.getFullYear() + 1)).toISOString().split('T')[0];
+
     const { data, setData, post, put, processing, errors } = useForm<PrescriptionFormData>({
         contact_id: initialData.contact_id || null,
         workspace_id: initialData.workspace_id || current?.id || null,
         optometrist_id: initialData.optometrist_id || null,
+        proximo_control_visual: initialData.proximo_control_visual || defaultNextVisualControlDate,
         motivos_consulta: initialData.motivos_consulta || [],
         estado_salud_actual: initialData.estado_salud_actual || [],
         historia_ocular_familiar: initialData.historia_ocular_familiar || [],
@@ -622,6 +629,20 @@ export default function PrescriptionForm({
                                         triggerClassName={`h-10 ${errors.optometrist_id ? 'border-red-300 ring-red-500/20' : 'border-gray-300'}`}
                                     />
                                     {errors.optometrist_id && <p className="text-sm text-red-600">{errors.optometrist_id}</p>}
+                                </div>
+
+                                <div className="space-y-3">
+                                    <Label htmlFor="proximo_control_visual" className="text-sm font-medium text-gray-900">
+                                        Próximo control visual
+                                    </Label>
+                                    <Input
+                                        id="proximo_control_visual"
+                                        type="date"
+                                        value={data.proximo_control_visual}
+                                        onChange={(e) => setData('proximo_control_visual', e.target.value)}
+                                        className={errors.proximo_control_visual ? 'border-red-300 ring-red-500/20' : ''}
+                                    />
+                                    {errors.proximo_control_visual && <p className="text-sm text-red-600">{errors.proximo_control_visual}</p>}
                                 </div>
                             </div>
                         </div>

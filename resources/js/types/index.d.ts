@@ -690,6 +690,7 @@ export interface Prescription {
     optometrist?: Contact;
     workspace: Workspace;
     created_at: string;
+    proximo_control_visual?: string;
     human_readable_date: string;
 
     // Many-to-many relationships
