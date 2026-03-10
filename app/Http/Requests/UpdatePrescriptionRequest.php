@@ -26,6 +26,7 @@ final class UpdatePrescriptionRequest extends FormRequest
         $rules = [
             'contact_id' => ['required', 'integer', 'exists:contacts,id'],
             'optometrist_id' => ['nullable', 'integer', 'exists:contacts,id'],
+            'proximo_control_visual' => ['nullable', 'date'],
             'motivos_consulta' => ['nullable', 'array'],
             'motivos_consulta.*' => ['integer', 'exists:mastertable_items,id'],
             'estado_salud_actual' => ['nullable', 'array'],

@@ -46,9 +46,7 @@ export default function PrescriptionShow({ prescription, company }: Props) {
     };
 
     const formatNextControlDate = (dateString: string) => {
-        const date = new Date(dateString);
-        date.setMonth(date.getMonth() + 12);
-        return date.toLocaleDateString('es-ES', {
+        return new Date(dateString).toLocaleDateString('es-ES', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -291,7 +289,8 @@ export default function PrescriptionShow({ prescription, company }: Props) {
                     {/* Footer information */}
                     <div className="mt-5 space-y-2 rounded border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
                         <p className="text-sm leading-relaxed text-gray-800 dark:text-gray-200">
-                            <span className="font-semibold">Próximo Control Visual:</span> {formatNextControlDate(prescription.created_at)}
+                            <span className="font-semibold">Próximo Control Visual:</span>{' '}
+                            {formatNextControlDate(prescription.proximo_control_visual ?? prescription.created_at)}
                         </p>
                         {prescription.motivos && prescription.motivos.length > 0 && (
                             <p className="text-sm leading-relaxed text-gray-800 dark:text-gray-200">

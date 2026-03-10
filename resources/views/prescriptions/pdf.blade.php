@@ -341,7 +341,7 @@
     <!-- Footer information -->
     <div class="footer-info">
         <div class="footer-line">
-            <strong>Próximo Control Visual:</strong> {{ \Carbon\Carbon::parse($prescription->created_at)->addMonths(12)->locale('es')->isoFormat('D [de] MMMM [de] YYYY') }}
+            <strong>Próximo Control Visual:</strong> {{ \Carbon\Carbon::parse($prescription->proximo_control_visual ?? $prescription->created_at)->locale('es')->isoFormat('D [de] MMMM [de] YYYY') }}
         </div>
         @if($prescription->motivos && $prescription->motivos->count() > 0)
             <div class="footer-line">
