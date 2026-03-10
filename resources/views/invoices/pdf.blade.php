@@ -46,7 +46,7 @@
         }
 
         .company-name {
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
             color: #1a1a2e;
             margin-bottom: 2px;
@@ -77,7 +77,7 @@
         }
 
         .ncf-number {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             color: #1a1a2e;
             text-align: right;
@@ -277,9 +277,9 @@
         $workspaceName = $workspace?->name;
         $companyAddress = $workspace?->address ?? ($company['address'] ?? null);
         $companyPhone = $workspace?->phone ?? ($company['phone'] ?? null);
-        $firstPageItems = 4;
-        $middlePageItems = 6;
-        $lastPageItems = 6;
+        $firstPageItems = 3;
+        $middlePageItems = 3;
+        $lastPageItems = 3;
         $allItems = $invoice->items->values();
         $chunks = [];
 
@@ -327,11 +327,8 @@
                         @if(!empty($company['email']))
                             <div class="company-detail">{{ $company['email'] }}</div>
                         @endif
-                        <div class="company-detail"><strong>Fecha de creacion:</strong> {{ $invoice->issue_date->format('d/m/Y') }}</div>
-                        <div class="company-detail"><strong>Vencimiento de la factura</strong> {{ $invoice->due_date?->format('d/m/Y') ?? 'N/A' }}</div>
                     </td>
                     <td style="text-align: right;">
-                        <div class="page-indicator">PAGINA {{ $chunkIndex + 1 }}/{{ count($chunks) }}</div>
                         @if($invoice->documentSubtype)
                             <div class="invoice-type">{{ $invoice->documentSubtype->name }}</div>
                             <div class="ncf-number">NCF {{ $invoice->document_number }}</div>
@@ -347,6 +344,8 @@
                                 @endif
                             </div>
                         @endif
+                            <div class="company-detail"><strong>Fecha de creacion:</strong> {{ $invoice->issue_date->format('d/m/Y') }}</div>
+                        <div class="company-detail"><strong>Válido hasta:</strong> {{ $invoice->due_date?->format('d/m/Y') ?? 'N/A' }}</div>
                     </td>
                 </tr>
             </table>

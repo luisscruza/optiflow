@@ -46,7 +46,7 @@
         }
 
         .company-name {
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
             color: #1a1a2e;
             margin-bottom: 2px;
@@ -282,9 +282,9 @@
         $workspaceName = $workspace?->name;
         $companyAddress = $workspace?->address ?? ($company['address'] ?? null);
         $companyPhone = $workspace?->phone ?? ($company['phone'] ?? null);
-        $firstPageItems = 4;
-        $middlePageItems = 6;
-        $lastPageItems = 6;
+        $firstPageItems = 3;
+        $middlePageItems = 3;
+        $lastPageItems = 3;
         $allItems = $quotation->items->values();
         $chunks = [];
 
@@ -346,7 +346,7 @@
                         @endif
                         @if($quotation->documentSubtype && $quotation->documentSubtype->valid_until_date)
                             <div class="document-meta">
-                                <strong>Vencimiento NCF:</strong> {{ $quotation->documentSubtype->valid_until_date->format('d/m/Y') }}
+                                <strong>Vencimiento secuencia:</strong> {{ $quotation->documentSubtype->valid_until_date->format('d/m/Y') }}
                             </div>
                         @endif
                     </td>
