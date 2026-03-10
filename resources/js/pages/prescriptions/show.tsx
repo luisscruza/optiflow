@@ -267,7 +267,7 @@ export default function PrescriptionShow({ prescription, company }: Props) {
                         <div className="my-4 flex gap-8">
                             {showCombinedDP ? (
                                 <span className="rounded border border-gray-300 bg-white px-4 py-2 text-sm dark:border-gray-600 dark:bg-gray-800">
-                                    <span className="font-semibold">Distancia Pupilar:</span> {dpOd+dpOi}mm
+                                    <span className="font-semibold">Distancia Pupilar:</span> {(dpOd+dpOi)}mm
                                 </span>
                             ) : (
                                 <>
