@@ -144,7 +144,7 @@ export function AppSidebar() {
                       icon: Eye,
                       items: [
                           {
-                              title: 'Recetas oftalmologicas',
+                              title: 'Recetas',
                               href: prescriptions.index(),
                               icon: Eye,
                           },
