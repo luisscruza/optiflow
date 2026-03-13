@@ -13,34 +13,34 @@
 
         body {
             font-family: Arial, sans-serif;
-            margin: 25px 30px;
+            margin: 16px 20px;
             padding: 0;
-            font-size: 11px;
-            line-height: 1.5;
+            font-size: 10px;
+            line-height: 1.25;
             color: #1a1a1a;
             background: white;
         }
 
         .header-table {
             width: 100%;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 3px solid #2c5aa0;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #2c5aa0;
         }
 
         .company-name {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             color: #000;
-            margin-bottom: 8px;
-            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            letter-spacing: 0.3px;
         }
 
         .contact-info {
-            font-size: 9.5px;
-            margin-bottom: 3px;
+            font-size: 9px;
+            margin-bottom: 1px;
             color: #000;
-            line-height: 1.4;
+            line-height: 1.2;
         }
 
         .contact-info strong {
@@ -50,21 +50,22 @@
         .logo-cell {
             text-align: center;
             vertical-align: middle;
-            padding: 0 15px;
+            padding: 0 8px;
         }
 
         .prescription-numbers {
-            font-size: 10px;
-            margin-bottom: 5px;
+            font-size: 9px;
+            margin-bottom: 3px;
             color: #000;
         }
 
         .validity-info {
-            font-size: 9px;
-            margin-top: 8px;
-            padding-top: 8px;
+            font-size: 8.5px;
+            margin-top: 5px;
+            padding-top: 5px;
             border-top: 1px solid #e0e0e0;
             color: #666;
+            line-height: 1.25;
         }
 
         .date-location {
@@ -78,26 +79,26 @@
 
         .title {
             text-align: center;
-            font-size: 17px;
+            font-size: 15px;
             font-weight: bold;
-            margin: 20px 0 18px 0;
+            margin: 10px 0 10px 0;
             text-transform: uppercase;
             color: #000;
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
         }
 
         .patient-info {
-            font-size: 10px;
-            margin-bottom: 18px;
-            padding: 12px;
+            font-size: 9px;
+            margin-bottom: 10px;
+            padding: 8px 10px;
             background-color: #f8f9fa;
             border-radius: 4px;
             border: 1px solid #e0e0e0;
         }
 
         .patient-info-line {
-            margin-bottom: 5px;
-            line-height: 1.6;
+            margin-bottom: 0;
+            line-height: 1.3;
             color: #000;
         }
 
@@ -108,25 +109,25 @@
         .prescription-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 18px 0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin: 10px 0 8px;
+            box-shadow: none;
         }
 
         .prescription-table th {
             color: #000;
-            padding: 10px 6px;
+            padding: 6px 4px;
             text-align: center;
             border: 1px solid #000;
-            font-size: 9.5px;
+            font-size: 8.5px;
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
 
         .prescription-table td {
-            padding: 10px 6px;
+            padding: 6px 4px;
             border: 1px solid #000;
             text-align: center;
-            font-size: 10.5px;
+            font-size: 9.5px;
             background-color: #ffffff;
         }
 
@@ -136,24 +137,28 @@
 
         .prescription-table .eye-label {
             text-align: left;
-            padding-left: 18px;
+            padding-left: 10px;
             color: #000;
             background-color: #fff !important;
         }
 
         .footer-info {
-            font-size: 10px;
-            margin-top: 20px;
-            padding: 15px;
+            font-size: 9px;
+            margin-top: 10px;
+            padding: 9px 10px;
             background-color: #f8f9fa;
             border-radius: 4px;
             border: 1px solid #e0e0e0;
         }
 
         .footer-line {
-            margin-bottom: 8px;
-            line-height: 1.6;
+            margin-bottom: 4px;
+            line-height: 1.3;
             color: #000;
+        }
+
+        .footer-line:last-child {
+            margin-bottom: 0;
         }
 
         .footer-line strong {
@@ -161,16 +166,16 @@
         }
 
         .signature-section {
-            margin-top: 50px;
+            margin-top: 20px;
             text-align: center;
         }
 
         .signature-line {
-            border-top: 2px solid #2c5aa0;
-            width: 280px;
+            border-top: 1px solid #2c5aa0;
+            width: 220px;
             margin: 0 auto;
-            padding-top: 8px;
-            font-size: 10px;
+            padding-top: 5px;
+            font-size: 9px;
             text-align: center;
             color: #000;
         }
@@ -184,17 +189,17 @@
         }
 
         .distances-section {
-            margin: 15px 0;
+            margin: 8px 0;
             padding: 0;
-            font-size: 11px;
+            font-size: 9px;
             display: table;
             width: 100%;
         }
 
         .distance-item {
             display: inline-block;
-            margin-right: 40px;
-            padding: 8px 15px;
+            margin-right: 12px;
+            padding: 5px 8px;
             background-color: #fff;
             border: 1px solid #d0d0d0;
             border-radius: 4px;
