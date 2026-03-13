@@ -34,6 +34,7 @@ use App\Http\Controllers\DownloadInvoicePdfController;
 use App\Http\Controllers\DownloadOptometryHistoryController;
 use App\Http\Controllers\DownloadPrescriptionController;
 use App\Http\Controllers\DownloadProductImportTemplateController;
+use App\Http\Controllers\DownloadProductRecipeController;
 use App\Http\Controllers\DownloadQuotationPdfController;
 use App\Http\Controllers\DownloadVisualCertificateController;
 use App\Http\Controllers\DownloadWorkflowJobProcessController;
@@ -58,6 +59,7 @@ use App\Http\Controllers\ProcessProductImportController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImportController;
 use App\Http\Controllers\ProductInventoryAdjustmentController;
+use App\Http\Controllers\ProductRecipeController;
 use App\Http\Controllers\QuickProductCreate;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\ReportController;
@@ -264,6 +266,9 @@ Route::middleware([
                 ->name('prescriptions.visual_certificate');
             Route::get('prescriptions/{prescription}/optometry-history', DownloadOptometryHistoryController::class)
                 ->name('prescriptions.optometry_history');
+
+            Route::resource('product-recipes', ProductRecipeController::class)->only(['index', 'store']);
+            Route::get('product-recipes/{productRecipe}/pdf', DownloadProductRecipeController::class)->name('product-recipes.pdf');
 
             // Reports routes
             Route::get('reports', [ReportController::class, 'index'])->name('reports.index');

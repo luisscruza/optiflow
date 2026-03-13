@@ -60,6 +60,12 @@ export function DataTableRowActions<T>({ actions, row, onActionClick }: DataTabl
                                 {action.icon && <DynamicIcon name={action.icon} className="h-4 w-4" />}
                             </a>
                         </Button>
+                    ) : action.target ? (
+                        <Button key={action.name} variant="ghost" size="sm" asChild>
+                            <a href={action.href} target={action.target} rel={action.target === '_blank' ? 'noreferrer' : undefined}>
+                                {action.icon && <DynamicIcon name={action.icon} className="h-4 w-4" />}
+                            </a>
+                        </Button>
                     ) : (
                         <Button key={action.name} variant="ghost" size="sm" asChild>
                             <Link href={action.href} target={action.target} prefetch={action.prefetch}>
@@ -113,6 +119,22 @@ export function DataTableRowActions<T>({ actions, row, onActionClick }: DataTabl
                                 return (
                                     <DropdownMenuItem key={action.name} asChild title={action.tooltip}>
                                         <a href={action.href} target={action.target} download>
+                                            {action.icon && <DynamicIcon name={action.icon} className="mr-2 h-4 w-4" />}
+                                            <span className="flex flex-col">
+                                                <span>{action.label}</span>
+                                                {action.tooltip && (
+                                                    <span className="text-xs text-muted-foreground">{action.tooltip}</span>
+                                                )}
+                                            </span>
+                                        </a>
+                                    </DropdownMenuItem>
+                                );
+                            }
+
+                            if (action.target) {
+                                return (
+                                    <DropdownMenuItem key={action.name} asChild title={action.tooltip}>
+                                        <a href={action.href} target={action.target} rel={action.target === '_blank' ? 'noreferrer' : undefined}>
                                             {action.icon && <DynamicIcon name={action.icon} className="mr-2 h-4 w-4" />}
                                             <span className="flex flex-col">
                                                 <span>{action.label}</span>

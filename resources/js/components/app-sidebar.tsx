@@ -9,12 +9,28 @@ import prescriptions from '@/routes/prescriptions';
 import products from '@/routes/products';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BarChart3, Bell, BookOpen, ChevronsLeftRightEllipsis, Eye, Folder, FolderSync, Kanban, LayoutGrid, Package, Receipt, RotateCcw, Settings, Users2 } from 'lucide-react';
+import {
+    BarChart3,
+    Bell,
+    BookOpen,
+    ChevronsLeftRightEllipsis,
+    Eye,
+    FileText,
+    Folder,
+    FolderSync,
+    Kanban,
+    LayoutGrid,
+    Package,
+    Receipt,
+    RotateCcw,
+    Settings,
+    Users2,
+} from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
     const { can } = usePermissions();
-    const { unreadNotifications } = usePage().props as { unreadNotifications: number };
+    const { unreadNotifications } = usePage().props as unknown as { unreadNotifications: number };
 
     const mainNavItems: NavItem[] = [
         {
@@ -61,14 +77,15 @@ export function AppSidebar() {
                                     },
                                 ]
                               : []),
-                              ...(can('list payments') ? [
+                          ...(can('list payments')
+                              ? [
                                     {
                                         title: 'Pagos',
                                         href: '/payments',
                                         icon: RotateCcw,
                                     },
-                                ] : []),
-
+                                ]
+                              : []),
                       ],
                   } as NavItem,
               ]
@@ -124,8 +141,19 @@ export function AppSidebar() {
             ? [
                   {
                       title: 'Recetas',
-                      href: prescriptions.index(),
                       icon: Eye,
+                      items: [
+                          {
+                              title: 'Recetas oftalmologicas',
+                              href: prescriptions.index(),
+                              icon: Eye,
+                          },
+                          {
+                              title: 'Recetario de productos',
+                              href: '/product-recipes',
+                              icon: FileText,
+                          },
+                      ],
                   },
               ]
             : []),

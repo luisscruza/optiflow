@@ -1,5 +1,19 @@
 import { Head, Link } from '@inertiajs/react';
-import { Banknote, Building2, Calculator, ChevronRight, Coins, FileText, Hash, MapPin, MessageCircle, Settings, Shield, Table2, Users } from 'lucide-react';
+import {
+    Banknote,
+    Building2,
+    Calculator,
+    ChevronRight,
+    Coins,
+    FileText,
+    Hash,
+    MapPin,
+    MessageCircle,
+    Settings,
+    Shield,
+    Table2,
+    Users,
+} from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
@@ -39,9 +53,12 @@ const configurationSections = [
         items: [{ title: 'Impuestos', href: '/taxes', icon: Calculator }],
     },
     {
-     title: 'Sistema',
+        title: 'Sistema',
         icon: Settings,
-        items: [{ title: 'Tablas maestras', href: '/mastertables', icon: Table2 }],
+        items: [
+            { title: 'Tablas maestras', href: '/mastertables', icon: Table2 },
+            { title: 'Recetario de productos', href: '/product-recipes', icon: FileText },
+        ],
     },
     {
         title: 'Integraciones',

@@ -55,6 +55,7 @@ export interface TableAction {
     confirmationMessage?: string;
     permission?: string;
     isCustom?: boolean;
+    rel?: string;
     handler?: string;
     isInline?: boolean;
     target?: string;
@@ -74,6 +75,7 @@ export interface BulkAction {
     permission?: string;
     handler?: string;
     href?: string;
+    rel?: string;
 }
 
 // ============================================================================

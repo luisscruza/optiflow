@@ -853,6 +853,22 @@ export interface Prescription {
     subjetivo_oi_av_cerca?: string;
 }
 
+export interface ProductRecipe {
+    id: number;
+    workspace_id: number;
+    created_by: number;
+    contact_id: number;
+    optometrist_id: number;
+    product_id: number;
+    indication?: string | null;
+    created_at: string;
+    updated_at: string;
+    contact: Contact;
+    optometrist: Contact;
+    product: MastertableItem;
+    workspace: Workspace;
+}
+
 export interface InvoiceStatusConfig {
     value: 'paid' | 'partially_paid' | 'pending_payment' | 'cancelled';
     label: string;
