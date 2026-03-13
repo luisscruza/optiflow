@@ -303,14 +303,10 @@
                     <!-- Lens Properties -->
                     <div style="margin-top: 15px;">
                         <span class="lens-properties">Propiedades del lente a realizar:</span>
-                        @if($prescription->lentesRecomendados && $prescription->lentesRecomendados->count() > 0)
+                        @if($job->fields)
                             <span class="lens-type-box">
-                                @foreach($prescription->lentesRecomendados as $lente)
-                                    {{ ucfirst($lente->name) }}{{ !$loop->last ? ' ' : '' }}
-                                @endforeach
+                                {{ $job->fields['cristal_a_realizar']['value'] ?? '-' }}
                             </span>
-                        @else
-                            <span class="lens-type-box">N/A</span>
                         @endif
                     </div>
 
@@ -342,20 +338,22 @@
             <td style="width: 38%;">
                 <div class="frame-box">
                     <div class="frame-title">Propiedades de la montura:</div>
-
                     <div class="frame-field">
                         <span class="frame-field-label">Marca y Modelo:</span>
-                        <span class="frame-field-line">&nbsp;</span>
+                        <span class="frame-field-line">
+                            @if($job->fields)
+                                {{ $job->fields['marca_y_modelo']['value'] ?? '' }}
+                            @endif
+                            </span>
                     </div>
 
                     <div class="frame-field">
                         <span class="frame-field-label">Dimensiones de la montura:</span>
-                        <span class="frame-field-line">&nbsp;</span>
-                    </div>
-
-                    <div class="frame-field">
-                        <span class="frame-field-label">Notas:</span>
-                        <span class="frame-field-line">&nbsp;</span>
+                        <span class="frame-field-line">
+                            @if($job->fields)
+                                {{ $job->fields['dimensiones_de_montura']['value'] ?? '' }}
+                            @endif
+                        </span>
                     </div>
                 </div>
             </td>

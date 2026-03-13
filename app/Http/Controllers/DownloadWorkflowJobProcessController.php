@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\WorkflowFieldType;
 use App\Models\CompanyDetail;
+use App\Models\MastertableItem;
 use App\Models\Workflow;
+use App\Models\WorkflowField;
 use App\Models\WorkflowJob;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
@@ -29,6 +32,42 @@ final class DownloadWorkflowJobProcessController
             'prescription.workspace',
             'prescription.lentesRecomendados',
         ]);
+
+
+
+
+        $metadatas = $job->metadata;
+
+        $fields = [];
+
+        foreach ($metadatas as $key => $value) {
+            $field = WorkflowField::where('workflow_id', $workflow->id)
+                ->where('key', $key)
+                ->first();
+
+            if (! $field) {
+                continue;
+            }
+
+            if ($field->type === WorkflowFieldType::Select) {
+                $mastertableItem = MastertableItem::query()
+                    ->where('mastertable_id', $field->mastertable_id)
+                    ->where('id', $value)
+                    ->first();
+
+                $fields[$key] = [
+                    'name' => $field->name,
+                    'value' => $mastertableItem?->name ?? '-',
+                ];
+            } else {
+                $fields[$key] = [
+                    'name' => $field->name,
+                    'value' => $value,
+                ];
+            }
+        }
+
+        $job->setAttribute('fields', $fields);
 
         $prescription = $job->prescription;
 
