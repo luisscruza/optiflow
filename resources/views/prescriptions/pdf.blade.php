@@ -321,7 +321,7 @@
     <div class="distances-section">
         @if($showCombinedDP)
             <div class="distance-item">
-                <strong>Distancia Naso Pupilar:</strong> {{ $dpOd + $dpOi }}mm
+                <strong>Distancia Pupilar:</strong> {{ $dpOd + $dpOi }}mm
             </div>
         @else
             @if($dpOd)

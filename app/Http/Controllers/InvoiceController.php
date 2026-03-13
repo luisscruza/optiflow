@@ -326,7 +326,7 @@ final class InvoiceController
     private function getDefaultDocumentSubtype(?Workspace $workspace): ?DocumentSubtype
     {
         if ($workspace instanceof Workspace) {
-            $workspacePreferred = $workspace->getPreferredDocumentSubtype();
+            $workspacePreferred = $workspace->getPreferredDocumentSubtype(\App\Enums\DocumentType::Invoice);
 
             if ($workspacePreferred instanceof DocumentSubtype && $workspacePreferred->isValid()) {
                 return $workspacePreferred;

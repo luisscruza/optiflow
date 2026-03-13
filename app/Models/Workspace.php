@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\DocumentType;
 use Carbon\CarbonImmutable;
 use Database\Factories\WorkspaceFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -144,9 +145,10 @@ final class Workspace extends Model
     /**
      * Get the preferred document subtype for this workspace.
      */
-    public function getPreferredDocumentSubtype(): ?DocumentSubtype
+    public function getPreferredDocumentSubtype(?DocumentType $type = null): ?DocumentSubtype
     {
         return $this->documentSubtypes()
+            ->when($type !== null, fn ($query) => $query->where('document_subtypes.type', $type))
             ->wherePivot('is_preferred', true)
             ->first();
     }

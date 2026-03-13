@@ -14,7 +14,14 @@ final class SetWorkspacePreferredDocumentSubtypeAction
      */
     public function handle(Workspace $workspace, DocumentSubtype $documentSubtype): DocumentSubtype
     {
+        if (! $workspace->documentSubtypes()->whereKey($documentSubtype->id)->exists()) {
+            $workspace->documentSubtypes()->syncWithoutDetaching([
+                $documentSubtype->id => ['is_preferred' => false],
+            ]);
+        }
+
         $workspace->documentSubtypes()
+            ->where('document_subtypes.type', $documentSubtype->type)
             ->wherePivot('is_preferred', true)
             ->each(function (DocumentSubtype $subtype) use ($workspace): void {
                 $workspace->documentSubtypes()->updateExistingPivot($subtype->id, ['is_preferred' => false]);

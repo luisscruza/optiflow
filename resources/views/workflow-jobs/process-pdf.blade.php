@@ -290,7 +290,7 @@
                                 <div class="value">{{ $dpTotal }}</div>
                             </td>
                             <td>
-                                <div class="label">Distancia Naso Pupilar:</div>
+                                <div class="label">Distancia Pupilar:</div>
                                 <div class="value">{{ $dnp }}</div>
                             </td>
                             <td>

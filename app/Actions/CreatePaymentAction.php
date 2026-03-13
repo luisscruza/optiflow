@@ -182,13 +182,11 @@ final readonly class CreatePaymentAction
     private function generatePaymentNumber(?Workspace $workspace): string
     {
         if ($workspace instanceof Workspace) {
-            $documentSubtype = DocumentSubtype::query()
-                ->where('type', DocumentType::Payment)
-                ->whereHas('workspaces', function ($query) use ($workspace): void {
-                    $query->where('workspaces.id', $workspace->id);
-                })
+            $documentSubtype = $workspace->documentSubtypes()
+                ->where('document_subtypes.type', DocumentType::Payment)
+                ->orderByDesc('document_subtype_workspace.is_preferred')
                 ->orderByDesc('is_default')
-                ->orderBy('id')
+                ->orderBy('document_subtypes.id')
                 ->lockForUpdate()
                 ->first();
 

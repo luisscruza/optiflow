@@ -159,10 +159,7 @@ export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccount
                                         <Input
                                             id="amount"
                                             name="amount"
-                                            type="number"
-                                            step="0.01"
-                                            min="0.01"
-                                            max={availableAmount}
+                                            type="text"
                                             value={amount}
                                             onChange={(e) => setAmount(e.target.value)}
                                             placeholder="0.00"

@@ -173,6 +173,7 @@ final class DocumentSubtype extends Model
     public function isPreferredForWorkspace(Workspace $workspace): bool
     {
         return $this->preferredByWorkspaces()
+            ->where('document_subtypes.type', $this->type)
             ->where('workspaces.id', $workspace->id)
             ->exists();
     }
@@ -185,6 +186,15 @@ final class DocumentSubtype extends Model
     public function getNextDocumentNumber(): string
     {
         return $this->getNextNcfNumber();
+    }
+
+    /**
+     * Scope to get payment subtypes.
+     */
+    #[Scope]
+    protected function forPayment(Builder $query): void
+    {
+        $query->where('type', DocumentType::Payment);
     }
 
     /**

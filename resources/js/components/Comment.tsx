@@ -2,12 +2,13 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 import comments from '@/routes/comments';
 import { useForm } from '@inertiajs/react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Edit2, Loader2, MoreHorizontal, ReplyIcon, Trash2 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CommentForm } from './CommentForm';
 import { MentionText } from './MentionText';
 
@@ -53,6 +54,7 @@ export const Comment: React.FC<CommentProps> = ({
 }) => {
     const [showReplies, setShowReplies] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
+    const [isHighlighted, setIsHighlighted] = useState(false);
     const maxDepth = 3; // Maximum nesting level for replies
 
     // Edit form
@@ -68,7 +70,7 @@ export const Comment: React.FC<CommentProps> = ({
     });
 
     // Delete form
-    const { delete: deleteComment, processing: isDeleting } = useForm();
+    const { delete: deleteComment, processing: isDeleting } = useForm({});
 
     const getInitials = (name: string) => {
         return name
@@ -123,8 +125,27 @@ export const Comment: React.FC<CommentProps> = ({
     const canReply = depth < maxDepth;
     const isOwner = currentUser?.id === comment.commentator.id;
 
+    useEffect(() => {
+        if (typeof window === 'undefined' || window.location.hash !== `#comment-${comment.id}`) {
+            return;
+        }
+
+        setIsHighlighted(true);
+
+        const timeout = window.setTimeout(() => setIsHighlighted(false), 3000);
+
+        return () => window.clearTimeout(timeout);
+    }, [comment.id]);
+
     return (
-        <div className={`group ${depth > 0 ? 'ml-8 border-l border-gray-200 pl-4' : ''}`}>
+        <div
+            id={`comment-${comment.id}`}
+            className={cn(
+                'group scroll-mt-24 rounded-lg transition-colors duration-700',
+                depth > 0 && 'ml-8 border-l border-gray-200 pl-4',
+                isHighlighted && 'bg-amber-50',
+            )}
+        >
             <div className="flex gap-3">
                 {/* Avatar */}
                 <div className="flex-shrink-0">

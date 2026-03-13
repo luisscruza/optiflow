@@ -88,6 +88,12 @@ export default function ContactShow({
     const [selectedContactLabel, setSelectedContactLabel] = useState('');
     const relationshipSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+    useEffect(() => {
+        if (typeof window !== 'undefined' && window.location.hash.startsWith('#comment-')) {
+            setActiveTab('comments');
+        }
+    }, []);
+
     const handleRelationshipSearch = (query: string) => {
         if (relationshipSearchTimeoutRef.current) {
             clearTimeout(relationshipSearchTimeoutRef.current);

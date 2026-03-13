@@ -1086,10 +1086,7 @@ export default function InvoiceForm({
                                                 </div>
                                                 <div className="relative">
                                                     <Input
-                                                        type="number"
-                                                        step="0.01"
-                                                        min="0.01"
-                                                        max={data.total}
+                                                        type="text"
                                                         value={data.payment_amount || ''}
                                                         onChange={(e) => setData('payment_amount', parseFloat(e.target.value) || 0)}
                                                         placeholder="0.00"

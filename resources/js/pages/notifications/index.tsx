@@ -21,10 +21,11 @@ interface Notification {
     type: string;
     data: {
         message: string;
+        url?: string | null;
         comment_id?: string;
         mentioner_name?: string;
         comment_text?: string;
-        [key: string]: any;
+        [key: string]: unknown;
     };
     read_at: string | null;
     created_at: string;
@@ -107,37 +108,48 @@ export default function NotificationsIndex({ notifications, filter }: Props) {
     };
 
     const getNotificationLink = (notification: Notification) => {
-        const { commentable_type, commentable_id } = notification.data;
+        const url = notification.data.url;
 
-        if (!commentable_type || !commentable_id) {
+        if (typeof url !== 'string' || url.length === 0) {
             return null;
         }
 
-        // Map commentable types to routes
-        const routeMap: Record<string, string> = {
-            contact: '/contacts',
-            task: '/tasks',
-            project: '/projects',
-            contact_import: '/contact-imports',
-            // Add more as needed
-        };
+        try {
+            const normalizedUrl = new URL(url, window.location.origin);
 
-        const baseRoute = routeMap[commentable_type.toLowerCase()];
-        return baseRoute ? `${baseRoute}/${commentable_id}` : null;
+            return `${normalizedUrl.pathname}${normalizedUrl.search}${normalizedUrl.hash}`;
+        } catch {
+            return url;
+        }
+    };
+
+    const navigateToNotification = (link: string) => {
+        window.location.assign(link);
     };
 
     const handleNotificationClick = (notification: Notification) => {
         const link = getNotificationLink(notification);
 
-        if (link) {
-            // Mark as read if unread
-            if (!notification.read_at) {
-                handleMarkAsRead(notification.id);
-            }
-
-            // Navigate to the link
-            router.visit(link);
+        if (!link) {
+            return;
         }
+
+        if (notification.read_at) {
+            navigateToNotification(link);
+
+            return;
+        }
+
+        router.patch(
+            `/notifications/${notification.id}/read`,
+            {},
+            {
+                preserveState: false,
+                preserveScroll: true,
+                onSuccess: () => navigateToNotification(link),
+                onError: () => navigateToNotification(link),
+            },
+        );
     };
 
     const unreadCount = notifications.data.filter((n) => !n.read_at).length;
