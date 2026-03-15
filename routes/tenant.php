@@ -33,6 +33,7 @@ use App\Http\Controllers\DocumentSubtypeController;
 use App\Http\Controllers\DownloadInvoicePdfController;
 use App\Http\Controllers\DownloadOptometryHistoryController;
 use App\Http\Controllers\DownloadPrescriptionController;
+use App\Http\Controllers\DownloadProductBulkUpdateTemplateController;
 use App\Http\Controllers\DownloadProductImportTemplateController;
 use App\Http\Controllers\DownloadProductRecipeController;
 use App\Http\Controllers\DownloadQuotationPdfController;
@@ -56,6 +57,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\ProcessContactImportController;
 use App\Http\Controllers\ProcessProductImportController;
+use App\Http\Controllers\ProductBulkUpdateController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImportController;
 use App\Http\Controllers\ProductInventoryAdjustmentController;
@@ -178,6 +180,12 @@ Route::middleware([
             Route::post('products/quick-create', QuickProductCreate::class)->name('products.quick-create');
             Route::post('products/{product}/activate', ActivateProductController::class)->name('products.activate');
             Route::post('products/{product}/deactivate', DeactivateProductController::class)->name('products.deactivate');
+
+            Route::get('product-bulk-updates/template/download', DownloadProductBulkUpdateTemplateController::class)
+                ->name('product-bulk-updates.template');
+            Route::resource('product-bulk-updates', ProductBulkUpdateController::class)->only(['index', 'store']);
+            Route::post('product-bulk-updates/{product_bulk_update}/confirm', [ProductBulkUpdateController::class, 'confirm'])
+                ->name('product-bulk-updates.confirm');
 
             // Product Import routes
             Route::resource('product-imports', ProductImportController::class)->except(['edit']);

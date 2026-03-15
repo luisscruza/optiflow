@@ -924,6 +924,40 @@ export interface ProductImport {
     updated_at: string;
 }
 
+export interface ProductBulkUpdate {
+    id: number;
+    original_filename: string;
+    file_path: string;
+    status: 'pending' | 'ready' | 'processing' | 'completed' | 'failed';
+    headers?: string[] | null;
+    preview_rows?: Array<{
+        row: number;
+        sku: string;
+        product_name: string;
+        has_changes: boolean;
+        changes: Array<{
+            field: string;
+            from: string | null;
+            to: string | null;
+        }>;
+    }> | null;
+    validation_errors?: Array<{ row: number; field: string; message: string }> | null;
+    summary?: {
+        products_updated: number;
+        unchanged_rows: number;
+        stock_adjustments_created: number;
+        rows_failed: number;
+    } | null;
+    total_rows: number;
+    processed_rows: number;
+    successful_rows: number;
+    error_rows: number;
+    error_count: number;
+    processed_at?: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface ContactImport {
     id: number;
     filename: string;

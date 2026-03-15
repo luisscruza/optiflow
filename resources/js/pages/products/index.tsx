@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { AlertTriangle, Package, Plus } from 'lucide-react';
+import { AlertTriangle, FileSpreadsheet, Package, Plus } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -41,6 +41,14 @@ export default function ProductsIndex({ products }: Props) {
                                 <Link href="/inventory-adjustments">
                                     <Package className="mr-2 h-4 w-4" />
                                     Gestión de inventario
+                                </Link>
+                            </Button>
+                        )}
+                        {can('edit products') && can('adjust inventory') && (
+                            <Button variant="outline" asChild>
+                                <Link href="/product-bulk-updates">
+                                    <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                    Actualizacion masiva
                                 </Link>
                             </Button>
                         )}
