@@ -37,7 +37,7 @@ beforeEach(function (): void {
 
 function grantBulkUpdatePermissions(User $user): void
 {
-    foreach ([Permission::ProductsEdit, Permission::InventoryAdjust] as $permission) {
+    foreach ([Permission::ProductsEdit, Permission::ProductsCreate, Permission::InventoryAdjust] as $permission) {
         $grantedPermission = PermissionFactory::new()->create([
             'name' => $permission->value,
             'guard_name' => 'web',
@@ -138,7 +138,37 @@ CSV;
     ]);
 });
 
-test('bulk update stores row validation errors and does not create missing sku products', function (): void {
+test('bulk update creates products when sku does not exist', function (): void {
+    grantBulkUpdatePermissions($this->user);
+
+    $csv = <<<'CSV'
+SKU,NAME,DESCRIPTION,PRODUCT_TYPE,PRICE,COST,TRACK_STOCK,ALLOW_NEGATIVE_STOCK,TAX_1_NAME,TAX_1_RATE,STATUS,WORKSPACE_CTR_STOCK
+SKU-NEW-100,Producto nuevo,Desc,product,80.00,20.00,true,false,,,active,10
+CSV;
+
+    $file = UploadedFile::fake()->createWithContent('bulk-update-errors.csv', $csv);
+
+    $response = $this->actingAs($this->user)->post('/product-bulk-updates', [
+        'file' => $file,
+    ]);
+
+    $response->assertRedirect(route('product-bulk-updates.index'));
+
+    $bulkUpdate = ProductBulkUpdate::query()->latest()->first();
+
+    expect($bulkUpdate)->not->toBeNull()
+        ->and($bulkUpdate?->status)->toBe('ready');
+
+    $this->actingAs($this->user)->post(route('product-bulk-updates.confirm', $bulkUpdate));
+
+    $createdProduct = Product::query()->withoutGlobalScopes()->where('sku', 'SKU-NEW-100')->first();
+
+    expect($createdProduct)->not->toBeNull()
+        ->and($createdProduct?->name)->toBe('Producto nuevo')
+        ->and($createdProduct?->getStockQuantityForWorkspace($this->workspaceA))->toBe(10.0);
+});
+
+test('bulk update stores row validation errors', function (): void {
     grantBulkUpdatePermissions($this->user);
 
     $product = Product::factory()->tracksStock()->create([
@@ -149,7 +179,6 @@ test('bulk update stores row validation errors and does not create missing sku p
 
     $csv = <<<'CSV'
 SKU,NAME,DESCRIPTION,PRODUCT_TYPE,PRICE,COST,TRACK_STOCK,ALLOW_NEGATIVE_STOCK,TAX_1_NAME,TAX_1_RATE,STATUS,WORKSPACE_CTR_STOCK
-UNKNOWN,Producto sin SKU,Desc,product,80.00,20.00,true,false,,,active,10
 SKU-300,Producto con estado invalido,Desc,product,80.00,20.00,true,false,,,archived,10
 CSV;
 
@@ -165,10 +194,8 @@ CSV;
 
     expect($bulkUpdate)->not->toBeNull()
         ->and($bulkUpdate?->status)->toBe('failed')
-        ->and($bulkUpdate?->error_rows)->toBe(2)
-        ->and($bulkUpdate?->validation_errors)->toHaveCount(2);
-
-    expect(Product::query()->where('sku', 'UNKNOWN')->exists())->toBeFalse();
+        ->and($bulkUpdate?->error_rows)->toBe(1)
+        ->and($bulkUpdate?->validation_errors)->toHaveCount(1);
 });
 
 test('bulk update preview shows per product changes before confirm', function (): void {

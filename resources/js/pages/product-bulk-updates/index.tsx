@@ -201,7 +201,7 @@ export default function ProductBulkUpdatesIndex({ latestBulkUpdate = null, bulkU
                                     </div>
                                 )}
 
-                                {latestRun.status === 'ready' && (
+                                {latestRun.preview_rows && latestRun.preview_rows.length > 0 && !latestRun.processed_at && (
                                     <Button onClick={() => handleConfirm(latestRun.id)}>Confirmar y aplicar cambios</Button>
                                 )}
                             </CardContent>

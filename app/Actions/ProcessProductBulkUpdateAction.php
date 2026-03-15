@@ -15,6 +15,7 @@ final readonly class ProcessProductBulkUpdateAction
     public function __construct(
         private ParseProductBulkUpdateCsvAction $parseProductBulkUpdateCsvAction,
         private AnalyzeProductBulkUpdateAction $analyzeProductBulkUpdateAction,
+        private CreateProductAction $createProductAction,
         private StockAdjustmentAction $stockAdjustmentAction,
     ) {}
 
@@ -36,26 +37,26 @@ final readonly class ProcessProductBulkUpdateAction
             'processed_at' => null,
         ]);
 
-        if ($analysis['validation_errors'] !== []) {
-            $bulkUpdate->update([
-                'status' => ProductBulkUpdate::STATUS_FAILED,
-                'processed_at' => now(),
-            ]);
-
-            return $bulkUpdate->fresh();
-        }
-
         $summary = [
             'products_updated' => 0,
             'unchanged_rows' => 0,
             'stock_adjustments_created' => 0,
-            'rows_failed' => 0,
+            'rows_failed' => count($analysis['validation_errors']),
         ];
-        $errors = [];
+        $errors = $analysis['validation_errors'];
 
         foreach ($analysis['prepared_rows'] as $preparedRow) {
             try {
                 $rowResult = DB::transaction(function () use ($preparedRow, $user): array {
+                    if (($preparedRow['create'] ?? false) === true) {
+                        $product = $this->createProductAction->handle($user, $preparedRow['create_payload'] ?? []);
+
+                        return [
+                            'updated' => true,
+                            'stock_adjustments_created' => count($preparedRow['create_payload']['workspace_initial_quantities'] ?? []),
+                        ];
+                    }
+
                     $product = Product::query()->withoutGlobalScopes()->findOrFail($preparedRow['product_id']);
                     $product->fill($preparedRow['updates']);
                     $productChanged = $product->isDirty();
@@ -107,7 +108,7 @@ final readonly class ProcessProductBulkUpdateAction
             'summary' => $summary,
             'validation_errors' => $errors,
             'processed_rows' => count($analysis['prepared_rows']),
-            'successful_rows' => count($analysis['prepared_rows']) - $summary['rows_failed'],
+            'successful_rows' => max(0, count($analysis['prepared_rows']) - ($summary['rows_failed'] - count($analysis['validation_errors']))),
             'error_rows' => $summary['rows_failed'],
             'processed_at' => now(),
         ]);

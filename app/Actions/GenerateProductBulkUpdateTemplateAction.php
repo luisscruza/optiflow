@@ -33,6 +33,7 @@ final class GenerateProductBulkUpdateTemplateAction
             ->get();
 
         $headers = [
+            'PRODUCT_ID',
             ...ProductBulkUpdate::editableColumns(),
             ...$workspaces->map(fn (Workspace $workspace): string => ProductBulkUpdate::workspaceStockColumnName($workspace))->all(),
         ];
@@ -50,6 +51,7 @@ final class GenerateProductBulkUpdateTemplateAction
                 $stockByWorkspace = $product->stocks->keyBy('workspace_id');
 
                 $row = [
+                    $product->id,
                     $product->sku,
                     $product->name,
                     $product->description,
