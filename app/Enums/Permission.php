@@ -90,6 +90,9 @@ enum Permission: string
     // Workflows
     case ViewLabs = 'view labs';
 
+    // Invoices
+    case ViewHistoryLogs = 'view history logs';
+
     public static function all(): array
     {
         return array_map(fn (self $permission) => $permission->value, self::cases());
