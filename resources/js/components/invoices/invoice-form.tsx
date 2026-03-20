@@ -1088,7 +1088,7 @@ export default function InvoiceForm({
                                                     <Input
                                                         type="text"
                                                         value={data.payment_amount || ''}
-                                                        onChange={(e) => setData('payment_amount', parseFloat(e.target.value) || 0)}
+                                                        onChange={(e) => setData('payment_amount', e.target.value)}
                                                         placeholder="0.00"
                                                         className={`h-12 pl-14 text-lg font-semibold ${data.payment_amount > 0 ? 'border-yellow-300 bg-yellow-50/30 text-yellow-700' : 'border-gray-300'}`}
                                                     />

@@ -179,9 +179,14 @@ final class Invoice extends Model implements Auditable, Commentable
 
     public function updatePaymentStatus(): void
     {
-        if ($this->payments()->sum('amount') >= $this->total_amount) {
+        $paid = $this->payments()->sum('amount');
+        $total = $this->total_amount;
+
+        $epsilon = 0.01;
+
+        if (abs($paid - $total) < $epsilon) {
             $this->update(['status' => InvoiceStatus::Paid->value]);
-        } elseif ($this->payments()->sum('amount') > 0) {
+        } elseif ($paid > 0) {
             $this->update(['status' => InvoiceStatus::PartiallyPaid->value]);
         } else {
             $this->update(['status' => InvoiceStatus::PendingPayment->value]);

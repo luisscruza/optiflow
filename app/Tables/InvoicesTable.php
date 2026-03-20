@@ -24,7 +24,7 @@ final class InvoicesTable extends Table
 {
     protected string $model = Invoice::class;
 
-    protected ?string $defaultSort = 'issue_date';
+    protected ?string $defaultSort = 'id';
 
     protected string $defaultSortDirection = 'desc';
 

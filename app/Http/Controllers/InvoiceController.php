@@ -19,6 +19,7 @@ use App\Models\BankAccount;
 use App\Models\CompanyDetail;
 use App\Models\DocumentSubtype;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\Salesman;
 use App\Models\Tax;
 use App\Models\User;
@@ -164,8 +165,12 @@ final class InvoiceController
             'workspace',
         ]);
 
+        $paymentIds = Payment::withTrashed()
+            ->where('invoice_id', $invoice->id)
+            ->pluck('id');
+
         $activities = \Spatie\Activitylog\Models\Activity::query()
-            ->where(function ($query) use ($invoice) {
+            ->where(function ($query) use ($invoice, $paymentIds) {
                 $query->where(function ($q) use ($invoice) {
                     $q->where('subject_type', 'invoice')
                         ->where('subject_id', $invoice->id);
@@ -174,9 +179,9 @@ final class InvoiceController
                         $q->where('subject_type', 'invoice_item')
                             ->whereIn('subject_id', $invoice->items->pluck('id'));
                     })
-                    ->orWhere(function ($q) use ($invoice) {
+                    ->orWhere(function ($q) use ($paymentIds) {
                         $q->where('subject_type', 'payment')
-                            ->whereIn('subject_id', $invoice->payments->pluck('id'));
+                            ->whereIn('subject_id', $paymentIds);
                     });
             })
             ->with('causer')
@@ -186,7 +191,7 @@ final class InvoiceController
         $fieldLabels = collect([
             $invoice->getActivityFieldLabels(),
             ...$invoice->items->map(fn ($item) => $item->getActivityFieldLabels()),
-            ...$invoice->payments->map(fn ($payment) => $payment->getActivityFieldLabels()),
+            app(Payment::class)->getActivityFieldLabels(),
         ])->reduce(fn ($carry, $labels) => array_merge($carry, $labels), []);
 
         $bankAccounts = BankAccount::onlyActive()->with('currency')->get();

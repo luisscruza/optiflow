@@ -58,7 +58,7 @@ final class CreateInvoiceRequest extends FormRequest
             'payment_amount' => ['nullable', 'numeric', 'min:0'],
             'payment_bank_account_id' => ['nullable', 'integer', 'exists:bank_accounts,id'],
             'payment_date' => ['nullable', 'date'],
-            'payment_method' => ['nullable', 'string', 'max:255'],
+            'payment_method' => ['required_if:register_payment,true', 'string', 'max:255'],
             'payment_notes' => ['nullable', 'string', 'max:1000'],
         ];
     }

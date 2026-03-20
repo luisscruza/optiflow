@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 
 /**
@@ -55,7 +56,7 @@ use Spatie\Activitylog\LogOptions;
 final class Payment extends Model implements Auditable
 {
     /** @use HasFactory<\Database\Factories\PaymentFactory> */
-    use HasActivityLog, HasFactory;
+    use HasActivityLog, HasFactory, SoftDeletes;
 
     protected $appends = [
         'status_config',

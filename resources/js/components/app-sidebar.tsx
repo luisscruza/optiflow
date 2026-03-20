@@ -157,11 +157,15 @@ export function AppSidebar() {
                   },
               ]
             : []),
-        {
-            title: 'Reportes',
-            href: '/reports',
-            icon: BarChart3,
-        },
+        ...(can('view reports')
+            ? [
+                  {
+                      title: 'Reportes',
+                      href: '/reports',
+                      icon: BarChart3,
+                  },
+              ]
+            : []),
         ...(can('view configuration')
             ? [
                   {
