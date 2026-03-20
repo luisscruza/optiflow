@@ -86,7 +86,7 @@ enum Permission: string
     case MastertablesCreate = 'create mastertables';
     case MastertablesEdit = 'edit mastertables';
     case MastertablesDelete = 'delete mastertables';
-    
+
     // Workflows
     case ViewLabs = 'view labs';
 

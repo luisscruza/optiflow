@@ -55,11 +55,11 @@ final class CreateInvoiceRequest extends FormRequest
             'salesmen_ids.*' => ['integer', 'exists:salesmen,id'],
             'quotation_id' => ['nullable', 'integer', 'exists:quotations,id'],
             'register_payment' => ['nullable', 'boolean'],
-            'payment_amount' => ['nullable', 'numeric', 'min:0'],
-            'payment_bank_account_id' => ['nullable', 'integer', 'exists:bank_accounts,id'],
-            'payment_date' => ['nullable', 'date'],
-            'payment_method' => ['required_if:register_payment,true', 'string', 'max:255'],
-            'payment_notes' => ['nullable', 'string', 'max:1000'],
+            'payment_amount' => ['exclude_unless:register_payment,true', 'required', 'numeric', 'min:0'],
+            'payment_bank_account_id' => ['exclude_unless:register_payment,true', 'required', 'integer', 'exists:bank_accounts,id'],
+            'payment_date' => ['exclude_unless:register_payment,true', 'nullable', 'date'],
+            'payment_method' => ['exclude_unless:register_payment,true', 'required', 'string', 'max:255'],
+            'payment_notes' => ['exclude_unless:register_payment,true', 'nullable', 'string', 'max:1000'],
         ];
     }
 

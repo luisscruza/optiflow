@@ -138,6 +138,8 @@ export default function CreateInvoice({
     }, [ncf, data.ncf, setData]);
 
     const handleSubmit = (e: React.FormEvent) => {
+                e.preventDefault();
+
         post('/invoices', {
             onSuccess: () => router.visit('/invoices'),
         });
