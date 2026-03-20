@@ -10,8 +10,10 @@ use App\Models\Contact;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Prescription;
+use App\Models\ProductRecipe;
 use App\Models\ProductStock;
 use App\Models\Quotation;
+use App\Models\WorkflowJob;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -351,5 +353,8 @@ final class MergeDuplicateContacts extends Command
         Prescription::query()->where('patient_id', $fromId)->update(['patient_id' => $toId]);
         Prescription::query()->where('optometrist_id', $fromId)->update(['optometrist_id' => $toId]);
         ProductStock::query()->where('supplier_id', $fromId)->update(['supplier_id' => $toId]);
+        WorkflowJob::query()->where('contact_id', $fromId)->update(['contact_id' => $toId]);
+        DB::table('contact_relationships')->where('contact_id', $fromId)->update(['contact_id' => $toId]);
+        ProductRecipe::query()->where('contact_id', $fromId)->update(['contact_id' => $toId]);
     }
 }
