@@ -74,7 +74,8 @@ export default function PaymentShow({ payment }: Props) {
         return <Badge variant="destructive">Anulado</Badge>;
     };
 
-    const isInvoicePayment = payment.payment_type === 'invoice';
+    const isInvoicePayment = payment.payment_type === 'invoice_payment';
+    console.log('Payment data:', payment);
     const isOtherIncome = payment.payment_type === 'other_income';
 
     return (
@@ -189,7 +190,7 @@ export default function PaymentShow({ payment }: Props) {
                                 <div className="flex items-center gap-2">
                                     <User className="size-4" />
                                     <p className="font-medium">
-                                        {isInvoicePayment && payment.invoice?.contact ? payment.invoice.contact.name : payment.contact?.name || 'N/A'}
+                                        {isInvoicePayment && payment.invoice?.contact ? payment.invoice.contact?.name : payment.contact?.name || 'N/A'}
                                     </p>
                                 </div>
                             </div>

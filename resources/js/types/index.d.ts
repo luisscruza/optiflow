@@ -641,7 +641,7 @@ import type { PaymentLine, PaymentWithholding } from './accounting';
 
 export interface Payment {
     id: number;
-    payment_type: 'invoice' | 'other_income';
+    payment_type: 'invoice_payment' | 'other_income';
     payment_number: string;
     invoice_id?: number | null;
     contact_id?: number | null;

@@ -50,16 +50,6 @@
             vertical-align: middle;
         }
 
-        /* Phone box */
-        .phone-box {
-            border: 2px solid #000;
-            padding: 8px 12px;
-            margin-bottom: 10px;
-            display: inline-block;
-            font-size: 13px;
-            font-weight: bold;
-        }
-
         /* Main content layout */
         .content-table {
             width: 100%;
@@ -72,7 +62,8 @@
 
         /* Left column - prescription */
         .prescription-box {
-            border: 2px solid #000;
+            border: 1px solid #000;
+            border-radius: 6px;
             padding: 15px;
             margin-right: 10px;
         }
@@ -152,7 +143,8 @@
 
         /* Priority / Due date box */
         .priority-box {
-            border: 2px solid #000;
+            border: 1px solid #000;
+            border-radius: 6px;
             padding: 10px 15px;
             font-size: 12px;
             margin-top: 10px;
@@ -164,10 +156,12 @@
 
         /* Right column - frame properties */
         .frame-box {
-            border: 2px solid #000;
+            border: 1px solid #000;
+            border-radius: 6px;
             padding: 15px;
             font-size: 13px;
             line-height: 2.2;
+            margin-bottom: 12px;
         }
 
         .frame-title {
@@ -192,6 +186,14 @@
 
         .priority-label-text {
             text-transform: capitalize;
+        }
+
+        .phone-box {
+            border: 1px solid #000;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -227,13 +229,6 @@
             </td>
         </tr>
     </table>
-
-    <!-- Phone -->
-    <div style="text-align: right; margin-bottom: 10px;">
-        <div class="phone-box">
-            Tel&eacute;fono: {{ $job->contact?->phone_primary ?? $prescription->patient?->phone_primary ?? '________' }}
-        </div>
-    </div>
 
     <!-- Main Content: Two columns -->
     <table class="content-table">
@@ -302,7 +297,7 @@
 
                     <!-- Lens Properties -->
                     <div style="margin-top: 15px;">
-                        <span class="lens-properties">Propiedades del lente a realizar:</span>
+                        <span class="lens-properties">Lente a realizar:</span>
                         @if($job->fields)
                             <span class="lens-type-box">
                                 {{ $job->fields['cristal_a_realizar']['value'] ?? '-' }}
@@ -355,6 +350,10 @@
                             @endif
                         </span>
                     </div>
+                </div>
+
+                <div class="phone-box">
+                    Tel&eacute;fono: {{ $job->contact?->phone_primary ?? $prescription->patient?->phone_primary ?? '________' }}
                 </div>
             </td>
         </tr>
