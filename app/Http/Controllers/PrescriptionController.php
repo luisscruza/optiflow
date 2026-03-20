@@ -105,7 +105,7 @@ final class PrescriptionController
 
         return inertia('prescriptions/show', [
             'prescription' => $prescription,
-            'company' => CompanyDetail::getAll(),
+            'company' => $this->getCompanyDetails(),
         ]);
     }
 
@@ -172,5 +172,21 @@ final class PrescriptionController
         $action->handle($prescription, $user, $request->validated());
 
         return redirect()->route('prescriptions.show', $prescription)->with('success', 'Receta actualizada exitosamente.');
+    }
+
+    /**
+     * Get company details with a tenant-aware logo URL.
+     *
+     * @return array<string, string>
+     */
+    private function getCompanyDetails(): array
+    {
+        $companyDetails = CompanyDetail::getAll();
+
+        if (! empty($companyDetails['logo'])) {
+            $companyDetails['logo'] = tenant_asset($companyDetails['logo']);
+        }
+
+        return $companyDetails;
     }
 }

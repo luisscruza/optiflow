@@ -113,7 +113,7 @@ export default function PrescriptionShow({ prescription, company }: Props) {
 
                         {company.logo && (
                             <div className="flex items-center justify-center px-4">
-                                <img src={`/storage/${company.logo}`} alt="Logo" className="max-h-[90px] max-w-[160px] object-contain" />
+                                <img src={company.logo} alt="Logo" className="max-h-[90px] max-w-[160px] object-contain" />
                             </div>
                         )}
 
@@ -267,7 +267,8 @@ export default function PrescriptionShow({ prescription, company }: Props) {
                         <div className="my-4 flex gap-8">
                             {showCombinedDP ? (
                                 <span className="rounded border border-gray-300 bg-white px-4 py-2 text-sm dark:border-gray-600 dark:bg-gray-800">
-                                    <span className="font-semibold">Distancia Pupilar:</span>{Number(dpOd) + Number(dpOi)}mm
+                                    <span className="font-semibold">Distancia Pupilar:</span>
+                                    {Number(dpOd) + Number(dpOi)}mm
                                 </span>
                             ) : (
                                 <>
