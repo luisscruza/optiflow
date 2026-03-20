@@ -17,6 +17,7 @@ use App\Http\Controllers\BusinessUserWorkspaceController;
 use App\Http\Controllers\BusinessUserWorkspaceRoleController;
 use App\Http\Controllers\CashRegisterCloseController;
 use App\Http\Controllers\CheckContactDuplicatesController;
+use App\Http\Controllers\CloneAutomationController;
 use App\Http\Controllers\CompanyDetailsController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\ContactController;
@@ -297,6 +298,7 @@ Route::middleware([
             Route::get('workflows/{workflow}/jobs/{job}/process-pdf', DownloadWorkflowJobProcessController::class)->name('workflows.jobs.process-pdf');
 
             Route::resource('automations', AutomationController::class)->only(['index', 'create', 'store', 'edit', 'update']);
+            Route::post('automations/{automation}/clone', CloneAutomationController::class)->name('automations.clone');
             Route::get('api/automations/test-data', AutomationTestDataController::class)->name('automations.test-data');
             Route::post('automations/{automation}/test', AutomationTestRunController::class)->name('automations.test');
 

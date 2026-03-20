@@ -1,9 +1,14 @@
-import { Head, Link } from '@inertiajs/react';
-import { History, Plus, Workflow as WorkflowIcon } from 'lucide-react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { Copy, History, MoreHorizontal, Plus, Workflow as WorkflowIcon } from 'lucide-react';
+import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -26,6 +31,12 @@ interface Automation {
 
 interface Props {
     automations: Automation[];
+    cloneableWorkspaces: WorkspaceOption[];
+}
+
+interface WorkspaceOption {
+    id: number;
+    name: string;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -35,7 +46,39 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function AutomationsIndex({ automations }: Props) {
+export default function AutomationsIndex({ automations, cloneableWorkspaces }: Props) {
+    const [automationToClone, setAutomationToClone] = useState<Automation | null>(null);
+    const [isCloneDialogOpen, setIsCloneDialogOpen] = useState(false);
+    const cloneForm = useForm<{ target_workspace_id: string }>({
+        target_workspace_id: cloneableWorkspaces[0]?.id.toString() ?? '',
+    });
+
+    const openCloneDialog = (automation: Automation) => {
+        setAutomationToClone(automation);
+        cloneForm.setData('target_workspace_id', cloneableWorkspaces[0]?.id.toString() ?? '');
+        cloneForm.clearErrors();
+        setIsCloneDialogOpen(true);
+    };
+
+    const closeCloneDialog = () => {
+        setIsCloneDialogOpen(false);
+        setAutomationToClone(null);
+        cloneForm.reset();
+        cloneForm.clearErrors();
+        cloneForm.setData('target_workspace_id', cloneableWorkspaces[0]?.id.toString() ?? '');
+    };
+
+    const submitClone = () => {
+        if (!automationToClone) {
+            return;
+        }
+
+        cloneForm.post(`/automations/${automationToClone.id}/clone`, {
+            preserveScroll: true,
+            onSuccess: () => closeCloneDialog(),
+        });
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Automatizaciones" />
@@ -103,6 +146,21 @@ export default function AutomationsIndex({ automations }: Props) {
                                                 <History className="h-4 w-4" />
                                             </Button>
                                         </Link>
+                                        {cloneableWorkspaces.length > 0 && (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" title="Más acciones">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => openCloneDialog(automation)}>
+                                                        <Copy className="h-4 w-4" />
+                                                        Clonar a otra sucursal
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -110,6 +168,47 @@ export default function AutomationsIndex({ automations }: Props) {
                     </div>
                 )}
             </div>
+
+            <Dialog open={isCloneDialogOpen} onOpenChange={(open) => (!open ? closeCloneDialog() : setIsCloneDialogOpen(true))}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Clonar automatizacion</DialogTitle>
+                        <DialogDescription>
+                            {automationToClone
+                                ? `Crea una copia de ${automationToClone.name} en otra sucursal. La copia se creara inactiva para que la revises antes de activarla.`
+                                : 'Crea una copia de esta automatizacion en otra sucursal.'}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="target-workspace">Sucursal destino</Label>
+                        <Select value={cloneForm.data.target_workspace_id} onValueChange={(value) => cloneForm.setData('target_workspace_id', value)}>
+                            <SelectTrigger id="target-workspace" aria-invalid={Boolean(cloneForm.errors.target_workspace_id)}>
+                                <SelectValue placeholder="Seleccionar sucursal" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {cloneableWorkspaces.map((workspace) => (
+                                    <SelectItem key={workspace.id} value={workspace.id.toString()}>
+                                        {workspace.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {cloneForm.errors.target_workspace_id && (
+                            <p className="text-sm text-red-600 dark:text-red-400">{cloneForm.errors.target_workspace_id}</p>
+                        )}
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={closeCloneDialog} disabled={cloneForm.processing}>
+                            Cancelar
+                        </Button>
+                        <Button onClick={submitClone} disabled={cloneForm.processing || !cloneForm.data.target_workspace_id}>
+                            {cloneForm.processing ? 'Clonando...' : 'Clonar automatizacion'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

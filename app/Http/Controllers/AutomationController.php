@@ -26,6 +26,8 @@ final class AutomationController
 {
     public function index(): Response
     {
+        $user = Auth::user();
+
         $automations = Automation::query()
             ->with(['triggers'])
             ->orderByDesc('created_at')
@@ -45,8 +47,20 @@ final class AutomationController
                 ])->all(),
             ]);
 
+        $cloneableWorkspaces = $user?->workspaces()
+            ->where('workspaces.id', '!=', $user->current_workspace_id)
+            ->orderBy('workspaces.name')
+            ->get(['workspaces.id', 'workspaces.name'])
+            ->map(fn ($workspace): array => [
+                'id' => $workspace->id,
+                'name' => $workspace->name,
+            ])
+            ->values()
+            ->all() ?? [];
+
         return Inertia::render('automations/index', [
             'automations' => $automations,
+            'cloneableWorkspaces' => $cloneableWorkspaces,
         ]);
     }
 
