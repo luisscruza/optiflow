@@ -254,14 +254,14 @@
                                 <td class="eye-label">Ojo derecho</td>
                                 <td>{{ $prescription->subjetivo_od_esfera ?? 'N/A' }}</td>
                                 <td>{{ $prescription->subjetivo_od_cilindro ?? 'N/A' }}</td>
-                                <td>{{ $prescription->subjetivo_od_eje ? $prescription->subjetivo_od_eje . '°' : 'N/A' }}</td>
+                                <td>{{ $prescription->subjetivo_od_eje !== null ? $prescription->subjetivo_od_eje . '°' : 'N/A' }}</td>
                                 <td>{{ $prescription->subjetivo_od_add ?? 'N/A' }}</td>
                             </tr>
                             <tr>
                                 <td class="eye-label">Ojo izquierdo</td>
                                 <td>{{ $prescription->subjetivo_oi_esfera ?? 'N/A' }}</td>
                                 <td>{{ $prescription->subjetivo_oi_cilindro ?? 'N/A' }}</td>
-                                <td>{{ $prescription->subjetivo_oi_eje ? $prescription->subjetivo_oi_eje . '°' : 'N/A' }}</td>
+                                <td>{{ $prescription->subjetivo_oi_eje !== null ? $prescription->subjetivo_oi_eje . '°' : 'N/A' }}</td>
                                 <td>{{ $prescription->subjetivo_oi_add ?? 'N/A' }}</td>
                             </tr>
                         </tbody>
