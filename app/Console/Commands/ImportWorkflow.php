@@ -225,6 +225,10 @@ final class ImportWorkflow extends Command
             ->where('name', $row['Laboratorio'] ?? '')
             ->first();
 
+            if (! $tabla) {
+                dd(tenant()->id);
+            }
+
         if (! $laboratorio) {
             $laboratorio = MastertableItem::query()
                 ->create([
