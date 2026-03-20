@@ -39,12 +39,23 @@ final class WorkflowJobController
             'workflow',
             'workflowStage',
             'contact',
-            'invoice.contact',
-            'invoice.items.product',
-            'invoice.documentSubtype',
-            'invoice.payments',
-            'prescription.patient',
-            'prescription.optometrist',
+
+            'invoice' => fn ($q) => $q
+                ->withoutGlobalScopes()
+                ->with([
+                    'contact',
+                    'items.product',
+                    'documentSubtype',
+                    'payments',
+                ]),
+
+            'prescription' => fn ($q) => $q
+                ->withoutGlobalScopes()
+                ->with([
+                    'patient',
+                    'optometrist',
+                ]),
+
             'comments',
             'media',
         ]);

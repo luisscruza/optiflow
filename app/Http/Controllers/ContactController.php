@@ -94,8 +94,8 @@ final class ContactController
 
         $contactIds = $contact->relatedContactIdsWithSelf();
 
-        // Load invoices with basic info, limited to latest 10 (including related contacts)
         $invoices = \App\Models\Invoice::query()
+            ->withoutGlobalScopes()
             ->whereIn('contact_id', $contactIds)
             ->with(['documentSubtype', 'contact'])
             ->orderByDesc('issue_date')
@@ -104,6 +104,7 @@ final class ContactController
 
         // Load quotations from the Quotation model, limited to latest 10 (including related contacts)
         $quotations = \App\Models\Quotation::query()
+            ->withoutGlobalScopes()
             ->whereIn('contact_id', $contactIds)
             ->with(['documentSubtype', 'contact'])
             ->orderByDesc('issue_date')
@@ -112,6 +113,7 @@ final class ContactController
 
         // Load prescriptions, limited to latest 10
         $prescriptions = $contact->prescriptions()
+            ->withoutGlobalScopes()
             ->with(['optometrist'])
             ->orderByDesc('created_at')
             ->limit(10)
@@ -119,6 +121,7 @@ final class ContactController
 
         // Load workflow jobs, limited to latest 10
         $workflowJobs = $contact->workflowJobs()
+            ->withoutGlobalScopes()
             ->with(['workflow', 'workflowStage'])
             ->orderByDesc('created_at')
             ->limit(10)
