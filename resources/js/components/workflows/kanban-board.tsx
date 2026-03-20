@@ -53,7 +53,7 @@ export function KanbanBoard({ workflow, stageJobs, contacts = [], invoices = [],
     const [newJobPriority, setNewJobPriority] = useState<WorkflowJobPriority | ''>('');
     const [newJobDueDate, setNewJobDueDate] = useState('');
     const [newJobNotes, setNewJobNotes] = useState('');
-    const [newJobMetadata, setNewJobMetadata] = useState<Record<string, string | number | null>>({});
+    const [newJobMetadata, setNewJobMetadata] = useState<Record<string, string | number | boolean | null>>({});
     const [newJobImages, setNewJobImages] = useState<File[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 

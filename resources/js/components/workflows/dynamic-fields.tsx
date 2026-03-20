@@ -3,16 +3,22 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Textarea } from '@/components/ui/textarea';
+import { canViewWorkflowField } from '@/components/workflows/field-visibility';
+import { usePermissions } from '@/hooks/use-permissions';
 import type { WorkflowField } from '@/types';
 
 interface DynamicFieldsProps {
     fields: WorkflowField[];
-    values: Record<string, string | number | null>;
-    onChange: (key: string, value: string | number | null) => void;
+    values: Record<string, string | number | boolean | null>;
+    onChange: (key: string, value: string | number | boolean | null) => void;
 }
 
 export function DynamicFields({ fields, values, onChange }: DynamicFieldsProps) {
-    if (fields.length === 0) return null;
+    const { can } = usePermissions();
+
+    const visibleFields = fields.filter((field) => canViewWorkflowField(field, can('view labs')));
+
+    if (visibleFields.length === 0) return null;
 
     const renderField = (field: WorkflowField) => {
         const value = values[field.key] ?? field.default_value ?? '';
@@ -97,7 +103,7 @@ export function DynamicFields({ fields, values, onChange }: DynamicFieldsProps) 
     return (
         <div className="space-y-4 border-t pt-4">
             <h4 className="text-sm font-medium text-muted-foreground">Campos adicionales</h4>
-            {fields.map((field) => (
+            {visibleFields.map((field) => (
                 <div key={field.id} className="space-y-2">
                     <Label htmlFor={`field-${field.key}`}>
                         {field.name}

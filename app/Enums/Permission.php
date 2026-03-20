@@ -86,6 +86,9 @@ enum Permission: string
     case MastertablesCreate = 'create mastertables';
     case MastertablesEdit = 'edit mastertables';
     case MastertablesDelete = 'delete mastertables';
+    
+    // Workflows
+    case ViewLabs = 'view labs';
 
     public static function all(): array
     {
@@ -183,6 +186,7 @@ enum Permission: string
             self::CreateWorkflowJobs => 'Crear procesos',
             self::EditWorkflowJobs => 'Editar procesos',
             self::DeleteWorkflowJobs => 'Eliminar procesos',
+            self::ViewLabs => 'Ver laboratorios',
 
             // Workflow Stages
             self::CreateWorkflowStages => 'Crear etapas de procesos',
@@ -202,6 +206,7 @@ enum Permission: string
             self::MastertablesCreate => 'Crear tablas maestras',
             self::MastertablesEdit => 'Editar tablas maestras',
             self::MastertablesDelete => 'Eliminar tablas maestras',
+
         };
     }
 
@@ -219,7 +224,7 @@ enum Permission: string
             self::ConfigurationView, self::ConfigurationEdit => 'Configuración',
             self::ReportsView, self::ReportsExport => 'Reportes',
             self::ViewDashboardAccountReceivable, self::ViewDashboardSalesStats, self::ViewDashboardProductsStats, self::ViewDashboardCustomersStats, self::ViewDashboardPrescriptionsStats, self::ViewDashboardWorkflowsStats => 'Panel',
-            self::ViewWorkflows, self::CreateWorkflows, self::EditWorkflows, self::DeleteWorkflows, self::CreateWorkflowJobs, self::EditWorkflowJobs, self::DeleteWorkflowJobs, self::CreateWorkflowStages, self::EditWorkflowStages, self::DeleteWorkflowStages => 'Flujos de trabajo',
+            self::ViewWorkflows, self::CreateWorkflows, self::EditWorkflows, self::DeleteWorkflows, self::CreateWorkflowJobs, self::EditWorkflowJobs, self::DeleteWorkflowJobs, self::CreateWorkflowStages, self::EditWorkflowStages, self::DeleteWorkflowStages, self::ViewLabs => 'Flujos de trabajo',
             self::MastertablesView, self::MastertablesCreate, self::MastertablesEdit, self::MastertablesDelete => 'Tablas maestras',
         };
     }

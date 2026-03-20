@@ -34,6 +34,8 @@ import { Label } from '@/components/ui/label';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { canViewWorkflowField } from '@/components/workflows/field-visibility';
+import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import {
     type BreadcrumbItem,
@@ -80,6 +82,7 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
     const [datesOpen, setDatesOpen] = useState(true);
     const [imagesOpen, setImagesOpen] = useState(true);
     const [dueDateInput, setDueDateInput] = useState<string>('');
+    const { can } = usePermissions();
 
     // Metadata editing state
     const [editableMetadata, setEditableMetadata] = useState<Record<string, string | number | boolean | null>>(job.metadata || {});
@@ -173,6 +176,7 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
     };
 
     const isOverdue = job.due_date && new Date(job.due_date) < new Date() && !job.completed_at;
+    const visibleWorkflowFields = (workflow.fields || []).filter((field) => canViewWorkflowField(field, can('view labs')));
 
     const getPriorityLabel = (priority: string | null | undefined): string => {
         if (!priority) return 'Sin prioridad';
@@ -799,7 +803,7 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
                             </Collapsible>
 
                             {/* Custom Fields / Metadata */}
-                            {workflow.fields && workflow.fields.length > 0 && (
+                            {visibleWorkflowFields.length > 0 && (
                                 <Collapsible open={customFieldsOpen} onOpenChange={setCustomFieldsOpen}>
                                     <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
                                         <CollapsibleTrigger asChild>
@@ -820,10 +824,10 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
                                         <CollapsibleContent>
                                             <CardContent className="px-6 py-6">
                                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                                    {workflow.fields.map((field: WorkflowField) => {
+                                                    {visibleWorkflowFields.map((field: WorkflowField) => {
                                                         const currentValue = editableMetadata[field.key] ?? '';
 
-                                                        const handleFieldChange = (value: string | number | null) => {
+                                                        const handleFieldChange = (value: string | number | boolean | null) => {
                                                             setEditableMetadata((prev) => ({
                                                                 ...prev,
                                                                 [field.key]: value,
@@ -874,17 +878,19 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
                                                                 )}
 
                                                                 {field.type === 'select' && field.mastertable?.items && (
-                                                                    <SearchableSelect
-                                                                        options={field.mastertable.items.map((item) => ({
-                                                                            value: String(item.id),
-                                                                            label: item.name,
-                                                                        }))}
-                                                                        value={String(currentValue)}
-                                                                        onValueChange={(v) => handleFieldChange(v)}
-                                                                        placeholder={field.placeholder || 'Seleccionar...'}
-                                                                        searchPlaceholder="Buscar opción..."
-                                                                        emptyText="No se encontraron opciones"
-                                                                    />
+                                                                    <>
+                                                                        <SearchableSelect
+                                                                            options={field.mastertable.items.map((item) => ({
+                                                                                value: String(item.id),
+                                                                                label: item.name,
+                                                                            }))}
+                                                                            value={String(currentValue)}
+                                                                            onValueChange={(v) => handleFieldChange(v)}
+                                                                            placeholder={field.placeholder || 'Seleccionar...'}
+                                                                            searchPlaceholder="Buscar opción..."
+                                                                            emptyText="No se encontraron opciones"
+                                                                        />
+                                                                    </>
                                                                 )}
 
                                                                 {field.type === 'boolean' && (
