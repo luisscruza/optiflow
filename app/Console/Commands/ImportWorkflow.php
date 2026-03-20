@@ -167,10 +167,6 @@ final class ImportWorkflow extends Command
 
         $estado = $row['Estado'] ?? '';
 
-        if ( in_array($estado, ['Desmontado'], true)) {
-            return 'Estado no relevante: '.$estado;
-        }
-
         $workflow_id = match ($row['CODIGO_SUCURSAL'] ?? null) {
             'Ten001' => 2,
             'Sal001' => 3,
