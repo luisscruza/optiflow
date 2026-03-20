@@ -220,13 +220,34 @@ final class ImportWorkflow extends Command
         $tabla = Mastertable::query()
             ->where('alias', 'laboratorios')
             ->first();
-
-            if (! $tabla) {
+    if (! $tabla) {
                 dd(tenant()->id);
             }
 
+    $tablaCristal = Mastertable::query()
+                ->where('alias', 'cristales_a_vender')
+                ->first();
 
-        $laboratorio = $tabla->items()
+    $cristal = $tablaCristal->items()
+                ->where('name', $row['CRISTAL'] ?? '')
+                ->first();
+
+                 if (! $tablaCristal) {
+                dd(tenant()->id);
+            }
+
+    if (! $cristal) {
+        $cristal = MastertableItem::query()
+            ->create([
+                'mastertable_id' => $tablaCristal->id,
+                'name' => $row['CRISTAL'] ?? '',
+            ]);
+
+        $this->line("Creado cristal faltante: {$row['CRISTAL']}");
+    }
+
+
+    $laboratorio = $tabla->items()
             ->where('name', $row['Laboratorio'] ?? '')
             ->first();
 
@@ -242,6 +263,7 @@ final class ImportWorkflow extends Command
 
         $metadata = [
             'laboratorio' => (string) $laboratorio->id,
+            'cristal_a_realizar' => (string) $cristal->id,
         ];
 
         if (! $stage) {
