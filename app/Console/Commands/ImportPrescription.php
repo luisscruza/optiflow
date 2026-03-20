@@ -26,12 +26,18 @@ final class ImportPrescription extends Command
 {
     use HasATenantsOption, TenantAwareCommand;
 
+    private const IMPORT_RESULT_IMPORTED = 'imported';
+
+    private const IMPORT_RESULT_MISSING_WORKSPACE = 'missing_workspace';
+
+    private const IMPORT_RESULT_MISSING_CONTACT = 'missing_contact';
+
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'import:prescriptions {file : The CSV file path to import} {--limit=1000000 : Number of prescriptions to import} {--offset=0 : Number of prescriptions to skip before importing}';
+    protected $signature = 'import:prescriptions {file : The CSV file path to import} {--limit=1000000 : Number of prescriptions to import} {--offset=0 : Number of prescriptions to skip before importing} {--debug : Show import diagnostics}';
 
     /**
      * The console command description.
@@ -48,6 +54,7 @@ final class ImportPrescription extends Command
         $filePath = $this->argument('file');
         $limit = (int) $this->option('limit');
         $offset = (int) $this->option('offset');
+        $debug = (bool) $this->option('debug');
 
         if (! file_exists($filePath)) {
             $this->error("File not found: {$filePath}");
@@ -59,14 +66,28 @@ final class ImportPrescription extends Command
         $this->info("Limite: {$limit} recetas");
         $this->info("Saltando: {$offset} recetas");
 
-        DB::table('prescriptions')->delete();
-
         try {
             $csv = Reader::createFromPath($filePath, 'r');
-            $csv->setDelimiter(';');
+            $delimiter = $this->detectDelimiter($filePath);
+            $csv->setDelimiter($delimiter);
             $csv->setHeaderOffset(0);
 
             $records = iterator_to_array($csv->getRecords());
+
+            DB::table('prescriptions')->whereNotNull('legacy_prescription_id')->delete();
+
+            if ($debug) {
+                $this->warn('Debug de importacion habilitado.');
+                $this->line('Delimitador detectado: '.$this->describeDelimiter($delimiter));
+
+                if ($records !== []) {
+                    $firstRecord = $this->cleanUtf8Record($records[array_key_first($records)]);
+
+                    $this->line('Columnas detectadas: '.implode(', ', array_slice(array_keys($firstRecord), 0, 8)));
+                    $this->line('Total columnas detectadas: '.count($firstRecord));
+                }
+            }
+
             $this->info('Encontradas totales en el archivo CSV: '.count($records));
 
             $records = array_slice($records, $offset, $limit);
@@ -85,17 +106,22 @@ final class ImportPrescription extends Command
             $imported = 0;
             $skipped = 0;
             $errors = [];
+            $skipReasons = [];
 
             foreach ($records as $index => $record) {
                 try {
                     $cleanRecord = $this->cleanUtf8Record($record);
-                    if ($this->importPrescriptionRow($cleanRecord, $createdBy)) {
+                    $result = $this->importPrescriptionRow($cleanRecord, $createdBy);
+
+                    if ($result === self::IMPORT_RESULT_IMPORTED) {
                         $imported++;
                     } else {
                         $skipped++;
+                        $skipReasons[$result] = ($skipReasons[$result] ?? 0) + 1;
                     }
                 } catch (Exception $e) {
                     $skipped++;
+                    $skipReasons['exception'] = ($skipReasons['exception'] ?? 0) + 1;
                     $errors[] = 'Row '.($offset + $index + 1).': '.$e->getMessage();
                 }
 
@@ -108,6 +134,15 @@ final class ImportPrescription extends Command
             $this->info('Importacion completada.');
             $this->info("Importadas: {$imported}");
             $this->info("Omitidas: {$skipped}");
+
+            if ($debug && $skipReasons !== []) {
+                $this->newLine();
+                $this->warn('Resumen de omisiones:');
+
+                foreach ($skipReasons as $reason => $count) {
+                    $this->line('- '.$this->describeSkipReason($reason).": {$count}");
+                }
+            }
 
             if ($errors !== []) {
                 $this->newLine();
@@ -132,20 +167,20 @@ final class ImportPrescription extends Command
     /**
      * @param  array<string, string>  $row
      */
-    private function importPrescriptionRow(array $row, User $createdBy): bool
+    private function importPrescriptionRow(array $row, User $createdBy): string
     {
         $workspaceCode = $this->cleanUtf8String(mb_trim($row['CODIGO_SUCURSAL'] ?? ''));
         $workspaceName = $this->cleanUtf8String(mb_trim($row['Sucursal'] ?? ''));
 
         if ($workspaceCode === '' && $workspaceName === '') {
-            return false;
+            return self::IMPORT_RESULT_MISSING_WORKSPACE;
         }
 
         $workspace = $this->resolveWorkspace($workspaceCode, $workspaceName, $createdBy);
 
         $contactName = $this->cleanUtf8String(mb_trim($row['Cliente'] ?? ''));
         if ($contactName === '') {
-            return false;
+            return self::IMPORT_RESULT_MISSING_CONTACT;
         }
 
         $contactNameKey = $this->normalizeNameKey($contactName);
@@ -180,6 +215,7 @@ final class ImportPrescription extends Command
         $updatedAt = $this->parseDateTime($row['updated_at'] ?? '');
 
         $prescriptionData = [
+            'legacy_prescription_id' => $row['id'] ?? null,
             'workspace_id' => $workspace->id,
             'patient_id' => $contact->id,
             'created_by' => $createdBy->id,
@@ -223,7 +259,52 @@ final class ImportPrescription extends Command
         $this->attachMastertableItems($prescription, 'historia_ocular_familiar', $row['historia_ocular'] ?? '');
         $this->attachMastertableItems($prescription, 'canales_de_referimiento', $row['Canal'] ?? '');
 
-        return true;
+        return self::IMPORT_RESULT_IMPORTED;
+    }
+
+    private function detectDelimiter(string $filePath): string
+    {
+        $handle = fopen($filePath, 'r');
+
+        if (! is_resource($handle)) {
+            return ',';
+        }
+
+        $header = (string) fgets($handle);
+        fclose($handle);
+
+        $delimiters = [',', ';', "\t", '|'];
+        $detectedDelimiter = ',';
+        $highestCount = -1;
+
+        foreach ($delimiters as $delimiter) {
+            $count = mb_substr_count($header, $delimiter);
+
+            if ($count > $highestCount) {
+                $highestCount = $count;
+                $detectedDelimiter = $delimiter;
+            }
+        }
+
+        return $detectedDelimiter;
+    }
+
+    private function describeDelimiter(string $delimiter): string
+    {
+        return match ($delimiter) {
+            "\t" => 'tab',
+            default => $delimiter,
+        };
+    }
+
+    private function describeSkipReason(string $reason): string
+    {
+        return match ($reason) {
+            self::IMPORT_RESULT_MISSING_WORKSPACE => 'sin sucursal o codigo de sucursal',
+            self::IMPORT_RESULT_MISSING_CONTACT => 'sin nombre de cliente',
+            'exception' => 'error durante la importacion',
+            default => $reason,
+        };
     }
 
     private function resolveOptometrist(string $value): ?Contact

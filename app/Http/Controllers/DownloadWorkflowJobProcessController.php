@@ -33,9 +33,6 @@ final class DownloadWorkflowJobProcessController
             'prescription.lentesRecomendados',
         ]);
 
-
-
-
         $metadatas = $job->metadata;
 
         $fields = [];

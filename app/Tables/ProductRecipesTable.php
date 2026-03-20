@@ -40,7 +40,7 @@ final class ProductRecipesTable extends Table
 
             ActionColumn::make()
                 ->actions([
-                     Action::make('print', 'Imprimir PDF')
+                    Action::make('print', 'Imprimir PDF')
                         ->inline()
                         ->tooltip('Imprimir PDF')
                         ->icon('printer')
