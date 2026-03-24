@@ -17,6 +17,12 @@ final class DownloadInvoicePdfController
     {
         $result = $action->handle($invoice);
 
+        activity()
+            ->performedOn($invoice)
+            ->causedBy(auth()->user())
+            ->withProperties(['invoice_id' => $invoice->id])
+            ->log('Descargó la factura en PDF');
+
         return response()->download($result['path'], $result['filename'])->deleteFileAfterSend(true);
     }
 }

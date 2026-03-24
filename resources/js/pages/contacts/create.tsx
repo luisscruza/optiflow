@@ -1,4 +1,4 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { Building2, DollarSign, Plus, Save, Trash2, Users } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { Value } from 'react-phone-number-input';
@@ -15,7 +15,7 @@ import { ServerSearchableSelect, type ServerSearchableSelectOption } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import countriesData from '@/data/countries.json';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type ContactType, type IdentificationType } from '@/types';
+import { type BreadcrumbItem, type ContactType, type IdentificationType, type SharedData } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -45,6 +45,7 @@ interface Props {
 interface ContactFormData {
     contact_type: ContactType | undefined;
     name: string;
+    lead_source_id: string;
     status: 'active' | 'inactive';
     gender: string;
     birth_date: string;
@@ -78,6 +79,7 @@ export default function CreateContact({ contact_types, identification_types, rel
     const [relationshipLabels, setRelationshipLabels] = useState<Record<string, string>>({});
 
     const countries = Object.keys(countriesData);
+    const { leadSourceOptions = [] } = usePage<SharedData>().props;
 
     const getProvincesForCountry = (country: string) => {
         return countriesData[country as keyof typeof countriesData] || [];
@@ -86,6 +88,7 @@ export default function CreateContact({ contact_types, identification_types, rel
     const { data, setData, post, processing, errors } = useForm<ContactFormData>({
         contact_type: undefined,
         name: '',
+        lead_source_id: '',
         status: 'active',
         gender: '',
         birth_date: '',
@@ -287,6 +290,23 @@ export default function CreateContact({ contact_types, identification_types, rel
                                     </SelectContent>
                                 </Select>
                                 <InputError message={errors.status} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="lead_source_id">Procedencia</Label>
+                                <Select value={data.lead_source_id} onValueChange={(value) => setData('lead_source_id', value)}>
+                                    <SelectTrigger id="lead_source_id">
+                                        <SelectValue placeholder="Selecciona la procedencia" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {leadSourceOptions.map((option) => (
+                                            <SelectItem key={option.value} value={option.value}>
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.lead_source_id} />
                             </div>
 
                             <div className="grid gap-2">

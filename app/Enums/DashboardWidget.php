@@ -10,6 +10,7 @@ enum DashboardWidget: string
     case SalesTax = 'sales-tax';
     case ProductsSold = 'products-sold';
     case CustomersWithSales = 'customers-with-sales';
+    case ContactsByLeadSource = 'contacts-by-lead-source';
     case PrescriptionsCreated = 'prescriptions-created';
     case WorkflowsSummary = 'workflows-summary';
     case TotalSales = 'total-sales';
@@ -60,6 +61,7 @@ enum DashboardWidget: string
             self::SalesTax => 'Impuestos en venta',
             self::ProductsSold => 'Productos vendidos',
             self::CustomersWithSales => 'Clientes con ventas',
+            self::ContactsByLeadSource => 'Contactos',
             self::PrescriptionsCreated => 'Recetas creadas',
             self::WorkflowsSummary => 'Resumen de procesos',
             self::TotalSales => 'Total de ventas',
@@ -76,6 +78,7 @@ enum DashboardWidget: string
             self::SalesTax => Permission::ViewDashboardSalesStats,
             self::ProductsSold => Permission::ViewDashboardProductsStats,
             self::CustomersWithSales => Permission::ViewDashboardCustomersStats,
+            self::ContactsByLeadSource => Permission::ViewDashboardCustomersStats,
             self::PrescriptionsCreated => Permission::ViewDashboardPrescriptionsStats,
             self::WorkflowsSummary => Permission::ViewDashboardWorkflowsStats,
             self::TotalSales => Permission::ViewDashboardSalesStats,
@@ -94,8 +97,9 @@ enum DashboardWidget: string
             self::SalesTax => ['x' => 5, 'y' => 0, 'w' => 3, 'h' => 2, 'minW' => 2, 'minH' => 1],
             self::ProductsSold => ['x' => 8, 'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 1],
             self::CustomersWithSales => ['x' => 10, 'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 1],
-            self::PrescriptionsCreated => ['x' => 0, 'y' => 3, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 1],
-            self::WorkflowsSummary => ['x' => 2, 'y' => 3, 'w' => 6, 'h' => 3, 'minW' => 4, 'minH' => 2],
+            self::ContactsByLeadSource => ['x' => 0, 'y' => 3, 'w' => 4, 'h' => 4, 'minW' => 3, 'minH' => 3],
+            self::PrescriptionsCreated => ['x' => 4, 'y' => 3, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 1],
+            self::WorkflowsSummary => ['x' => 6, 'y' => 3, 'w' => 6, 'h' => 3, 'minW' => 4, 'minH' => 2],
             self::TotalSales => ['x' => 0, 'y' => 6, 'w' => 12, 'h' => 4, 'minW' => 6, 'minH' => 3],
         };
     }

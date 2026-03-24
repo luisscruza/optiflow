@@ -86,6 +86,7 @@ final class ContactController
         $contact->load([
             'primaryAddress',
             'addresses',
+            'leadSource',
             'comments.commentator',
             'comments.comments.commentator',
             'comments.comments.comments.commentator',

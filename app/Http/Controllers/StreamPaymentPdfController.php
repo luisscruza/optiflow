@@ -27,6 +27,12 @@ class StreamPaymentPdfController
             'withholdings',
         ]);
 
+        activity()
+            ->performedOn($payment)
+            ->causedBy(auth()->user())
+            ->withProperties(['payment_id' => $payment->id])
+            ->log('Descargó el recibo de pago en PDF');
+
         $workspace = Context::get('workspace');
 
         $pdf = Pdf::loadView('payments.pdf', [

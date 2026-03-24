@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\DashboardWidget;
+use App\Models\Contact;
 use App\Models\Invoice;
+use App\Models\Mastertable;
+use App\Models\MastertableItem;
 use App\Models\Payment;
 use App\Models\Prescription;
 use App\Models\Workflow;
@@ -48,6 +51,7 @@ final class DashboardController
             'salesTax' => $this->getSalesTax($startDate, $endDate, $previousStartDate, $previousEndDate),
             'productsSold' => $this->getProductsSold($startDate, $endDate, $previousStartDate, $previousEndDate),
             'customersWithSales' => $this->getCustomersWithSales($startDate, $endDate, $previousStartDate, $previousEndDate),
+            'contactsByLeadSource' => $this->getContactsByLeadSource($startDate, $endDate),
             'prescriptionsCreated' => $this->getPrescriptionsCreated($startDate, $endDate, $previousStartDate, $previousEndDate),
             'workflowsSummary' => $this->getWorkflowsSummary(),
             'totalSales' => $this->getTotalSales($startDate, $endDate, $previousStartDate, $previousEndDate),
@@ -277,6 +281,52 @@ final class DashboardController
             'count' => $currentCount,
             'previous_count' => $previousCount,
             'change_percentage' => $this->calculatePercentageChange((float) $previousCount, (float) $currentCount),
+        ];
+    }
+
+    /**
+     * @return array{total: int, sources: array<int, array{id: int|string, label: string, count: int}>}
+     */
+    private function getContactsByLeadSource(Carbon $startDate, Carbon $endDate): array
+    {
+        $leadSourcesMastertable = Mastertable::query()
+            ->with(['items' => fn ($query) => $query->orderBy('id')])
+            ->where('alias', Contact::LEAD_SOURCES_MASTERTABLE_ALIAS)
+            ->first();
+
+        $counts = Contact::query()
+            ->selectRaw('lead_source_id, COUNT(*) as aggregate')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('lead_source_id')
+            ->get();
+
+        $sources = collect($leadSourcesMastertable?->items ?? [])
+            ->map(function (MastertableItem $item) use ($counts): array {
+                $count = (int) ($counts->firstWhere('lead_source_id', $item->id)?->aggregate ?? 0);
+
+                return [
+                    'id' => $item->id,
+                    'label' => $item->name,
+                    'count' => $count,
+                ];
+            });
+
+        $withoutSourceCount = (int) ($counts->firstWhere('lead_source_id', null)?->aggregate ?? 0);
+
+        if ($withoutSourceCount > 0) {
+            $sources->push([
+                'id' => 'unassigned',
+                'label' => 'Sin procedencia',
+                'count' => $withoutSourceCount,
+            ]);
+        }
+
+        return [
+            'total' => (int) $counts->sum('aggregate'),
+            'sources' => $sources
+                ->filter(fn (array $source): bool => $source['count'] > 0)
+                ->values()
+                ->all(),
         ];
     }
 

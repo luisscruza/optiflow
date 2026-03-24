@@ -53,6 +53,7 @@ export type WorkspacePermission =
     | 'edit mastertables'
     | 'delete mastertables'
     | 'view all locations'
+    | 'view history logs'
     | 'view dashboard accounts receivable'
     | 'view dashboard sales stats'
     | 'view dashboard products stats'

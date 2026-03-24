@@ -654,12 +654,14 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                     />
 
                     {/* Activity Log Timeline */}
+                    { can('view history logs') && (
                     <ActivityLogTimeline
                         activities={activities}
                         fieldLabels={activityFieldLabels}
                         title="Historial de cambios"
                         description="Registro detallado de todas las modificaciones realizadas a esta factura"
                     />
+                    )}
                 </div>
             </div>
 

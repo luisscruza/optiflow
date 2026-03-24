@@ -12,7 +12,14 @@ import 'gridstack/dist/gridstack.min.css';
 import { FileText, LayoutGrid, Package, Users } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { AccountsReceivableWidget, CountStatWidget, SalesTaxWidget, TotalSalesWidget, WorkflowsSummaryWidget } from './widgets';
+import {
+    AccountsReceivableWidget,
+    ContactsByLeadSourceWidget,
+    CountStatWidget,
+    SalesTaxWidget,
+    TotalSalesWidget,
+    WorkflowsSummaryWidget,
+} from './widgets';
 
 type DateRangePreset = 'current_month' | 'last_month' | 'last_3_months' | 'last_6_months';
 
@@ -41,6 +48,15 @@ interface CountStat {
     count: number;
     previous_count: number;
     change_percentage: number;
+}
+
+interface ContactsByLeadSource {
+    total: number;
+    sources: Array<{
+        id: number | string;
+        label: string;
+        count: number;
+    }>;
 }
 
 interface WidgetLayout {
@@ -90,6 +106,7 @@ interface DashboardProps {
     salesTax: SalesTax;
     productsSold: CountStat;
     customersWithSales: CountStat;
+    contactsByLeadSource: ContactsByLeadSource;
     prescriptionsCreated: CountStat;
     workflowsSummary: WorkflowSummary[];
     totalSales: TotalSales;
@@ -117,6 +134,7 @@ const DEFAULT_WIDGET_LAYOUTS: Record<string, { w: number; h: number; minW: numbe
     'sales-tax': { w: 3, h: 2, minW: 2, minH: 1 },
     'products-sold': { w: 2, h: 2, minW: 2, minH: 1 },
     'customers-with-sales': { w: 2, h: 2, minW: 2, minH: 1 },
+    'contacts-by-lead-source': { w: 4, h: 4, minW: 3, minH: 3 },
     'prescriptions-created': { w: 2, h: 2, minW: 2, minH: 1 },
     'workflows-summary': { w: 6, h: 3, minW: 4, minH: 2 },
     'total-sales': { w: 12, h: 4, minW: 6, minH: 3 },
@@ -128,6 +146,7 @@ export default function DashboardIndex({
     salesTax,
     productsSold,
     customersWithSales,
+    contactsByLeadSource,
     prescriptionsCreated,
     workflowsSummary,
     totalSales,
@@ -340,6 +359,8 @@ export default function DashboardIndex({
                 return (
                     <CountStatWidget title="Recetas creadas" data={prescriptionsCreated} icon={FileText} onRemove={() => removeWidget(widgetId)} />
                 );
+            case 'contacts-by-lead-source':
+                return <ContactsByLeadSourceWidget data={contactsByLeadSource} onRemove={() => removeWidget(widgetId)} />;
             case 'workflows-summary':
                 return <WorkflowsSummaryWidget data={workflowsSummary} onRemove={() => removeWidget(widgetId)} />;
             case 'total-sales':
@@ -379,7 +400,7 @@ export default function DashboardIndex({
                 }
             `}</style>
 
-            <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8 bg-gray-50 min-h-[100vh]">
+            <div className="min-h-[100vh] max-w-7xl bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
                 {/* Header with Range Filter */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>

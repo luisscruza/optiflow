@@ -1,4 +1,4 @@
-import { Form } from '@inertiajs/react';
+import { Form, usePage } from '@inertiajs/react';
 import { ArrowRight, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { Value } from 'react-phone-number-input';
@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import PhoneInput from '@/components/ui/phone-input';
-import { type ContactType, type IdentificationType } from '@/types';
+import { type ContactType, type IdentificationType, type SharedData } from '@/types';
 
 interface Props {
     open: boolean;
@@ -49,10 +49,13 @@ export default function QuickContactModal({
     const [contactName, setContactName] = useState('');
     const [phonePrimary, setPhonePrimary] = useState<Value | undefined>();
     const [phoneSecondary, setPhoneSecondary] = useState<Value | undefined>();
+    const [selectedLeadSourceId, setSelectedLeadSourceId] = useState('');
     const [isSearchingRNC, setIsSearchingRNC] = useState(false);
     const [rncSearchError, setRncSearchError] = useState<string | null>(null);
     const [duplicateWarnings, setDuplicateWarnings] = useState<DuplicateWarnings>({});
     const [duplicatesAcknowledged, setDuplicatesAcknowledged] = useState(false);
+
+    const { leadSourceOptions = [] } = usePage<SharedData>().props;
 
     const identificationTypeRef = useRef<HTMLSelectElement>(null);
     const identificationNumberRef = useRef<HTMLInputElement>(null);
@@ -67,6 +70,7 @@ export default function QuickContactModal({
             setContactName('');
             setPhonePrimary(undefined);
             setPhoneSecondary(undefined);
+            setSelectedLeadSourceId('');
             setIsSearchingRNC(false);
             setRncSearchError(null);
             setDuplicateWarnings({});
@@ -279,6 +283,25 @@ export default function QuickContactModal({
                                     onChange={(e) => setContactName(e.target.value)}
                                 />
                                 <InputError message={errors.name} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="quick_lead_source_id">Procedencia</Label>
+                                <select
+                                    id="quick_lead_source_id"
+                                    name="lead_source_id"
+                                    value={selectedLeadSourceId}
+                                    onChange={(e) => setSelectedLeadSourceId(e.target.value)}
+                                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="">Seleccionar procedencia</option>
+                                    {leadSourceOptions.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <InputError message={errors.lead_source_id} />
                             </div>
 
                             {/* Gender & Birth Date */}

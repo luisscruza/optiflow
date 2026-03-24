@@ -6,6 +6,7 @@ namespace App\Tables;
 
 use App\Enums\ContactType;
 use App\Models\Contact;
+use App\Models\Mastertable;
 use App\Tables\Actions\Action;
 use App\Tables\Actions\DeleteAction;
 use App\Tables\Actions\EditAction;
@@ -20,11 +21,11 @@ final class ContactsTable extends Table
 {
     protected string $model = Contact::class;
 
-    protected ?string $defaultSort = 'name';
+    protected ?string $defaultSort = 'id';
 
-    protected string $defaultSortDirection = 'asc';
+    protected string $defaultSortDirection = 'desc';
 
-    protected array $with = ['primaryAddress'];
+    protected array $with = ['primaryAddress', 'leadSource'];
 
     protected ?string $rowHref = '/contacts/{id}';
 
@@ -85,6 +86,26 @@ final class ContactsTable extends Table
             SelectFilter::make('contact_type', 'Tipo')
                 ->options(ContactType::class)
                 ->default('all')
+                ->inline(),
+
+            SelectFilter::make('lead_source_id', 'Procedencia')
+                ->optionsUsing(function (): array {
+                    $mastertable = Mastertable::query()
+                        ->with(['items' => fn ($query) => $query->orderBy('id')])
+                        ->where('alias', Contact::LEAD_SOURCES_MASTERTABLE_ALIAS)
+                        ->first();
+
+                    if (! $mastertable) {
+                        return [];
+                    }
+
+                    return $mastertable->items
+                        ->mapWithKeys(fn ($item): array => [(string) $item->id => $item->name])
+                        ->all();
+                })
+                ->query(function ($query, $value): void {
+                    $query->where('lead_source_id', $value);
+                })
                 ->inline(),
         ];
     }

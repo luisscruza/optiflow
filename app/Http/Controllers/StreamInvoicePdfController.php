@@ -7,7 +7,6 @@ namespace App\Http\Controllers;
 use App\Models\CompanyDetail;
 use App\Models\Invoice;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class StreamInvoicePdfController
@@ -18,6 +17,12 @@ class StreamInvoicePdfController
     public function __invoke(Invoice $invoice): Response
     {
         $invoice->load(['contact.primaryAddress', 'documentSubtype', 'items.product', 'items.tax', 'items.taxes', 'payments', 'workspace']);
+
+        activity()
+            ->performedOn($invoice)
+            ->causedBy(auth()->user())
+            ->withProperties(['invoice_id' => $invoice->id])
+            ->log('Descargó la factura en PDF');
 
         $pdf = Pdf::loadView('invoices.pdf', [
             'invoice' => $invoice,

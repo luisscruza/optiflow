@@ -59,6 +59,12 @@ final class SelectFilter extends Filter
             return;
         }
 
+        if ($this->queryCallback) {
+            ($this->queryCallback)($query, $value);
+
+            return;
+        }
+
         $query->where($this->name, $value);
     }
 

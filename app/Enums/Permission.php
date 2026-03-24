@@ -122,6 +122,7 @@ enum Permission: string
             self::DeleteWorkflowStages->value,
             self::ViewAllLocations->value,
             self::PaymentsView->value,
+            self::ViewHistoryLogs->value,
         ];
     }
 
@@ -210,6 +211,7 @@ enum Permission: string
             self::MastertablesEdit => 'Editar tablas maestras',
             self::MastertablesDelete => 'Eliminar tablas maestras',
 
+            self::ViewHistoryLogs => 'Ver historial de cambios',
         };
     }
 

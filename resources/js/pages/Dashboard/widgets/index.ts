@@ -1,4 +1,5 @@
 export { AccountsReceivableWidget } from './accounts-receivable-widget';
+export { ContactsByLeadSourceWidget } from './contacts-by-lead-source-widget';
 export { CountStatWidget } from './count-stat-widget';
 export { SalesTaxWidget } from './sales-tax-widget';
 export { TotalSalesWidget } from './total-sales-widget';

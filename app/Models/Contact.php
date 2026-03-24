@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -59,6 +60,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string|null $phone_secondary
  * @property string|null $mobile
  * @property string|null $fax
+ * @property int|null $lead_source_id
  * @property string|null $identification_type
  * @property string|null $identification_number
  * @property string $status
@@ -70,6 +72,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property-read Address|null $primaryAddress
  * @property-read \Illuminate\Database\Eloquent\Collection<int, ProductStock> $suppliedStocks
  * @property-read int|null $supplied_stocks_count
+ * @property-read MastertableItem|null $leadSource
  *
  * @method static Builder<static>|Contact whereCreditLimit($value)
  * @method static Builder<static>|Contact whereFax($value)
@@ -93,6 +96,8 @@ final class Contact extends Model implements Commentable
     /** @use HasFactory<\Database\Factories\ContactFactory> */
     use HasComments, HasFactory;
 
+    public const LEAD_SOURCES_MASTERTABLE_ALIAS = 'lead_sources';
+
     /**
      * The accessors to append to the model's array form.
      *
@@ -111,6 +116,16 @@ final class Contact extends Model implements Commentable
     public function addresses(): HasMany
     {
         return $this->hasMany(Address::class);
+    }
+
+    /**
+     * Get the lead source selected for this contact.
+     *
+     * @return BelongsTo<MastertableItem, $this>
+     */
+    public function leadSource(): BelongsTo
+    {
+        return $this->belongsTo(MastertableItem::class, 'lead_source_id');
     }
 
     /**

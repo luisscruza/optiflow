@@ -6,7 +6,10 @@ namespace App\Http\Middleware;
 
 use App\Facades\Impersonator;
 use App\Models\CompanyDetail;
+use App\Models\Contact;
 use App\Models\Currency;
+use App\Models\Mastertable;
+use App\Models\MastertableItem;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -65,6 +68,7 @@ final class HandleInertiaRequests extends Middleware
             'defaultCurrency' => fn (): ?\App\Models\Currency => Currency::query()->default()->first(),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'newlyCreatedContact' => fn () => $request->session()->get('newly_created_contact') ?: null,
+            'leadSourceOptions' => fn (): array => $this->getLeadSourceOptions(),
             'newlyCreatedProduct' => fn () => $request->session()->get('newly_created_product') ?: null,
             'workspaceUsers' => fn (): array => $this->getWorkspaceUsers($request),
             'unreadNotifications' => fn () => $request->user()?->unreadNotifications()->count() ?? 0,
@@ -115,5 +119,28 @@ final class HandleInertiaRequests extends Middleware
             ->orderBy('name')
             ->get()
             ->toArray();
+    }
+
+    /**
+     * @return array<int, array{value:string, label:string}>
+     */
+    private function getLeadSourceOptions(): array
+    {
+        $mastertable = Mastertable::query()
+            ->with(['items' => fn ($query) => $query->orderBy('id')])
+            ->where('alias', Contact::LEAD_SOURCES_MASTERTABLE_ALIAS)
+            ->first();
+
+        if (! $mastertable) {
+            return [];
+        }
+
+        return $mastertable->items
+            ->map(fn (MastertableItem $item): array => [
+                'value' => (string) $item->id,
+                'label' => $item->name,
+            ])
+            ->values()
+            ->all();
     }
 }

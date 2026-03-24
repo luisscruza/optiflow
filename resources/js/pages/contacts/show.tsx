@@ -944,6 +944,12 @@ export default function ContactShow({
                                                     <span className="text-sm text-gray-600 dark:text-gray-400">Procesos</span>
                                                     <Badge variant="secondary">{stats.total_workflow_jobs}</Badge>
                                                 </div>
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <span className="text-sm text-gray-600 dark:text-gray-400">Procedencia</span>
+                                                    <Badge variant="outline" className="max-w-[180px] truncate">
+                                                        {contact.lead_source?.name || 'Sin procedencia'}
+                                                    </Badge>
+                                                </div>
                                                 <Separator className="my-2" />
                                                 <div className="space-y-1 text-xs text-gray-500">
                                                     <p>Creado: {formatDate(contact.created_at)}</p>

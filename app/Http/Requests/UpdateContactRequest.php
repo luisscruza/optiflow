@@ -6,6 +6,8 @@ namespace App\Http\Requests;
 
 use App\Enums\ContactType;
 use App\Enums\IdentificationType;
+use App\Models\Contact;
+use App\Models\Mastertable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -26,9 +28,20 @@ final class UpdateContactRequest extends FormRequest
      */
     public function rules(): array
     {
+        $leadSourcesMastertableId = Mastertable::query()
+            ->where('alias', Contact::LEAD_SOURCES_MASTERTABLE_ALIAS)
+            ->value('id');
+
         return [
             'name' => ['required', 'string', 'max:255'],
             'contact_type' => ['required', Rule::enum(ContactType::class)],
+            'lead_source_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('mastertable_items', 'id')->where(
+                    fn ($query) => $query->where('mastertable_id', $leadSourcesMastertableId ?? 0)
+                ),
+            ],
             'identification_type' => ['nullable', Rule::enum(IdentificationType::class)],
             'identification_number' => ['nullable', 'string', 'max:50'],
             'email' => ['nullable', 'email', 'max:255'],
@@ -63,6 +76,7 @@ final class UpdateContactRequest extends FormRequest
         return [
             'name.required' => 'El nombre es obligatorio.',
             'contact_type.required' => 'El tipo de contacto es obligatorio.',
+            'lead_source_id.exists' => 'La procedencia seleccionada no es válida.',
             'email.email' => 'El email debe tener un formato válido.',
             'credit_limit.numeric' => 'El límite de crédito debe ser un número.',
             'credit_limit.min' => 'El límite de crédito no puede ser negativo.',

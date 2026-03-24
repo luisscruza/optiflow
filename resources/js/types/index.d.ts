@@ -112,6 +112,7 @@ export interface SharedData {
         logo?: string | null;
     };
     defaultCurrency?: Currency | null;
+    leadSourceOptions?: Array<{ value: string; label: string }>;
     newlyCreatedContact?: Contact | null;
     workspaceUsers: User[];
     unreadNotifications: number;
@@ -412,6 +413,8 @@ export interface Contact {
     id: number;
     workspace_id: number;
     name: string;
+    lead_source_id?: number | null;
+    lead_source?: MastertableItem | null;
     identification_type?: string | null;
     identification_number?: string | null;
     email?: string | null;
@@ -465,6 +468,7 @@ export interface MastertableItem {
     id: number;
     mastertable_id: number;
     name: string;
+    alias?: string | null;
     description?: string | null;
     position?: number;
     is_active?: boolean;

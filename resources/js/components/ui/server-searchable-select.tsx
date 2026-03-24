@@ -97,7 +97,7 @@ function ServerSearchableSelect({
             role="combobox"
             aria-expanded={open}
             disabled={disabled}
-            className={cn("w-full justify-between", triggerClassName)}
+            className={cn("w-full justify-between max-w-96", triggerClassName)}
           >
             <span className={cn("truncate", labelClassName)}>
               {selectedOption ? selectedOption.label : selectedLabel ?? placeholder}

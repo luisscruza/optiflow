@@ -139,6 +139,24 @@ const createEmptyItem = (id: string): InvoiceItem => ({
     taxes: [],
 });
 
+const normalizePaymentAmountInput = (value: string): number | null => {
+    const normalizedValue = value.trim().replace(',', '.');
+
+    if (!normalizedValue) {
+        return 0;
+    }
+
+    if (!/^\d+(?:\.\d+)?$/.test(normalizedValue)) {
+        return null;
+    }
+
+    return Number(normalizedValue);
+};
+
+const roundCurrencyAmount = (value: number): number => {
+    return Math.round((value + Number.EPSILON) * 100) / 100;
+};
+
 export default function InvoiceForm({
     mode,
     invoiceId,
@@ -179,6 +197,7 @@ export default function InvoiceForm({
     const [productSearchQuery, setProductSearchQuery] = useState('');
     const [isSearchingProducts, setIsSearchingProducts] = useState(false);
     const productSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const [paymentAmountInput, setPaymentAmountInput] = useState(() => (data.payment_amount > 0 ? String(data.payment_amount) : ''));
 
     const { format: formatCurrency } = useCurrency();
 
@@ -222,6 +241,10 @@ export default function InvoiceForm({
             }
         };
     }, []);
+
+    useEffect(() => {
+        setPaymentAmountInput(data.payment_amount > 0 ? String(data.payment_amount) : '');
+    }, [data.payment_amount]);
 
     // Calculate totals
     const calculateTotals = (items: InvoiceItem[]) => {
@@ -499,6 +522,11 @@ export default function InvoiceForm({
     const isCreate = mode === 'create';
     const submitButtonText = isCreate ? 'Guardar factura' : 'Actualizar factura';
     const processingText = isCreate ? 'Guardando...' : 'Actualizando...';
+    const roundedPaymentAmount = roundCurrencyAmount(data.payment_amount);
+    const roundedTotal = roundCurrencyAmount(data.total);
+    const hasPendingBalance = roundedPaymentAmount > 0 && roundedPaymentAmount < roundedTotal;
+    const paymentAmountExceedsTotal = roundedPaymentAmount > roundedTotal;
+    const remainingBalance = roundCurrencyAmount(Math.max(0, roundedTotal - roundedPaymentAmount));
 
     return (
         <>
@@ -558,15 +586,15 @@ export default function InvoiceForm({
                         </div>
 
                         {/* Customer and Document Details */}
-                        <div className="grid grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
                             {/* Left Column - Customer Details */}
-                            <div className="space-y-6">
+                            <div className="min-w-0 space-y-6">
                                 <div className="space-y-3">
                                     <Label className="flex items-center gap-1 text-sm font-medium text-gray-900">
                                         Contacto
                                         <span className="text-red-500">*</span>
                                     </Label>
-                                    <div className="flex gap-2">
+                                    <div className="flex flex-col gap-2 sm:flex-row">
                                         <ServerSearchableSelect
                                             options={contactOptions}
                                             value={data.contact_id?.toString() || ''}
@@ -591,7 +619,7 @@ export default function InvoiceForm({
                                                     Crear nuevo contacto
                                                 </Button>
                                             }
-                                            className="flex-1"
+                                            className="min-w-0 flex-1"
                                             triggerClassName={`h-10 ${errors.contact_id ? 'border-red-300 ring-red-500/20' : 'border-gray-300'}`}
                                         />
                                         <Button
@@ -599,7 +627,7 @@ export default function InvoiceForm({
                                             variant="outline"
                                             size="sm"
                                             onClick={() => setShowContactModal(true)}
-                                            className="h-10 border-gray-300 px-3 text-primary hover:bg-primary/10"
+                                            className="h-10 shrink-0 border-gray-300 px-3 text-primary hover:bg-primary/10"
                                         >
                                             <Plus className="mr-1 h-4 w-4" />
                                             Nuevo
@@ -681,7 +709,7 @@ export default function InvoiceForm({
                             </div>
 
                             {/* Right Column - Invoice Details */}
-                            <div className="space-y-6">
+                            <div className="min-w-0 space-y-6">
                                 <div className="space-y-3">
                                     <Label className="flex items-center gap-1 text-sm font-medium text-gray-900">
                                         Fecha
@@ -1009,14 +1037,12 @@ export default function InvoiceForm({
                                                     <p className="text-xs font-medium tracking-wide text-yellow-700 uppercase">Total de la factura</p>
                                                     <p className="text-2xl font-bold text-yellow-600">{formatCurrency(data.total)}</p>
                                                 </div>
-                                                {data.payment_amount > 0 && data.payment_amount < data.total && (
+                                                {hasPendingBalance && (
                                                     <div className="text-right">
                                                         <p className="text-xs font-medium tracking-wide text-gray-600 uppercase">
                                                             Pendiente después del pago
                                                         </p>
-                                                        <p className="text-lg font-bold text-gray-700">
-                                                            {formatCurrency(data.total - data.payment_amount)}
-                                                        </p>
+                                                        <p className="text-lg font-bold text-gray-700">{formatCurrency(remainingBalance)}</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -1078,7 +1104,10 @@ export default function InvoiceForm({
                                                         type="button"
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => setData('payment_amount', data.total)}
+                                                        onClick={() => {
+                                                            setPaymentAmountInput(String(data.total));
+                                                            setData('payment_amount', data.total);
+                                                        }}
                                                         className="h-7 border-yellow-300 px-3 py-1 text-xs text-yellow-700 hover:bg-yellow-50"
                                                     >
                                                         Monto completo
@@ -1087,8 +1116,21 @@ export default function InvoiceForm({
                                                 <div className="relative">
                                                     <Input
                                                         type="text"
-                                                        value={data.payment_amount || ''}
-                                                        onChange={(e) => setData('payment_amount', e.target.value)}
+                                                        inputMode="decimal"
+                                                        value={paymentAmountInput}
+                                                        onChange={(e) => {
+                                                            setPaymentAmountInput(e.target.value);
+                                                        }}
+                                                        onBlur={() => {
+                                                            const parsedAmount = normalizePaymentAmountInput(paymentAmountInput);
+
+                                                            if (parsedAmount === null) {
+                                                                return;
+                                                            }
+
+                                                            setData('payment_amount', parsedAmount);
+                                                            setPaymentAmountInput(parsedAmount > 0 ? String(parsedAmount) : '');
+                                                        }}
                                                         placeholder="0.00"
                                                         className={`h-12 pl-14 text-lg font-semibold ${data.payment_amount > 0 ? 'border-yellow-300 bg-yellow-50/30 text-yellow-700' : 'border-gray-300'}`}
                                                     />
@@ -1096,7 +1138,7 @@ export default function InvoiceForm({
                                                         RD$
                                                     </span>
                                                 </div>
-                                                {data.payment_amount > data.total && (
+                                                {paymentAmountExceedsTotal && (
                                                     <p className="text-sm text-amber-600">⚠️ El monto excede el total de la factura</p>
                                                 )}
                                             </div>
