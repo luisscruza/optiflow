@@ -8,6 +8,9 @@ use App\Models\WorkflowJob;
 use App\Models\WorkflowStage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Spatie\Image\Enums\ImageDriver;
+use Spatie\Image\Image;
 
 final readonly class CreateWorkflowJobAction
 {
@@ -62,9 +65,23 @@ final readonly class CreateWorkflowJobAction
         $fileNames = [];
 
         foreach ($images as $image) {
-            $job->addMedia($image)
-                ->toMediaCollection('images');
-            $fileNames[] = $image->getClientOriginalName();
+
+            $mimeType = $image->getMimeType();
+
+            $originalPath = $image->store('temp', 'public');
+
+            if (Str::startsWith($mimeType, 'image/')) {
+                Image::useImageDriver(ImageDriver::Gd)->loadFile(storage_path('app/public/' . $originalPath))
+                    ->width(500)
+                    ->quality(60)
+                    ->optimize()
+                    ->format('webp')
+                    ->save(storage_path('app/public/' . $originalPath));
+
+                $fileNames[] = $job->addMedia(storage_path('app/public/' . $originalPath))
+                    ->usingFileName($job->id . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension())
+                    ->toMediaCollection('images');
+            }
         }
 
         if (! empty($fileNames)) {

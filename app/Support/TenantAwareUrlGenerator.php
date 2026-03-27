@@ -10,6 +10,12 @@ final class TenantAwareUrlGenerator extends DefaultUrlGenerator
 {
     public function getUrl(): string
     {
+        if ($this->getDiskName() === 'r2') {
+            $url = $this->getDisk()->url($this->getPathRelativeToRoot());
+
+            return $this->versionUrl($url);
+        }
+
         $url = asset($this->getPathRelativeToRoot());
 
         $url = $this->versionUrl($url);

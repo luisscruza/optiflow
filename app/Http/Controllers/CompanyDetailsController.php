@@ -22,7 +22,6 @@ final class CompanyDetailsController
         $companyDetails = CompanyDetail::getAll();
 
         if (! empty($companyDetails['logo'])) {
-            // Use tenant_asset helper which points to TenantAssetsController
             $companyDetails['logo'] = tenant_asset($companyDetails['logo']);
         }
 
