@@ -9,6 +9,7 @@ enum ShareTemplateEntity: string
     case Invoice = 'invoice';
     case Quotation = 'quotation';
     case Prescription = 'prescription';
+    case Payment = 'payment';
 
     /**
      * @return array<string, string>
@@ -19,6 +20,7 @@ enum ShareTemplateEntity: string
             self::Invoice->value => self::Invoice->label(),
             self::Quotation->value => self::Quotation->label(),
             self::Prescription->value => self::Prescription->label(),
+            self::Payment->value => self::Payment->label(),
         ];
     }
 
@@ -28,6 +30,7 @@ enum ShareTemplateEntity: string
             self::Invoice => 'Facturas',
             self::Quotation => 'Cotizaciones',
             self::Prescription => 'Recetas',
+            self::Payment => 'Pagos',
         };
     }
 }

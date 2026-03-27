@@ -72,6 +72,7 @@ use App\Http\Controllers\SalesmanController;
 use App\Http\Controllers\SetDefaultDocumentSubtypeController;
 use App\Http\Controllers\SetWorkspacePreferredDocumentSubtypeController;
 use App\Http\Controllers\SharedInvoicePdfController;
+use App\Http\Controllers\SharedPaymentPdfController;
 use App\Http\Controllers\SharedPrescriptionPdfController;
 use App\Http\Controllers\SharedQuotationPdfController;
 use App\Http\Controllers\ShareTemplateController;
@@ -131,6 +132,7 @@ Route::middleware([
 
     Route::middleware(['signed'])->prefix('shared')->name('shared.')->group(function (): void {
         Route::get('invoices/{invoice}/pdf', SharedInvoicePdfController::class)->name('invoices.pdf');
+        Route::get('payments/{payment}/pdf', SharedPaymentPdfController::class)->name('payments.pdf');
         Route::get('quotations/{quotation}/pdf', SharedQuotationPdfController::class)->name('quotations.pdf');
         Route::get('prescriptions/{prescription}/pdf', SharedPrescriptionPdfController::class)->name('prescriptions.pdf');
     });

@@ -8,6 +8,7 @@ use App\Enums\ShareTemplateChannel;
 use App\Enums\ShareTemplateEntity;
 use App\Models\Contact;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\Prescription;
 use App\Models\Quotation;
 use App\Models\ShareTemplate;
@@ -96,10 +97,40 @@ final class BuildShareDataAction
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    public function forPayment(Payment $payment): array
+    {
+        $shareableLink = URL::temporarySignedRoute('shared.payments.pdf', now()->addDays(30), ['payment' => $payment]);
+        $contact = $payment->invoice?->contact ?? $payment->contact;
+
+        return $this->build(
+            entity: ShareTemplateEntity::Payment,
+            contact: $contact,
+            shareableLink: $shareableLink,
+            context: [
+                'shareable_link' => $shareableLink,
+                'contact' => $this->contactData($contact),
+                'workspace' => ['name' => $payment->invoice?->workspace?->name ?? ''],
+                'invoice' => [
+                    'document_number' => $payment->invoice?->document_number ?? '',
+                ],
+                'payment' => [
+                    'id' => $payment->id,
+                    'payment_number' => $payment->payment_number ?? '',
+                    'payment_date' => $this->formatDate($payment->payment_date),
+                    'amount' => $this->formatAmount($payment->amount),
+                    'payment_method' => $this->paymentMethodLabel($payment->payment_method->value),
+                ],
+            ],
+        );
+    }
+
+    /**
      * @param  array<string, mixed>  $context
      * @return array<string, mixed>
      */
-    private function build(ShareTemplateEntity $entity, Contact $contact, string $shareableLink, array $context): array
+    private function build(ShareTemplateEntity $entity, ?Contact $contact, string $shareableLink, array $context): array
     {
         $variableGroups = $this->getShareTemplateVariableGroupsAction->handle();
 
@@ -108,8 +139,8 @@ final class BuildShareDataAction
             'shareableLink' => $shareableLink,
             'variables' => $variableGroups[$entity->value] ?? [],
             'targets' => [
-                'email' => $contact->email,
-                'phone' => $contact->phone_primary,
+                'email' => $contact?->email,
+                'phone' => $contact?->phone_primary,
             ],
             'templates' => [
                 'email' => $this->renderTemplate($entity, ShareTemplateChannel::Email, $context),
@@ -146,18 +177,31 @@ final class BuildShareDataAction
     /**
      * @return array<string, string>
      */
-    private function contactData(Contact $contact): array
+    private function contactData(?Contact $contact): array
     {
         return [
-            'name' => $contact->name,
-            'email' => $contact->email ?? '',
-            'phone' => $contact->phone_primary ?? '',
+            'name' => $contact?->name ?? '',
+            'email' => $contact?->email ?? '',
+            'phone' => $contact?->phone_primary ?? '',
         ];
+    }
+
+    private function paymentMethodLabel(string $paymentMethod): string
+    {
+        return match ($paymentMethod) {
+            'cash' => 'Efectivo',
+            'check' => 'Cheque',
+            'credit_card' => 'Tarjeta de credito',
+            'debit_card' => 'Tarjeta de debito',
+            'bank_transfer', 'transfer' => 'Transferencia',
+            'mobile_payment' => 'Pago movil',
+            default => ucfirst(str_replace('_', ' ', $paymentMethod)),
+        };
     }
 
     private function formatAmount(int|float|string|null $amount): string
     {
-        return number_format((float) $amount, 2, '.', ',');
+        return number_format((float) $amount, 2, ',', '.');
     }
 
     private function formatDate(mixed $date): string

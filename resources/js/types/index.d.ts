@@ -449,7 +449,7 @@ export interface Contact {
     relationships?: Contact[];
 }
 
-export type ShareTemplateEntity = 'invoice' | 'quotation' | 'prescription';
+export type ShareTemplateEntity = 'invoice' | 'quotation' | 'prescription' | 'payment';
 export type ShareTemplateChannel = 'email' | 'whatsapp';
 
 export interface ShareTemplate {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\BuildShareDataAction;
 use App\Actions\CreatePaymentAction;
 use App\Actions\DeletePaymentAction;
 use App\Actions\UpdatePaymentAction;
@@ -113,7 +114,7 @@ final class PaymentController
     /**
      * Display the specified payment.
      */
-    public function show(Payment $payment, #[CurrentUser] User $user): Response
+    public function show(Payment $payment, #[CurrentUser] User $user, BuildShareDataAction $buildShareDataAction): Response
     {
         abort_unless($user->can(Permission::PaymentsView), 403);
 
@@ -122,6 +123,7 @@ final class PaymentController
             'currency',
             'invoice.contact',
             'invoice.documentSubtype',
+            'invoice.workspace',
             'contact',
             'lines.chartAccount',
             'lines.paymentConcept',
@@ -131,6 +133,7 @@ final class PaymentController
 
         return Inertia::render('payments/show', [
             'payment' => $payment,
+            'share' => $buildShareDataAction->forPayment($payment),
         ]);
     }
 

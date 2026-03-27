@@ -17,6 +17,7 @@ use App\Models\Workflow;
 use App\Models\WorkflowField;
 use App\Models\WorkflowStage;
 use App\Services\Automation\NodeTypes\NodeTypeRegistry;
+use App\Services\Automation\Support\AutomationContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -197,18 +198,47 @@ final class AutomationController
      */
     private function templateVariables(): array
     {
-        return [
-            ['label' => 'Contacto: Nombre', 'token' => '{{contact.name}}', 'description' => 'Nombre del cliente asociado al trabajo.'],
-            ['label' => 'Contacto: Número', 'token' => '{{contact.number}}', 'description' => 'Alias: mobile/phone/primary/secondary (el primero disponible).'],
-            ['label' => 'Contacto: Email', 'token' => '{{contact.email}}', 'description' => 'Correo del contacto.'],
-            ['label' => 'Factura: Número', 'token' => '{{invoice.number}}', 'description' => 'Alias de document_number.'],
-            ['label' => 'Factura: Total', 'token' => '{{invoice.total_amount}}', 'description' => 'Total de la factura.'],
-            ['label' => 'Trabajo: ID', 'token' => '{{job.id}}', 'description' => 'UUID del workflow job.'],
-            ['label' => 'Trabajo: Prioridad', 'token' => '{{job.priority}}', 'description' => 'Prioridad del trabajo.'],
-            ['label' => 'Trabajo: Fecha vencimiento', 'token' => '{{job.due_date}}', 'description' => 'ISO timestamp si existe.'],
-            ['label' => 'Etapa (entrada): Nombre', 'token' => '{{to_stage.name}}', 'description' => 'Nombre de la etapa a la que entró.'],
-            ['label' => 'Etapa (salida): Nombre', 'token' => '{{from_stage.name}}', 'description' => 'Nombre de la etapa anterior (si aplica).'],
-            ['label' => 'Actor: Nombre', 'token' => '{{actor.name}}', 'description' => 'Usuario que movió la tarea (si aplica).'],
-        ];
+
+        $templateTokens = app(AutomationContext::class)->toTemplateData();
+
+        $variables = [];
+
+        foreach ($templateTokens as $key => $value) {
+
+            if ($key === 'input') {
+                continue;
+            }
+
+            $variables[] = [
+                'label' => str_replace('_', ' ', ucfirst($key)),
+                'token' => '{{'.$key.'}}',
+                'description' => 'Valor de '.$key.' en el contexto de la automatización.',
+            ];
+
+            // If the value is an array, we can also provide tokens for its keys
+            if (is_array($value)) {
+                foreach ($value as $subKey => $subValue) {
+                    $variables[] = [
+                        'label' => str_replace('_', ' ', ucfirst($subKey)).' ('.$key.')',
+                        'token' => '{{'.$key.'.'.$subKey.'}}',
+                        'description' => 'Valor de '.$subKey.' dentro de '.$key.' en el contexto de la automatización.',
+                    ];
+
+                    // If the subValue is also an array, we can go one level deeper (e.g. for contact.address.street)
+                    if (is_array($subValue)) {
+                        foreach ($subValue as $subSubKey => $subSubValue) {
+                            $variables[] = [
+                                'label' => str_replace('_', ' ', ucfirst($subSubKey)).' ('.$subKey.' dentro de '.$key.')',
+                                'token' => '{{'.$key.'.'.$subKey.'.'.$subSubKey.'}}',
+                                'description' => 'Valor de '.$subSubKey.' dentro de '.$subKey.' dentro de '.$key.' en el contexto de la automatización.',
+                            ];
+                        }
+                    }
+                }
+            }
+
+        }
+
+        return $variables;
     }
 }

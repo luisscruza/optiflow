@@ -24,15 +24,16 @@ interface Props {
     bankAccounts: BankAccount[];
     paymentMethods: Record<string, string>;
     share: ShareData;
+    paymentShares: Record<string, ShareData>;
 }
 
-export default function ShowInvoice({ invoice, activities, activityFieldLabels, bankAccounts, paymentMethods, share }: Props) {
+export default function ShowInvoice({ invoice, activities, activityFieldLabels, bankAccounts, paymentMethods, share, paymentShares }: Props) {
     const { format: formatCurrency } = useCurrency();
     const { auth } = usePage<SharedData>().props;
     const { can } = usePermissions();
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
-    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [activeShareModal, setActiveShareModal] = useState<{ share: ShareData; title: string } | null>(null);
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -139,7 +140,7 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setIsShareModalOpen(true)}
+                            onClick={() => setActiveShareModal({ share, title: `Factura ${invoice.document_number}` })}
                             className="flex items-center justify-center gap-2 border border-gray-300 bg-gray-50 text-gray-800 hover:border-gray-300 hover:bg-gray-100"
                         >
                             <Share2 className="h-4 w-4" />
@@ -543,6 +544,22 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                                                 <Printer className="h-4 w-4" />
                                                             </a>
                                                         </Button>
+                                                        {paymentShares[payment.id] && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() =>
+                                                                    setActiveShareModal({
+                                                                        share: paymentShares[payment.id],
+                                                                        title: `Pago ${payment.payment_number || payment.id}`,
+                                                                    })
+                                                                }
+                                                                className="h-8 w-8 p-0"
+                                                                title="Compartir recibo"
+                                                            >
+                                                                <Share2 className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
                                                         {can('edit payments') && (
                                                             <Button
                                                                 variant="ghost"
@@ -691,7 +708,18 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                 payment={selectedPayment}
             />
 
-            <ShareModal open={isShareModalOpen} onOpenChange={setIsShareModalOpen} share={share} title={`Factura ${invoice.document_number}`} />
+            {activeShareModal && (
+                <ShareModal
+                    open={activeShareModal !== null}
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            setActiveShareModal(null);
+                        }
+                    }}
+                    share={activeShareModal.share}
+                    title={activeShareModal.title}
+                />
+            )}
         </AppLayout>
     );
 }

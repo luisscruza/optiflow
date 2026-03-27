@@ -35,6 +35,14 @@ final class GetShareTemplateVariableGroupsAction
                 ['label' => 'Receta: Fecha', 'token' => '{{prescription.created_at}}', 'description' => 'Fecha de creacion.'],
                 ['label' => 'Receta: Proximo control', 'token' => '{{prescription.next_control_date}}', 'description' => 'Fecha de proximo control visual.'],
             ],
+            ShareTemplateEntity::Payment->value => [
+                ...$this->baseVariables(),
+                ['label' => 'Pago: Numero', 'token' => '{{payment.payment_number}}', 'description' => 'Numero del recibo.'],
+                ['label' => 'Pago: Monto', 'token' => '{{payment.amount}}', 'description' => 'Monto total formateado.'],
+                ['label' => 'Pago: Fecha', 'token' => '{{payment.payment_date}}', 'description' => 'Fecha del pago.'],
+                ['label' => 'Pago: Metodo', 'token' => '{{payment.payment_method}}', 'description' => 'Metodo de pago legible.'],
+                ['label' => 'Factura relacionada', 'token' => '{{invoice.document_number}}', 'description' => 'Numero de factura asociada, si existe.'],
+            ],
         ];
     }
 

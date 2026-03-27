@@ -157,7 +157,7 @@ export const ActivityLogTimeline: React.FC<ActivityLogTimelineProps> = ({
                                     {/* Content */}
                                     <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                                            <span className="text-sm font-medium text-gray-900">{activity.causer?.name ?? 'Sistema'}</span>
+                                            <span className="text-sm font-medium text-gray-900">{activity.causer?.name ?? 'DESCONOCIDO'}</span>
                                             <span className={`text-sm ${getEventColor(activity.event)}`}>{activity.description}</span>
                                             <span className="flex items-center gap-0.5 text-xs text-gray-400">
                                                 <Clock className="h-3 w-3" />

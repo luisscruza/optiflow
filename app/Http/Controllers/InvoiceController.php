@@ -161,6 +161,9 @@ final class InvoiceController
             'items.taxes',
             'payments.bankAccount',
             'payments.currency',
+            'payments.contact',
+            'payments.invoice.contact',
+            'payments.invoice.workspace',
             'comments',
             'salesmen',
             'workspace',
@@ -212,6 +215,9 @@ final class InvoiceController
             'bankAccounts' => $bankAccounts,
             'paymentMethods' => $paymentMethods,
             'share' => $buildShareDataAction->forInvoice($invoice),
+            'paymentShares' => $invoice->payments
+                ->mapWithKeys(fn ($payment) => [$payment->id => $buildShareDataAction->forPayment($payment)])
+                ->all(),
         ]);
     }
 

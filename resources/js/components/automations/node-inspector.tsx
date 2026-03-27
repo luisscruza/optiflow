@@ -346,7 +346,7 @@ function WebhookConfig({
             <div className="rounded-md bg-muted/50 p-2">
                 <p className="mb-2 text-xs font-medium">Variables disponibles</p>
                 <div className="flex flex-wrap gap-1">
-                    {templateVariables.slice(0, 6).map((v) => (
+                    {templateVariables.map((v) => (
                         <span
                             key={v.token}
                             className="cursor-pointer rounded bg-background px-1.5 py-0.5 font-mono text-xs hover:bg-primary hover:text-primary-foreground"
@@ -487,7 +487,7 @@ function TelegramConfig({
             <div className="rounded-md bg-muted/50 p-2">
                 <p className="mb-2 text-xs font-medium">Variables disponibles</p>
                 <div className="flex flex-wrap gap-1">
-                    {templateVariables.slice(0, 8).map((v) => (
+                    {templateVariables.map((v) => (
                         <span
                             key={v.token}
                             className="cursor-pointer rounded bg-background px-1.5 py-0.5 font-mono text-xs hover:bg-primary hover:text-primary-foreground"
@@ -591,7 +591,7 @@ function ConditionConfig({
             <div className="rounded-md bg-muted/50 p-2">
                 <p className="mb-2 text-xs font-medium">Campos disponibles</p>
                 <div className="flex flex-wrap gap-1">
-                    {templateVariables.slice(0, 8).map((v) => (
+                    {templateVariables.map((v) => (
                         <span
                             key={v.token}
                             className="cursor-pointer rounded bg-background px-1.5 py-0.5 font-mono text-xs hover:bg-primary hover:text-primary-foreground"
@@ -865,7 +865,7 @@ function WhatsappConfig({
             <div className="rounded-md bg-muted/50 p-2">
                 <p className="mb-2 text-xs font-medium">Variables disponibles</p>
                 <div className="flex flex-wrap gap-1">
-                    {templateVariables.slice(0, 6).map((v) => (
+                    {templateVariables.map((v) => (
                         <span key={v.token} className="rounded bg-background px-1.5 py-0.5 font-mono text-xs" title={v.description}>
                             {v.token}
                         </span>

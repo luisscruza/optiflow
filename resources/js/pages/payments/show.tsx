@@ -1,6 +1,8 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Calendar, CreditCard, DollarSign, Edit, FileText, Printer, User, XCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, CreditCard, DollarSign, Edit, FileText, Printer, Share2, User, XCircle } from 'lucide-react';
+import { useState } from 'react';
 
+import ShareModal from '@/components/share-modal';
 import { usePermissions } from '@/hooks/use-permissions';
 
 import { Badge } from '@/components/ui/badge';
@@ -9,16 +11,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Payment } from '@/types';
+import { type BreadcrumbItem, type Payment, type ShareData } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 interface Props {
     payment: Payment;
+    share: ShareData;
 }
 
-export default function PaymentShow({ payment }: Props) {
+export default function PaymentShow({ payment, share }: Props) {
     const { can } = usePermissions();
     const { format: formatCurrency } = useCurrency();
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -75,7 +79,6 @@ export default function PaymentShow({ payment }: Props) {
     };
 
     const isInvoicePayment = payment.payment_type === 'invoice_payment';
-    console.log('Payment data:', payment);
     const isOtherIncome = payment.payment_type === 'other_income';
 
     return (
@@ -107,6 +110,10 @@ export default function PaymentShow({ payment }: Props) {
                                 </a>
                             </Button>
                         )}
+                        <Button variant="outline" onClick={() => setIsShareModalOpen(true)}>
+                            <Share2 className="mr-2 size-4" />
+                            Compartir
+                        </Button>
                         {payment.status === 'completed' && can('edit payments') && (
                             <Button variant="outline" asChild>
                                 <Link href={`/payments/${payment.id}/edit`}>
@@ -190,7 +197,9 @@ export default function PaymentShow({ payment }: Props) {
                                 <div className="flex items-center gap-2">
                                     <User className="size-4" />
                                     <p className="font-medium">
-                                        {isInvoicePayment && payment.invoice?.contact ? payment.invoice.contact?.name : payment.contact?.name || 'N/A'}
+                                        {isInvoicePayment && payment.invoice?.contact
+                                            ? payment.invoice.contact?.name
+                                            : payment.contact?.name || 'N/A'}
                                     </p>
                                 </div>
                             </div>
@@ -305,6 +314,8 @@ export default function PaymentShow({ payment }: Props) {
                     </Card>
                 )}
             </div>
+
+            <ShareModal open={isShareModalOpen} onOpenChange={setIsShareModalOpen} share={share} title={`Pago ${payment.payment_number}`} />
         </AppLayout>
     );
 }

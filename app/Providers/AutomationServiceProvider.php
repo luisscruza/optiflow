@@ -82,6 +82,7 @@ final class AutomationServiceProvider extends ServiceProvider
                 'job.notes' => ['type' => 'string', 'description' => 'Notas del proceso'],
                 'job.priority' => ['type' => 'string', 'description' => 'Prioridad del proceso'],
                 'job.due_date' => ['type' => 'string', 'description' => 'Fecha de vencimiento'],
+                'job.workspace' => ['type' => 'object', 'description' => 'Espacio de trabajo al que pertenece el proceso'],
                 'contact' => ['type' => 'object', 'description' => 'Contacto asociado'],
                 'contact.id' => ['type' => 'string', 'description' => 'ID del contacto'],
                 'contact.name' => ['type' => 'string', 'description' => 'Nombre del contacto'],
