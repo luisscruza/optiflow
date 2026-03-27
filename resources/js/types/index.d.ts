@@ -449,6 +449,49 @@ export interface Contact {
     relationships?: Contact[];
 }
 
+export type ShareTemplateEntity = 'invoice' | 'quotation' | 'prescription';
+export type ShareTemplateChannel = 'email' | 'whatsapp';
+
+export interface ShareTemplate {
+    id: string;
+    entity_type: ShareTemplateEntity;
+    channel: ShareTemplateChannel;
+    name: string;
+    subject?: string | null;
+    body: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface ShareVariable {
+    label: string;
+    token: string;
+    description: string;
+}
+
+export interface ShareRenderedTemplate {
+    id: string;
+    name: string;
+    channel: ShareTemplateChannel;
+    subject?: string | null;
+    body: string;
+}
+
+export interface ShareData {
+    entityType: ShareTemplateEntity;
+    shareableLink: string;
+    variables: ShareVariable[];
+    targets: {
+        email?: string | null;
+        phone?: string | null;
+    };
+    templates: {
+        email?: ShareRenderedTemplate | null;
+        whatsapp?: ShareRenderedTemplate | null;
+    };
+}
+
 export interface MasterTableData {
     id: number;
     name: string;
@@ -562,6 +605,7 @@ export interface DocumentItem {
     discount_amount: string | number;
     tax_rate: string | number;
     tax_amount: string | number;
+    subtotal: string | number;
     total: string | number;
     product?: Product;
     tax?: Tax;
@@ -619,7 +663,7 @@ export interface Quotation {
     workspace_id: number;
     contact_id: number;
     document_subtype_id: number;
-    status: 'converted' | 'draft' | 'non_converted' | 'sent';
+    status: 'converted' | 'draft' | 'non_converted' | 'sent' | 'cancelled' | 'accepted' | 'expired';
     document_number: string;
     issue_date: string;
     due_date: string;

@@ -32,6 +32,7 @@ const configurationSections = [
         icon: Building2,
         items: [
             { title: 'Datos de la empresa', href: '/company-details', icon: Building2 },
+            { title: 'Plantillas de compartir', href: '/share-templates', icon: FileText },
             { title: 'Permisos', href: '/business/roles', icon: Shield },
             { title: 'Usuarios', href: '/business/users', icon: Users },
             { title: 'Sucursales', href: '/workspaces', icon: MapPin },

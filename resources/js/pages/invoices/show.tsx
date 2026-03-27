@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Calendar, CreditCard, DownloadCloud, Edit, FileText, Plus, Printer, Trash2 } from 'lucide-react';
+import { Calendar, CreditCard, DownloadCloud, Edit, FileText, Plus, Printer, Share2, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { usePermissions } from '@/hooks/use-permissions';
@@ -8,12 +8,13 @@ import { ActivityLogTimeline } from '@/components/ActivityLogTimeline';
 import { CommentList } from '@/components/CommentList';
 import { CompanyHeader } from '@/components/company-header';
 import { PaymentRegistrationModal } from '@/components/payment-registration-modal';
+import ShareModal from '@/components/share-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
-import { ActivityLog, BankAccount, Invoice, Payment, type BreadcrumbItem, type SharedData } from '@/types';
+import { ActivityLog, BankAccount, Invoice, Payment, type BreadcrumbItem, type ShareData, type SharedData } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 interface Props {
@@ -22,14 +23,16 @@ interface Props {
     activityFieldLabels: Record<string, string>;
     bankAccounts: BankAccount[];
     paymentMethods: Record<string, string>;
+    share: ShareData;
 }
 
-export default function ShowInvoice({ invoice, activities, activityFieldLabels, bankAccounts, paymentMethods }: Props) {
+export default function ShowInvoice({ invoice, activities, activityFieldLabels, bankAccounts, paymentMethods, share }: Props) {
     const { format: formatCurrency } = useCurrency();
     const { auth } = usePage<SharedData>().props;
     const { can } = usePermissions();
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -132,6 +135,16 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                 </Link>
                             </Button>
                         )}
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsShareModalOpen(true)}
+                            className="flex items-center justify-center gap-2 border border-gray-300 bg-gray-50 text-gray-800 hover:border-gray-300 hover:bg-gray-100"
+                        >
+                            <Share2 className="h-4 w-4" />
+                            Compartir
+                        </Button>
 
                         <Button
                             variant="outline"
@@ -350,7 +363,7 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
 
                                                     {/* Discount (rate + amount) */}
                                                     <div className="text-right">
-                                                        {item.discount_rate > 0 ? (
+                                                        {Number(item.discount_rate) > 0 ? (
                                                             <div className="text-sm text-red-600">
                                                                 <span className="font-medium">{item.discount_rate}%</span>
                                                                 <span className="ml-1 text-xs">(-{formatCurrency(item.discount_amount)})</span>
@@ -654,13 +667,13 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                     />
 
                     {/* Activity Log Timeline */}
-                    { can('view history logs') && (
-                    <ActivityLogTimeline
-                        activities={activities}
-                        fieldLabels={activityFieldLabels}
-                        title="Historial de cambios"
-                        description="Registro detallado de todas las modificaciones realizadas a esta factura"
-                    />
+                    {can('view history logs') && (
+                        <ActivityLogTimeline
+                            activities={activities}
+                            fieldLabels={activityFieldLabels}
+                            title="Historial de cambios"
+                            description="Registro detallado de todas las modificaciones realizadas a esta factura"
+                        />
                     )}
                 </div>
             </div>
@@ -677,6 +690,8 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                 paymentMethods={paymentMethods}
                 payment={selectedPayment}
             />
+
+            <ShareModal open={isShareModalOpen} onOpenChange={setIsShareModalOpen} share={share} title={`Factura ${invoice.document_number}`} />
         </AppLayout>
     );
 }

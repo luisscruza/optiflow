@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Concerns\BelongsToWorkspace;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -41,6 +42,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 final class Prescription extends Model
 {
     use BelongsToWorkspace;
+
+    /** @use HasFactory<\Database\Factories\PrescriptionFactory> */
+    use HasFactory;
 
     protected $casts = [
         'proximo_control_visual' => 'date',

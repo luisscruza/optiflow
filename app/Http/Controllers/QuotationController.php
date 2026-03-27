@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\BuildShareDataAction;
 use App\Actions\CreateQuotationAction;
 use App\Actions\DeleteQuotationAction;
 use App\Actions\UpdateQuotationAction;
@@ -123,14 +124,15 @@ final class QuotationController
     /**
      * Display the specified quotation.
      */
-    public function show(Quotation $quotation, #[CurrentUser] User $user): Response
+    public function show(Quotation $quotation, #[CurrentUser] User $user, BuildShareDataAction $buildShareDataAction): Response
     {
         abort_unless($user->can(Permission::QuotationsView), 403);
 
-        $quotation->load(['contact', 'documentSubtype', 'items.product', 'items.taxes']);
+        $quotation->load(['contact', 'documentSubtype', 'items.product', 'items.taxes', 'workspace']);
 
         return Inertia::render('quotations/show', [
             'quotation' => $quotation,
+            'share' => $buildShareDataAction->forQuotation($quotation),
         ]);
     }
 

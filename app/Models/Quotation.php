@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Concerns\BelongsToWorkspace;
 use App\Enums\QuotationStatus;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -80,6 +81,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 final class Quotation extends Model
 {
     use BelongsToWorkspace;
+
+    /** @use HasFactory<\Database\Factories\QuotationFactory> */
+    use HasFactory;
 
     /**
      * Get the contact for this quotation.

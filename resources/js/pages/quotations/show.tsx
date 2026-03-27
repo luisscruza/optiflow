@@ -1,13 +1,15 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { DollarSign, Edit, FileText, Printer, RefreshCw, User } from 'lucide-react';
+import { DollarSign, Edit, FileText, Printer, RefreshCw, Share2, User } from 'lucide-react';
+import { useState } from 'react';
 
+import ShareModal from '@/components/share-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Document } from '@/types';
+import { type BreadcrumbItem, type Quotation, type ShareData } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -22,12 +24,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 interface Props {
-    quotation: Document;
+    quotation: Quotation;
+    share: ShareData;
 }
 
-export default function QuotationShow({ quotation }: Props) {
+export default function QuotationShow({ quotation, share }: Props) {
     const { format: formatCurrency } = useCurrency();
     const { can } = usePermissions();
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
     // Calculate tax breakdown by type (for display in totals)
     const getTaxBreakdown = (): Array<{ name: string; amount: number }> => {
@@ -110,6 +114,10 @@ export default function QuotationShow({ quotation }: Props) {
                                 </Link>
                             </Button>
                         )}
+                        <Button variant="outline" onClick={() => setIsShareModalOpen(true)}>
+                            <Share2 className="mr-2 h-4 w-4" />
+                            Compartir
+                        </Button>
                         <Button variant="outline">
                             <a href={`/quotations/${quotation.id}/pdf`} target="_blank" rel="noopener noreferrer" className="flex items-center">
                                 <Printer className="mr-2 h-4 w-4" />
@@ -197,7 +205,7 @@ export default function QuotationShow({ quotation }: Props) {
                                                     </TableCell>
                                                     <TableCell className="text-right">{formatCurrency(item.unit_price)}</TableCell>
                                                     <TableCell className="text-right">
-                                                        {item.discount_rate > 0 ? (
+                                                        {Number(item.discount_rate) > 0 ? (
                                                             <div className="text-red-600">
                                                                 <span className="font-medium">{item.discount_rate}%</span>
                                                                 <span className="ml-1 text-xs">(-{formatCurrency(item.discount_amount)})</span>
@@ -308,6 +316,8 @@ export default function QuotationShow({ quotation }: Props) {
                     </div>
                 </div>
             </div>
+
+            <ShareModal open={isShareModalOpen} onOpenChange={setIsShareModalOpen} share={share} title={`Cotizacion ${quotation.document_number}`} />
         </AppLayout>
     );
 }

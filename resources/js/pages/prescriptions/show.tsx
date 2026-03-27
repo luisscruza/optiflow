@@ -1,13 +1,15 @@
 import { Head, Link } from '@inertiajs/react';
-import { Download, Edit, FileText, Printer } from 'lucide-react';
+import { Download, Edit, FileText, Printer, Share2 } from 'lucide-react';
+import { useState } from 'react';
 
+import ShareModal from '@/components/share-modal';
 import { usePermissions } from '@/hooks/use-permissions';
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
 import prescriptions from '@/routes/prescriptions';
-import { Prescription, type BreadcrumbItem } from '@/types';
+import { Prescription, type BreadcrumbItem, type ShareData } from '@/types';
 
 interface CompanyData {
     company_name?: string;
@@ -18,10 +20,12 @@ interface CompanyData {
 interface Props {
     prescription: Prescription;
     company: CompanyData;
+    share: ShareData;
 }
 
-export default function PrescriptionShow({ prescription, company }: Props) {
+export default function PrescriptionShow({ prescription, company, share }: Props) {
     const { can } = usePermissions();
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -89,6 +93,10 @@ export default function PrescriptionShow({ prescription, company }: Props) {
                             Imprimir historia de optometría
                         </Button>
                     </a>
+                    <Button variant="outline" size="sm" onClick={() => setIsShareModalOpen(true)}>
+                        <Share2 className="mr-2 h-4 w-4" />
+                        Compartir
+                    </Button>
                     <a target="_blank" href={prescriptions.pdf(prescription).url} rel="noreferrer">
                         <Button size="sm">
                             <Download className="mr-2 h-4 w-4" />
@@ -317,6 +325,8 @@ export default function PrescriptionShow({ prescription, company }: Props) {
                         <div className="mx-auto w-72 border-t-2 border-blue-700 pt-2 text-sm text-gray-700 dark:text-gray-300">FIRMA PROFESIONAL</div>
                     </div>
                 </div>
+
+                <ShareModal open={isShareModalOpen} onOpenChange={setIsShareModalOpen} share={share} title={`Receta #${prescription.id}`} />
             </div>
         </AppLayout>
     );

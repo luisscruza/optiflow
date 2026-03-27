@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\BuildShareDataAction;
 use App\Actions\CreatePrescriptionAction;
 use App\Actions\UpdatePrescriptionAction;
 use App\Enums\Permission;
@@ -86,7 +87,7 @@ final class PrescriptionController
         return to_route('prescriptions.show', $prescription)->with('success', 'Receta creada exitosamente.');
     }
 
-    public function show(Prescription $prescription, #[CurrentUser] User $user): Response
+    public function show(Prescription $prescription, #[CurrentUser] User $user, BuildShareDataAction $buildShareDataAction): Response
     {
         abort_unless($user->can(Permission::PrescriptionsView), 403);
 
@@ -106,6 +107,7 @@ final class PrescriptionController
         return inertia('prescriptions/show', [
             'prescription' => $prescription,
             'company' => $this->getCompanyDetails(),
+            'share' => $buildShareDataAction->forPrescription($prescription),
         ]);
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\BuildShareDataAction;
 use App\Actions\CreateInvoiceAction;
 use App\Actions\DeleteInvoiceAction;
 use App\Actions\UpdateInvoiceAction;
@@ -149,7 +150,7 @@ final class InvoiceController
     /**
      * Display the specified invoice.
      */
-    public function show(Invoice $invoice, #[CurrentUser] User $user): Response
+    public function show(Invoice $invoice, #[CurrentUser] User $user, BuildShareDataAction $buildShareDataAction): Response
     {
         abort_unless($user->can(Permission::InvoicesView), 403);
 
@@ -210,6 +211,7 @@ final class InvoiceController
             'activityFieldLabels' => $fieldLabels,
             'bankAccounts' => $bankAccounts,
             'paymentMethods' => $paymentMethods,
+            'share' => $buildShareDataAction->forInvoice($invoice),
         ]);
     }
 

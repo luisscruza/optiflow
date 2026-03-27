@@ -71,6 +71,10 @@ use App\Http\Controllers\RunInvoiceImportController;
 use App\Http\Controllers\SalesmanController;
 use App\Http\Controllers\SetDefaultDocumentSubtypeController;
 use App\Http\Controllers\SetWorkspacePreferredDocumentSubtypeController;
+use App\Http\Controllers\SharedInvoicePdfController;
+use App\Http\Controllers\SharedPrescriptionPdfController;
+use App\Http\Controllers\SharedQuotationPdfController;
+use App\Http\Controllers\ShareTemplateController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\StreamInvoicePdfController;
@@ -125,6 +129,12 @@ Route::middleware([
         Route::post('{token}/decline', [WorkspaceInvitationController::class, 'destroy'])->name('decline');
     });
 
+    Route::middleware(['signed'])->prefix('shared')->name('shared.')->group(function (): void {
+        Route::get('invoices/{invoice}/pdf', SharedInvoicePdfController::class)->name('invoices.pdf');
+        Route::get('quotations/{quotation}/pdf', SharedQuotationPdfController::class)->name('quotations.pdf');
+        Route::get('prescriptions/{prescription}/pdf', SharedPrescriptionPdfController::class)->name('prescriptions.pdf');
+    });
+
     Route::middleware(['auth'])->group(function (): void {
         Route::get('new-password', [PasswordChangeController::class, 'edit'])->name('password.new');
         Route::post('new-password', [PasswordChangeController::class, 'update'])->name('password.new.update');
@@ -169,6 +179,7 @@ Route::middleware([
             Route::get('activities/{model}/{id}', [ActivityLogController::class, 'show'])->name('activities.show');
 
             Route::get('configuration', [ConfigurationController::class, 'index'])->name('configuration.index');
+            Route::resource('share-templates', ShareTemplateController::class)->only(['index', 'create', 'store', 'edit', 'update']);
 
             Route::get('company-details', [CompanyDetailsController::class, 'edit'])->name('company-details.edit');
             Route::patch('company-details', [CompanyDetailsController::class, 'update'])->name('company-details.update');
