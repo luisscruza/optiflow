@@ -80,6 +80,7 @@ use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\StreamInvoicePdfController;
 use App\Http\Controllers\StreamPaymentPdfController;
+use App\Http\Controllers\StreamStockTransferPdfController;
 use App\Http\Controllers\SyncGlobalRoleController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\TelegramBotController;
@@ -269,6 +270,7 @@ Route::middleware([
             Route::resource('stock-transfers', StockTransferController::class)->only(['index', 'create', 'store', 'show'])->parameters([
                 'stock-transfers' => 'stockMovement',
             ]);
+            Route::get('stock-transfers/{stockMovement}/pdf', StreamStockTransferPdfController::class)->name('stock-transfers.pdf');
             Route::resource('initial-stock', InitialStockController::class)->only(['index', 'create', 'store']);
 
             Route::get('workspace/members', [WorkspaceMemberController::class, 'index'])->name('workspace.members.index');

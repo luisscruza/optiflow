@@ -286,8 +286,9 @@ export default function QuickContactModal({
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="quick_lead_source_id">Procedencia</Label>
+                                <Label htmlFor="quick_lead_source_id">Procedencia  <span className="text-destructive">*</span></Label>
                                 <select
+                                    required
                                     id="quick_lead_source_id"
                                     name="lead_source_id"
                                     value={selectedLeadSourceId}

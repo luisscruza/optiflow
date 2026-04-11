@@ -20,6 +20,11 @@ interface DataTableRowActionsProps<T> {
 export function DataTableRowActions<T>({ actions, row, onActionClick }: DataTableRowActionsProps<T>) {
     const { can } = usePermissions();
 
+    const stopRowNavigation = (event: React.SyntheticEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+    };
+
     if (!actions || actions.length === 0) {
         return null;
     }
@@ -40,7 +45,7 @@ export function DataTableRowActions<T>({ actions, row, onActionClick }: DataTabl
     const dropdownActions = visibleActions.filter((a) => !a.isInline);
 
     return (
-        <div className="flex items-center justify-end gap-1">
+        <div className="flex items-center justify-end gap-1" onClick={stopRowNavigation}>
             {/* Inline actions as separate buttons */}
             {inlineActions.map((action) => {
                 const button =
@@ -49,7 +54,10 @@ export function DataTableRowActions<T>({ actions, row, onActionClick }: DataTabl
                             key={action.name}
                             variant="ghost"
                             size="sm"
-                            onClick={() => onActionClick(action, row)}
+                            onClick={(event) => {
+                                stopRowNavigation(event);
+                                onActionClick(action, row);
+                            }}
                             className={action.color === 'danger' ? 'text-red-600 hover:text-red-700 dark:text-red-400' : undefined}
                         >
                             {action.icon && <DynamicIcon name={action.icon} className="h-4 w-4" />}
@@ -90,7 +98,7 @@ export function DataTableRowActions<T>({ actions, row, onActionClick }: DataTabl
             {dropdownActions.length > 0 && (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" onClick={stopRowNavigation}>
                             <MoreHorizontal className="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
@@ -100,7 +108,10 @@ export function DataTableRowActions<T>({ actions, row, onActionClick }: DataTabl
                                 return (
                                     <DropdownMenuItem
                                         key={action.name}
-                                        onClick={() => onActionClick(action, row)}
+                                        onSelect={(event) => {
+                                            stopRowNavigation(event);
+                                            onActionClick(action, row);
+                                        }}
                                         className={action.color === 'danger' ? 'text-red-600 dark:text-red-400' : undefined}
                                         title={action.tooltip}
                                     >

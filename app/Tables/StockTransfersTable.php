@@ -6,6 +6,7 @@ namespace App\Tables;
 
 use App\Enums\StockMovementType;
 use App\Models\StockMovement;
+use App\Tables\Actions\Action;
 use App\Tables\Actions\ViewAction;
 use App\Tables\Columns\ActionColumn;
 use App\Tables\Columns\DateColumn;
