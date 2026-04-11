@@ -235,6 +235,33 @@
             margin-top: 10px;
         }
 
+        .electronic-proof {
+            margin-top: 14px;
+            page-break-inside: avoid;
+        }
+
+        .qr-wrapper {
+            width: 128px;
+            height: 128px;
+        }
+
+        .qr-wrapper svg {
+            width: 128px;
+            height: 128px;
+            display: block;
+        }
+
+        .electronic-proof-line {
+            font-size: 10px;
+            color: #475569;
+            line-height: 1.35;
+            margin-top: 4px;
+        }
+
+        .electronic-proof-line strong {
+            color: #1e293b;
+        }
+
         /* ── Totals ── */
         .totals-table {
             width: 100%;
@@ -296,6 +323,15 @@
 
             $chunks[] = $remaining;
         }
+
+        $codigoSeguridad = $invoice->dgii_security_code ?? '';
+        $fechaFirma = $invoice->dgii_signed_at?->format('d-m-Y H:i:s') ?? '';
+        $qrImageSrc = null;
+
+        if ($invoice->dgii_qr_code_url) {
+            $qrSvg = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(128)->margin(0)->generate($invoice->dgii_qr_code_url);
+            $qrImageSrc = 'data:image/svg+xml;base64,'.base64_encode($qrSvg);
+        }
     @endphp
 
     @foreach($chunks as $chunkIndex => $itemsChunk)
@@ -339,8 +375,6 @@
                             <div class="invoice-meta">
                                 @if($invoice->documentSubtype->valid_until_date)
                                     <strong>Vencimiento NCF:</strong> {{ $invoice->documentSubtype->valid_until_date->format('d/m/Y') }}
-                                @else
-                                    <strong>Vencimiento NCF:</strong>
                                 @endif
                             </div>
                         @endif
@@ -454,6 +488,24 @@
                             <div class="notes-block">
                                 <div class="section-label">Notas:</div>
                                 <div class="section-text">{{ $company['terms_conditions'] }}</div>
+                            </div>
+                        @endif
+
+                        @if($isLastPage && $invoice->is_electronic && $qrImageSrc)
+                            <div class="electronic-proof">
+                                <div class="qr-wrapper">
+                                    <img src="{{ $qrImageSrc }}" alt="Código QR" style="width: 128px; height: 128px; display: block;">
+                                </div>
+                                @if($codigoSeguridad)
+                                    <div class="electronic-proof-line">
+                                        <strong>Código seguridad:</strong> {{ $codigoSeguridad }}
+                                    </div>
+                                @endif
+                                @if($fechaFirma)
+                                    <div class="electronic-proof-line">
+                                        <strong>Fecha firma:</strong> {{ $fechaFirma }}
+                                    </div>
+                                @endif
                             </div>
                         @endif
                     </td>

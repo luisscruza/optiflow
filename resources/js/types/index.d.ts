@@ -558,6 +558,7 @@ export interface DocumentSubtype {
     prefix: string;
     next_number: number;
     is_default: boolean;
+    is_electronic?: boolean;
     valid_until_date?: string | null;
     start_number: number;
     end_number: number;
@@ -630,7 +631,10 @@ export interface Invoice {
         | 'expired'
         | 'converted'
         | 'pending_payment'
-        | 'partially_paid';
+        | 'partially_paid'
+        | 'submitted'
+        | 'dgii_accepted'
+        | 'dgii_rejected';
     amount_due: number;
     amount_paid: number;
     document_number: string;
@@ -656,6 +660,16 @@ export interface Invoice {
     comments?: CommentData[];
     salesmen?: Salesman[];
     workspace?: Workspace;
+    // Electronic invoicing (e-CF) fields
+    is_electronic?: boolean;
+    easyfactu_invoice_id?: string | null;
+    encf?: string | null;
+    dgii_status?: string | null;
+    dgii_track_id?: string | null;
+    dgii_security_code?: string | null;
+    dgii_qr_code_url?: string | null;
+    dgii_signed_at?: string | null;
+    dgii_environment?: string | null;
 }
 
 export interface Quotation {

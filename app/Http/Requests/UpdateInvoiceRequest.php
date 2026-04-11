@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Models\Invoice;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 final class UpdateInvoiceRequest extends FormRequest
 {
@@ -23,9 +25,17 @@ final class UpdateInvoiceRequest extends FormRequest
      */
     public function rules(): array
     {
+        /** @var Invoice|null $invoice */
+        $invoice = $this->route('invoice');
+
         return [
             'contact_id' => ['required', 'integer', 'exists:contacts,id'],
-            'document_subtype_id' => ['required', 'integer', 'exists:document_subtypes,id'],
+            'document_subtype_id' => [
+                'required',
+                'integer',
+                'exists:document_subtypes,id',
+                Rule::in([$invoice?->document_subtype_id]),
+            ],
             'ncf' => ['nullable', 'string', 'max:255'],
             'issue_date' => ['required', 'date'],
             'due_date' => ['nullable', 'date', 'after_or_equal:issue_date'],
@@ -68,6 +78,7 @@ final class UpdateInvoiceRequest extends FormRequest
             'contact_id.exists' => 'El cliente seleccionado no existe.',
             'document_subtype_id.required' => 'El tipo de documento es requerido.',
             'document_subtype_id.exists' => 'El tipo de documento seleccionado no existe.',
+            'document_subtype_id.in' => 'No se puede cambiar el tipo de comprobante de una factura existente.',
             'ncf.required' => 'El NCF es requerido.',
             'issue_date.required' => 'La fecha de emisión es requerida.',
             'due_date.after_or_equal' => 'La fecha de vencimiento debe ser igual o posterior a la fecha de emisión.',

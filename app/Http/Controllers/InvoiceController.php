@@ -13,6 +13,7 @@ use App\Enums\PaymentMethod;
 use App\Enums\Permission;
 use App\Enums\TaxType;
 use App\Exceptions\ActionValidationException;
+use App\Exceptions\EasyFactuException;
 use App\Exceptions\ReportableActionException;
 use App\Http\Requests\CreateInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
@@ -25,6 +26,7 @@ use App\Models\Salesman;
 use App\Models\Tax;
 use App\Models\User;
 use App\Models\Workspace;
+use App\Services\EasyFactuService;
 use App\Support\ContactSearch;
 use App\Support\ProductSearch;
 use App\Tables\InvoicesTable;
@@ -57,7 +59,7 @@ final class InvoiceController
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request, #[CurrentUser] User $user, ContactSearch $contactSearch, ProductSearch $productSearch): Response
+    public function create(Request $request, #[CurrentUser] User $user, ContactSearch $contactSearch, ProductSearch $productSearch, EasyFactuService $easyFactu): Response
     {
         abort_unless($user->can(Permission::InvoicesCreate), 403);
 
@@ -102,7 +104,9 @@ final class InvoiceController
 
         $initialContactId = $request->integer('contact_id');
         $initialContact = $contactSearch->findCustomerById($initialContactId > 0 ? $initialContactId : null);
-        $ncf = $this->previewNcf($documentSubtype);
+        $ncf = $this->previewNcf($documentSubtype, $easyFactu);
+
+        $isEasyFactuConfigured = $easyFactu->isConfigured();
 
         return Inertia::render('invoices/create', [
             'documentSubtypes' => $documentSubtypes,
@@ -121,6 +125,7 @@ final class InvoiceController
             'paymentMethods' => PaymentMethod::options(),
             'taxesGroupedByType' => $taxesGroupedByType,
             'salesmen' => $salesmen,
+            'isEasyFactuConfigured' => $isEasyFactuConfigured,
         ]);
     }
 
@@ -224,12 +229,13 @@ final class InvoiceController
     /**
      * Show the form for editing the specified invoice.
      */
-    public function edit(Request $request, Invoice $invoice, #[CurrentUser] User $user, ContactSearch $contactSearch, ProductSearch $productSearch): Response|RedirectResponse
+    public function edit(Request $request, Invoice $invoice, #[CurrentUser] User $user, ContactSearch $contactSearch, ProductSearch $productSearch, EasyFactuService $easyFactu): Response|RedirectResponse
     {
         abort_unless($user->can(Permission::InvoicesEdit), 403);
 
-        if ($invoice->status !== InvoiceStatus::PendingPayment) {
-            return redirect()->back()->with('error', 'Esta factura tiene un pago registrado. Para editarla, primero elimina los pagos asociados.');
+        // Allow editing for: PendingPayment (regular invoices) and Draft (electronic invoices)
+        if ($invoice->status !== InvoiceStatus::PendingPayment && ! ($invoice->isElectronic() && $invoice->isDraft())) {
+            return redirect()->back()->with('error', 'Esta factura no puede ser editada en su estado actual.');
         }
 
         $currentWorkspace = Context::get('workspace');
@@ -247,11 +253,16 @@ final class InvoiceController
 
         $taxes = Tax::query()->orderBy('name')->get();
 
-        // Get the NCF - only generate a new one if the document_subtype_id changed
+        // Get the NCF - for electronic types, keep the existing eNCF; for regular types, regenerate if subtype changed
         $ncf = $invoice->document_number;
         if ($request->filled('document_subtype_id') && (int) $request->get('document_subtype_id') !== $invoice->document_subtype_id) {
             $documentSubtype = DocumentSubtype::query()->findOrFail($request->get('document_subtype_id'));
-            $ncf = $documentSubtype->generateNCF();
+            if ($documentSubtype->is_electronic) {
+                // For electronic subtypes, fetch from EasyFactu if available
+                $ncf = $this->previewNcf($documentSubtype, $easyFactu);
+            } else {
+                $ncf = $documentSubtype->generateNCF();
+            }
         }
 
         // Group taxes by type for the multi-select component
@@ -358,12 +369,40 @@ final class InvoiceController
             ->first();
     }
 
-    private function previewNcf(?DocumentSubtype $documentSubtype): ?string
+    private function previewNcf(?DocumentSubtype $documentSubtype, ?EasyFactuService $easyFactu = null): ?string
     {
         if (! $documentSubtype instanceof DocumentSubtype) {
             return null;
         }
 
+        // For electronic subtypes, fetch from EasyFactu API
+        if ($documentSubtype->is_electronic) {
+            if (! $easyFactu || ! $easyFactu->isConfigured()) {
+                return null;
+            }
+
+            $ecfType = $documentSubtype->getEcfTypeCode();
+
+            if (! $ecfType) {
+                return null;
+            }
+
+            try {
+                $response = $easyFactu->getNextSequence($ecfType);
+
+                return $response['next_encf'] ?? $response['encf'] ?? null;
+            } catch (EasyFactuException $exception) {
+                Session::flash('error', 'No se pudo obtener el próximo eNCF desde EasyFactu: '.$exception->getMessage());
+
+                return null;
+            } catch (Throwable) {
+                Session::flash('error', 'No se pudo obtener el próximo eNCF desde EasyFactu.');
+
+                return null;
+            }
+        }
+
+        // For regular subtypes, use local NCF generation
         try {
             return $documentSubtype->generateNCF();
         } catch (ReportableActionException $exception) {

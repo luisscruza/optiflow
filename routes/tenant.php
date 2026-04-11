@@ -40,6 +40,7 @@ use App\Http\Controllers\DownloadProductRecipeController;
 use App\Http\Controllers\DownloadQuotationPdfController;
 use App\Http\Controllers\DownloadVisualCertificateController;
 use App\Http\Controllers\DownloadWorkflowJobProcessController;
+use App\Http\Controllers\EmitInvoiceController;
 use App\Http\Controllers\ExportReportController;
 use App\Http\Controllers\GlobalRoleController;
 use App\Http\Controllers\ImpersonationController;
@@ -65,6 +66,7 @@ use App\Http\Controllers\ProductInventoryAdjustmentController;
 use App\Http\Controllers\ProductRecipeController;
 use App\Http\Controllers\QuickProductCreate;
 use App\Http\Controllers\QuotationController;
+use App\Http\Controllers\RefreshInvoiceStatusController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportGroupController;
 use App\Http\Controllers\RunInvoiceImportController;
@@ -237,6 +239,10 @@ Route::middleware([
             Route::get('invoice-imports/{invoice_import}/status', InvoiceImportStatusController::class)->name('invoice-imports.status');
 
             Route::post('invoices/bulk/pdf', BulkDownloadInvoicePdfController::class)->name('invoices.bulk.pdf');
+
+            // Electronic invoicing actions
+            Route::post('invoices/{invoice}/emit', EmitInvoiceController::class)->name('invoices.emit');
+            Route::post('invoices/{invoice}/refresh-status', RefreshInvoiceStatusController::class)->name('invoices.refresh-status');
 
             Route::get('cash-register-close', CashRegisterCloseController::class)->name('cash-register-close');
 
