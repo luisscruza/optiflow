@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, ArrowLeftRight, Building2, Package, User } from 'lucide-react';
+import { ArrowLeft, ArrowLeftRight, Building2, Package, Printer, User } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -56,6 +56,12 @@ export default function StockTransfersShow({ transfer, workspace }: Props) {
                     <h1 className="text-3xl font-semibold tracking-tight text-foreground">
                         Transferencia {transfer.reference_number || `TR-${transfer.id}`}
                     </h1>
+                    <Button variant="outline" asChild>
+                        <a href={`/stock-transfers/${transfer.id}/pdf`} target="_blank" rel="noopener noreferrer">
+                            <Printer className="mr-2 h-4 w-4" />
+                            Imprimir
+                        </a>
+                    </Button>
                 </div>
 
                 <Card>
