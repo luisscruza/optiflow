@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Permission as EnumsPermission;
 use App\Models\Permission;
 use Illuminate\Database\Migrations\Migration;
 use Spatie\Permission\PermissionRegistrar;
@@ -13,16 +14,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $permissions = [
-            'view expenses',
-            'create expenses',
-            'edit expenses',
-            'delete expenses',
-        ];
+        $permissions = EnumsPermission::cases();
 
         foreach ($permissions as $permission) {
             Permission::query()->firstOrCreate([
-                'name' => $permission,
+                'name' => $permission->value,
                 'guard_name' => 'web',
             ]);
         }

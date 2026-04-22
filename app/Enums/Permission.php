@@ -247,6 +247,7 @@ enum Permission: string
             self::ViewDashboardAccountReceivable, self::ViewDashboardSalesStats, self::ViewDashboardProductsStats, self::ViewDashboardCustomersStats, self::ViewDashboardPrescriptionsStats, self::ViewDashboardWorkflowsStats => 'Panel',
             self::ViewWorkflows, self::CreateWorkflows, self::EditWorkflows, self::DeleteWorkflows, self::CreateWorkflowJobs, self::EditWorkflowJobs, self::DeleteWorkflowJobs, self::CreateWorkflowStages, self::EditWorkflowStages, self::DeleteWorkflowStages, self::ViewLabs => 'Flujos de trabajo',
             self::MastertablesView, self::MastertablesCreate, self::MastertablesEdit, self::MastertablesDelete => 'Tablas maestras',
+            self::ViewHistoryLogs => 'Facturas',
         };
     }
 }

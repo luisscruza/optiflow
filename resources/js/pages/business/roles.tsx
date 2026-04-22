@@ -10,7 +10,7 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { Pencil, Plus, RefreshCw, Search, Shield, Trash2, Users } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useRef, useState, type FormEvent, type RefObject } from 'react';
 
 interface Permission {
     name: string;
@@ -37,6 +37,144 @@ interface Props {
     roles: Role[];
     permissions: Record<string, Permission[]>;
     workspaces: Workspace[];
+}
+
+interface PermissionFormProps {
+    onSubmit: (e: FormEvent) => void;
+    submitLabel: string;
+    formId: string;
+    roleName: string;
+    setRoleName: (value: string) => void;
+    selectedPermissions: string[];
+    permissions: Record<string, Permission[]>;
+    processing: boolean;
+    errors: Record<string, string>;
+    searchQuery: string;
+    setSearchQuery: (value: string) => void;
+    handleSelectAll: () => void;
+    handleSelectAllInGroup: (groupPermissions: Permission[]) => void;
+    handlePermissionToggle: (permissionName: string) => void;
+    closeForm: () => void;
+    scrollContainerRef: RefObject<HTMLDivElement | null>;
+}
+
+function PermissionForm({
+    onSubmit,
+    submitLabel,
+    formId,
+    roleName,
+    setRoleName,
+    selectedPermissions,
+    permissions,
+    processing,
+    errors,
+    searchQuery,
+    setSearchQuery,
+    handleSelectAll,
+    handleSelectAllInGroup,
+    handlePermissionToggle,
+    closeForm,
+    scrollContainerRef,
+}: PermissionFormProps) {
+    return (
+        <form onSubmit={onSubmit} className="space-y-6">
+            <div className="space-y-2">
+                <Label htmlFor={`${formId}-name`}>Nombre del rol</Label>
+                <Input
+                    id={`${formId}-name`}
+                    value={roleName}
+                    onChange={(e) => setRoleName(e.target.value)}
+                    placeholder="Ej: Vendedor, Optometrista, etc."
+                />
+                {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
+            </div>
+
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <Label>Permisos</Label>
+                    <Button type="button" variant="outline" size="sm" onClick={handleSelectAll} className="h-8 text-xs">
+                        {Object.values(permissions)
+                            .flat()
+                            .every((p) => selectedPermissions.includes(p.name))
+                            ? 'Deseleccionar todos'
+                            : 'Seleccionar todos'}
+                    </Button>
+                </div>
+                {errors.permissions && <p className="text-sm text-red-600">{errors.permissions}</p>}
+
+                <div className="relative">
+                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Input
+                        type="text"
+                        placeholder="Buscar permisos..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9"
+                    />
+                </div>
+
+                <div ref={scrollContainerRef} className="max-h-[400px] space-y-6 overflow-y-auto pr-2">
+                    {Object.entries(permissions).map(([groupName, groupPermissions]) => {
+                        const filteredPermissions = groupPermissions.filter((p) =>
+                            searchQuery
+                                ? p.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                  p.name.toLowerCase().includes(searchQuery.toLowerCase())
+                                : true,
+                        );
+
+                        if (filteredPermissions.length === 0) {
+                            return null;
+                        }
+
+                        return (
+                            <div key={groupName} className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{groupName}</h4>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleSelectAllInGroup(filteredPermissions)}
+                                        className="h-7 text-xs"
+                                    >
+                                        {filteredPermissions.every((p) => selectedPermissions.includes(p.name))
+                                            ? 'Deseleccionar todos'
+                                            : 'Seleccionar todos'}
+                                    </Button>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {filteredPermissions.map((permission) => (
+                                        <div
+                                            key={permission.name}
+                                            className="flex items-center space-x-2 rounded-md p-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                        >
+                                            <Checkbox
+                                                id={`${formId}-${permission.name}`}
+                                                checked={selectedPermissions.includes(permission.name)}
+                                                onCheckedChange={() => handlePermissionToggle(permission.name)}
+                                            />
+                                            <label htmlFor={`${formId}-${permission.name}`} className="flex-1 cursor-pointer text-sm">
+                                                {permission.label}
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div className="flex gap-2 border-t pt-4">
+                <Button type="button" variant="outline" onClick={closeForm} className="flex-1">
+                    Cancelar
+                </Button>
+                <Button type="submit" disabled={processing || !roleName || selectedPermissions.length === 0} className="flex-1">
+                    {processing ? 'Guardando...' : submitLabel}
+                </Button>
+            </div>
+        </form>
+    );
 }
 
 export default function BusinessRoles({ roles, permissions, workspaces }: Props) {
@@ -113,7 +251,7 @@ export default function BusinessRoles({ roles, permissions, workspaces }: Props)
         }
     };
 
-    const handleCreate = (e: React.FormEvent) => {
+    const handleCreate = (e: FormEvent) => {
         e.preventDefault();
         setProcessing(true);
 
@@ -138,7 +276,7 @@ export default function BusinessRoles({ roles, permissions, workspaces }: Props)
         );
     };
 
-    const handleUpdate = (e: React.FormEvent) => {
+    const handleUpdate = (e: FormEvent) => {
         e.preventDefault();
         if (!editingRole) return;
 
@@ -178,111 +316,6 @@ export default function BusinessRoles({ roles, permissions, workspaces }: Props)
         router.post(`/business/roles/${encodeURIComponent(role.name)}/sync`);
     };
 
-    const PermissionForm = ({ onSubmit, submitLabel, formId }: { onSubmit: (e: React.FormEvent) => void; submitLabel: string; formId: string }) => (
-        <form onSubmit={onSubmit} className="space-y-6">
-            <div className="space-y-2">
-                <Label htmlFor={`${formId}-name`}>Nombre del rol</Label>
-                <Input
-                    id={`${formId}-name`}
-                    value={roleName}
-                    onChange={(e) => setRoleName(e.target.value)}
-                    placeholder="Ej: Vendedor, Optometrista, etc."
-                />
-                {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
-            </div>
-
-            <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <Label>Permisos</Label>
-                    <Button type="button" variant="outline" size="sm" onClick={handleSelectAll} className="h-8 text-xs">
-                        {Object.values(permissions)
-                            .flat()
-                            .every((p) => selectedPermissions.includes(p.name))
-                            ? 'Deseleccionar todos'
-                            : 'Seleccionar todos'}
-                    </Button>
-                </div>
-                {errors.permissions && <p className="text-sm text-red-600">{errors.permissions}</p>}
-
-                <div className="relative">
-                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                    <Input
-                        type="text"
-                        placeholder="Buscar permisos..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9"
-                    />
-                </div>
-
-                <div ref={scrollContainerRef} className="max-h-[400px] space-y-6 overflow-y-auto pr-2">
-                    {Object.entries(permissions).map(([groupName, groupPermissions]) => {
-                        const filteredPermissions = groupPermissions.filter((p) =>
-                            searchQuery
-                                ? p.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                  p.name.toLowerCase().includes(searchQuery.toLowerCase())
-                                : true,
-                        );
-                        if (filteredPermissions.length === 0) return null;
-                        return (
-                            <div key={groupName} className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{groupName}</h4>
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => handleSelectAllInGroup(filteredPermissions)}
-                                        className="h-7 text-xs"
-                                    >
-                                        {filteredPermissions.every((p) => selectedPermissions.includes(p.name))
-                                            ? 'Deseleccionar todos'
-                                            : 'Seleccionar todos'}
-                                    </Button>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {filteredPermissions.map((permission) => (
-                                        <div
-                                            key={permission.name}
-                                            className="flex items-center space-x-2 rounded-md p-2 hover:bg-gray-50 dark:hover:bg-gray-800"
-                                        >
-                                            <Checkbox
-                                                id={`${formId}-${permission.name}`}
-                                                checked={selectedPermissions.includes(permission.name)}
-                                                onCheckedChange={() => handlePermissionToggle(permission.name)}
-                                            />
-                                            <label htmlFor={`${formId}-${permission.name}`} className="flex-1 cursor-pointer text-sm">
-                                                {permission.label}
-                                            </label>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            <div className="flex gap-2 border-t pt-4">
-                <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                        setShowCreateDialog(false);
-                        setShowEditDialog(false);
-                        resetForm();
-                    }}
-                    className="flex-1"
-                >
-                    Cancelar
-                </Button>
-                <Button type="submit" disabled={processing || !roleName || selectedPermissions.length === 0} className="flex-1">
-                    {processing ? 'Guardando...' : submitLabel}
-                </Button>
-            </div>
-        </form>
-    );
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Roles y permisos" />
@@ -316,7 +349,28 @@ export default function BusinessRoles({ roles, permissions, workspaces }: Props)
                                     Define un nombre y los permisos para el nuevo rol. Se creará en todos los workspaces automáticamente.
                                 </DialogDescription>
                             </DialogHeader>
-                            <PermissionForm onSubmit={handleCreate} submitLabel="Crear rol" formId="create" />
+                            <PermissionForm
+                                onSubmit={handleCreate}
+                                submitLabel="Crear rol"
+                                formId="create"
+                                roleName={roleName}
+                                setRoleName={setRoleName}
+                                selectedPermissions={selectedPermissions}
+                                permissions={permissions}
+                                processing={processing}
+                                errors={errors}
+                                searchQuery={searchQuery}
+                                setSearchQuery={setSearchQuery}
+                                handleSelectAll={handleSelectAll}
+                                handleSelectAllInGroup={handleSelectAllInGroup}
+                                handlePermissionToggle={handlePermissionToggle}
+                                closeForm={() => {
+                                    setShowCreateDialog(false);
+                                    setShowEditDialog(false);
+                                    resetForm();
+                                }}
+                                scrollContainerRef={scrollContainerRef}
+                            />
                         </DialogContent>
                     </Dialog>
                 </div>
@@ -437,7 +491,28 @@ export default function BusinessRoles({ roles, permissions, workspaces }: Props)
                                 Modifica el nombre y los permisos del rol. Los cambios se aplicarán a todos los workspaces.
                             </DialogDescription>
                         </DialogHeader>
-                        <PermissionForm onSubmit={handleUpdate} submitLabel="Guardar cambios" formId="edit" />
+                        <PermissionForm
+                            onSubmit={handleUpdate}
+                            submitLabel="Guardar cambios"
+                            formId="edit"
+                            roleName={roleName}
+                            setRoleName={setRoleName}
+                            selectedPermissions={selectedPermissions}
+                            permissions={permissions}
+                            processing={processing}
+                            errors={errors}
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
+                            handleSelectAll={handleSelectAll}
+                            handleSelectAllInGroup={handleSelectAllInGroup}
+                            handlePermissionToggle={handlePermissionToggle}
+                            closeForm={() => {
+                                setShowCreateDialog(false);
+                                setShowEditDialog(false);
+                                resetForm();
+                            }}
+                            scrollContainerRef={scrollContainerRef}
+                        />
                     </DialogContent>
                 </Dialog>
             </div>
