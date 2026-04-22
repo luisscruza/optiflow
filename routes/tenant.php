@@ -251,6 +251,8 @@ Route::middleware([
             Route::post('invoices/{invoice}/refresh-status', RefreshInvoiceStatusController::class)->name('invoices.refresh-status');
             Route::get('electronic-invoicing/received', [ElectronicInvoicingReceivedDocumentController::class, 'index'])
                 ->name('electronic-invoicing.received.index');
+            Route::get('electronic-invoicing/received/export', [ElectronicInvoicingReceivedDocumentController::class, 'export'])
+                ->name('electronic-invoicing.received.export');
             Route::get('electronic-invoicing/received/{receivedDocument}', [ElectronicInvoicingReceivedDocumentController::class, 'show'])
                 ->name('electronic-invoicing.received.show');
             Route::get('electronic-invoicing/received/{receivedDocument}/print', [ElectronicInvoicingReceivedDocumentController::class, 'print'])

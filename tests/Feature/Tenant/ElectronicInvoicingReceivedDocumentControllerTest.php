@@ -16,6 +16,9 @@ beforeEach(function (): void {
     CompanyDetail::setByKey('easyfactu_base_url', 'https://api.easyfactu.test');
 });
 
+/**
+ * @return User&Illuminate\Contracts\Auth\Authenticatable
+ */
 function makeUserWithWorkspace(): User
 {
     $workspace = Workspace::factory()->create();
@@ -142,4 +145,87 @@ test('show renders a received document detail', function (): void {
         ->component('electronic-invoicing/received/show')
         ->where('document.id', 'rd_1')
         ->has('document.items', 1));
+});
+
+test('export downloads received documents as csv', function (): void {
+    $user = makeUserWithWorkspace();
+
+    $permission = PermissionFactory::new()->create([
+        'name' => Permission::ElectronicInvoicingView->value,
+        'guard_name' => 'web',
+    ]);
+
+    $user->givePermissionTo($permission);
+
+    Http::fake([
+        'https://api.easyfactu.test/received-documents*' => Http::sequence()
+            ->push([
+                'data' => [
+                    [
+                        'id' => 'rd_1',
+                        'ecf_type' => '31',
+                        'encf' => 'E310000000001',
+                        'issue_date' => '2026-04-20',
+                        'buyer_rnc' => '101010101',
+                        'buyer_name' => 'Cliente Uno',
+                        'currency' => 'DOP',
+                        'subtotal' => 100,
+                        'tax_amount' => 18,
+                        'total_amount' => 118,
+                        'status' => 'received',
+                        'received_at' => '2026-04-21T10:00:00Z',
+                        'supplier' => [
+                            'id' => 'sup_1',
+                            'rnc' => '131313131',
+                            'name' => 'Proveedor SRL',
+                        ],
+                    ],
+                ],
+                'current_page' => 1,
+                'last_page' => 2,
+            ], 200)
+            ->push([
+                'data' => [
+                    [
+                        'id' => 'rd_2',
+                        'ecf_type' => '32',
+                        'encf' => 'E320000000002',
+                        'issue_date' => '2026-04-21',
+                        'buyer_rnc' => '202020202',
+                        'buyer_name' => 'Cliente Dos',
+                        'currency' => 'USD',
+                        'subtotal' => 200,
+                        'tax_amount' => 36,
+                        'total_amount' => 236,
+                        'status' => 'accepted',
+                        'received_at' => '2026-04-22T10:00:00Z',
+                        'supplier' => [
+                            'id' => 'sup_2',
+                            'rnc' => '141414141',
+                            'name' => 'Servicios Globales',
+                        ],
+                    ],
+                ],
+                'current_page' => 2,
+                'last_page' => 2,
+            ], 200),
+    ]);
+
+    $response = $this->actingAs($user)->get(route('electronic-invoicing.received.export', [
+        'search' => 'Proveedor',
+        'status' => 'all',
+    ]));
+
+    $response->assertSuccessful();
+    $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
+
+    $content = $response->streamedContent();
+
+    expect($content)
+        ->toContain('RECEIVED_AT,ENCF,ECF_TYPE,SUPPLIER_NAME,SUPPLIER_RNC,BUYER_NAME,BUYER_RNC,ISSUE_DATE,CURRENCY,SUBTOTAL,TAX_AMOUNT,TOTAL_AMOUNT,STATUS')
+        ->toContain('E310000000001')
+        ->toContain('Proveedor SRL')
+        ->toContain('E320000000002')
+        ->toContain('Servicios Globales')
+        ->toContain('Aceptado');
 });

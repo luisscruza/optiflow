@@ -14,6 +14,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class ElectronicInvoicingReceivedDocumentController
 {
@@ -21,27 +22,7 @@ final class ElectronicInvoicingReceivedDocumentController
     {
         abort_unless($user->can(Permission::ElectronicInvoicingView), 403);
 
-        $filters = $request->validate([
-            'from' => ['nullable', 'date'],
-            'to' => ['nullable', 'date'],
-            'from_start' => ['nullable', 'date'],
-            'from_end' => ['nullable', 'date'],
-            'supplier_id' => ['nullable', 'string'],
-            'search' => ['nullable', 'string', 'max:100'],
-            'status' => ['nullable', 'string'],
-            'page' => ['nullable', 'integer', 'min:1'],
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
-        ]);
-
-        $now = CarbonImmutable::now();
-        $defaultFrom = $now->startOfMonth()->toDateString();
-        $defaultTo = $now->toDateString();
-
-        $filters['from'] = (string) ($filters['from'] ?? $filters['from_start'] ?? $defaultFrom);
-        $filters['to'] = (string) ($filters['to'] ?? $filters['from_end'] ?? $defaultTo);
-        $filters['per_page'] = (int) ($filters['per_page'] ?? 25);
-        $filters['supplier_id'] = ($filters['supplier_id'] ?? null) === 'all' ? null : ($filters['supplier_id'] ?? null);
-        $filters['status'] = ($filters['status'] ?? null) === 'all' ? null : ($filters['status'] ?? null);
+        $filters = $this->resolveFilters($request);
 
         $suppliers = [];
 
@@ -150,6 +131,71 @@ final class ElectronicInvoicingReceivedDocumentController
             'summary' => $summary,
             'filters' => $appliedFilters,
             'error' => null,
+        ]);
+    }
+
+    public function export(Request $request, #[CurrentUser] User $user, EasyFactuService $easyFactu): StreamedResponse|RedirectResponse
+    {
+        abort_unless($user->can(Permission::ElectronicInvoicingView), 403);
+
+        $filters = $this->resolveFilters($request);
+
+        try {
+            $documents = $this->fetchAllDocumentsForExport($easyFactu, $filters);
+        } catch (EasyFactuException $exception) {
+            return redirect()
+                ->route('electronic-invoicing.received.index', $request->query())
+                ->with('error', 'No se pudo exportar el CSV: '.$exception->getMessage());
+        }
+
+        $filename = 'received-documents-'.CarbonImmutable::now()->format('Y-m-d-His').'.csv';
+
+        return response()->streamDownload(function () use ($documents): void {
+            $output = fopen('php://output', 'wb');
+
+            if ($output === false) {
+                return;
+            }
+
+            fputcsv($output, [
+                'RECEIVED_AT',
+                'ENCF',
+                'ECF_TYPE',
+                'SUPPLIER_NAME',
+                'SUPPLIER_RNC',
+                'BUYER_NAME',
+                'BUYER_RNC',
+                'ISSUE_DATE',
+                'CURRENCY',
+                'SUBTOTAL',
+                'TAX_AMOUNT',
+                'TOTAL_AMOUNT',
+                'STATUS',
+            ]);
+
+            foreach ($documents as $document) {
+                $status = (string) ($document['status'] ?? 'received');
+
+                fputcsv($output, [
+                    (string) ($document['received_at'] ?? ''),
+                    (string) ($document['encf'] ?? ''),
+                    (string) ($document['ecf_type'] ?? ''),
+                    (string) ($document['supplier']['name'] ?? ''),
+                    (string) ($document['supplier']['rnc'] ?? ''),
+                    (string) ($document['buyer_name'] ?? ''),
+                    (string) ($document['buyer_rnc'] ?? ''),
+                    (string) ($document['issue_date'] ?? ''),
+                    (string) ($document['currency'] ?? 'DOP'),
+                    number_format((float) ($document['subtotal'] ?? 0), 2, '.', ''),
+                    number_format((float) ($document['tax_amount'] ?? 0), 2, '.', ''),
+                    number_format((float) ($document['total_amount'] ?? 0), 2, '.', ''),
+                    $this->mapStatusLabel($status),
+                ]);
+            }
+
+            fclose($output);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
     }
 
@@ -266,6 +312,82 @@ final class ElectronicInvoicingReceivedDocumentController
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    private function resolveFilters(Request $request): array
+    {
+        $filters = $request->validate([
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date'],
+            'from_start' => ['nullable', 'date'],
+            'from_end' => ['nullable', 'date'],
+            'supplier_id' => ['nullable', 'string'],
+            'search' => ['nullable', 'string', 'max:100'],
+            'status' => ['nullable', 'string'],
+            'page' => ['nullable', 'integer', 'min:1'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        $now = CarbonImmutable::now();
+        $defaultFrom = $now->startOfMonth()->toDateString();
+        $defaultTo = $now->toDateString();
+
+        $filters['from'] = (string) ($filters['from'] ?? $filters['from_start'] ?? $defaultFrom);
+        $filters['to'] = (string) ($filters['to'] ?? $filters['from_end'] ?? $defaultTo);
+        $filters['per_page'] = (int) ($filters['per_page'] ?? 25);
+        $filters['supplier_id'] = ($filters['supplier_id'] ?? null) === 'all' ? null : ($filters['supplier_id'] ?? null);
+        $filters['status'] = ($filters['status'] ?? null) === 'all' ? null : ($filters['status'] ?? null);
+
+        return $filters;
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     * @return array<int, array<string, mixed>>
+     *
+     * @throws EasyFactuException
+     */
+    private function fetchAllDocumentsForExport(EasyFactuService $easyFactu, array $filters): array
+    {
+        $filters['page'] = 1;
+        $filters['per_page'] = 100;
+
+        $response = $easyFactu->getReceivedDocumentsWithFilters($filters);
+        $documents = collect($response['data'] ?? $response['documents'] ?? [])
+            ->filter(fn ($document): bool => is_array($document))
+            ->values();
+
+        $lastPage = max(1, (int) ($response['last_page'] ?? 1));
+
+        for ($page = 2; $page <= $lastPage; $page++) {
+            $pageResponse = $easyFactu->getReceivedDocumentsWithFilters([
+                ...$filters,
+                'page' => $page,
+            ]);
+
+            $pageDocuments = collect($pageResponse['data'] ?? $pageResponse['documents'] ?? [])
+                ->filter(fn ($document): bool => is_array($document));
+
+            $documents = $documents->concat($pageDocuments);
+        }
+
+        return $documents
+            ->map(fn (array $document): array => $this->mapSummaryDocument($document))
+            ->values()
+            ->all();
+    }
+
+    private function mapStatusLabel(string $status): string
+    {
+        return match ($status) {
+            'processed' => 'Procesado',
+            'accepted' => 'Aceptado',
+            'rejected' => 'Rechazado',
+            default => 'Recibido',
+        };
+    }
+
+    /**
      * @param  array<int, array<string, mixed>>  $documents
      * @param  array<int, array<string, mixed>>  $suppliers
      * @param  array<string, mixed>  $pagination
@@ -284,12 +406,7 @@ final class ElectronicInvoicingReceivedDocumentController
                     'supplier_rnc' => $document['supplier']['rnc'] ?? null,
                     'status' => [
                         'value' => $status,
-                        'label' => match ($status) {
-                            'processed' => 'Procesado',
-                            'accepted' => 'Aceptado',
-                            'rejected' => 'Rechazado',
-                            default => 'Recibido',
-                        },
+                        'label' => $this->mapStatusLabel($status),
                         'variant' => 'secondary',
                         'className' => match ($status) {
                             'processed' => 'bg-amber-100 text-amber-700 hover:bg-amber-100',

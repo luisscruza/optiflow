@@ -63,16 +63,13 @@ export default function ReportsIndex({ groupStats, recentReports }: Props) {
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="space-y-8">
                     {/* Header */}
-                    <div className="flex items-center justify-between">
+                    <div>
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight">Reportes</h1>
                             <p className="text-muted-foreground">
                                 Monitorea la distribución de tus ventas y obtén información para gestionar tus operaciones comerciales.
                             </p>
                         </div>
-                        <Button asChild variant="outline">
-                            <Link href="/reports/history">Historial de exportables</Link>
-                        </Button>
                     </div>
 
                     {/* Search */}

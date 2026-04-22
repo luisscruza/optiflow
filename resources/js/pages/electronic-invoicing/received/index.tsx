@@ -5,7 +5,7 @@ import { DataTable, type TableResource } from '@/components/ui/datatable';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type ReceivedDocumentSummary } from '@/types';
 import { Head } from '@inertiajs/react';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, Download, RefreshCw } from 'lucide-react';
 
 interface Props {
     documents: TableResource<ReceivedDocumentSummary>;
@@ -32,7 +32,9 @@ const formatAmount = (amount: number, currency: string): string => {
     return new Intl.NumberFormat('es-DO', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
-    }).format(amount).concat(` ${currency}`);
+    })
+        .format(amount)
+        .concat(` ${currency}`);
 };
 
 const formatDate = (value: string | null): string => {
@@ -54,6 +56,10 @@ export default function ElectronicInvoicingReceivedIndex({ documents, summary, e
         window.location.reload();
     };
 
+    const exportDocuments = () => {
+        window.location.href = `/electronic-invoicing/received/export${window.location.search}`;
+    };
+
     const currentCurrency = (documents.data.data[0]?.currency as string | undefined) || 'DOP';
 
     return (
@@ -67,10 +73,16 @@ export default function ElectronicInvoicingReceivedIndex({ documents, summary, e
                         <p className="text-gray-600 dark:text-gray-400">Consulta de documentos recibidos desde EasyFactu.</p>
                     </div>
 
-                    <Button type="button" variant="outline" onClick={reloadDocuments}>
-                        <RefreshCw className="mr-2 h-4 w-4" />
-                        Actualizar
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button type="button" variant="outline" onClick={exportDocuments}>
+                            <Download className="mr-2 h-4 w-4" />
+                            Exportar CSV
+                        </Button>
+                        <Button type="button" variant="outline" onClick={reloadDocuments}>
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                            Actualizar
+                        </Button>
+                    </div>
                 </div>
 
                 {error && (
