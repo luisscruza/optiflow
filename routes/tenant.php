@@ -42,6 +42,7 @@ use App\Http\Controllers\DownloadVisualCertificateController;
 use App\Http\Controllers\DownloadWorkflowJobProcessController;
 use App\Http\Controllers\ElectronicInvoicingReceivedDocumentController;
 use App\Http\Controllers\EmitInvoiceController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ExportReportController;
 use App\Http\Controllers\GlobalRoleController;
 use App\Http\Controllers\ImpersonationController;
@@ -89,6 +90,7 @@ use App\Http\Controllers\TaxController;
 use App\Http\Controllers\TelegramBotController;
 use App\Http\Controllers\TestTelegramBotMessageController;
 use App\Http\Controllers\TestWhatsappAccountMessageController;
+use App\Http\Controllers\ToggleDocumentSubtypeActiveController;
 use App\Http\Controllers\UploadInvoiceImportController;
 use App\Http\Controllers\WhatsappAccountController;
 use App\Http\Controllers\WorkflowController;
@@ -212,6 +214,8 @@ Route::middleware([
 
             Route::resource('taxes', TaxController::class);
 
+            Route::resource('expenses', ExpenseController::class);
+
             Route::resource('contacts', ContactController::class);
             Route::get('api/contacts/check-duplicates', CheckContactDuplicatesController::class)->name('contacts.check-duplicates');
 
@@ -269,6 +273,7 @@ Route::middleware([
             Route::post('quotations/{quotation}/convert-to-invoice', ConvertQuotationToInvoiceController::class)->name('quotations.convert-to-invoice');
 
             Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
+            Route::patch('document-subtypes/{documentSubtype}/toggle-active', ToggleDocumentSubtypeActiveController::class)->name('document-subtypes.toggle-active');
             Route::patch('document-subtypes/{documentSubtype}/set-default', SetDefaultDocumentSubtypeController::class)->name('document-subtypes.set-default');
             Route::patch('document-subtypes/{documentSubtype}/workspace/{workspace}/set-preferred', SetWorkspacePreferredDocumentSubtypeController::class)->name('document-subtypes.set-workspace-preferred');
 

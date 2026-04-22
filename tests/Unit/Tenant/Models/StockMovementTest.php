@@ -13,6 +13,8 @@ test('to array', function (): void {
         'product_id',
         'type',
         'quantity',
+        'previous_quantity',
+        'current_quantity',
         'unit_cost',
         'total_cost',
         'related_invoice_id',

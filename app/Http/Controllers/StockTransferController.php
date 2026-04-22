@@ -29,10 +29,17 @@ final class StockTransferController
             'transfers' => StockTransfersTable::make($request)->query(
                 StockMovement::query()
                     ->withoutWorkspaceScope()
-                    ->whereIn('type', StockTransfersTable::transferTypes())
                     ->where(function ($query) use ($workspace): void {
-                        $query->where('from_workspace_id', $workspace->id)
-                            ->orWhere('to_workspace_id', $workspace->id);
+                        $query->where(function ($movementQuery) use ($workspace): void {
+                            $movementQuery->whereIn('type', ['transfer_in', 'transfer_out'])
+                                ->where('workspace_id', $workspace->id);
+                        })->orWhere(function ($movementQuery) use ($workspace): void {
+                            $movementQuery->where('type', 'transfer')
+                                ->where(function ($legacyQuery) use ($workspace): void {
+                                    $legacyQuery->where('from_workspace_id', $workspace->id)
+                                        ->orWhere('to_workspace_id', $workspace->id);
+                                });
+                        });
                     })
             ),
             'current_workspace_id' => $workspace->id,

@@ -11,9 +11,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
+import { activate, deactivate } from '@/routes/products';
 import { type BreadcrumbItem, type Product, type StockMovement } from '@/types';
 import { useCurrency } from '@/utils/currency';
-import { activate, deactivate } from '@/routes/products';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -47,6 +47,53 @@ interface Props {
         minimum_quantity: number;
         maximum_quantity: number | null;
     }>;
+}
+
+const getMovementSign = (type: string, quantity: number) => {
+    if (type === 'in' || type === 'initial') {
+        return quantity > 0 ? '+' : '';
+    } else if (type === 'out') {
+        return quantity > 0 ? '-' : '';
+    } else if (type === 'adjustment') {
+        return quantity > 0 ? '+' : quantity < 0 ? '' : '';
+    }
+    return '';
+};
+
+const getMovementLabel = (type: string) => {
+    switch (type) {
+        case 'initial':
+            return 'Inventario inicial';
+        case 'adjustment':
+            return 'Ajuste de stock';
+        case 'transfer':
+            return 'Transferencia';
+        case 'transfer_in':
+            return 'Transferencia entrante';
+        case 'transfer_out':
+            return 'Transferencia saliente';
+        case 'in':
+            return 'Entrada de stock';
+        case 'out':
+            return 'Salida de stock';
+        case 'return_in':
+            return 'Devolución entrante';
+        case 'return_out':
+            return 'Devolución saliente';
+        default:
+            return type;
+    }
+};
+
+const getMovementColor = (type: string) => {
+    if (type === 'in' || type === 'initial') {
+        return 'text-green-600';
+    } else if (type === 'out') {
+        return 'text-red-600';
+    } else if (type === 'adjustment') {
+        return 'text-yellow-600';
+    }
+    return '';
 }
 
 function DetailItem({ label, value, className }: { label: string; value: ReactNode; className?: string }) {
@@ -121,9 +168,7 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
                         <div>
                             <div className="flex items-center gap-3">
                                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{product.name}</h1>
-                                <Badge variant={product.is_active ? 'default' : 'secondary'}>
-                                    {product.is_active ? 'Activo' : 'Inactivo'}
-                                </Badge>
+                                <Badge variant={product.is_active ? 'default' : 'secondary'}>{product.is_active ? 'Activo' : 'Inactivo'}</Badge>
                             </div>
                             <p className="text-gray-600 dark:text-gray-400">
                                 SKU: <code className="rounded bg-gray-100 px-2 py-1 text-sm dark:bg-gray-800">{product.sku}</code>
@@ -357,6 +402,7 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
                                         <TableHeader>
                                             <TableRow>
                                                 <TableHead>Fecha</TableHead>
+                                                <TableHead>Almacén</TableHead>
                                                 <TableHead>Tipo</TableHead>
                                                 <TableHead>Cantidad</TableHead>
                                                 <TableHead>Referencia</TableHead>
@@ -367,14 +413,25 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
                                             {product.stock_movements.slice(0, 10).map((movement) => (
                                                 <TableRow key={movement.id}>
                                                     <TableCell>{formatDate(movement.created_at)}</TableCell>
+                                                           <TableCell>
+                                                       {movement.workspace?.name || '—'}
+                                                    </TableCell>
                                                     <TableCell>
                                                         <Badge variant={movement.type === 'in' ? 'default' : 'secondary'}>
-                                                            {movement.type.toUpperCase()}
+                                                            {getMovementLabel(movement.type)}
                                                         </Badge>
                                                     </TableCell>
-                                                    <TableCell className={movement.type === 'in' ? 'text-green-600' : 'text-red-600'}>
-                                                        {movement.type === 'in' ? '+' : '-'}
-                                                        {movement.quantity}
+                                                    <TableCell
+                                                        className= {cn(
+                                                            'text-right font-semibold w-48',
+                                                            getMovementColor(movement.type),
+                                                        )}
+                                                    >
+                                                        {getMovementSign(movement.type, movement.quantity)}
+                                                        {movement.quantity} 
+                                                        {movement.previous_quantity !== null && movement.current_quantity !== null && (
+                                                            <span className="text-yellow-800 text-xs ml-2 bg-yellow-50 py-0.5 px-2 rounded-md border">{movement.previous_quantity} → {movement.current_quantity}</span>
+                                                        )}
                                                     </TableCell>
                                                     <TableCell>
                                                         {movement.reference_number ? (
@@ -383,7 +440,7 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
                                                             <span className="text-gray-400">—</span>
                                                         )}
                                                     </TableCell>
-                                                    <TableCell className="max-w-[200px] truncate">{movement.notes || '—'}</TableCell>
+                                                    <TableCell className="max-w-[200px] truncate">{movement.note}</TableCell>
                                                 </TableRow>
                                             ))}
                                         </TableBody>

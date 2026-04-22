@@ -98,7 +98,7 @@ export default function CreateContact({ contact_types, identification_types, rel
         notes: '',
         identification_type: undefined,
         identification_number: '',
-        credit_limit: '',
+        credit_limit: '0',
         address: {
             municipality: '',
             province: '',

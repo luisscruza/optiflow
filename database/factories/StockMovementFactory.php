@@ -30,6 +30,8 @@ final class StockMovementFactory extends Factory
             'product_id' => Product::factory(),
             'type' => $type,
             'quantity' => $quantity,
+            'previous_quantity' => 0,
+            'current_quantity' => $quantity,
             'unit_cost' => $unitCost,
             'total_cost' => $quantity * $unitCost,
             'related_invoice_id' => null,
@@ -70,6 +72,7 @@ final class StockMovementFactory extends Factory
             return [
                 'type' => 'adjustment',
                 'quantity' => $isPositive ? abs($attributes['quantity']) : -abs($attributes['quantity']),
+                'current_quantity' => ($attributes['previous_quantity'] ?? 0) + ($isPositive ? abs($attributes['quantity']) : -abs($attributes['quantity'])),
                 'note' => $isPositive ? 'Stock adjustment - increase' : 'Stock adjustment - decrease',
             ];
         });
@@ -124,6 +127,7 @@ final class StockMovementFactory extends Factory
 
             return [
                 'quantity' => $quantity,
+                'current_quantity' => ($attributes['previous_quantity'] ?? 0) + $quantity,
                 'total_cost' => $quantity * $unitCost,
             ];
         });

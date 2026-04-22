@@ -6,6 +6,7 @@ use App\Enums\Permission;
 use App\Models\Product;
 use App\Models\ProductBulkUpdate;
 use App\Models\ProductStock;
+use App\Models\StockMovement;
 use App\Models\Tax;
 use App\Models\User;
 use App\Models\Workspace;
@@ -128,6 +129,18 @@ CSV;
         ->and($product->description)->toBe('Montura actualizada')
         ->and($product->getStockQuantityForWorkspace($this->workspaceA))->toBe(25.0)
         ->and($product->getStockQuantityForWorkspace($this->workspaceB))->toBe(3.0);
+
+    $workspaceAMovement = StockMovement::query()
+        ->where('product_id', $product->id)
+        ->where('workspace_id', $this->workspaceA->id)
+        ->where('reference_number', 'BULK-PRODUCT-UPDATE')
+        ->latest('id')
+        ->first();
+
+    expect($workspaceAMovement)->not->toBeNull()
+        ->and((float) $workspaceAMovement?->quantity)->toBe(15.0)
+        ->and((float) $workspaceAMovement?->previous_quantity)->toBe(10.0)
+        ->and((float) $workspaceAMovement?->current_quantity)->toBe(25.0);
 
     $this->assertDatabaseHas('product_bulk_updates', [
         'status' => 'completed',

@@ -230,6 +230,8 @@ export interface StockMovement {
     to_workspace_id?: number | null;
     type: 'in' | 'out' | 'adjustment' | 'transfer' | 'initial' | 'transfer_in' | 'transfer_out' | 'set_quantity' | 'add_quantity' | 'remove_quantity';
     quantity: number;
+    previous_quantity?: number;
+    current_quantity?: number;
     reference_number?: string | null;
     note?: string | null;
     notes?: string | null;
@@ -240,6 +242,7 @@ export interface StockMovement {
     product?: Product;
     from_workspace?: Workspace;
     to_workspace?: Workspace;
+    workspace?: Workspace;
 }
 
 export interface StockAdjustment {
@@ -272,6 +275,28 @@ export interface StockTransfer {
     from_workspace?: Workspace;
     to_workspace?: Workspace;
     created_by?: User;
+}
+
+export interface Expense {
+    id: number;
+    workspace_id: number;
+    contact_id: number;
+    document_number: string;
+    issue_date: string;
+    subtotal_amount: number;
+    itbis_amount: number;
+    isc_amount: number;
+    withheld_itbis_amount: number;
+    withheld_isr_amount: number;
+    total_amount: number;
+    is_informal: boolean;
+    status: 'pending' | 'paid' | 'cancelled';
+    notes?: string | null;
+    created_at: string;
+    updated_at: string;
+    contact?: Contact;
+    workspace?: Workspace;
+    media?: Media[];
 }
 
 export interface PaginatedStockMovements {

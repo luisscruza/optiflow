@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $product_id
  * @property string $type
  * @property numeric $quantity
+ * @property numeric|null $previous_quantity
+ * @property numeric|null $current_quantity
  * @property numeric|null $unit_cost
  * @property numeric|null $total_cost
  * @property int|null $related_invoice_id
@@ -41,8 +43,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement outgoing()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereCurrentQuantity($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereNote($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement wherePreviousQuantity($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereProductId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereQuantity($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StockMovement whereRelatedDocumentId($value)
@@ -243,6 +247,8 @@ final class StockMovement extends Model
     {
         return [
             'quantity' => 'decimal:2',
+            'previous_quantity' => 'decimal:2',
+            'current_quantity' => 'decimal:2',
             'unit_cost' => 'decimal:2',
             'total_cost' => 'decimal:2',
             'type' => StockMovementType::class,

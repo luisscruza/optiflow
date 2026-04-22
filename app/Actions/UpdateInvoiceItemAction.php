@@ -13,8 +13,10 @@ use App\Models\Tax;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
-final class UpdateInvoiceItemAction
+final readonly class UpdateInvoiceItemAction
 {
+    public function __construct(private ApplyInventoryMovementAction $applyInventoryMovementAction) {}
+
     /**
      * Update, create, or remove an invoice item with proper stock management.
      *
@@ -70,11 +72,16 @@ final class UpdateInvoiceItemAction
      */
     private function updateItem(Invoice $invoice, InvoiceItem $existingItem, array $data): void
     {
+        $existingProduct = Product::query()->findOrFail($existingItem->product_id);
         $product = Product::query()->findOrFail($data['product_id']);
-        $originalQuantity = $existingItem->quantity;
-        $newQuantity = $data['quantity'];
+        $originalQuantity = (float) $existingItem->quantity;
+        $newQuantity = (float) $data['quantity'];
 
-        if ($product->track_stock && $originalQuantity !== $newQuantity) {
+        if ($existingProduct->id !== $product->id) {
+            $this->restoreStock($invoice, $existingProduct, $originalQuantity, 'Reverso por cambio de producto en factura');
+            $this->validateStock($invoice, ['quantity' => $newQuantity], $product);
+            $this->decreaseStock($invoice, ['quantity' => $newQuantity], $product);
+        } elseif ($product->track_stock && $originalQuantity !== $newQuantity) {
             $this->reconcileStockMovement($invoice, $product, $originalQuantity, $newQuantity);
         }
 
@@ -108,7 +115,7 @@ final class UpdateInvoiceItemAction
     }
 
     /**
-     * Remove a invoice item (find and delete the associated stock movement).
+     * Remove a invoice item and append the inverse movement.
      */
     private function removeItem(Invoice $invoice, InvoiceItem $item): void
     {
@@ -116,19 +123,7 @@ final class UpdateInvoiceItemAction
         $originalQuantity = $item->quantity;
 
         if ($product && $product->track_stock) {
-            $existingMovement = $invoice->stockMovements()
-                ->where('product_id', $product->id)
-                ->where('type', StockMovementType::SALE)
-                ->first();
-
-            if ($existingMovement) {
-                $stockForWorkspace = $product->getStockForWorkspace($invoice->workspace);
-                if ($stockForWorkspace) {
-                    $stockForWorkspace->incrementStock($originalQuantity);
-                }
-
-                $existingMovement->delete();
-            }
+            $this->restoreStock($invoice, $product, (float) $originalQuantity, 'Reverso por eliminacion de item de factura');
         }
 
         // Detach all taxes before deleting the item
@@ -160,21 +155,14 @@ final class UpdateInvoiceItemAction
             return;
         }
 
-        $invoice->stockMovements()->create([
-            'product_id' => $product->id,
+        $this->applyInventoryMovementAction->handle($product, [
             'workspace_id' => $invoice->workspace_id,
+            'quantity' => -abs((float) $item['quantity']),
             'type' => StockMovementType::SALE,
-            'quantity' => -$item['quantity'],
+            'related_invoice_id' => $invoice->id,
             'reference_number' => $invoice->document_number,
+            'note' => 'Salida por factura '.$invoice->document_number,
         ]);
-
-        $stockForWorkspace = $product->getStockForWorkspace($invoice->workspace);
-
-        if (! $stockForWorkspace instanceof \App\Models\ProductStock) {
-            throw new InsufficientStockException('No stock record found for product: '.$product->name);
-        }
-
-        $stockForWorkspace->decrementStock($item['quantity']);
     }
 
     /**
@@ -215,8 +203,7 @@ final class UpdateInvoiceItemAction
     }
 
     /**
-     * Reconcile stock movements when quantity changes.
-     * Instead of creating new movements, update the existing movement.
+     * Reconcile stock movements when quantity changes using append-only movements.
      */
     private function reconcileStockMovement(
         Invoice $invoice,
@@ -230,53 +217,38 @@ final class UpdateInvoiceItemAction
             return; // No change needed
         }
 
-        $stockForWorkspace = $product->getStockForWorkspace($invoice->workspace);
-
-        if (! $stockForWorkspace instanceof \App\Models\ProductStock) {
-            throw new InsufficientStockException('No stock record found for product: '.$product->name);
-        }
-
-        // Find the existing stock movement for this document and product
-        $existingMovement = $invoice->stockMovements()
-            ->where('product_id', $product->id)
-            ->where('type', StockMovementType::SALE)
-            ->first();
-
-        if (! $existingMovement) {
-            // If no existing movement found, create a new one (fallback)
-            $invoice->stockMovements()->create([
-                'product_id' => $product->id,
-                'workspace_id' => $invoice->workspace_id,
-                'type' => StockMovementType::SALE,
-                'quantity' => -$newQuantity,
-                'reference_number' => $invoice->document_number,
-            ]);
-
-            if ($quantityDifference > 0) {
-                if (! $product->hasSufficientStock($invoice->workspace_id, $quantityDifference)) {
-                    throw new InsufficientStockException("Stock insuficiente para incrementar la cantidad del producto {$product->name}.");
-                }
-                $stockForWorkspace->decrementStock($quantityDifference);
-            } else {
-                $stockForWorkspace->incrementStock(abs($quantityDifference));
-            }
-
-            return;
-        }
-
-        $existingMovement->update([
-            'quantity' => -$newQuantity, // Negative because it's a sale (outgoing)
-        ]);
-
         if ($quantityDifference > 0) {
             if (! $product->hasSufficientStock($invoice->workspace_id, $quantityDifference)) {
                 throw new InsufficientStockException("Stock insuficiente para incrementar la cantidad del producto {$product->name}.");
             }
-            $stockForWorkspace->decrementStock($quantityDifference);
+
+            $this->applyInventoryMovementAction->handle($product, [
+                'workspace_id' => $invoice->workspace_id,
+                'quantity' => -abs($quantityDifference),
+                'type' => StockMovementType::SALE,
+                'related_invoice_id' => $invoice->id,
+                'reference_number' => $invoice->document_number,
+                'note' => 'Salida adicional por actualizacion de factura '.$invoice->document_number,
+            ]);
         } else {
-            $returnQuantity = abs($quantityDifference);
-            $stockForWorkspace->incrementStock($returnQuantity);
+            $this->restoreStock($invoice, $product, abs($quantityDifference), 'Reverso parcial por actualizacion de factura');
         }
+    }
+
+    private function restoreStock(Invoice $invoice, Product $product, float $quantity, string $reason): void
+    {
+        if (! $product->track_stock || $quantity <= 0) {
+            return;
+        }
+
+        $this->applyInventoryMovementAction->handle($product, [
+            'workspace_id' => $invoice->workspace_id,
+            'quantity' => abs($quantity),
+            'type' => StockMovementType::RETURN_IN,
+            'related_invoice_id' => $invoice->id,
+            'reference_number' => $invoice->document_number,
+            'note' => $reason.' '.$invoice->document_number,
+        ]);
     }
 
     /**

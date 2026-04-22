@@ -149,6 +149,15 @@ export function AppSidebar() {
                   },
               ]
             : []),
+        ...(can('view expenses')
+            ? [
+                  {
+                      title: 'Gastos',
+                      href: '/expenses',
+                      icon: FileText,
+                  },
+              ]
+            : []),
         ...(can('view prescriptions')
             ? [
                   {

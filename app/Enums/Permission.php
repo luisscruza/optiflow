@@ -33,6 +33,12 @@ enum Permission: string
     case PaymentsDelete = 'delete payments';
     case PaymentsList = 'list payments';
 
+    // Expenses
+    case ExpensesView = 'view expenses';
+    case ExpensesCreate = 'create expenses';
+    case ExpensesEdit = 'edit expenses';
+    case ExpensesDelete = 'delete expenses';
+
     // Quotations
     case QuotationsView = 'view quotations';
     case QuotationsCreate = 'create quotations';
@@ -112,6 +118,7 @@ enum Permission: string
             self::ContactsDelete->value,
             self::InvoicesDelete->value,
             self::PaymentsDelete->value,
+            self::ExpensesDelete->value,
             self::QuotationsDelete->value,
             self::PrescriptionsDelete->value,
             self::CreateWorkflows->value,
@@ -156,6 +163,12 @@ enum Permission: string
             self::PaymentsEdit => 'Editar pagos',
             self::PaymentsDelete => 'Eliminar pagos',
             self::PaymentsList => 'Listar pagos',
+
+            // Expenses
+            self::ExpensesView => 'Ver gastos',
+            self::ExpensesCreate => 'Crear gastos',
+            self::ExpensesEdit => 'Editar gastos',
+            self::ExpensesDelete => 'Eliminar gastos',
 
             // Quotations
             self::QuotationsView => 'Ver cotizaciones',
@@ -225,6 +238,7 @@ enum Permission: string
             self::ContactsView, self::ContactsCreate, self::ContactsEdit, self::ContactsDelete => 'Contactos',
             self::InvoicesView, self::InvoicesCreate, self::InvoicesEdit, self::InvoicesDelete, self::ElectronicInvoicingView => 'Facturas',
             self::PaymentsView, self::PaymentsCreate, self::PaymentsEdit, self::PaymentsDelete, self::PaymentsList => 'Pagos',
+            self::ExpensesView, self::ExpensesCreate, self::ExpensesEdit, self::ExpensesDelete => 'Gastos',
             self::QuotationsView, self::QuotationsCreate, self::QuotationsEdit, self::QuotationsDelete => 'Cotizaciones',
             self::PrescriptionsView, self::PrescriptionsCreate, self::PrescriptionsEdit, self::PrescriptionsDelete => 'Recetas',
             self::InventoryView, self::InventoryAdjust, self::InventoryTransfer => 'Inventario',

@@ -45,7 +45,7 @@ final readonly class CreateProductAction
 
             if ($product->track_stock && $workspaceInitialQuantities !== []) {
                 $workspaceIds = array_map('intval', array_keys($workspaceInitialQuantities));
-                $workspaceIds = array_values(array_filter($workspaceIds, fn (int $id): bool => $id > 0));
+                $workspaceIds = array_values(array_filter($workspaceIds, fn(int $id): bool => $id > 0));
 
                 if ($workspaceIds !== []) {
                     $allowedWorkspaceIds = $user->can(Permission::ViewAllLocations)
@@ -69,7 +69,7 @@ final readonly class CreateProductAction
                             'quantity' => (float) $quantityValue,
                             'minimum_quantity' => $data['minimum_quantity'] ?? null,
                             'unit_cost' => $data['unit_cost'] ?? null,
-                            'notes' => 'Initial stock setup during product creation',
+                            'notes' => 'Inventario inicial',
                         ];
 
                         $this->setInitialStockAction->handle($user, $stockData, $workspace);
@@ -81,7 +81,7 @@ final readonly class CreateProductAction
                     'quantity' => $data['initial_quantity'] ?? 0,
                     'minimum_quantity' => $data['minimum_quantity'] ?? null,
                     'unit_cost' => $data['unit_cost'] ?? null,
-                    'notes' => 'Initial stock setup during product creation',
+                    'notes' => 'Inventario inicial',
                 ];
 
                 $this->setInitialStockAction->handle($user, $stockData);

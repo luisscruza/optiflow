@@ -74,7 +74,7 @@ final readonly class ProcessProductBulkUpdateAction
                             'adjustment_type' => 'set_quantity',
                             'quantity' => $stockTarget['quantity'],
                             'reason' => "Actualizacion masiva de productos (fila {$preparedRow['row']})",
-                            'reference' => 'BULK-PRODUCT-UPDATE',
+                            'reference' => null
                         ]);
 
                         $stockAdjustmentsCreated++;

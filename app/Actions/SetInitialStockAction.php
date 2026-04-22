@@ -6,14 +6,15 @@ namespace App\Actions;
 
 use App\Models\Product;
 use App\Models\ProductStock;
-use App\Models\StockMovement;
 use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
-final class SetInitialStockAction
+final readonly class SetInitialStockAction
 {
+    public function __construct(private ApplyInventoryMovementAction $applyInventoryMovementAction) {}
+
     /**
      * Set initial stock for a product in a workspace.
      *
@@ -33,7 +34,7 @@ final class SetInitialStockAction
         //     throw new InvalidArgumentException('Initial stock quantity cannot be negative.');
         // }
 
-        return DB::transaction(function () use ($product, $data, $workspaceId): ProductStock {
+        return DB::transaction(function () use ($product, $data, $workspaceId, $user): ProductStock {
             $existingStock = ProductStock::query()->where([
                 'product_id' => $product->id,
                 'workspace_id' => $workspaceId,
@@ -48,16 +49,16 @@ final class SetInitialStockAction
             $stock = ProductStock::query()->create([
                 'product_id' => $product->id,
                 'workspace_id' => $workspaceId,
-                'quantity' => $data['quantity'],
+                'quantity' => 0,
                 'minimum_quantity' => $data['minimum_quantity'] ?? 0,
             ]);
 
             if ($data['quantity']) {
-                StockMovement::query()->create([
+                $this->applyInventoryMovementAction->handle($product, [
                     'workspace_id' => $workspaceId,
-                    'product_id' => $product->id,
+                    'quantity' => (float) $data['quantity'],
                     'type' => 'initial',
-                    'quantity' => $data['quantity'],
+                    'user_id' => $user?->id,
                     'unit_cost' => $data['unit_cost'] ?? null,
                     'note' => $data['notes'] ?? 'Initial stock setup',
                 ]);

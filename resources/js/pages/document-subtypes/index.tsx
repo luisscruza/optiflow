@@ -119,6 +119,19 @@ export default function DocumentSubtypesIndex({ subtypes, filters, documentTypes
         );
     };
 
+    const handleToggleActive = (subtypeId: number) => {
+        router.patch(
+            `/document-subtypes/${subtypeId}/toggle-active`,
+            {},
+            {
+                preserveState: true,
+                onSuccess: () => {
+                    router.reload({ only: ['subtypes'] });
+                },
+            },
+        );
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Numeraciones de comprobantes" />
@@ -224,7 +237,17 @@ export default function DocumentSubtypesIndex({ subtypes, filters, documentTypes
                                             <TableRow key={subtype.id}>
                                                 <TableCell className="font-medium">{subtype.name}</TableCell>
                                                 <TableCell>
-                                                    <Badge variant={subtype.is_active ? 'default' : 'secondary'}>{subtype.estado}</Badge>
+                                                    <div className="flex items-center gap-2">
+                                                        <Badge variant={subtype.is_active ? 'default' : 'secondary'}>{subtype.estado}</Badge>
+                                                        <Button
+                                                            type="button"
+                                                            variant={subtype.is_active ? 'outline' : 'secondary'}
+                                                            size="sm"
+                                                            onClick={() => handleToggleActive(subtype.id)}
+                                                        >
+                                                            {subtype.is_active ? 'Desactivar' : 'Activar'}
+                                                        </Button>
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-2">

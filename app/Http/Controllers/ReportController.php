@@ -9,6 +9,7 @@ use App\Enums\ReportGroup;
 use App\Enums\ReportType;
 use App\Models\Report;
 use App\Reports\CustomerSalesReport;
+use App\Reports\ExpensesSummaryReport;
 use App\Reports\GeneralSalesReport;
 use App\Reports\PrescriptionsByDoctorReport;
 use App\Reports\PrescriptionsSummaryReport;
@@ -74,7 +75,7 @@ final class ReportController
             }
         }
 
-        $requestFilters = $request->only(['workspace_id', 'start_date', 'end_date', 'customer_id', 'salesman_id', 'optometrist_id', 'status', 'search']);
+        $requestFilters = $request->only(['workspace_id', 'start_date', 'end_date', 'customer_id', 'contact_id', 'salesman_id', 'optometrist_id', 'status', 'is_informal', 'search']);
         $filters = array_merge($defaultFilters, array_filter($requestFilters, fn ($v) => $v !== null && $v !== ''));
 
         // Get sort parameters
@@ -116,6 +117,7 @@ final class ReportController
             ReportType::SalesByProduct => new ProductSalesReport,
             ReportType::SalesByCustomer => new CustomerSalesReport,
             ReportType::SalesBySalesman => new SalesmanSalesReport,
+            ReportType::ExpensesSummary => new ExpensesSummaryReport,
             ReportType::PrescriptionsSummary => new PrescriptionsSummaryReport,
             ReportType::PrescriptionsByDoctor => new PrescriptionsByDoctorReport,
             default => throw new Exception('Report not implemented'),

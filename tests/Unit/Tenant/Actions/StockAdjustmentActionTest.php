@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Actions\StockAdjustmentAction;
+use App\Exceptions\ReportableActionException;
 use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\User;
@@ -41,7 +42,9 @@ test('adjusts stock in the selected workspace', function (): void {
 
     expect((float) $updatedStock->quantity)->toBe(12.0)
         ->and($movement->workspace_id)->toBe($targetWorkspace->id)
-        ->and((float) $movement->quantity)->toBe(7.0);
+        ->and((float) $movement->quantity)->toBe(7.0)
+        ->and((float) $movement->previous_quantity)->toBe(5.0)
+        ->and((float) $movement->current_quantity)->toBe(12.0);
 });
 
 test('rejects stock adjustment for an inaccessible workspace', function (): void {
@@ -65,5 +68,5 @@ test('rejects stock adjustment for an inaccessible workspace', function (): void
         'quantity' => 3,
         'reason' => 'Ajuste no permitido',
     ]))
-        ->toThrow(InvalidArgumentException::class, 'User does not have access to the selected workspace.');
+        ->toThrow(ReportableActionException::class, 'User does not have access to the selected workspace.');
 });
