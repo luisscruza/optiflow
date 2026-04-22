@@ -32,11 +32,13 @@ interface DocumentSubtype {
     end_number: number | null;
     next_number: number;
     valid_until_date: string | null;
+    is_active: boolean;
     is_default: boolean;
     electronica: string;
     siguiente_numero: number;
     fecha_finalizacion: string | null;
     preferida: string;
+    estado: string;
 }
 
 interface PaginatedSubtypes {
@@ -198,6 +200,7 @@ export default function DocumentSubtypesIndex({ subtypes, filters, documentTypes
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Nombre</TableHead>
+                                        <TableHead>Estado</TableHead>
                                         <TableHead>Preferida</TableHead>
                                         <TableHead>Fecha de finalización</TableHead>
                                         <TableHead>Prefijo</TableHead>
@@ -220,6 +223,9 @@ export default function DocumentSubtypesIndex({ subtypes, filters, documentTypes
                                         subtypes.data.map((subtype) => (
                                             <TableRow key={subtype.id}>
                                                 <TableCell className="font-medium">{subtype.name}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant={subtype.is_active ? 'default' : 'secondary'}>{subtype.estado}</Badge>
+                                                </TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-2">
                                                         {subtype.preferida}

@@ -43,6 +43,7 @@ interface Props {
     taxesGroupedByType: TaxesGroupedByType;
     salesmen: Salesman[];
     isEasyFactuConfigured: boolean;
+    electronicInvoicingEnvironment: string | null;
 }
 
 const createDefaultItems = (): InvoiceItem[] => [
@@ -104,6 +105,7 @@ export default function CreateInvoice({
     salesmen,
     fromQuotation,
     isEasyFactuConfigured,
+    electronicInvoicingEnvironment,
 }: Props) {
     const defaultItems: InvoiceItem[] = fromQuotation?.items ?? createDefaultItems();
 
@@ -185,6 +187,7 @@ export default function CreateInvoice({
                     taxesGroupedByType={taxesGroupedByType}
                     salesmen={salesmen}
                     isEasyFactuConfigured={isEasyFactuConfigured}
+                    electronicInvoicingEnvironment={electronicInvoicingEnvironment}
                 />
             </div>
         </AppLayout>

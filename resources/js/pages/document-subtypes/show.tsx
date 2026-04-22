@@ -16,6 +16,7 @@ interface DocumentSubtype {
     end_number: number | null;
     next_number: number;
     valid_until_date: string | null;
+    is_active: boolean;
     is_default: boolean;
     created_at: string;
     updated_at: string;
@@ -80,6 +81,10 @@ export default function ShowDocumentSubtype({ subtype, availableWorkspaces, work
     };
 
     const getStatusColor = () => {
+        if (!subtype.is_active) {
+            return 'text-gray-500';
+        }
+
         if (subtype.is_near_expiration || subtype.is_running_low) {
             return 'text-orange-600';
         }
@@ -87,6 +92,10 @@ export default function ShowDocumentSubtype({ subtype, availableWorkspaces, work
     };
 
     const getStatusText = () => {
+        if (!subtype.is_active) {
+            return 'Inactiva';
+        }
+
         if (subtype.is_near_expiration && subtype.is_running_low) {
             return 'Próxima a vencer y números bajos';
         }

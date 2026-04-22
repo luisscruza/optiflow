@@ -24,6 +24,7 @@ enum Permission: string
     case InvoicesCreate = 'create invoices';
     case InvoicesEdit = 'edit invoices';
     case InvoicesDelete = 'delete invoices';
+    case ElectronicInvoicingView = 'view electronic invoicing';
 
     // Payments
     case PaymentsView = 'view payments';
@@ -147,6 +148,7 @@ enum Permission: string
             self::InvoicesCreate => 'Crear facturas',
             self::InvoicesEdit => 'Editar facturas',
             self::InvoicesDelete => 'Eliminar facturas',
+            self::ElectronicInvoicingView => 'Ver facturación electrónica',
 
             // Payments
             self::PaymentsView => 'Ver pagos',
@@ -221,7 +223,7 @@ enum Permission: string
             self::ViewAllLocations => 'General',
             self::ProductsView, self::ProductsCreate, self::ProductsEdit, self::ProductsDelete => 'Productos',
             self::ContactsView, self::ContactsCreate, self::ContactsEdit, self::ContactsDelete => 'Contactos',
-            self::InvoicesView, self::InvoicesCreate, self::InvoicesEdit, self::InvoicesDelete => 'Facturas',
+            self::InvoicesView, self::InvoicesCreate, self::InvoicesEdit, self::InvoicesDelete, self::ElectronicInvoicingView => 'Facturas',
             self::PaymentsView, self::PaymentsCreate, self::PaymentsEdit, self::PaymentsDelete, self::PaymentsList => 'Pagos',
             self::QuotationsView, self::QuotationsCreate, self::QuotationsEdit, self::QuotationsDelete => 'Cotizaciones',
             self::PrescriptionsView, self::PrescriptionsCreate, self::PrescriptionsEdit, self::PrescriptionsDelete => 'Recetas',

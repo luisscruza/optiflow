@@ -60,3 +60,36 @@ test('it throws a typed exception on api error', function (): void {
     expect(fn () => app(EasyFactuService::class)->getNextSequence('31'))
         ->toThrow(EasyFactuException::class, 'Clave inválida');
 });
+
+test('it fetches received documents from easyfactu', function (): void {
+    Http::fake([
+        'https://api.easyfactu.test/v1/received-documents' => Http::response([
+            'documents' => [
+                ['id' => 'rd_1', 'encf' => 'E310000000001'],
+            ],
+        ], 200),
+    ]);
+
+    $response = app(EasyFactuService::class)->getReceivedDocuments();
+
+    expect($response['documents'])->toHaveCount(1)
+        ->and($response['documents'][0]['id'])->toBe('rd_1');
+
+    Http::assertSent(function ($request): bool {
+        return $request->url() === 'https://api.easyfactu.test/v1/received-documents'
+            && $request->hasHeader('Authorization', 'Bearer ef_testecf_12345678901234567890123456789012');
+    });
+});
+
+test('it fetches a received document detail from easyfactu', function (): void {
+    Http::fake([
+        'https://api.easyfactu.test/v1/received-documents/rd_1' => Http::response([
+            'document' => ['id' => 'rd_1', 'encf' => 'E310000000001'],
+        ], 200),
+    ]);
+
+    $response = app(EasyFactuService::class)->getReceivedDocument('rd_1');
+
+    expect($response['document']['id'])->toBe('rd_1')
+        ->and($response['document']['encf'])->toBe('E310000000001');
+});

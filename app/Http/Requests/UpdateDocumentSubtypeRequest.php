@@ -27,6 +27,7 @@ final class UpdateDocumentSubtypeRequest extends FormRequest
             'name' => 'required|string|max:255',
             'start_number' => 'required|integer|min:1',
             'end_number' => 'nullable|integer|gt:start_number',
+            'is_active' => 'required|boolean',
         ];
     }
 
@@ -43,6 +44,7 @@ final class UpdateDocumentSubtypeRequest extends FormRequest
             'start_number.required' => 'El número inicial es obligatorio.',
             'start_number.min' => 'El número inicial debe ser mayor a 0.',
             'end_number.gt' => 'El número final debe ser mayor al número inicial.',
+            'is_active.required' => 'Debes indicar si la numeración está activa.',
         ];
     }
 
@@ -57,6 +59,7 @@ final class UpdateDocumentSubtypeRequest extends FormRequest
             'name' => 'nombre',
             'start_number' => 'número inicial',
             'end_number' => 'número final',
+            'is_active' => 'estado',
         ];
     }
 }

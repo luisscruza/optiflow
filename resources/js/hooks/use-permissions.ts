@@ -17,6 +17,7 @@ export type WorkspacePermission =
     | 'create invoices'
     | 'edit invoices'
     | 'delete invoices'
+    | 'view electronic invoicing'
     | 'create payments'
     | 'edit payments'
     | 'delete payments'

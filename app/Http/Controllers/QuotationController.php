@@ -60,7 +60,8 @@ final class QuotationController
 
         $documentSubtype = $request->filled('document_subtype_id')
             ? DocumentSubtype::query()->findOrFail($request->get('document_subtype_id'))
-            : DocumentSubtype::forQuotation()->active()->first();
+            : DocumentSubtype::forQuotation()->active()->where('is_default', true)->first()
+                ?? DocumentSubtype::forQuotation()->active()->orderBy('name')->first();
 
         $initialContactId = $request->integer('contact_id');
         $initialContact = $contactSearch->findCustomerById($initialContactId > 0 ? $initialContactId : null);

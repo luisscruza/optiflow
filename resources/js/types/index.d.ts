@@ -672,6 +672,62 @@ export interface Invoice {
     dgii_environment?: string | null;
 }
 
+export interface ReceivedDocumentSupplierSummary {
+    id: string | null;
+    rnc: string | null;
+    name: string | null;
+}
+
+export interface ReceivedDocumentSupplierFilterOption {
+    id: string;
+    rnc: string | null;
+    name: string;
+}
+
+export interface ReceivedDocumentSupplierDetail extends ReceivedDocumentSupplierSummary {
+    email: string | null;
+    address: string | null;
+    phone: string | null;
+}
+
+export interface ReceivedDocumentSummary {
+    id: string;
+    ecf_type: string;
+    encf: string;
+    issue_date: string | null;
+    buyer_rnc: string | null;
+    buyer_name: string | null;
+    currency: string;
+    subtotal: number;
+    tax_amount: number;
+    total_amount: number;
+    status: string;
+    received_at: string;
+    supplier: ReceivedDocumentSupplierSummary | null;
+}
+
+export interface ReceivedDocumentItem {
+    id: string;
+    line_number: number;
+    description: string;
+    quantity: number;
+    unit_price: number;
+    tax_rate: number;
+    subtotal: number;
+    tax_amount: number;
+    total_amount: number;
+}
+
+export interface ReceivedDocumentDetail extends ReceivedDocumentSummary {
+    created_at: string | null;
+    updated_at: string | null;
+    qr_code_url: string | null;
+    security_code: string | null;
+    signed_at: string | null;
+    supplier: ReceivedDocumentSupplierDetail | null;
+    items: ReceivedDocumentItem[];
+}
+
 export interface Quotation {
     id: number;
     workspace_id: number;

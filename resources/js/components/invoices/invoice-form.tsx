@@ -89,7 +89,20 @@ interface InvoiceFormProps {
     taxesGroupedByType: TaxesGroupedByType;
     salesmen: Salesman[];
     isEasyFactuConfigured?: boolean;
+    electronicInvoicingEnvironment?: string | null;
 }
+
+const electronicEnvironmentLabels: Record<string, string> = {
+    TesteCF: 'TesteCF',
+    eCF: 'eCF (produccion)',
+    CerteCF: 'CerteCF',
+};
+
+const electronicEnvironmentBadgeClasses: Record<string, string> = {
+    TesteCF: 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-50',
+    eCF: 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50',
+    CerteCF: 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-50',
+};
 
 // Helper functions
 const calculateDueDate = (issueDate: string, paymentTerm: string): string => {
@@ -182,6 +195,7 @@ export default function InvoiceForm({
     taxesGroupedByType,
     salesmen,
     isEasyFactuConfigured,
+    electronicInvoicingEnvironment,
 }: InvoiceFormProps) {
     const [itemId, setItemId] = useState(() => {
         if (data.items.length > 0) {
@@ -204,6 +218,10 @@ export default function InvoiceForm({
     const [paymentAmountInput, setPaymentAmountInput] = useState(() => (data.payment_amount > 0 ? String(data.payment_amount) : ''));
 
     const { format: formatCurrency } = useCurrency();
+    const environmentLabel = electronicInvoicingEnvironment ? (electronicEnvironmentLabels[electronicInvoicingEnvironment] ?? electronicInvoicingEnvironment) : null;
+    const environmentBadgeClassName = electronicInvoicingEnvironment
+        ? (electronicEnvironmentBadgeClasses[electronicInvoicingEnvironment] ?? 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-50')
+        : undefined;
 
     // Sync NCF prop changes to form data
     useEffect(() => {
@@ -566,6 +584,11 @@ export default function InvoiceForm({
                                         {data.ncf || (isElectronicDocument ? 'No disponible' : 'N/A')}
                                     </span>
                                     {isElectronicDocument && <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Factura electrónica</Badge>}
+                                    {isElectronicDocument && environmentLabel && (
+                                        <Badge variant="outline" className={environmentBadgeClassName}>
+                                            Entorno: {environmentLabel}
+                                        </Badge>
+                                    )}
                                     {!isElectronicDocument && (
                                         <button
                                             type="button"
@@ -1061,7 +1084,6 @@ export default function InvoiceForm({
                                 <div className="flex items-start gap-3">
                                     <AlertTriangle className="mt-0.5 h-5 w-5 text-blue-600" />
                                     <div>
-                                        <p className="text-sm font-semibold text-blue-900">Pago deshabilitado temporalmente</p>
                                         <p className="text-sm text-blue-800">
                                             Las facturas electrónicas solo permiten registrar pagos después de ser emitidas y aceptadas por la DGII.
                                         </p>

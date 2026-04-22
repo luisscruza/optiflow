@@ -22,6 +22,7 @@ final class DocumentSubtypeFactory extends Factory
         return [
             'name' => fake()->randomElement(['Invoice', 'Quotation', 'Credit Note', 'Proforma']),
             'type' => fake()->randomElement(DocumentType::cases()),
+            'is_active' => true,
             'is_default' => false,
             'prefix' => fake()->randomElement(['B01', 'B02', 'B14', 'B15']),
             'start_number' => 1,

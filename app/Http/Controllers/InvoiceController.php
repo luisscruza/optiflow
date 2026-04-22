@@ -107,6 +107,7 @@ final class InvoiceController
         $ncf = $this->previewNcf($documentSubtype, $easyFactu);
 
         $isEasyFactuConfigured = $easyFactu->isConfigured();
+        $electronicInvoicingEnvironment = $easyFactu->getEnvironment();
 
         return Inertia::render('invoices/create', [
             'documentSubtypes' => $documentSubtypes,
@@ -126,6 +127,7 @@ final class InvoiceController
             'taxesGroupedByType' => $taxesGroupedByType,
             'salesmen' => $salesmen,
             'isEasyFactuConfigured' => $isEasyFactuConfigured,
+            'electronicInvoicingEnvironment' => $electronicInvoicingEnvironment,
         ]);
     }
 
@@ -359,14 +361,22 @@ final class InvoiceController
             return DocumentSubtype::active()
                 ->forInvoice()
                 ->where('is_default', 1)
-                ->first();
+                ->first()
+                ?? DocumentSubtype::active()
+                    ->forInvoice()
+                    ->orderBy('name')
+                    ->first();
 
         }
 
         return DocumentSubtype::active()
             ->forInvoice()
             ->where('is_default', true)
-            ->first();
+            ->first()
+            ?? DocumentSubtype::active()
+                ->forInvoice()
+                ->orderBy('name')
+                ->first();
     }
 
     private function previewNcf(?DocumentSubtype $documentSubtype, ?EasyFactuService $easyFactu = null): ?string

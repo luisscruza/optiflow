@@ -11,12 +11,14 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
  * @property string $name
+ * @property bool $is_active
  * @property bool $is_default
  * @property \Carbon\CarbonImmutable|null $valid_until_date
  * @property string $prefix
@@ -38,6 +40,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereIsActive($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereIsDefault($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereValidUntilDate($value)
@@ -63,12 +66,28 @@ final class DocumentSubtype extends Model
     /** @use HasFactory<\Database\Factories\DocumentSubtypeFactory> */
     use HasFactory;
 
+    public const ACTIVE_SCOPE = 'is_active';
+
     /**
      * Get document subtype by prefix.
      */
     public static function findByPrefix(string $prefix): ?self
     {
         return self::query()->where('prefix', $prefix)->first();
+    }
+
+    /**
+     * Retrieve the model for a bound value, including disabled records in admin routes.
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return EloquentModel|null
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->withoutGlobalScope(self::ACTIVE_SCOPE)
+            ->where($field ?? $this->getRouteKeyName(), $value)
+            ->first();
     }
 
     /**
@@ -214,6 +233,13 @@ final class DocumentSubtype extends Model
         return $this->getNextNcfNumber();
     }
 
+    protected static function booted(): void
+    {
+        self::addGlobalScope(self::ACTIVE_SCOPE, function (Builder $builder): void {
+            $builder->where('is_active', true);
+        });
+    }
+
     /**
      * Scope to get electronic (e-CF) subtypes only.
      */
@@ -277,6 +303,7 @@ final class DocumentSubtype extends Model
     protected function casts(): array
     {
         return [
+            'is_active' => 'boolean',
             'is_default' => 'boolean',
             'is_electronic' => 'boolean',
             'valid_until_date' => 'date',

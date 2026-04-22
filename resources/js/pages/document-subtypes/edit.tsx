@@ -3,6 +3,7 @@ import { ArrowLeft, Save, Type } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
@@ -16,6 +17,7 @@ interface DocumentSubtype {
     end_number: number | null;
     next_number: number;
     valid_until_date: string | null;
+    is_active: boolean;
     is_default: boolean;
 }
 
@@ -23,6 +25,7 @@ interface FormData {
     name: string;
     start_number: number;
     end_number: number | null;
+    is_active: boolean;
 }
 
 interface Props {
@@ -31,10 +34,10 @@ interface Props {
 
 export default function EditDocumentSubtype({ subtype }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
-            {
-        title: 'Configuración',
-        href: '/configuration',
-    },
+        {
+            title: 'Configuración',
+            href: '/configuration',
+        },
         {
             title: 'Numeraciones de comprobantes',
             href: '/document-subtypes',
@@ -53,6 +56,7 @@ export default function EditDocumentSubtype({ subtype }: Props) {
         name: subtype.name,
         start_number: subtype.start_number,
         end_number: subtype.end_number,
+        is_active: subtype.is_active,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -90,7 +94,7 @@ export default function EditDocumentSubtype({ subtype }: Props) {
                             <Type className="h-5 w-5" />
                             Campos editables
                         </CardTitle>
-                        <CardDescription>Solo puedes modificar el nombre y los números de rango de esta numeración.</CardDescription>
+                        <CardDescription>Modifica el nombre, el rango y si esta numeración estará disponible para nuevos documentos.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
@@ -145,6 +149,23 @@ export default function EditDocumentSubtype({ subtype }: Props) {
                                 </div>
                             </div>
 
+                            <div className="flex items-start space-x-3 rounded-lg border p-4">
+                                <Checkbox
+                                    id="is_active"
+                                    checked={data.is_active}
+                                    onCheckedChange={(checked) => setData('is_active', checked === true)}
+                                />
+                                <div className="space-y-1">
+                                    <Label htmlFor="is_active" className="text-sm font-medium">
+                                        Numeración activa
+                                    </Label>
+                                    <p className="text-xs text-gray-500">
+                                        Si la desactivas, dejará de aparecer al crear nuevas facturas y cotizaciones.
+                                    </p>
+                                    {errors.is_active && <p className="text-sm text-red-600">{errors.is_active}</p>}
+                                </div>
+                            </div>
+
                             {/* Current Status */}
                             <div className="rounded-lg bg-gray-50 p-4">
                                 <h4 className="mb-2 font-medium text-gray-900">Estado actual</h4>
@@ -158,6 +179,10 @@ export default function EditDocumentSubtype({ subtype }: Props) {
                                         <span className="ml-2 font-medium">
                                             {subtype.start_number.toLocaleString()} - {subtype.end_number?.toLocaleString() || '∞'}
                                         </span>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-500">Disponibilidad:</span>
+                                        <span className="ml-2 font-medium">{data.is_active ? 'Activa' : 'Inactiva'}</span>
                                     </div>
                                 </div>
                             </div>

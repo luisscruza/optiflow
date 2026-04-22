@@ -54,7 +54,6 @@ final class EmitInvoiceController
                 'document_number' => $efInvoice['encf'] ?? $invoice->document_number,
             ]);
 
-            // If immediately accepted, transition to PendingPayment
             if ($newStatus === InvoiceStatus::DgiiAccepted) {
                 $invoice->update(['status' => InvoiceStatus::PendingPayment]);
             }

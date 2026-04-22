@@ -40,6 +40,7 @@ use App\Http\Controllers\DownloadProductRecipeController;
 use App\Http\Controllers\DownloadQuotationPdfController;
 use App\Http\Controllers\DownloadVisualCertificateController;
 use App\Http\Controllers\DownloadWorkflowJobProcessController;
+use App\Http\Controllers\ElectronicInvoicingReceivedDocumentController;
 use App\Http\Controllers\EmitInvoiceController;
 use App\Http\Controllers\ExportReportController;
 use App\Http\Controllers\GlobalRoleController;
@@ -244,6 +245,12 @@ Route::middleware([
             // Electronic invoicing actions
             Route::post('invoices/{invoice}/emit', EmitInvoiceController::class)->name('invoices.emit');
             Route::post('invoices/{invoice}/refresh-status', RefreshInvoiceStatusController::class)->name('invoices.refresh-status');
+            Route::get('electronic-invoicing/received', [ElectronicInvoicingReceivedDocumentController::class, 'index'])
+                ->name('electronic-invoicing.received.index');
+            Route::get('electronic-invoicing/received/{receivedDocument}', [ElectronicInvoicingReceivedDocumentController::class, 'show'])
+                ->name('electronic-invoicing.received.show');
+            Route::get('electronic-invoicing/received/{receivedDocument}/print', [ElectronicInvoicingReceivedDocumentController::class, 'print'])
+                ->name('electronic-invoicing.received.print');
 
             Route::get('cash-register-close', CashRegisterCloseController::class)->name('cash-register-close');
 

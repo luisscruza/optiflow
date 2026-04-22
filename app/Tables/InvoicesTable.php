@@ -71,7 +71,8 @@ final class InvoicesTable extends Table
 
                     EditAction::make()
                         ->href('/invoices/{id}/edit')
-                        ->permission('edit invoices'),
+                        ->permission('edit invoices')
+                        ->visibleWhen(fn (Invoice $invoice) => $invoice->canBeEdited()),
 
                     Action::make('print', 'Descargar PDF')
                         ->icon('download')
@@ -106,6 +107,11 @@ final class InvoicesTable extends Table
             SelectFilter::make('status', 'Estado')
                 ->options(InvoiceStatus::class)
                 ->default('all')
+                ->inline(),
+
+            BooleanFilter::make('is_electronic', 'Electrónicas')
+                ->trueLabel('Solo electrónicas')
+                ->falseLabel('Solo no electrónicas')
                 ->inline(),
 
             BooleanFilter::make('overdue', 'Vencidas')

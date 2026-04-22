@@ -134,6 +134,63 @@ final class EasyFactuService
     }
 
     /**
+     * Get received documents from EasyFactu.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws EasyFactuException
+     */
+    public function getReceivedDocuments(): array
+    {
+        $response = $this->get('/v1/received-documents');
+
+        return $this->parseResponse($response, 'Error obteniendo documentos recibidos de EasyFactu.');
+    }
+
+    /**
+     * Get received documents from EasyFactu with filters.
+     *
+     * @param  array<string, mixed>  $filters
+     * @return array<string, mixed>
+     *
+     * @throws EasyFactuException
+     */
+    public function getReceivedDocumentsWithFilters(array $filters = []): array
+    {
+        $response = $this->get('/v1/received-documents', $filters);
+
+        return $this->parseResponse($response, 'Error obteniendo documentos recibidos de EasyFactu.');
+    }
+
+    /**
+     * Get a single received document from EasyFactu.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws EasyFactuException
+     */
+    public function getReceivedDocument(string $receivedDocumentId): array
+    {
+        $response = $this->get("/v1/received-documents/{$receivedDocumentId}");
+
+        return $this->parseResponse($response, 'Error obteniendo detalle del documento recibido en EasyFactu.');
+    }
+
+    /**
+     * Get suppliers from EasyFactu.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws EasyFactuException
+     */
+    public function getSuppliers(): array
+    {
+        $response = $this->get('/v1/suppliers');
+
+        return $this->parseResponse($response, 'Error obteniendo suplidores de EasyFactu.');
+    }
+
+    /**
      * Send a GET request.
      *
      * @param  array<string, mixed>  $query

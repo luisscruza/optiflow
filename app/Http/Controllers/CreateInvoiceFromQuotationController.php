@@ -139,6 +139,10 @@ final class CreateInvoiceFromQuotationController
         return DocumentSubtype::active()
             ->forInvoice()
             ->where('is_default', true)
-            ->first();
+            ->first()
+            ?? DocumentSubtype::active()
+                ->forInvoice()
+                ->orderBy('name')
+                ->first();
     }
 }

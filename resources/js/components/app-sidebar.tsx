@@ -1,6 +1,17 @@
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarGroupLabel,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarSeparator,
+} from '@/components/ui/sidebar';
 import { WorkspaceSwitcher } from '@/components/workspace-switcher';
 import { usePermissions } from '@/hooks/use-permissions';
 import { dashboard } from '@/routes';
@@ -30,7 +41,8 @@ import AppLogo from './app-logo';
 
 export function AppSidebar() {
     const { can } = usePermissions();
-    const { unreadNotifications } = usePage().props as unknown as { unreadNotifications: number };
+    const page = usePage();
+    const { unreadNotifications } = page.props as unknown as { unreadNotifications: number };
 
     const mainNavItems: NavItem[] = [
         {
@@ -182,6 +194,16 @@ export function AppSidebar() {
             : []),
     ];
 
+    const electronicInvoicingItems: NavItem[] = can('view electronic invoicing')
+        ? [
+              {
+                  title: 'Recepción',
+                  href: '/electronic-invoicing/received',
+                  icon: FileText,
+              },
+          ]
+        : [];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -199,6 +221,31 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
+
+                {electronicInvoicingItems.length > 0 && (
+                    <>
+                        <SidebarSeparator className="my-2" />
+                        <SidebarGroup className="pt-0">
+                            <SidebarGroupLabel>Facturación electrónica</SidebarGroupLabel>
+                            <SidebarMenu>
+                                {electronicInvoicingItems.map((item) => (
+                                    <SidebarMenuItem key={item.title}>
+                                        <SidebarMenuButton
+                                            asChild
+                                            tooltip={{ children: item.title }}
+                                            isActive={page.url.startsWith(typeof item.href === 'string' ? item.href : item.href?.url || '')}
+                                        >
+                                            <Link href={item.href!} prefetch>
+                                                {item.icon && <item.icon />}
+                                                <span>{item.title}</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                ))}
+                            </SidebarMenu>
+                        </SidebarGroup>
+                    </>
+                )}
             </SidebarContent>
 
             <SidebarFooter>

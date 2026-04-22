@@ -102,7 +102,8 @@ final class Quotation extends Model
      */
     public function documentSubtype(): BelongsTo
     {
-        return $this->belongsTo(DocumentSubtype::class);
+        return $this->belongsTo(DocumentSubtype::class)
+            ->withoutGlobalScope(DocumentSubtype::ACTIVE_SCOPE);
     }
 
     /**

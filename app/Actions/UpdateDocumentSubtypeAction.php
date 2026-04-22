@@ -21,6 +21,7 @@ final readonly class UpdateDocumentSubtypeAction
             'name',
             'start_number',
             'end_number',
+            'is_active',
         ];
 
         $updateData = array_intersect_key($validated, array_flip($allowedFields));

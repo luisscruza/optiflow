@@ -131,7 +131,8 @@ final class Invoice extends Model implements Auditable, Commentable
      */
     public function documentSubtype(): BelongsTo
     {
-        return $this->belongsTo(DocumentSubtype::class);
+        return $this->belongsTo(DocumentSubtype::class)
+            ->withoutGlobalScope(DocumentSubtype::ACTIVE_SCOPE);
     }
 
     /**
@@ -278,7 +279,7 @@ final class Invoice extends Model implements Auditable, Commentable
             InvoiceStatus::Submitted,
             InvoiceStatus::DgiiAccepted,
             InvoiceStatus::DgiiRejected,
-        ]);
+        ]) && ! $this->isElectronic();
     }
 
     /**
