@@ -1,7 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { AlertTriangle, Calendar, CreditCard, DownloadCloud, Edit, FileText, Plus, Printer, RefreshCw, Send, Share2, Trash2 } from 'lucide-react';
-import QRCode from 'react-qr-code';
 import { useState } from 'react';
+import QRCode from 'react-qr-code';
 
 import { usePermissions } from '@/hooks/use-permissions';
 
@@ -243,7 +243,8 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                     <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-600" />
                                     <div>
                                         <p className="text-sm text-amber-800">
-                                            Después de emitir una factura electrónica, sus datos fiscales quedan congelados. Solo puedes consultar su estado en DGII.
+                                            Después de emitir una factura electrónica, sus datos fiscales quedan congelados. Solo puedes consultar su
+                                            estado en DGII.
                                         </p>
                                     </div>
                                 </div>
@@ -264,7 +265,7 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                 {/* Amount Collected */}
                                 <div className="space-y-1 px-4 py-3 sm:py-0">
                                     <p className="text-sm font-medium text-gray-600">Cobrado</p>
-                                    <p className="text-2xl font-bold text-yellow-600">{formatCurrency(invoice.amount_paid)}</p>
+                                    <p className="text-2xl font-bold text-primary">{formatCurrency(invoice.amount_paid)}</p>
                                 </div>
 
                                 {/* Amount Due */}
@@ -291,7 +292,9 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                             <div className="flex flex-col gap-2 text-sm font-medium text-gray-900">
                                                 <span>{invoice.document_subtype.name}</span>
                                                 {invoice.is_electronic && (
-                                                    <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Factura electrónica:  {invoice.dgii_status}</Badge>
+                                                    <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+                                                        Factura electrónica: {invoice.dgii_status}
+                                                    </Badge>
                                                 )}
                                             </div>
                                             <div className="text-sm font-semibold text-gray-900">
@@ -524,7 +527,9 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                     <div className="grid gap-4 sm:grid-cols-2">
                                         <div>
                                             <Label className="text-sm font-medium text-gray-700">eNCF</Label>
-                                            <p className="mt-1 font-mono text-sm text-gray-900">{invoice.encf || invoice.document_number || 'Pendiente'}</p>
+                                            <p className="mt-1 font-mono text-sm text-gray-900">
+                                                {invoice.encf || invoice.document_number || 'Pendiente'}
+                                            </p>
                                         </div>
                                         <div>
                                             <Label className="text-sm font-medium text-gray-700">Estado DGII</Label>
@@ -540,7 +545,9 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                         </div>
                                         <div>
                                             <Label className="text-sm font-medium text-gray-700">Fecha de firma</Label>
-                                            <p className="mt-1 text-sm text-gray-900">{invoice.dgii_signed_at ? formatDate(invoice.dgii_signed_at) : 'No disponible'}</p>
+                                            <p className="mt-1 text-sm text-gray-900">
+                                                {invoice.dgii_signed_at ? formatDate(invoice.dgii_signed_at) : 'No disponible'}
+                                            </p>
                                         </div>
                                         <div>
                                             <Label className="text-sm font-medium text-gray-700">Entorno</Label>

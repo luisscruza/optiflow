@@ -415,7 +415,7 @@ export function InviteUserForm({ roles, availableWorkspaces, onSuccess }: Props)
                 <Button type="button" variant="outline" onClick={onSuccess} className="flex-1">
                     Cancelar
                 </Button>
-                <Button type="submit" disabled={processing || !isFormValid} className="flex-1 bg-yellow-600 hover:bg-yellow-700">
+                <Button type="submit" disabled={processing || !isFormValid} className="flex-1 bg-primary hover:bg-primary">
                     {processing ? 'Procesando...' : existingUser ? 'Asignar usuario' : 'Crear y asignar'}
                 </Button>
             </div>

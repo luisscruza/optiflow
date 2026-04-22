@@ -173,10 +173,10 @@ export default function WorkspaceMembers({ workspace, members, pending_invitatio
                         <CardContent>
                             <div className="space-y-4">
                                 {pending_invitations.map((invitation) => (
-                                    <div key={invitation.id} className="flex items-center justify-between rounded-lg border bg-yellow-50 p-4">
+                                    <div key={invitation.id} className="flex items-center justify-between rounded-lg border bg-primary/10 p-4">
                                         <div className="flex items-center gap-4">
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-100">
-                                                <Clock className="h-5 w-5 text-yellow-600" />
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                                                <Clock className="h-5 w-5 text-primary" />
                                             </div>
                                             <div>
                                                 <p className="font-medium">{invitation.email}</p>
@@ -186,7 +186,7 @@ export default function WorkspaceMembers({ workspace, members, pending_invitatio
                                                 </p>
                                             </div>
                                         </div>
-                                        <Badge variant="outline" className="text-yellow-600">
+                                        <Badge variant="outline" className="text-primary">
                                             {invitation.role_label}
                                         </Badge>
                                     </div>

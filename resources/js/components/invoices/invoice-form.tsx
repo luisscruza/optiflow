@@ -218,7 +218,9 @@ export default function InvoiceForm({
     const [paymentAmountInput, setPaymentAmountInput] = useState(() => (data.payment_amount > 0 ? String(data.payment_amount) : ''));
 
     const { format: formatCurrency } = useCurrency();
-    const environmentLabel = electronicInvoicingEnvironment ? (electronicEnvironmentLabels[electronicInvoicingEnvironment] ?? electronicInvoicingEnvironment) : null;
+    const environmentLabel = electronicInvoicingEnvironment
+        ? (electronicEnvironmentLabels[electronicInvoicingEnvironment] ?? electronicInvoicingEnvironment)
+        : null;
     const environmentBadgeClassName = electronicInvoicingEnvironment
         ? (electronicEnvironmentBadgeClasses[electronicInvoicingEnvironment] ?? 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-50')
         : undefined;
@@ -583,7 +585,9 @@ export default function InvoiceForm({
                                     <span className="rounded bg-gray-100 px-2 py-1 font-mono text-sm">
                                         {data.ncf || (isElectronicDocument ? 'No disponible' : 'N/A')}
                                     </span>
-                                    {isElectronicDocument && <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Factura electrónica</Badge>}
+                                    {isElectronicDocument && (
+                                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Factura electrónica</Badge>
+                                    )}
                                     {isElectronicDocument && environmentLabel && (
                                         <Badge variant="outline" className={environmentBadgeClassName}>
                                             Entorno: {environmentLabel}
@@ -604,7 +608,12 @@ export default function InvoiceForm({
                                                     strokeWidth={2}
                                                     d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
                                                 />
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                />
                                             </svg>
                                         </button>
                                     )}
@@ -631,7 +640,9 @@ export default function InvoiceForm({
                                     </Select>
                                     {errors.document_subtype_id && <p className="text-sm text-red-600">{errors.document_subtype_id}</p>}
                                     {mode === 'edit' && (
-                                        <p className="text-xs text-gray-500">El tipo de comprobante no puede cambiarse después de crear la factura.</p>
+                                        <p className="text-xs text-gray-500">
+                                            El tipo de comprobante no puede cambiarse después de crear la factura.
+                                        </p>
                                     )}
                                 </div>
                             </div>
@@ -644,7 +655,8 @@ export default function InvoiceForm({
                                     <div className="space-y-2">
                                         <p className="text-sm font-semibold text-amber-900">EasyFactu no está configurado</p>
                                         <p className="text-sm text-amber-800">
-                                            No podrás previsualizar ni emitir facturas electrónicas hasta completar la configuración del entorno y la clave API.
+                                            No podrás previsualizar ni emitir facturas electrónicas hasta completar la configuración del entorno y la
+                                            clave API.
                                         </p>
                                         <Button type="button" variant="outline" size="sm" asChild>
                                             <a href="/settings/electronic-invoicing">Configurar facturación electrónica</a>
@@ -661,7 +673,8 @@ export default function InvoiceForm({
                                     <div className="space-y-1">
                                         <p className="text-sm font-semibold text-amber-900">No se pudo previsualizar el próximo eNCF</p>
                                         <p className="text-sm text-amber-800">
-                                            Esta pantalla debe traer el próximo eNCF desde EasyFactu. Revisa la configuración o el mensaje de error del sistema.
+                                            Esta pantalla debe traer el próximo eNCF desde EasyFactu. Revisa la configuración o el mensaje de error
+                                            del sistema.
                                         </p>
                                     </div>
                                 </div>
@@ -926,7 +939,7 @@ export default function InvoiceForm({
                                                     className={`h-9 border-gray-200 text-center ${(() => {
                                                         const warning = getStockWarning(item);
                                                         if (warning?.type === 'error') return 'border-red-300';
-                                                        if (warning?.type === 'warning') return 'border-yellow-300';
+                                                        if (warning?.type === 'warning') return 'border-primary/30';
                                                         return '';
                                                     })()}`}
                                                     disabled={!item.product_id}
@@ -937,7 +950,7 @@ export default function InvoiceForm({
                                                         return (
                                                             <div className="group absolute -top-1 -right-1">
                                                                 <AlertTriangle
-                                                                    className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-yellow-500'}`}
+                                                                    className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-primary'}`}
                                                                 />
                                                                 <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 transform rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                                                                     {warning.message}
@@ -1097,7 +1110,7 @@ export default function InvoiceForm({
                                 <div className="mb-6 flex items-center justify-between">
                                     <div>
                                         <h3 className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-100 text-yellow-600">
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                                 <CreditCard className="h-4 w-4" />
                                             </div>
                                             Registrar pago inmediato
@@ -1127,11 +1140,11 @@ export default function InvoiceForm({
 
                                 {data.register_payment && (
                                     <div className="space-y-6">
-                                        <div className="rounded-lg border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100/50 p-5 shadow-sm">
+                                        <div className="to-primary/10/50 rounded-lg border-2 border-primary/80 bg-gradient-to-br from-primary/10 p-5 shadow-sm">
                                             <div className="flex items-center justify-between">
                                                 <div>
-                                                    <p className="text-xs font-medium tracking-wide text-yellow-700 uppercase">Total de la factura</p>
-                                                    <p className="text-2xl font-bold text-yellow-600">{formatCurrency(data.total)}</p>
+                                                    <p className="text-xs font-medium tracking-wide text-primary uppercase">Total de la factura</p>
+                                                    <p className="text-2xl font-bold text-primary">{formatCurrency(data.total)}</p>
                                                 </div>
                                                 {hasPendingBalance && (
                                                     <div className="text-right">
@@ -1155,7 +1168,7 @@ export default function InvoiceForm({
                                                     onValueChange={(value) => setData('payment_bank_account_id', parseInt(value))}
                                                 >
                                                     <SelectTrigger
-                                                        className={`h-11 ${data.payment_bank_account_id ? 'border-yellow-300 bg-yellow-50/30' : 'border-gray-300'}`}
+                                                        className={`h-11 ${data.payment_bank_account_id ? 'bg-primary/10/30 border-primary/30' : 'border-gray-300'}`}
                                                     >
                                                         <SelectValue placeholder="Selecciona una cuenta" />
                                                     </SelectTrigger>
@@ -1176,7 +1189,7 @@ export default function InvoiceForm({
                                                 </Label>
                                                 <Select value={data.payment_method} onValueChange={(value) => setData('payment_method', value)}>
                                                     <SelectTrigger
-                                                        className={`h-11 ${data.payment_method ? 'border-yellow-300 bg-yellow-50/30' : 'border-gray-300'}`}
+                                                        className={`h-11 ${data.payment_method ? 'bg-primary/10/30 border-primary/30' : 'border-gray-300'}`}
                                                     >
                                                         <SelectValue placeholder="Selecciona un método" />
                                                     </SelectTrigger>
@@ -1204,7 +1217,7 @@ export default function InvoiceForm({
                                                             setPaymentAmountInput(String(data.total));
                                                             setData('payment_amount', data.total);
                                                         }}
-                                                        className="h-7 border-yellow-300 px-3 py-1 text-xs text-yellow-700 hover:bg-yellow-50"
+                                                        className="h-7 border-primary/30 px-3 py-1 text-xs text-primary hover:bg-primary/10"
                                                     >
                                                         Monto completo
                                                     </Button>
@@ -1228,7 +1241,7 @@ export default function InvoiceForm({
                                                             setPaymentAmountInput(parsedAmount > 0 ? String(parsedAmount) : '');
                                                         }}
                                                         placeholder="0.00"
-                                                        className={`h-12 pl-14 text-lg font-semibold ${data.payment_amount > 0 ? 'border-yellow-300 bg-yellow-50/30 text-yellow-700' : 'border-gray-300'}`}
+                                                        className={`h-12 pl-14 text-lg font-semibold ${data.payment_amount > 0 ? 'bg-primary/10/30 border-primary/30 text-primary' : 'border-gray-300'}`}
                                                     />
                                                     <span className="absolute top-1/2 left-4 -translate-y-1/2 text-lg font-semibold text-gray-500">
                                                         RD$

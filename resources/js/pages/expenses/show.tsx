@@ -14,7 +14,7 @@ interface Props {
 }
 
 const statusStyles: Record<Expense['status'], string> = {
-    pending: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100',
+    pending: 'bg-primary/10 text-primary/80 hover:bg-primary/10',
     paid: 'bg-green-100 text-green-800 hover:bg-green-100',
     cancelled: 'bg-red-100 text-red-800 hover:bg-red-100',
 };

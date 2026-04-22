@@ -91,10 +91,10 @@ const getMovementColor = (type: string) => {
     } else if (type === 'out') {
         return 'text-red-600';
     } else if (type === 'adjustment') {
-        return 'text-yellow-600';
+        return 'text-primary';
     }
     return '';
-}
+};
 
 function DetailItem({ label, value, className }: { label: string; value: ReactNode; className?: string }) {
     return (
@@ -288,11 +288,11 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
                                 <Separator />
 
                                 <div className="grid gap-6 sm:grid-cols-2">
-                                    <div className="flex items-start gap-3 rounded-lg border border-yellow-200/60 bg-yellow-50/60 p-4 dark:border-yellow-900 dark:bg-yellow-900/20">
+                                    <div className="border-primary/80/60 dark:bg-primary/90/20 bg-primary/10/60 flex items-start gap-3 rounded-lg border p-4 dark:border-primary/90">
                                         <Package
                                             className={cn(
                                                 'mt-0.5 h-5 w-5',
-                                                product.track_stock ? 'text-yellow-600 dark:text-yellow-400' : 'text-muted-foreground',
+                                                product.track_stock ? 'text-primary dark:text-primary/40' : 'text-muted-foreground',
                                             )}
                                         />
                                         <div>
@@ -300,18 +300,18 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
                                             <p
                                                 className={cn(
                                                     'text-sm',
-                                                    product.track_stock ? 'text-yellow-700 dark:text-yellow-300' : 'text-muted-foreground',
+                                                    product.track_stock ? 'text-primary dark:text-primary/30' : 'text-muted-foreground',
                                                 )}
                                             >
                                                 {product.track_stock ? 'Activado' : 'Desactivado'}
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex items-start gap-3 rounded-lg border border-yellow-200/60 bg-yellow-50/60 p-4 dark:border-yellow-900 dark:bg-yellow-900/20">
+                                    <div className="border-primary/80/60 dark:bg-primary/90/20 bg-primary/10/60 flex items-start gap-3 rounded-lg border p-4 dark:border-primary/90">
                                         <ArrowLeftRight
                                             className={cn(
                                                 'mt-0.5 h-5 w-5',
-                                                product.allow_negative_stock ? 'text-yellow-600 dark:text-yellow-400' : 'text-muted-foreground',
+                                                product.allow_negative_stock ? 'text-primary dark:text-primary/40' : 'text-muted-foreground',
                                             )}
                                         />
                                         <div>
@@ -319,7 +319,7 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
                                             <p
                                                 className={cn(
                                                     'text-sm',
-                                                    product.allow_negative_stock ? 'text-yellow-700 dark:text-yellow-300' : 'text-muted-foreground',
+                                                    product.allow_negative_stock ? 'text-primary dark:text-primary/30' : 'text-muted-foreground',
                                                 )}
                                             >
                                                 {product.allow_negative_stock ? 'Activado' : 'Desactivado'}
@@ -413,24 +413,19 @@ export default function ProductsShow({ product, workspace_stocks }: Props) {
                                             {product.stock_movements.slice(0, 10).map((movement) => (
                                                 <TableRow key={movement.id}>
                                                     <TableCell>{formatDate(movement.created_at)}</TableCell>
-                                                           <TableCell>
-                                                       {movement.workspace?.name || '—'}
-                                                    </TableCell>
+                                                    <TableCell>{movement.workspace?.name || '—'}</TableCell>
                                                     <TableCell>
                                                         <Badge variant={movement.type === 'in' ? 'default' : 'secondary'}>
                                                             {getMovementLabel(movement.type)}
                                                         </Badge>
                                                     </TableCell>
-                                                    <TableCell
-                                                        className= {cn(
-                                                            'text-right font-semibold w-48',
-                                                            getMovementColor(movement.type),
-                                                        )}
-                                                    >
+                                                    <TableCell className={cn('w-48 text-right font-semibold', getMovementColor(movement.type))}>
                                                         {getMovementSign(movement.type, movement.quantity)}
-                                                        {movement.quantity} 
+                                                        {movement.quantity}
                                                         {movement.previous_quantity !== null && movement.current_quantity !== null && (
-                                                            <span className="text-yellow-800 text-xs ml-2 bg-yellow-50 py-0.5 px-2 rounded-md border">{movement.previous_quantity} → {movement.current_quantity}</span>
+                                                            <span className="ml-2 rounded-md border bg-primary/10 px-2 py-0.5 text-xs text-primary/80">
+                                                                {movement.previous_quantity} → {movement.current_quantity}
+                                                            </span>
                                                         )}
                                                     </TableCell>
                                                     <TableCell>

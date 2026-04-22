@@ -150,7 +150,7 @@ export default function StockTransfersCreate({ products, availableWorkspaces, in
                             </div>
 
                             {selectedProduct && (
-                                <div className="rounded-lg border border-yellow-500/40 bg-yellow-50/50 p-4 dark:bg-yellow-900/10">
+                                <div className="dark:bg-primary/90/10 bg-primary/10/50 rounded-lg border border-primary/40 p-4">
                                     <div className="flex items-center justify-between gap-4">
                                         <div>
                                             <p className="font-medium text-foreground">{selectedProduct.name}</p>
@@ -235,7 +235,7 @@ export default function StockTransfersCreate({ products, availableWorkspaces, in
                         <Button type="button" variant="outline" asChild>
                             <Link href="/stock-transfers">Cancelar</Link>
                         </Button>
-                        <Button type="submit" className="bg-yellow-600 text-white hover:bg-yellow-700" disabled={processing}>
+                        <Button type="submit" className="bg-primary text-white hover:bg-primary" disabled={processing}>
                             <Package className="mr-2 h-4 w-4" />
                             {processing ? 'Guardando...' : 'Guardar transferencia'}
                         </Button>

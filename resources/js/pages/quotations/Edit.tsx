@@ -406,7 +406,7 @@ export default function EditQuotation({
             case 'out_of_stock':
                 return 'text-red-600 bg-red-50 border-red-200';
             case 'low_stock':
-                return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+                return 'text-primary bg-primary/10 border-primary/80';
             case 'in_stock':
                 return 'text-green-600 bg-green-50 border-green-200';
             case 'not_tracked':
@@ -886,7 +886,7 @@ export default function EditQuotation({
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-100 text-yellow-600">
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                                 <ShoppingCart className="h-4 w-4" />
                                             </div>
                                             Líneas de productos
@@ -1063,7 +1063,7 @@ export default function EditQuotation({
                                                                     className={`rounded border px-2 py-1 text-xs ${
                                                                         stockWarning.type === 'error'
                                                                             ? 'border-red-200 bg-red-50 text-red-600'
-                                                                            : 'border-yellow-200 bg-yellow-50 text-yellow-600'
+                                                                            : 'border-primary/80 bg-primary/10 text-primary'
                                                                     }`}
                                                                 >
                                                                     {stockWarning.message}
@@ -1128,7 +1128,7 @@ export default function EditQuotation({
                                                                         className={`rounded border px-2 py-1 text-xs shadow-sm ${
                                                                             stockWarning.type === 'error'
                                                                                 ? 'border-red-200 bg-red-50 text-red-600'
-                                                                                : 'border-yellow-200 bg-yellow-50 text-yellow-600'
+                                                                                : 'border-primary/80 bg-primary/10 text-primary'
                                                                         }`}
                                                                     >
                                                                         {stockWarning.message}

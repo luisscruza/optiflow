@@ -128,7 +128,7 @@ export default function TaxesIndex({ taxes, filters }: Props) {
                                                         <div className="flex items-center space-x-2">
                                                             <Calculator className="h-4 w-4 text-muted-foreground" />
                                                             <span>{tax.name}</span>
-                                                            {tax.is_default && <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />}
+                                                            {tax.is_default && <Star className="h-3 w-3 fill-primary text-primary" />}
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="text-right font-mono">{formatPercentage(tax.rate)}</TableCell>

@@ -370,7 +370,7 @@ export default function CreateQuotation({
             case 'out_of_stock':
                 return 'text-red-600 bg-red-50 border-red-200';
             case 'low_stock':
-                return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+                return 'text-primary bg-primary/10 border-primary/80';
             case 'in_stock':
                 return 'text-green-600 bg-green-50 border-green-200';
             case 'not_tracked':
@@ -841,7 +841,7 @@ export default function CreateQuotation({
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-100 text-yellow-600">
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                                 <ShoppingCart className="h-4 w-4" />
                                             </div>
                                             Líneas de productos
@@ -959,7 +959,7 @@ export default function CreateQuotation({
                                                                             return (
                                                                                 <div className="group relative">
                                                                                     <AlertTriangle
-                                                                                        className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-yellow-500'}`}
+                                                                                        className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-primary'}`}
                                                                                     />
                                                                                     <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 transform rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                                                                                         {warning.message}
@@ -980,8 +980,7 @@ export default function CreateQuotation({
                                                                     className={`mt-1 h-10 ${(() => {
                                                                         const warning = getStockWarning(item);
                                                                         if (warning?.type === 'error') return 'border-red-300 ring-red-500/20';
-                                                                        if (warning?.type === 'warning')
-                                                                            return 'border-yellow-300 ring-yellow-500/20';
+                                                                        if (warning?.type === 'warning') return 'border-primary/30 ring-primary/20';
                                                                         return '';
                                                                     })()}`}
                                                                     disabled={!item.product_id}
@@ -991,7 +990,7 @@ export default function CreateQuotation({
                                                                     if (warning) {
                                                                         return (
                                                                             <div
-                                                                                className={`mt-1 flex items-center gap-1 text-xs ${warning.type === 'error' ? 'text-red-600' : 'text-yellow-600'}`}
+                                                                                className={`mt-1 flex items-center gap-1 text-xs ${warning.type === 'error' ? 'text-red-600' : 'text-primary'}`}
                                                                             >
                                                                                 <AlertTriangle className="h-3 w-3" />
                                                                                 {warning.message}
@@ -1108,7 +1107,7 @@ export default function CreateQuotation({
                                                                 className={`h-9 border-gray-200 text-center focus:border-blue-500 focus:ring-blue-500/20 ${(() => {
                                                                     const warning = getStockWarning(item);
                                                                     if (warning?.type === 'error') return 'border-red-300 ring-red-500/20';
-                                                                    if (warning?.type === 'warning') return 'border-yellow-300 ring-yellow-500/20';
+                                                                    if (warning?.type === 'warning') return 'border-primary/30 ring-primary/20';
                                                                     return '';
                                                                 })()}`}
                                                                 disabled={!item.product_id}
@@ -1119,7 +1118,7 @@ export default function CreateQuotation({
                                                                     return (
                                                                         <div className="group absolute -top-1 -right-1">
                                                                             <AlertTriangle
-                                                                                className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-yellow-500'}`}
+                                                                                className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-primary'}`}
                                                                             />
                                                                             <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 transform rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                                                                                 {warning.message}

@@ -119,7 +119,7 @@ export default function ShowDocumentSubtype({ subtype, availableWorkspaces, work
                         <div>
                             <div className="flex items-center gap-2">
                                 <h1 className="text-2xl font-semibold text-gray-900">{subtype.name}</h1>
-                                {subtype.is_default && <Star className="h-5 w-5 fill-current text-yellow-500" />}
+                                {subtype.is_default && <Star className="h-5 w-5 fill-current text-primary" />}
                             </div>
                             <p className="text-sm text-gray-600">Detalles de la numeración de comprobantes</p>
                         </div>
@@ -261,7 +261,7 @@ export default function ShowDocumentSubtype({ subtype, availableWorkspaces, work
                                         <p className="text-xs text-gray-500">Se usará si no hay preferencia por sucursal</p>
                                     </div>
                                     {subtype.is_default ? (
-                                        <Badge variant="default" className="bg-yellow-100 text-yellow-800">
+                                        <Badge variant="default" className="bg-primary/10 text-primary/80">
                                             <Star className="mr-1 h-3 w-3 fill-current" />
                                             Activa
                                         </Badge>

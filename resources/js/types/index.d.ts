@@ -15,13 +15,17 @@ export interface NavGroup {
     items: NavItem[];
 }
 
-export interface NavItem {
-    title: string;
-    href?: NonNullable<InertiaLinkProps['href']>;
-    icon?: LucideIcon | null;
-    isActive?: boolean;
-    items?: NavItem[];
-    badge?: number | string;
+export type NavItem = {
+  title: string
+  href?: string | { url: string }
+  icon?: any
+  badge?: number
+  items?: NavItem[]
+
+  section?: {
+    id: string
+    label?: string
+  }
 }
 
 export interface Currency {

@@ -141,7 +141,7 @@ export default function StockTransfersShow({ transfer, workspace }: Props) {
                                     Ver producto
                                 </Link>
                             </Button>
-                            <Button type="button" className="bg-yellow-600 text-white hover:bg-yellow-700" asChild>
+                            <Button type="button" className="bg-primary text-white hover:bg-primary" asChild>
                                 <Link href="/stock-transfers/create">Nueva transferencia</Link>
                             </Button>
                         </div>

@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
+import { Switch } from "@/components/ui/switch"
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -238,21 +239,18 @@ export default function DocumentSubtypesIndex({ subtypes, filters, documentTypes
                                                 <TableCell className="font-medium">{subtype.name}</TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-2">
-                                                        <Badge variant={subtype.is_active ? 'default' : 'secondary'}>{subtype.estado}</Badge>
-                                                        <Button
-                                                            type="button"
-                                                            variant={subtype.is_active ? 'outline' : 'secondary'}
+                                                        <Switch
+                                                            checked={subtype.is_active}
+                                                            onCheckedChange={() => handleToggleActive(subtype.id)}
                                                             size="sm"
-                                                            onClick={() => handleToggleActive(subtype.id)}
-                                                        >
-                                                            {subtype.is_active ? 'Desactivar' : 'Activar'}
-                                                        </Button>
+                                                        />
+
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-2">
                                                         {subtype.preferida}
-                                                        {subtype.is_default && <Star className="h-4 w-4 fill-current text-yellow-500" />}
+                                                        {subtype.is_default && <Star className="h-4 w-4 fill-current text-primary" />}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>

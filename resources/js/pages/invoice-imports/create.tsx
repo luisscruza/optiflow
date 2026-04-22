@@ -282,10 +282,10 @@ export default function InvoiceImportsCreate() {
                                 </div>
 
                                 {uploaded && (
-                                    <div className="space-y-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
+                                    <div className="space-y-4 rounded-lg border border-primary/80 bg-primary/10 p-4 text-sm text-primary/80">
                                         <div>
                                             <p className="font-medium">Archivo listo para importar</p>
-                                            <p className="mt-1 text-yellow-700">
+                                            <p className="mt-1 text-primary">
                                                 Inicia la importación desde aquí. El proceso se ejecuta en segundo plano y podrás ver el avance.
                                             </p>
                                         </div>

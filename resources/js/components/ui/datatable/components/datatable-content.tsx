@@ -364,7 +364,7 @@ export function DataTableContent<T>({
                                     'group',
                                     href && 'cursor-pointer',
                                     href && !isSelected && 'hover:bg-gray-50 dark:hover:bg-gray-800/50',
-                                    isSelected && 'bg-yellow-50 dark:bg-yellow-950/20',
+                                    isSelected && 'bg-primary/10 dark:bg-yellow-950/20',
                                 )}
                                 onClick={
                                     href
@@ -423,7 +423,7 @@ export function DataTableContent<T>({
                                                 column.pinned &&
                                                     cn(
                                                         'sticky z-20 border-r border-border/60',
-                                                        isSelected ? 'bg-yellow-50 dark:bg-yellow-950/20' : 'bg-background',
+                                                        isSelected ? 'bg-primary/10 dark:bg-yellow-950/20' : 'bg-background',
                                                         href && !isSelected && 'group-hover:bg-gray-50 dark:group-hover:bg-gray-800/50',
                                                     ),
                                                 column.cellClassName,

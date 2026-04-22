@@ -44,7 +44,7 @@ const environments = [
         value: 'TesteCF',
         label: 'TesteCF (Pruebas)',
         description: 'Entorno de pruebas. Las facturas no se envian a la DGII.',
-        badgeColor: 'bg-yellow-100 text-yellow-800',
+        badgeColor: 'bg-primary/10 text-primary/80',
     },
     {
         value: 'CerteCF',
@@ -113,147 +113,147 @@ export default function ElectronicInvoicing({ settings }: Props) {
                             className="space-y-6"
                         >
                             {({ processing, recentlySuccessful, errors }) => (
-                            <>
-                                {/* Environment Selection */}
-                                <div className="space-y-3">
-                                    <Label className="text-sm font-medium">Entorno DGII</Label>
-                                    <div className="space-y-2">
-                                        {environments.map((env) => (
-                                            <label
-                                                key={env.value}
-                                                className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
-                                                    selectedEnvironment === env.value
-                                                        ? 'border-primary bg-primary/5'
-                                                        : 'border-gray-200 hover:border-gray-300'
-                                                }`}
-                                            >
-                                                <input
-                                                    type="radio"
-                                                    name="environment"
-                                                    value={env.value}
-                                                    defaultChecked={settings.environment === env.value}
-                                                    className="mt-1"
-                                                    onChange={(e) => setSelectedEnvironment(e.target.value)}
-                                                />
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-sm font-medium">{env.label}</span>
-                                                        <Badge className={env.badgeColor}>{env.value}</Badge>
+                                <>
+                                    {/* Environment Selection */}
+                                    <div className="space-y-3">
+                                        <Label className="text-sm font-medium">Entorno DGII</Label>
+                                        <div className="space-y-2">
+                                            {environments.map((env) => (
+                                                <label
+                                                    key={env.value}
+                                                    className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
+                                                        selectedEnvironment === env.value
+                                                            ? 'border-primary bg-primary/5'
+                                                            : 'border-gray-200 hover:border-gray-300'
+                                                    }`}
+                                                >
+                                                    <input
+                                                        type="radio"
+                                                        name="environment"
+                                                        value={env.value}
+                                                        defaultChecked={settings.environment === env.value}
+                                                        className="mt-1"
+                                                        onChange={(e) => setSelectedEnvironment(e.target.value)}
+                                                    />
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-sm font-medium">{env.label}</span>
+                                                            <Badge className={env.badgeColor}>{env.value}</Badge>
+                                                        </div>
+                                                        <p className="mt-1 text-xs text-muted-foreground">{env.description}</p>
                                                     </div>
-                                                    <p className="mt-1 text-xs text-muted-foreground">{env.description}</p>
-                                                </div>
-                                            </label>
-                                        ))}
+                                                </label>
+                                            ))}
+                                        </div>
+                                        <InputError message={(errors as any).environment} />
                                     </div>
-                                    <InputError message={(errors as any).environment} />
-                                </div>
 
-                                {/* API Keys */}
-                                <div className="space-y-4">
-                                    <Label className="text-sm font-medium">Claves API</Label>
-                                    <p className="text-xs text-muted-foreground">
-                                        Ingresa la clave API para cada entorno. Solo es requerida la clave del entorno activo. Las claves
-                                        existentes se muestran enmascaradas — pega una nueva para reemplazar.
-                                    </p>
+                                    {/* API Keys */}
+                                    <div className="space-y-4">
+                                        <Label className="text-sm font-medium">Claves API</Label>
+                                        <p className="text-xs text-muted-foreground">
+                                            Ingresa la clave API para cada entorno. Solo es requerida la clave del entorno activo. Las claves
+                                            existentes se muestran enmascaradas — pega una nueva para reemplazar.
+                                        </p>
 
-                                    <div className="grid gap-3">
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="api_key_testecf" className="text-xs">
-                                                Clave TesteCF
-                                                {settings.has_key_testecf && (
-                                                    <Badge variant="outline" className="ml-2 text-xs">
-                                                        Configurada
-                                                    </Badge>
-                                                )}
+                                        <div className="grid gap-3">
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="api_key_testecf" className="text-xs">
+                                                    Clave TesteCF
+                                                    {settings.has_key_testecf && (
+                                                        <Badge variant="outline" className="ml-2 text-xs">
+                                                            Configurada
+                                                        </Badge>
+                                                    )}
+                                                </Label>
+                                                <Input
+                                                    id="api_key_testecf"
+                                                    name="api_key_testecf"
+                                                    type="password"
+                                                    placeholder={settings.has_key_testecf ? settings.api_key_testecf : 'ef_testecf_...'}
+                                                    autoComplete="off"
+                                                />
+                                                <InputError message={(errors as any).api_key_testecf} />
+                                            </div>
+
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="api_key_certecf" className="text-xs">
+                                                    Clave CerteCF
+                                                    {settings.has_key_certecf && (
+                                                        <Badge variant="outline" className="ml-2 text-xs">
+                                                            Configurada
+                                                        </Badge>
+                                                    )}
+                                                </Label>
+                                                <Input
+                                                    id="api_key_certecf"
+                                                    name="api_key_certecf"
+                                                    type="password"
+                                                    placeholder={settings.has_key_certecf ? settings.api_key_certecf : 'ef_certecf_...'}
+                                                    autoComplete="off"
+                                                />
+                                                <InputError message={(errors as any).api_key_certecf} />
+                                            </div>
+
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="api_key_ecf" className="text-xs">
+                                                    Clave eCF (Produccion)
+                                                    {settings.has_key_ecf && (
+                                                        <Badge variant="outline" className="ml-2 text-xs">
+                                                            Configurada
+                                                        </Badge>
+                                                    )}
+                                                </Label>
+                                                <Input
+                                                    id="api_key_ecf"
+                                                    name="api_key_ecf"
+                                                    type="password"
+                                                    placeholder={settings.has_key_ecf ? settings.api_key_ecf : 'ef_ecf_...'}
+                                                    autoComplete="off"
+                                                />
+                                                <InputError message={(errors as any).api_key_ecf} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Advanced: Base URL */}
+                                    <details className="space-y-2">
+                                        <summary className="cursor-pointer text-sm font-medium text-muted-foreground">Configuracion avanzada</summary>
+                                        <div className="mt-2 grid gap-2">
+                                            <Label htmlFor="base_url" className="text-xs">
+                                                URL base de la API
                                             </Label>
                                             <Input
-                                                id="api_key_testecf"
-                                                name="api_key_testecf"
-                                                type="password"
-                                                placeholder={settings.has_key_testecf ? settings.api_key_testecf : 'ef_testecf_...'}
-                                                autoComplete="off"
+                                                id="base_url"
+                                                name="base_url"
+                                                type="url"
+                                                defaultValue={settings.base_url}
+                                                placeholder="https://app.easyfactu.com/api"
                                             />
-                                            <InputError message={(errors as any).api_key_testecf} />
+                                            <InputError message={(errors as any).base_url} />
+                                            <p className="text-xs text-muted-foreground">Solo modifica esto si usas una instancia personalizada.</p>
                                         </div>
+                                    </details>
 
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="api_key_certecf" className="text-xs">
-                                                Clave CerteCF
-                                                {settings.has_key_certecf && (
-                                                    <Badge variant="outline" className="ml-2 text-xs">
-                                                        Configurada
-                                                    </Badge>
-                                                )}
-                                            </Label>
-                                            <Input
-                                                id="api_key_certecf"
-                                                name="api_key_certecf"
-                                                type="password"
-                                                placeholder={settings.has_key_certecf ? settings.api_key_certecf : 'ef_certecf_...'}
-                                                autoComplete="off"
-                                            />
-                                            <InputError message={(errors as any).api_key_certecf} />
-                                        </div>
+                                    {/* Actions */}
+                                    <div className="flex items-center gap-4">
+                                        <Button disabled={processing}>Guardar</Button>
 
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="api_key_ecf" className="text-xs">
-                                                Clave eCF (Produccion)
-                                                {settings.has_key_ecf && (
-                                                    <Badge variant="outline" className="ml-2 text-xs">
-                                                        Configurada
-                                                    </Badge>
-                                                )}
-                                            </Label>
-                                            <Input
-                                                id="api_key_ecf"
-                                                name="api_key_ecf"
-                                                type="password"
-                                                placeholder={settings.has_key_ecf ? settings.api_key_ecf : 'ef_ecf_...'}
-                                                autoComplete="off"
-                                            />
-                                            <InputError message={(errors as any).api_key_ecf} />
-                                        </div>
+                                        <Button type="button" variant="outline" onClick={handleTestConnection} disabled={testingConnection}>
+                                            {testingConnection ? 'Probando...' : 'Probar conexion'}
+                                        </Button>
+
+                                        <Transition
+                                            show={recentlySuccessful}
+                                            enter="transition ease-in-out"
+                                            enterFrom="opacity-0"
+                                            leave="transition ease-in-out"
+                                            leaveTo="opacity-0"
+                                        >
+                                            <p className="text-sm text-neutral-600">Guardado</p>
+                                        </Transition>
                                     </div>
-                                </div>
-
-                                {/* Advanced: Base URL */}
-                                <details className="space-y-2">
-                                    <summary className="cursor-pointer text-sm font-medium text-muted-foreground">Configuracion avanzada</summary>
-                                    <div className="mt-2 grid gap-2">
-                                        <Label htmlFor="base_url" className="text-xs">
-                                            URL base de la API
-                                        </Label>
-                                        <Input
-                                            id="base_url"
-                                            name="base_url"
-                                            type="url"
-                                            defaultValue={settings.base_url}
-                                            placeholder="https://app.easyfactu.com/api"
-                                        />
-                                        <InputError message={(errors as any).base_url} />
-                                        <p className="text-xs text-muted-foreground">Solo modifica esto si usas una instancia personalizada.</p>
-                                    </div>
-                                </details>
-
-                                {/* Actions */}
-                                <div className="flex items-center gap-4">
-                                    <Button disabled={processing}>Guardar</Button>
-
-                                    <Button type="button" variant="outline" onClick={handleTestConnection} disabled={testingConnection}>
-                                        {testingConnection ? 'Probando...' : 'Probar conexion'}
-                                    </Button>
-
-                                    <Transition
-                                        show={recentlySuccessful}
-                                        enter="transition ease-in-out"
-                                        enterFrom="opacity-0"
-                                        leave="transition ease-in-out"
-                                        leaveTo="opacity-0"
-                                    >
-                                        <p className="text-sm text-neutral-600">Guardado</p>
-                                    </Transition>
-                                </div>
-                            </>
+                                </>
                             )}
                         </Form>
                     </CardContent>

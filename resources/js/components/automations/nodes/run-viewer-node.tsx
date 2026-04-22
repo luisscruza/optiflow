@@ -33,7 +33,7 @@ function getStatusIcon(status: string | undefined) {
         case 'failed':
             return <X className="h-3 w-3 text-red-600" />;
         case 'pending':
-            return <Clock className="h-3 w-3 text-yellow-600" />;
+            return <Clock className="h-3 w-3 text-primary" />;
         default:
             return null;
     }
