@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Contracts\ReportContract;
 use App\Enums\ReportType;
 use App\Reports\CustomerSalesReport;
+use App\Reports\CustomersByBranchReport;
 use App\Reports\GeneralSalesReport;
 use App\Reports\PrescriptionsByDoctorReport;
 use App\Reports\PrescriptionsSummaryReport;
@@ -44,6 +45,7 @@ final class ExportReportController
             ReportType::GeneralSales => new GeneralSalesReport,
             ReportType::SalesByProduct => new ProductSalesReport,
             ReportType::SalesByCustomer => new CustomerSalesReport,
+            ReportType::CustomersByBranch => new CustomersByBranchReport,
             ReportType::SalesBySalesman => new SalesmanSalesReport,
             ReportType::PrescriptionsSummary => new PrescriptionsSummaryReport,
             ReportType::PrescriptionsByDoctor => new PrescriptionsByDoctorReport,

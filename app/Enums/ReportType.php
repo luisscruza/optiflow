@@ -13,6 +13,7 @@ enum ReportType: string
     case ProductProfitability = 'product_profitability';
     case SalesBySalesman = 'sales_by_salesman';
     case CustomerAccountStatement = 'customer_account_statement';
+    case CustomersByBranch = 'customers_by_branch';
 
     // Prescriptions Reports
     case PrescriptionsSummary = 'prescriptions_summary';
@@ -36,6 +37,7 @@ enum ReportType: string
             self::ProductProfitability => 'Rentabilidad por producto',
             self::SalesBySalesman => 'Ventas por vendedor',
             self::CustomerAccountStatement => 'Estado de cuenta por cliente',
+            self::CustomersByBranch => 'Clientes por sucursal',
             self::PrescriptionsSummary => 'Resumen de recetas',
             self::PrescriptionsByDoctor => 'Recetas por evaluador',
             self::WorkflowSummary => 'Resumen de flujos de trabajo',
@@ -55,6 +57,7 @@ enum ReportType: string
             self::ProductProfitability => 'Conoce la utilidad que generan tus productos inventariables.',
             self::SalesBySalesman => 'Revisa el resumen de las ventas asociadas a cada vendedor/a.',
             self::CustomerAccountStatement => 'Revisa el detalle de las ventas asociadas a cada cliente.',
+            self::CustomersByBranch => 'Exporta clientes consolidando las sucursales donde tuvieron facturas o recetas en el rango seleccionado.',
             self::PrescriptionsSummary => 'Resumen general de recetas.',
             self::PrescriptionsByDoctor => 'Detalle de recetas por médico.',
             self::WorkflowSummary => 'Resumen de trabajos en flujo.',
@@ -69,7 +72,8 @@ enum ReportType: string
     {
         return match ($this) {
             self::GeneralSales, self::SalesByProduct, self::SalesByCustomer,
-            self::ProductProfitability, self::SalesBySalesman, self::CustomerAccountStatement => ReportGroup::Sales,
+            self::ProductProfitability, self::SalesBySalesman, self::CustomerAccountStatement,
+            self::CustomersByBranch => ReportGroup::Sales,
             self::PrescriptionsSummary, self::PrescriptionsByDoctor => ReportGroup::Prescriptions,
             self::WorkflowSummary, self::PendingJobs => ReportGroup::Workflow,
             self::StockLevels, self::StockMovements, self::LowStockAlert => ReportGroup::Inventory,
@@ -82,6 +86,7 @@ enum ReportType: string
             self::GeneralSales,
             self::SalesByProduct,
             self::SalesByCustomer,
+            self::CustomersByBranch,
             self::SalesBySalesman,
             self::PrescriptionsSummary,
             self::PrescriptionsByDoctor => true,

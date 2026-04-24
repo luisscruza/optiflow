@@ -240,6 +240,10 @@ export default function ReportShow({ report, filters, columns, summary, data, ap
         const value = row[column.key];
         let content: React.ReactNode;
 
+        if ((value === null || value === undefined || value === '') && !['badge', 'invoices', 'invoice_list', 'prescription'].includes(column.type)) {
+            return <span className="text-muted-foreground">-</span>;
+        }
+
         switch (column.type) {
             case 'currency':
                 content = formatCurrency(Number(value));
