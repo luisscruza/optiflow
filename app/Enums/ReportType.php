@@ -44,7 +44,7 @@ enum ReportType: string
             self::ExpensesSummary => 'Gastos generales',
             self::PrescriptionsSummary => 'Resumen de recetas',
             self::PrescriptionsByDoctor => 'Recetas por evaluador',
-            self::WorkflowSummary => 'Resumen de flujos de trabajo',
+            self::WorkflowSummary => 'Procesos por sucursal',
             self::PendingJobs => 'Trabajos pendientes',
             self::StockLevels => 'Niveles de inventario',
             self::StockMovements => 'Movimientos de inventario',
@@ -65,7 +65,7 @@ enum ReportType: string
             self::ExpensesSummary => 'Consulta los gastos registrados por suplidor, sucursal, estado e impuestos.',
             self::PrescriptionsSummary => 'Resumen general de recetas.',
             self::PrescriptionsByDoctor => 'Detalle de recetas por médico.',
-            self::WorkflowSummary => 'Resumen de trabajos en flujo.',
+            self::WorkflowSummary => 'Consulta los procesos creados por sucursal y mes, mostrando su relacion con facturas o recetas.',
             self::PendingJobs => 'Lista de trabajos pendientes.',
             self::StockLevels => 'Niveles actuales de inventario.',
             self::StockMovements => 'Historial de movimientos de inventario.',
@@ -96,7 +96,8 @@ enum ReportType: string
             self::SalesBySalesman,
             self::ExpensesSummary,
             self::PrescriptionsSummary,
-            self::PrescriptionsByDoctor => true,
+            self::PrescriptionsByDoctor,
+            self::WorkflowSummary => true,
             default => false,
         };
     }

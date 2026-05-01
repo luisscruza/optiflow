@@ -14,6 +14,7 @@ use App\Reports\PrescriptionsByDoctorReport;
 use App\Reports\PrescriptionsSummaryReport;
 use App\Reports\ProductSalesReport;
 use App\Reports\SalesmanSalesReport;
+use App\Reports\WorkflowSummaryReport;
 use Exception;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -34,7 +35,7 @@ final class ExportReportController
             }
         }
 
-        $requestFilters = $request->only(['workspace_id', 'start_date', 'end_date', 'customer_id', 'contact_id', 'salesman_id', 'optometrist_id', 'status', 'is_informal', 'search']);
+        $requestFilters = $request->only(['workspace_id', 'start_date', 'end_date', 'customer_id', 'contact_id', 'salesman_id', 'optometrist_id', 'status', 'document_subtype_id', 'is_informal', 'search']);
         $filters = array_merge($defaultFilters, array_filter($requestFilters, fn ($v) => $v !== null && $v !== ''));
 
         return $reportImplementation->toExcel($filters);
@@ -51,6 +52,7 @@ final class ExportReportController
             ReportType::ExpensesSummary => new ExpensesSummaryReport,
             ReportType::PrescriptionsSummary => new PrescriptionsSummaryReport,
             ReportType::PrescriptionsByDoctor => new PrescriptionsByDoctorReport,
+            ReportType::WorkflowSummary => new WorkflowSummaryReport,
             default => throw new Exception('Report not implemented'),
         };
     }

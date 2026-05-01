@@ -7,6 +7,7 @@ namespace App\Reports;
 use App\Contracts\ReportContract;
 use App\DTOs\ReportColumn;
 use App\DTOs\ReportFilter;
+use App\Models\DocumentSubtype;
 use App\Models\Invoice;
 use App\Models\Workspace;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -80,11 +81,29 @@ final readonly class GeneralSalesReport implements ReportContract
                 name: 'status',
                 label: 'Estado',
                 type: 'select',
+                default: 'all',
                 options: [
                     ['value' => 'paid', 'label' => 'Pagada'],
                     ['value' => 'partially_paid', 'label' => 'Parcialmente pagada'],
                     ['value' => 'pending_payment', 'label' => 'Pendiente de pago'],
                 ],
+                hidden: true,
+            ),
+            new ReportFilter(
+                name: 'document_subtype_id',
+                label: 'Tipo de documento',
+                type: 'select',
+                default: 'all',
+                options: DocumentSubtype::query()
+                    ->withoutGlobalScopes()
+                    ->forInvoice()
+                    ->orderBy('name')
+                    ->get()
+                    ->map(fn (DocumentSubtype $documentSubtype): array => [
+                        'value' => (string) $documentSubtype->id,
+                        'label' => $documentSubtype->name,
+                    ])
+                    ->toArray(),
                 hidden: true,
             ),
         ];
@@ -321,6 +340,10 @@ final readonly class GeneralSalesReport implements ReportContract
 
         if (! empty($filters['status']) && $filters['status'] !== 'all') {
             $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['document_subtype_id']) && $filters['document_subtype_id'] !== 'all') {
+            $query->where('document_subtype_id', $filters['document_subtype_id']);
         }
 
         if (! empty($filters['search'])) {
