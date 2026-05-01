@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\DTOs\InvoiceResult;
+use App\Enums\InvoiceStatus;
+use App\Exceptions\EasyFactuException;
 use App\Exceptions\InsufficientStockException;
 use App\Models\DocumentSubtype;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Workspace;
+use App\Services\EasyFactuService;
+use App\Support\EasyFactuInvoiceMetadata;
+use App\Support\EasyFactuPayloadTransformer;
 use App\Support\NCFValidator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +25,8 @@ use Throwable;
 final readonly class UpdateInvoiceAction
 {
     public function __construct(
-        private UpdateInvoiceItemAction $updateInvoiceItemAction
+        private UpdateInvoiceItemAction $updateInvoiceItemAction,
+        private EasyFactuService $easyFactu,
     ) {}
 
     /**
@@ -30,13 +36,28 @@ final readonly class UpdateInvoiceAction
      */
     public function handle(Workspace $workspace, Invoice $invoice, array $data): InvoiceResult
     {
+        // Block updates for electronic invoices that have been submitted or processed by DGII
+        if ($invoice->isElectronic() && in_array($invoice->status, [
+            InvoiceStatus::Submitted,
+            InvoiceStatus::DgiiAccepted,
+            InvoiceStatus::DgiiRejected,
+        ])) {
+            return new InvoiceResult(error: 'Esta factura electrónica ya fue emitida y no puede ser modificada.');
+        }
+
         try {
             return DB::transaction(function () use ($invoice, $data): InvoiceResult {
                 $originalItems = $invoice->items()->with('product')->get()->keyBy('id');
 
                 $documentSubtype = DocumentSubtype::query()->findOrFail($data['document_subtype_id']);
+                $isElectronic = $documentSubtype->is_electronic;
 
-                if (isset($data['ncf']) && $data['ncf'] !== $invoice->document_number) {
+                if ((int) $data['document_subtype_id'] !== $invoice->document_subtype_id) {
+                    return new InvoiceResult(error: 'No se puede cambiar el tipo de comprobante de una factura existente.');
+                }
+
+                // NCF validation: skip for electronic types (EasyFactu manages sequences)
+                if (! $isElectronic && isset($data['ncf']) && $data['ncf'] !== $invoice->document_number) {
                     if (! NCFValidator::validate($data['ncf'], $documentSubtype, $data)) {
                         return new InvoiceResult(error: 'El NCF proporcionado no es válido.');
                     }
@@ -44,8 +65,8 @@ final readonly class UpdateInvoiceAction
 
                 $this->updateDocumentFields($invoice, $data);
 
-                // Only update numerator if the NCF actually changed
-                if (isset($data['ncf']) && $data['ncf'] !== $invoice->document_number) {
+                // Only update numerator for non-electronic types when NCF actually changed
+                if (! $isElectronic && isset($data['ncf']) && $data['ncf'] !== $invoice->document_number) {
                     $this->updateNumerator($documentSubtype, $data['ncf']);
                 }
 
@@ -63,6 +84,11 @@ final readonly class UpdateInvoiceAction
                 // Update salesmen if provided
                 if (isset($data['salesmen_ids']) && is_array($data['salesmen_ids'])) {
                     $invoice->salesmen()->sync($data['salesmen_ids']);
+                }
+
+                // Sync changes with EasyFactu for electronic draft invoices
+                if ($isElectronic && $invoice->isDraft() && $invoice->easyfactu_invoice_id) {
+                    $this->syncWithEasyFactu($invoice);
                 }
 
                 DB::afterCommit(function () use ($invoice): void {
@@ -215,6 +241,41 @@ final readonly class UpdateInvoiceAction
 
         if ($number >= $documentSubtype->next_number) {
             $documentSubtype->update(['next_number' => $number + 1]);
+        }
+    }
+
+    /**
+     * Sync the updated invoice with EasyFactu's draft.
+     */
+    private function syncWithEasyFactu(Invoice $invoice): void
+    {
+        try {
+            $invoice->loadMissing(['contact', 'items.taxes', 'items.product']);
+            $payload = EasyFactuPayloadTransformer::toUpdatePayload($invoice);
+            $response = $this->easyFactu->updateDraftInvoice($invoice->easyfactu_invoice_id, $payload);
+
+            $efInvoice = $response['invoice'] ?? [];
+
+            // Update local fields with any changes from EasyFactu
+            if (! empty($efInvoice['encf'])) {
+                $invoice->update([
+                    'encf' => $efInvoice['encf'],
+                    'document_number' => $efInvoice['encf'],
+                    'dgii_signed_at' => EasyFactuInvoiceMetadata::extractSignedAt($efInvoice) ?? $invoice->dgii_signed_at,
+                ]);
+            }
+        } catch (EasyFactuException $e) {
+            Log::error('Failed to sync draft update with EasyFactu', [
+                'invoice_id' => $invoice->id,
+                'easyfactu_invoice_id' => $invoice->easyfactu_invoice_id,
+                'error' => $e->getMessage(),
+                'errors' => $e->errors,
+            ]);
+
+            // Don't fail the local update — the user can retry later
+            $invoice->update([
+                'dgii_status' => 'Error sincronización: '.$e->getMessage(),
+            ]);
         }
     }
 }

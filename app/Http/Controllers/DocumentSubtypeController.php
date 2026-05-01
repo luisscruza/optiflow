@@ -26,7 +26,7 @@ final class DocumentSubtypeController
     {
         $documentType = DocumentType::tryFrom($request->get('document_type', ''));
 
-        $query = DocumentSubtype::query();
+        $query = DocumentSubtype::withoutGlobalScope('is_active');
 
         if ($documentType !== null) {
             $query->where('type', $documentType);
@@ -48,6 +48,7 @@ final class DocumentSubtypeController
             $subtype->setAttribute('siguiente_numero', $subtype->next_number);
             $subtype->setAttribute('fecha_finalizacion', $subtype->valid_until_date?->format('d/m/Y'));
             $subtype->setAttribute('preferida', $subtype->is_default ? 'Sí' : 'No');
+            $subtype->setAttribute('estado', $subtype->is_active ? 'Activa' : 'Inactiva');
 
             return $subtype;
         });

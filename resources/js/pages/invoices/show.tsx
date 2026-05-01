@@ -1,6 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Calendar, CreditCard, DownloadCloud, Edit, FileText, Plus, Printer, Share2, Trash2 } from 'lucide-react';
+import { AlertTriangle, Calendar, CreditCard, DownloadCloud, Edit, FileText, Plus, Printer, RefreshCw, Send, Share2, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import QRCode from 'react-qr-code';
 
 import { usePermissions } from '@/hooks/use-permissions';
 
@@ -34,6 +35,24 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [activeShareModal, setActiveShareModal] = useState<{ share: ShareData; title: string } | null>(null);
+    const canEditInvoice = can('edit invoices') && (invoice.status === 'pending_payment' || (invoice.is_electronic && invoice.status === 'draft'));
+    const canDeleteInvoice = can('delete invoices') && invoice.status === 'draft';
+    const canEmitInvoice = can('edit invoices') && invoice.is_electronic && invoice.status === 'draft' && Boolean(invoice.easyfactu_invoice_id);
+    const canRefreshElectronicStatus = invoice.is_electronic && invoice.status === 'submitted' && Boolean(invoice.easyfactu_invoice_id);
+    const canRegisterPayment = can('create payments') && invoice.amount_due > 0 && !['draft', 'submitted', 'dgii_rejected'].includes(invoice.status);
+    const showElectronicLockBanner = invoice.is_electronic && invoice.status !== 'draft';
+
+    const emitInvoice = () => {
+        if (!confirm('¿Deseas emitir esta factura a la DGII ahora?')) {
+            return;
+        }
+
+        router.post(`/invoices/${invoice.id}/emit`, {}, { preserveScroll: true });
+    };
+
+    const refreshElectronicStatus = () => {
+        router.post(`/invoices/${invoice.id}/refresh-status`, {}, { preserveScroll: true });
+    };
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -90,6 +109,12 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                 return <Badge variant="secondary">Borrador</Badge>;
             case 'sent':
                 return <Badge variant="outline">Enviada</Badge>;
+            case 'submitted':
+                return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">Enviada a DGII</Badge>;
+            case 'dgii_accepted':
+                return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Aceptada por DGII</Badge>;
+            case 'dgii_rejected':
+                return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Rechazada por DGII</Badge>;
             case 'paid':
                 return (
                     <Badge variant="default" className="bg-green-600">
@@ -116,7 +141,7 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
             <div className="max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                     <div className="mb-4 flex gap-3">
-                        {can('edit invoices') && (
+                        {canEditInvoice && (
                             <Button
                                 size="sm"
                                 asChild
@@ -128,7 +153,7 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                 </Link>
                             </Button>
                         )}
-                        {can('delete invoices') && invoice.status === 'draft' && (
+                        {canDeleteInvoice && (
                             <Button className="flex items-center justify-center gap-2 border border-gray-300 bg-gray-50 text-gray-800 hover:border-gray-300 hover:bg-gray-100">
                                 <Link href={`/invoices/${invoice.id}`} method="delete" as="button">
                                     <Trash2 className="h-4 w-4" />
@@ -171,7 +196,31 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                             </a>
                         </Button>
 
-                        {invoice.amount_due > 0 && (
+                        {canEmitInvoice && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={emitInvoice}
+                                className="flex items-center justify-center gap-2 border border-green-300 bg-green-50 text-green-800 hover:border-green-300 hover:bg-green-100"
+                            >
+                                <Send className="h-4 w-4" />
+                                Emitir a DGII
+                            </Button>
+                        )}
+
+                        {canRefreshElectronicStatus && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={refreshElectronicStatus}
+                                className="flex items-center justify-center gap-2 border border-blue-300 bg-blue-50 text-blue-800 hover:border-blue-300 hover:bg-blue-100"
+                            >
+                                <RefreshCw className="h-4 w-4" />
+                                Refrescar estado
+                            </Button>
+                        )}
+
+                        {canRegisterPayment && (
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -187,6 +236,22 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                         )}
                     </div>
 
+                    {showElectronicLockBanner && (
+                        <Card className="mb-6 border-0 bg-amber-50 shadow-sm ring-1 ring-amber-200">
+                            <CardContent className="px-6 py-4">
+                                <div className="flex items-start gap-3">
+                                    <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-600" />
+                                    <div>
+                                        <p className="text-sm text-amber-800">
+                                            Después de emitir una factura electrónica, sus datos fiscales quedan congelados. Solo puedes consultar su
+                                            estado en DGII.
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
                     {/* Payment Summary Card */}
                     <Card className="mb-6 border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
                         <CardContent className="px-6 py-4">
@@ -200,7 +265,7 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                 {/* Amount Collected */}
                                 <div className="space-y-1 px-4 py-3 sm:py-0">
                                     <p className="text-sm font-medium text-gray-600">Cobrado</p>
-                                    <p className="text-2xl font-bold text-yellow-600">{formatCurrency(invoice.amount_paid)}</p>
+                                    <p className="text-2xl font-bold text-primary">{formatCurrency(invoice.amount_paid)}</p>
                                 </div>
 
                                 {/* Amount Due */}
@@ -218,17 +283,25 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                             <div className="mb-8 flex items-start justify-between border-b border-gray-200 pb-6">
                                 {/* Company Info */}
                                 <CompanyHeader workspace={invoice.workspace} />
-
                                 {/* Invoice Header */}
                                 <div className="space-y-1 text-right">
                                     <h2 className="text-xl font-bold text-gray-900">Factura No. {invoice.id}</h2>
                                     <div className="flex items-center justify-end gap-2">{getStatusBadge(invoice.status)}</div>
                                     {invoice.document_subtype ? (
                                         <>
-                                            <div className="text-sm font-medium text-gray-900">{invoice.document_subtype.name}</div>
-                                            <div className="text-sm font-semibold text-gray-900">NCF {invoice.document_number}</div>
+                                            <div className="flex flex-col gap-2 text-sm font-medium text-gray-900">
+                                                <span>{invoice.document_subtype.name}</span>
+                                                {invoice.is_electronic && (
+                                                    <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+                                                        Factura electrónica: {invoice.dgii_status}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-900">
+                                                {invoice.is_electronic ? 'eNCF' : 'NCF'} {invoice.document_number}
+                                            </div>
                                             <div className="text-xs text-gray-600">
-                                                {invoice.document_subtype?.valid_until_date && (
+                                                {!invoice.is_electronic && invoice.document_subtype?.valid_until_date && (
                                                     <>
                                                         <span className="font-semibold text-gray-700">Vencimiento NCF:</span>{' '}
                                                         {formatDate(invoice.document_subtype.valid_until_date)}
@@ -444,6 +517,82 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                         </CardContent>
                     </Card>
 
+                    {invoice.is_electronic && (
+                        <Card className="mb-8 border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
+                            <CardHeader className="bg-gray-50/50 px-6 py-5">
+                                <CardTitle className="text-lg font-semibold text-gray-900">Facturación electrónica</CardTitle>
+                            </CardHeader>
+                            <CardContent className="px-6 py-6">
+                                <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+                                    <div className="grid gap-4 sm:grid-cols-2">
+                                        <div>
+                                            <Label className="text-sm font-medium text-gray-700">eNCF</Label>
+                                            <p className="mt-1 font-mono text-sm text-gray-900">
+                                                {invoice.encf || invoice.document_number || 'Pendiente'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <Label className="text-sm font-medium text-gray-700">Estado DGII</Label>
+                                            <p className="mt-1 text-sm text-gray-900">{invoice.dgii_status || 'Pendiente de respuesta'}</p>
+                                        </div>
+                                        <div>
+                                            <Label className="text-sm font-medium text-gray-700">Track ID</Label>
+                                            <p className="mt-1 text-sm text-gray-900">{invoice.dgii_track_id || 'No disponible'}</p>
+                                        </div>
+                                        <div>
+                                            <Label className="text-sm font-medium text-gray-700">Código de seguridad</Label>
+                                            <p className="mt-1 text-sm text-gray-900">{invoice.dgii_security_code || 'No disponible'}</p>
+                                        </div>
+                                        <div>
+                                            <Label className="text-sm font-medium text-gray-700">Fecha de firma</Label>
+                                            <p className="mt-1 text-sm text-gray-900">
+                                                {invoice.dgii_signed_at ? formatDate(invoice.dgii_signed_at) : 'No disponible'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <Label className="text-sm font-medium text-gray-700">Entorno</Label>
+                                            <div className="mt-1">
+                                                <Badge variant="outline">{invoice.dgii_environment || 'No disponible'}</Badge>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <Label className="text-sm font-medium text-gray-700">ID EasyFactu</Label>
+                                            <p className="mt-1 text-sm text-gray-900">{invoice.easyfactu_invoice_id || 'No disponible'}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start justify-start lg:justify-end">
+                                        {invoice.dgii_qr_code_url ? (
+                                            <div className="rounded-lg border border-gray-200 p-3 text-center">
+                                                <div className="rounded bg-white p-3">
+                                                    <QRCode
+                                                        value={invoice.dgii_qr_code_url}
+                                                        size={144}
+                                                        bgColor="#FFFFFF"
+                                                        fgColor="#111827"
+                                                        title="Código QR de la factura electrónica"
+                                                    />
+                                                </div>
+                                                <a
+                                                    href={invoice.dgii_qr_code_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="mt-3 inline-block text-sm text-primary hover:underline"
+                                                >
+                                                    Abrir QR
+                                                </a>
+                                            </div>
+                                        ) : (
+                                            <div className="rounded-lg border border-dashed border-gray-300 px-6 py-8 text-center text-sm text-gray-500">
+                                                El código QR estará disponible cuando la DGII procese la factura.
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
                     {/* Payments Section */}
                     {invoice.payments && invoice.payments.length > 0 && (
                         <Card className="mb-8 border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
@@ -452,7 +601,7 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                     <div>
                                         <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">Pagos recibidos</CardTitle>
                                     </div>
-                                    {invoice.amount_due > 0 && can('create payments') && (
+                                    {canRegisterPayment && (
                                         <Button
                                             onClick={() => {
                                                 setSelectedPayment(null);
@@ -640,16 +789,20 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                         <CreditCard className="h-8 w-8 text-orange-600" />
                                     </div>
                                     <h3 className="mb-2 text-lg font-medium text-gray-900">Tu venta aún no tiene pagos recibidos</h3>
-                                    <Button
-                                        onClick={() => {
-                                            setSelectedPayment(null);
-                                            setIsPaymentModalOpen(true);
-                                        }}
-                                        className="mx-auto flex items-center gap-2"
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                        Registrar pago
-                                    </Button>
+                                    {canRegisterPayment ? (
+                                        <Button
+                                            onClick={() => {
+                                                setSelectedPayment(null);
+                                                setIsPaymentModalOpen(true);
+                                            }}
+                                            className="mx-auto flex items-center gap-2"
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                            Registrar pago
+                                        </Button>
+                                    ) : invoice.is_electronic ? (
+                                        <p className="text-sm text-gray-600">El pago se habilitará cuando la factura sea aceptada por la DGII.</p>
+                                    ) : null}
                                 </div>
                             </CardContent>
                         </Card>

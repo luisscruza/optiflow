@@ -24,6 +24,7 @@ enum Permission: string
     case InvoicesCreate = 'create invoices';
     case InvoicesEdit = 'edit invoices';
     case InvoicesDelete = 'delete invoices';
+    case ElectronicInvoicingView = 'view electronic invoicing';
 
     // Payments
     case PaymentsView = 'view payments';
@@ -31,6 +32,12 @@ enum Permission: string
     case PaymentsEdit = 'edit payments';
     case PaymentsDelete = 'delete payments';
     case PaymentsList = 'list payments';
+
+    // Expenses
+    case ExpensesView = 'view expenses';
+    case ExpensesCreate = 'create expenses';
+    case ExpensesEdit = 'edit expenses';
+    case ExpensesDelete = 'delete expenses';
 
     // Quotations
     case QuotationsView = 'view quotations';
@@ -111,6 +118,7 @@ enum Permission: string
             self::ContactsDelete->value,
             self::InvoicesDelete->value,
             self::PaymentsDelete->value,
+            self::ExpensesDelete->value,
             self::QuotationsDelete->value,
             self::PrescriptionsDelete->value,
             self::CreateWorkflows->value,
@@ -147,6 +155,7 @@ enum Permission: string
             self::InvoicesCreate => 'Crear facturas',
             self::InvoicesEdit => 'Editar facturas',
             self::InvoicesDelete => 'Eliminar facturas',
+            self::ElectronicInvoicingView => 'Ver facturación electrónica',
 
             // Payments
             self::PaymentsView => 'Ver pagos',
@@ -154,6 +163,12 @@ enum Permission: string
             self::PaymentsEdit => 'Editar pagos',
             self::PaymentsDelete => 'Eliminar pagos',
             self::PaymentsList => 'Listar pagos',
+
+            // Expenses
+            self::ExpensesView => 'Ver gastos',
+            self::ExpensesCreate => 'Crear gastos',
+            self::ExpensesEdit => 'Editar gastos',
+            self::ExpensesDelete => 'Eliminar gastos',
 
             // Quotations
             self::QuotationsView => 'Ver cotizaciones',
@@ -221,8 +236,9 @@ enum Permission: string
             self::ViewAllLocations => 'General',
             self::ProductsView, self::ProductsCreate, self::ProductsEdit, self::ProductsDelete => 'Productos',
             self::ContactsView, self::ContactsCreate, self::ContactsEdit, self::ContactsDelete => 'Contactos',
-            self::InvoicesView, self::InvoicesCreate, self::InvoicesEdit, self::InvoicesDelete => 'Facturas',
+            self::InvoicesView, self::InvoicesCreate, self::InvoicesEdit, self::InvoicesDelete, self::ElectronicInvoicingView => 'Facturas',
             self::PaymentsView, self::PaymentsCreate, self::PaymentsEdit, self::PaymentsDelete, self::PaymentsList => 'Pagos',
+            self::ExpensesView, self::ExpensesCreate, self::ExpensesEdit, self::ExpensesDelete => 'Gastos',
             self::QuotationsView, self::QuotationsCreate, self::QuotationsEdit, self::QuotationsDelete => 'Cotizaciones',
             self::PrescriptionsView, self::PrescriptionsCreate, self::PrescriptionsEdit, self::PrescriptionsDelete => 'Recetas',
             self::InventoryView, self::InventoryAdjust, self::InventoryTransfer => 'Inventario',
@@ -231,6 +247,7 @@ enum Permission: string
             self::ViewDashboardAccountReceivable, self::ViewDashboardSalesStats, self::ViewDashboardProductsStats, self::ViewDashboardCustomersStats, self::ViewDashboardPrescriptionsStats, self::ViewDashboardWorkflowsStats => 'Panel',
             self::ViewWorkflows, self::CreateWorkflows, self::EditWorkflows, self::DeleteWorkflows, self::CreateWorkflowJobs, self::EditWorkflowJobs, self::DeleteWorkflowJobs, self::CreateWorkflowStages, self::EditWorkflowStages, self::DeleteWorkflowStages, self::ViewLabs => 'Flujos de trabajo',
             self::MastertablesView, self::MastertablesCreate, self::MastertablesEdit, self::MastertablesDelete => 'Tablas maestras',
+            self::ViewHistoryLogs => 'Facturas',
         };
     }
 }

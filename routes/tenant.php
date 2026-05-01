@@ -40,6 +40,9 @@ use App\Http\Controllers\DownloadProductRecipeController;
 use App\Http\Controllers\DownloadQuotationPdfController;
 use App\Http\Controllers\DownloadVisualCertificateController;
 use App\Http\Controllers\DownloadWorkflowJobProcessController;
+use App\Http\Controllers\ElectronicInvoicingReceivedDocumentController;
+use App\Http\Controllers\EmitInvoiceController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ExportReportController;
 use App\Http\Controllers\GlobalRoleController;
 use App\Http\Controllers\ImpersonationController;
@@ -65,6 +68,7 @@ use App\Http\Controllers\ProductInventoryAdjustmentController;
 use App\Http\Controllers\ProductRecipeController;
 use App\Http\Controllers\QuickProductCreate;
 use App\Http\Controllers\QuotationController;
+use App\Http\Controllers\RefreshInvoiceStatusController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportGroupController;
 use App\Http\Controllers\RunInvoiceImportController;
@@ -86,6 +90,7 @@ use App\Http\Controllers\TaxController;
 use App\Http\Controllers\TelegramBotController;
 use App\Http\Controllers\TestTelegramBotMessageController;
 use App\Http\Controllers\TestWhatsappAccountMessageController;
+use App\Http\Controllers\ToggleDocumentSubtypeActiveController;
 use App\Http\Controllers\UploadInvoiceImportController;
 use App\Http\Controllers\WhatsappAccountController;
 use App\Http\Controllers\WorkflowController;
@@ -209,6 +214,8 @@ Route::middleware([
 
             Route::resource('taxes', TaxController::class);
 
+            Route::resource('expenses', ExpenseController::class);
+
             Route::resource('contacts', ContactController::class);
             Route::get('api/contacts/check-duplicates', CheckContactDuplicatesController::class)->name('contacts.check-duplicates');
 
@@ -239,6 +246,18 @@ Route::middleware([
 
             Route::post('invoices/bulk/pdf', BulkDownloadInvoicePdfController::class)->name('invoices.bulk.pdf');
 
+            // Electronic invoicing actions
+            Route::post('invoices/{invoice}/emit', EmitInvoiceController::class)->name('invoices.emit');
+            Route::post('invoices/{invoice}/refresh-status', RefreshInvoiceStatusController::class)->name('invoices.refresh-status');
+            Route::get('electronic-invoicing/received', [ElectronicInvoicingReceivedDocumentController::class, 'index'])
+                ->name('electronic-invoicing.received.index');
+            Route::get('electronic-invoicing/received/export', [ElectronicInvoicingReceivedDocumentController::class, 'export'])
+                ->name('electronic-invoicing.received.export');
+            Route::get('electronic-invoicing/received/{receivedDocument}', [ElectronicInvoicingReceivedDocumentController::class, 'show'])
+                ->name('electronic-invoicing.received.show');
+            Route::get('electronic-invoicing/received/{receivedDocument}/print', [ElectronicInvoicingReceivedDocumentController::class, 'print'])
+                ->name('electronic-invoicing.received.print');
+
             Route::get('cash-register-close', CashRegisterCloseController::class)->name('cash-register-close');
 
             Route::post('payments', [PaymentController::class, 'store'])->name('payments.store');
@@ -256,6 +275,7 @@ Route::middleware([
             Route::post('quotations/{quotation}/convert-to-invoice', ConvertQuotationToInvoiceController::class)->name('quotations.convert-to-invoice');
 
             Route::resource('document-subtypes', DocumentSubtypeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
+            Route::patch('document-subtypes/{documentSubtype}/toggle-active', ToggleDocumentSubtypeActiveController::class)->name('document-subtypes.toggle-active');
             Route::patch('document-subtypes/{documentSubtype}/set-default', SetDefaultDocumentSubtypeController::class)->name('document-subtypes.set-default');
             Route::patch('document-subtypes/{documentSubtype}/workspace/{workspace}/set-preferred', SetWorkspacePreferredDocumentSubtypeController::class)->name('document-subtypes.set-workspace-preferred');
 

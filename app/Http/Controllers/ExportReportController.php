@@ -8,6 +8,7 @@ use App\Contracts\ReportContract;
 use App\Enums\ReportType;
 use App\Reports\CustomerSalesReport;
 use App\Reports\CustomersByBranchReport;
+use App\Reports\ExpensesSummaryReport;
 use App\Reports\GeneralSalesReport;
 use App\Reports\PrescriptionsByDoctorReport;
 use App\Reports\PrescriptionsSummaryReport;
@@ -33,7 +34,7 @@ final class ExportReportController
             }
         }
 
-        $requestFilters = $request->only(['workspace_id', 'start_date', 'end_date', 'customer_id', 'salesman_id', 'optometrist_id', 'status', 'search']);
+        $requestFilters = $request->only(['workspace_id', 'start_date', 'end_date', 'customer_id', 'contact_id', 'salesman_id', 'optometrist_id', 'status', 'is_informal', 'search']);
         $filters = array_merge($defaultFilters, array_filter($requestFilters, fn ($v) => $v !== null && $v !== ''));
 
         return $reportImplementation->toExcel($filters);
@@ -47,6 +48,7 @@ final class ExportReportController
             ReportType::SalesByCustomer => new CustomerSalesReport,
             ReportType::CustomersByBranch => new CustomersByBranchReport,
             ReportType::SalesBySalesman => new SalesmanSalesReport,
+            ReportType::ExpensesSummary => new ExpensesSummaryReport,
             ReportType::PrescriptionsSummary => new PrescriptionsSummaryReport,
             ReportType::PrescriptionsByDoctor => new PrescriptionsByDoctorReport,
             default => throw new Exception('Report not implemented'),

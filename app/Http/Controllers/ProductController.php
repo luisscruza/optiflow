@@ -77,7 +77,7 @@ final class ProductController
     {
         abort_unless($user->can(Permission::ProductsView), 403);
 
-        $product->load(['defaultTax', 'stockInCurrentWorkspace', 'stockMovements.createdBy']);
+        $product->load(['defaultTax', 'stockInCurrentWorkspace', 'stockMovements.createdBy', 'stockMovements.workspace']);
 
         $workspaceStocks = $product->track_stock
             ? $this->workspaceStockSnapshot($product, $user)

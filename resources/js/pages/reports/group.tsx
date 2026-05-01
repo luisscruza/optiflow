@@ -37,6 +37,7 @@ const breadcrumbs = (groupLabel: string): BreadcrumbItem[] => [
 
 const groupIcons: Record<string, typeof DollarSign> = {
     sales: DollarSign,
+    expenses: DollarSign,
     prescriptions: ClipboardList,
     workflow: Workflow,
     inventory: Package,
@@ -44,9 +45,10 @@ const groupIcons: Record<string, typeof DollarSign> = {
 
 const groupColors: Record<string, string> = {
     sales: 'text-green-600 bg-green-50 dark:bg-green-950 dark:text-green-400',
+    expenses: 'text-rose-600 bg-rose-50 dark:bg-rose-950 dark:text-rose-400',
     prescriptions: 'text-pink-600 bg-pink-50 dark:bg-pink-950 dark:text-pink-400',
     workflow: 'text-purple-600 bg-purple-50 dark:bg-purple-950 dark:text-purple-400',
-    inventory: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-950 dark:text-yellow-400',
+    inventory: 'text-primary bg-primary/10 dark:bg-yellow-950 dark:text-primary/40',
 };
 
 export default function ReportsGroup({ group, reports }: Props) {
@@ -77,7 +79,7 @@ export default function ReportsGroup({ group, reports }: Props) {
                         {reports.map((report) => (
                             <Button key={report.id} asChild variant="outline" className="h-auto p-0">
                                 <Link href={`/reports/${report.type}`}>
-                                    <Card className="w-full border-0 shadow-none text-wrap">
+                                    <Card className="w-full border-0 text-wrap shadow-none">
                                         <CardHeader className="space-y-3">
                                             <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${colorClass}`}>
                                                 <Icon className="h-5 w-5" />

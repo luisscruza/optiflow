@@ -12,6 +12,9 @@ enum InvoiceStatus: string
     case PendingPayment = 'pending_payment';
     case PartiallyPaid = 'partially_paid';
     case Deleted = 'deleted';
+    case Submitted = 'submitted';
+    case DgiiAccepted = 'dgii_accepted';
+    case DgiiRejected = 'dgii_rejected';
 
     /**
      * Get all contact types as an array for form options.
@@ -27,6 +30,9 @@ enum InvoiceStatus: string
             self::PartiallyPaid->value => self::PartiallyPaid->label(),
             self::Draft->value => self::Draft->label(),
             self::Deleted->value => self::Deleted->label(),
+            self::Submitted->value => self::Submitted->label(),
+            self::DgiiAccepted->value => self::DgiiAccepted->label(),
+            self::DgiiRejected->value => self::DgiiRejected->label(),
         ];
     }
 
@@ -42,6 +48,9 @@ enum InvoiceStatus: string
             self::PartiallyPaid => 'Parcialmente pagada',
             self::Draft => 'Borrador',
             self::Deleted => 'Anulada',
+            self::Submitted => 'Enviada a DGII',
+            self::DgiiAccepted => 'Aceptada por DGII',
+            self::DgiiRejected => 'Rechazada por DGII',
         };
     }
 
@@ -57,6 +66,9 @@ enum InvoiceStatus: string
             self::PartiallyPaid => 'secondary',
             self::Draft => 'outline',
             self::Deleted => 'destructive',
+            self::Submitted => 'secondary',
+            self::DgiiAccepted => 'default',
+            self::DgiiRejected => 'destructive',
         };
     }
 
@@ -72,6 +84,9 @@ enum InvoiceStatus: string
             self::PartiallyPaid => 'bg-blue-100 text-blue-800',
             self::Draft => 'bg-gray-100 text-gray-800',
             self::Deleted => 'bg-red-100 text-red-800',
+            self::Submitted => 'bg-blue-100 text-blue-800',
+            self::DgiiAccepted => 'bg-emerald-100 text-emerald-800',
+            self::DgiiRejected => 'bg-red-100 text-red-800',
         };
     }
 

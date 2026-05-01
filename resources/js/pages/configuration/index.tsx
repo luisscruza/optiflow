@@ -46,6 +46,7 @@ const configurationSections = [
         items: [
             { title: 'Numeraciones', href: '/document-subtypes', icon: Hash },
             { title: 'Vendedores', href: '/salesmen', icon: Users },
+            { title: 'Facturación electrónica', href: '/settings/electronic-invoicing', icon: FileText },
         ],
     },
     {

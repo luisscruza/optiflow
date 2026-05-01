@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Plus, Sparkles, X } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -391,7 +391,7 @@ export default function InventoryAdjustmentsCreate({
                             <Button type="button" variant="outline" asChild>
                                 <Link href="/inventory-adjustments">Cancelar</Link>
                             </Button>
-                            <Button type="submit" className="bg-yellow-600 text-white hover:bg-yellow-700" disabled={processing}>
+                            <Button type="submit" className="bg-primary text-white hover:bg-primary" disabled={processing}>
                                 {processing ? 'Guardando...' : 'Guardar'}
                             </Button>
                         </div>

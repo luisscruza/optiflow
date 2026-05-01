@@ -75,6 +75,15 @@ use Spatie\Activitylog\LogOptions;
  * @property float $discount_amount
  * @property float $subtotal_amount
  * @property string|null $payment_term
+ * @property string|null $easyfactu_invoice_id
+ * @property string|null $encf
+ * @property string|null $dgii_status
+ * @property string|null $dgii_track_id
+ * @property string|null $dgii_security_code
+ * @property string|null $dgii_qr_code_url
+ * @property \Carbon\CarbonImmutable|null $dgii_signed_at
+ * @property string|null $dgii_environment
+ * @property bool $is_electronic
  *
  * @method static Builder<static>|Invoice whereCreatedBy($value)
  * @method static Builder<static>|Invoice whereCurrencyId($value)
@@ -122,7 +131,8 @@ final class Invoice extends Model implements Auditable, Commentable
      */
     public function documentSubtype(): BelongsTo
     {
-        return $this->belongsTo(DocumentSubtype::class);
+        return $this->belongsTo(DocumentSubtype::class)
+            ->withoutGlobalScope(DocumentSubtype::ACTIVE_SCOPE);
     }
 
     /**
@@ -208,6 +218,8 @@ final class Invoice extends Model implements Auditable, Commentable
                 'due_date',
                 'payment_term',
                 'notes',
+                'dgii_status',
+                'encf',
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
@@ -234,6 +246,9 @@ final class Invoice extends Model implements Auditable, Commentable
             'due_date' => 'Fecha de vencimiento',
             'payment_term' => 'Plazo de pago',
             'notes' => 'Notas',
+            'dgii_status' => 'Estado DGII',
+            'encf' => 'eNCF',
+            'dgii_signed_at' => 'Fecha de firma DGII',
         ];
     }
 
@@ -242,7 +257,13 @@ final class Invoice extends Model implements Auditable, Commentable
      */
     public function canBeDeleted(): bool
     {
-        return ! in_array($this->status, [InvoiceStatus::Paid, InvoiceStatus::PartiallyPaid, InvoiceStatus::Deleted]);
+        return ! in_array($this->status, [
+            InvoiceStatus::Paid,
+            InvoiceStatus::PartiallyPaid,
+            InvoiceStatus::Deleted,
+            InvoiceStatus::Submitted,
+            InvoiceStatus::DgiiAccepted,
+        ]) && ! $this->isElectronic();
     }
 
     /**
@@ -250,7 +271,15 @@ final class Invoice extends Model implements Auditable, Commentable
      */
     public function canBeEdited(): bool
     {
-        return ! in_array($this->status, [InvoiceStatus::Paid, InvoiceStatus::PartiallyPaid, InvoiceStatus::Deleted, InvoiceStatus::Cancelled]);
+        return ! in_array($this->status, [
+            InvoiceStatus::Paid,
+            InvoiceStatus::PartiallyPaid,
+            InvoiceStatus::Deleted,
+            InvoiceStatus::Cancelled,
+            InvoiceStatus::Submitted,
+            InvoiceStatus::DgiiAccepted,
+            InvoiceStatus::DgiiRejected,
+        ]) && ! $this->isElectronic();
     }
 
     /**
@@ -258,7 +287,40 @@ final class Invoice extends Model implements Auditable, Commentable
      */
     public function canRegisterPayment(): bool
     {
-        return ! in_array($this->status, [InvoiceStatus::Paid, InvoiceStatus::Deleted, InvoiceStatus::Cancelled, InvoiceStatus::Draft]);
+        return ! in_array($this->status, [
+            InvoiceStatus::Paid,
+            InvoiceStatus::Deleted,
+            InvoiceStatus::Cancelled,
+            InvoiceStatus::Draft,
+            InvoiceStatus::Submitted,
+            InvoiceStatus::DgiiRejected,
+        ]);
+    }
+
+    /**
+     * Check if this is an electronic invoice (e-CF).
+     */
+    public function isElectronic(): bool
+    {
+        return (bool) $this->is_electronic;
+    }
+
+    /**
+     * Check if the invoice is in draft status.
+     */
+    public function isDraft(): bool
+    {
+        return $this->status === InvoiceStatus::Draft;
+    }
+
+    /**
+     * Determine if the invoice can be emitted (sent to DGII via EasyFactu).
+     */
+    public function canBeEmitted(): bool
+    {
+        return $this->isElectronic()
+            && $this->isDraft()
+            && $this->easyfactu_invoice_id !== null;
     }
 
     protected function humanReadableIssueDate(): Attribute
@@ -301,8 +363,10 @@ final class Invoice extends Model implements Auditable, Commentable
         return [
             'issue_date' => 'date',
             'due_date' => 'date',
+            'dgii_signed_at' => 'datetime',
             'total_amount' => 'decimal:2',
             'status' => InvoiceStatus::class,
+            'is_electronic' => 'boolean',
         ];
     }
 }

@@ -45,6 +45,7 @@ final class AppServiceProvider extends ServiceProvider
             'user' => User::class,
             'invoice_item' => InvoiceItem::class,
             'payment' => \App\Models\Payment::class,
+            'expense' => \App\Models\Expense::class,
         ]);
     }
 

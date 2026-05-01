@@ -705,7 +705,7 @@ export default function WorkflowJobShow({ workflow, job, events }: Props) {
                                             <CardHeader className="cursor-pointer bg-gray-50/50 px-6 py-5 transition-colors hover:bg-gray-100/50">
                                                 <div className="flex items-center justify-between">
                                                     <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-100 text-yellow-600">
+                                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                                             <Edit className="h-4 w-4" />
                                                         </div>
                                                         Notas

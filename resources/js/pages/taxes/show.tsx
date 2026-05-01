@@ -46,7 +46,7 @@ export default function TaxesShow({ tax }: Props) {
                     <div>
                         <div className="flex items-center space-x-3">
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{tax.name}</h1>
-                            {tax.is_default && <Star className="h-6 w-6 fill-yellow-500 text-yellow-500" />}
+                            {tax.is_default && <Star className="h-6 w-6 fill-primary text-primary" />}
                         </div>
                         <p className="text-gray-600 dark:text-gray-400">Detalles del impuesto y su configuración</p>
                     </div>

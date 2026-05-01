@@ -6,6 +6,7 @@ import { usePermissions } from '@/hooks/use-permissions';
 
 import { CashRegisterCloseModal } from '@/components/cash-register-close-modal';
 import { PaymentRegistrationModal } from '@/components/payment-registration-modal';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DataTable, type TableResource } from '@/components/ui/datatable';
 import AppLayout from '@/layouts/app-layout';
@@ -94,6 +95,20 @@ export default function InvoicesIndex({ invoices, bankAccounts = [], paymentMeth
                     }
                     handlers={{
                         openPaymentModal: handleOpenPaymentModal,
+                    }}
+                    renderCell={(key, value, row) => {
+                        if (key === 'document_number') {
+                            return (
+                                <div className="space-y-1">
+                                    <div className="font-medium text-gray-900">{String(value ?? '-')}</div>
+                                    {row.is_electronic && (
+                                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Factura electrónica</Badge>
+                                    )}
+                                </div>
+                            );
+                        }
+
+                        return undefined;
                     }}
                 />
             </div>

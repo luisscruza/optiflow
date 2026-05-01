@@ -14,6 +14,8 @@ use Throwable;
 
 final readonly class CreateInvoiceItemAction
 {
+    public function __construct(private ApplyInventoryMovementAction $applyInventoryMovementAction) {}
+
     /**
      * Execute the action.
      *
@@ -78,21 +80,14 @@ final readonly class CreateInvoiceItemAction
             return;
         }
 
-        $invoice->stockMovements()->create([
-            'product_id' => $product->id,
+        $this->applyInventoryMovementAction->handle($product, [
             'workspace_id' => $invoice->workspace_id,
+            'quantity' => -abs((float) $item['quantity']),
             'type' => StockMovementType::SALE,
-            'quantity' => -$item['quantity'],
+            'related_invoice_id' => $invoice->id,
             'reference_number' => $invoice->document_number,
+            'note' => 'Salida por factura '.$invoice->document_number,
         ]);
-
-        $stockForWorkspace = $product->getStockForWorkspace($invoice->workspace);
-
-        if (! $stockForWorkspace instanceof \App\Models\ProductStock) {
-            throw new InsufficientStockException('No stock record found for product: '.$product->name);
-        }
-
-        $stockForWorkspace->decrementStock($item['quantity']);
     }
 
     /**

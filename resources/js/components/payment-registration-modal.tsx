@@ -68,7 +68,7 @@ export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccount
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-xl">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-100 text-yellow-600">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                             <DollarSignIcon className="h-5 w-5" />
                         </div>
                         <span>{isEditing ? 'Editar pago' : 'Registrar pago'}</span>
@@ -76,23 +76,23 @@ export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccount
                 </DialogHeader>
 
                 {/* Invoice Summary Card - Redesigned to stand out */}
-                <div className="rounded-lg border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100/50 p-5 shadow-sm">
+                <div className="to-primary/10/50 rounded-lg border-2 border-primary/80 bg-gradient-to-br from-primary/10 p-5 shadow-sm">
                     <div className="space-y-3">
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 space-y-2">
                                 <div>
-                                    <p className="text-xs font-medium tracking-wide text-yellow-700 uppercase">Factura</p>
+                                    <p className="text-xs font-medium tracking-wide text-primary uppercase">Factura</p>
                                     <p className="text-lg font-bold text-gray-900">{invoice.document_number}</p>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-medium tracking-wide text-yellow-700 uppercase">Cliente</p>
+                                    <p className="text-xs font-medium tracking-wide text-primary uppercase">Cliente</p>
                                     <p className="text-base font-semibold text-gray-900">{invoice.contact.name}</p>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <p className="mb-1 text-xs font-medium tracking-wide text-yellow-700 uppercase">Valor por cobrar</p>
-                                <div className="rounded-lg border border-yellow-200 bg-white px-4 py-3 shadow-sm">
-                                    <p className="text-2xl font-bold text-yellow-600">{formatCurrency(availableAmount)}</p>
+                                <p className="mb-1 text-xs font-medium tracking-wide text-primary uppercase">Valor por cobrar</p>
+                                <div className="rounded-lg border border-primary/80 bg-white px-4 py-3 shadow-sm">
+                                    <p className="text-2xl font-bold text-primary">{formatCurrency(availableAmount)}</p>
                                 </div>
                             </div>
                         </div>
@@ -122,7 +122,7 @@ export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccount
                                     </Label>
                                     <Select name="bank_account_id" value={selectedBankAccount} onValueChange={setSelectedBankAccount} required>
                                         <SelectTrigger
-                                            className={`h-11 ${selectedBankAccount === '' ? 'border-gray-300' : 'border-yellow-300 bg-yellow-50/30'}`}
+                                            className={`h-11 ${selectedBankAccount === '' ? 'border-gray-300' : 'bg-primary/10/30 border-primary/30'}`}
                                         >
                                             <SelectValue placeholder="Selecciona una cuenta" />
                                         </SelectTrigger>
@@ -150,7 +150,7 @@ export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccount
                                             variant="outline"
                                             size="sm"
                                             onClick={handleFillFullAmount}
-                                            className="h-7 border-yellow-300 px-3 py-1 text-xs text-yellow-700 hover:bg-yellow-50"
+                                            className="h-7 border-primary/30 px-3 py-1 text-xs text-primary hover:bg-primary/10"
                                         >
                                             Monto completo
                                         </Button>
@@ -164,7 +164,7 @@ export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccount
                                             onChange={(e) => setAmount(e.target.value)}
                                             placeholder="0.00"
                                             className={`h-12 pl-14 text-lg font-semibold ${
-                                                amount === '' ? 'border-gray-300' : 'border-yellow-300 bg-yellow-50/30 text-yellow-700'
+                                                amount === '' ? 'border-gray-300' : 'bg-primary/10/30 border-primary/30 text-primary'
                                             }`}
                                             required
                                         />
@@ -191,7 +191,7 @@ export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccount
                                     </Label>
                                     <Select name="payment_method" value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod} required>
                                         <SelectTrigger
-                                            className={`h-11 ${selectedPaymentMethod === '' ? 'border-gray-300' : 'border-yellow-300 bg-yellow-50/30'}`}
+                                            className={`h-11 ${selectedPaymentMethod === '' ? 'border-gray-300' : 'bg-primary/10/30 border-primary/30'}`}
                                         >
                                             <SelectValue placeholder="Selecciona un método" />
                                         </SelectTrigger>
@@ -218,7 +218,7 @@ export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccount
                                         value={note}
                                         onChange={(e) => setNote(e.target.value)}
                                         placeholder="Información adicional sobre el pago"
-                                        className="h-11 w-full border-gray-300 focus:border-yellow-500 focus:ring-yellow-500/20"
+                                        className="h-11 w-full border-gray-300 focus:border-primary focus:ring-primary/20"
                                     />
                                     {errors.note && <p className="text-sm text-red-600">{errors.note}</p>}
                                 </div>
@@ -232,7 +232,7 @@ export function PaymentRegistrationModal({ isOpen, onClose, invoice, bankAccount
                                     type="submit"
                                     disabled={processing || !isFormValid}
                                     className={`ml-2 min-w-[140px] ${
-                                        !isFormValid ? 'cursor-not-allowed bg-gray-400 hover:bg-gray-400' : 'bg-yellow-600 hover:bg-yellow-700'
+                                        !isFormValid ? 'cursor-not-allowed bg-gray-400 hover:bg-gray-400' : 'bg-primary hover:bg-primary'
                                     }`}
                                 >
                                     {processing ? (

@@ -23,7 +23,7 @@ final class UploadProductBulkUpdateRequest extends FormRequest
         return [
             'file' => [
                 'required',
-                File::types(['csv', 'txt'])->max(10 * 1024)->min(1),
+                File::types(['csv', 'txt'])->max(10 * 1024),
             ],
         ];
     }

@@ -6,6 +6,7 @@ import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import { EditNcfModal } from '@/components/invoices/edit-ncf-modal';
 import QuickProductModal from '@/components/products/quick-product-modal';
 import { TaxMultiSelect, type SelectedTax } from '@/components/taxes/tax-multi-select';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -24,6 +25,7 @@ export interface DocumentSubtype {
     name: string;
     prefix: string;
     next_number: number;
+    is_electronic?: boolean;
 }
 
 export interface InvoiceItem {
@@ -86,7 +88,21 @@ interface InvoiceFormProps {
     paymentMethods?: Record<string, string>;
     taxesGroupedByType: TaxesGroupedByType;
     salesmen: Salesman[];
+    isEasyFactuConfigured?: boolean;
+    electronicInvoicingEnvironment?: string | null;
 }
+
+const electronicEnvironmentLabels: Record<string, string> = {
+    TesteCF: 'TesteCF',
+    eCF: 'eCF (produccion)',
+    CerteCF: 'CerteCF',
+};
+
+const electronicEnvironmentBadgeClasses: Record<string, string> = {
+    TesteCF: 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-50',
+    eCF: 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50',
+    CerteCF: 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-50',
+};
 
 // Helper functions
 const calculateDueDate = (issueDate: string, paymentTerm: string): string => {
@@ -178,6 +194,8 @@ export default function InvoiceForm({
     paymentMethods = {},
     taxesGroupedByType,
     salesmen,
+    isEasyFactuConfigured,
+    electronicInvoicingEnvironment,
 }: InvoiceFormProps) {
     const [itemId, setItemId] = useState(() => {
         if (data.items.length > 0) {
@@ -200,6 +218,12 @@ export default function InvoiceForm({
     const [paymentAmountInput, setPaymentAmountInput] = useState(() => (data.payment_amount > 0 ? String(data.payment_amount) : ''));
 
     const { format: formatCurrency } = useCurrency();
+    const environmentLabel = electronicInvoicingEnvironment
+        ? (electronicEnvironmentLabels[electronicInvoicingEnvironment] ?? electronicInvoicingEnvironment)
+        : null;
+    const environmentBadgeClassName = electronicInvoicingEnvironment
+        ? (electronicEnvironmentBadgeClasses[electronicInvoicingEnvironment] ?? 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-50')
+        : undefined;
 
     // Sync NCF prop changes to form data
     useEffect(() => {
@@ -520,6 +544,8 @@ export default function InvoiceForm({
         }));
 
     const isCreate = mode === 'create';
+    const selectedDocumentSubtype = documentSubtypes.find((subtype) => subtype.id === data.document_subtype_id) ?? null;
+    const isElectronicDocument = Boolean(selectedDocumentSubtype?.is_electronic);
     const submitButtonText = isCreate ? 'Guardar factura' : 'Actualizar factura';
     const processingText = isCreate ? 'Guardando...' : 'Actualizando...';
     const roundedPaymentAmount = roundCurrencyAmount(data.payment_amount);
@@ -527,6 +553,18 @@ export default function InvoiceForm({
     const hasPendingBalance = roundedPaymentAmount > 0 && roundedPaymentAmount < roundedTotal;
     const paymentAmountExceedsTotal = roundedPaymentAmount > roundedTotal;
     const remainingBalance = roundCurrencyAmount(Math.max(0, roundedTotal - roundedPaymentAmount));
+
+    useEffect(() => {
+        if (!isElectronicDocument || !data.register_payment) {
+            return;
+        }
+
+        setData('register_payment', false);
+        setData('payment_amount', 0);
+        setData('payment_bank_account_id', null);
+        setData('payment_method', '');
+        setData('payment_notes', '');
+    }, [data.register_payment, isElectronicDocument, setData]);
 
     return (
         <>
@@ -543,25 +581,42 @@ export default function InvoiceForm({
 
                             <div className="space-y-1 text-right">
                                 <div className="flex items-center justify-end gap-2">
-                                    <span className="text-sm font-medium text-gray-600">NCF</span>
-                                    <span className="rounded bg-gray-100 px-2 py-1 font-mono text-sm">{data.ncf || 'N/A'}</span>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowNcfModal(true)}
-                                        disabled={!data.document_subtype_id}
-                                        className="text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
-                                        title="Editar NCF manualmente"
-                                    >
-                                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                                            />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                    </button>
+                                    <span className="text-sm font-medium text-gray-600">{isElectronicDocument ? 'eNCF' : 'NCF'}</span>
+                                    <span className="rounded bg-gray-100 px-2 py-1 font-mono text-sm">
+                                        {data.ncf || (isElectronicDocument ? 'No disponible' : 'N/A')}
+                                    </span>
+                                    {isElectronicDocument && (
+                                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Factura electrónica</Badge>
+                                    )}
+                                    {isElectronicDocument && environmentLabel && (
+                                        <Badge variant="outline" className={environmentBadgeClassName}>
+                                            Entorno: {environmentLabel}
+                                        </Badge>
+                                    )}
+                                    {!isElectronicDocument && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowNcfModal(true)}
+                                            disabled={!data.document_subtype_id}
+                                            className="text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+                                            title="Editar NCF manualmente"
+                                        >
+                                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                                                />
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                />
+                                            </svg>
+                                        </button>
+                                    )}
                                 </div>
                                 <div className="flex flex-col justify-end space-y-3">
                                     <Label className="gap-1 text-sm font-medium text-gray-900">
@@ -569,7 +624,10 @@ export default function InvoiceForm({
                                         <span className="text-red-500">*</span>
                                     </Label>
                                     <Select value={data.document_subtype_id?.toString() || ''} onValueChange={handleDocumentSubtypeChange}>
-                                        <SelectTrigger className={`h-8 text-xs ${errors.document_subtype_id ? 'border-red-300' : 'border-gray-300'}`}>
+                                        <SelectTrigger
+                                            disabled={mode === 'edit'}
+                                            className={`h-8 text-xs ${errors.document_subtype_id ? 'border-red-300' : 'border-gray-300'}`}
+                                        >
                                             <SelectValue placeholder="Seleccionar tipo" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -581,9 +639,47 @@ export default function InvoiceForm({
                                         </SelectContent>
                                     </Select>
                                     {errors.document_subtype_id && <p className="text-sm text-red-600">{errors.document_subtype_id}</p>}
+                                    {mode === 'edit' && (
+                                        <p className="text-xs text-gray-500">
+                                            El tipo de comprobante no puede cambiarse después de crear la factura.
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </div>
+
+                        {isElectronicDocument && isEasyFactuConfigured === false && (
+                            <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-left">
+                                <div className="flex items-start gap-3">
+                                    <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-600" />
+                                    <div className="space-y-2">
+                                        <p className="text-sm font-semibold text-amber-900">EasyFactu no está configurado</p>
+                                        <p className="text-sm text-amber-800">
+                                            No podrás previsualizar ni emitir facturas electrónicas hasta completar la configuración del entorno y la
+                                            clave API.
+                                        </p>
+                                        <Button type="button" variant="outline" size="sm" asChild>
+                                            <a href="/settings/electronic-invoicing">Configurar facturación electrónica</a>
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {isElectronicDocument && isEasyFactuConfigured !== false && !data.ncf && (
+                            <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-left">
+                                <div className="flex items-start gap-3">
+                                    <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-600" />
+                                    <div className="space-y-1">
+                                        <p className="text-sm font-semibold text-amber-900">No se pudo previsualizar el próximo eNCF</p>
+                                        <p className="text-sm text-amber-800">
+                                            Esta pantalla debe traer el próximo eNCF desde EasyFactu. Revisa la configuración o el mensaje de error
+                                            del sistema.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Customer and Document Details */}
                         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
@@ -843,7 +939,7 @@ export default function InvoiceForm({
                                                     className={`h-9 border-gray-200 text-center ${(() => {
                                                         const warning = getStockWarning(item);
                                                         if (warning?.type === 'error') return 'border-red-300';
-                                                        if (warning?.type === 'warning') return 'border-yellow-300';
+                                                        if (warning?.type === 'warning') return 'border-primary/30';
                                                         return '';
                                                     })()}`}
                                                     disabled={!item.product_id}
@@ -854,7 +950,7 @@ export default function InvoiceForm({
                                                         return (
                                                             <div className="group absolute -top-1 -right-1">
                                                                 <AlertTriangle
-                                                                    className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-yellow-500'}`}
+                                                                    className={`h-4 w-4 cursor-help ${warning.type === 'error' ? 'text-red-500' : 'text-primary'}`}
                                                                 />
                                                                 <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 transform rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                                                                     {warning.message}
@@ -996,12 +1092,25 @@ export default function InvoiceForm({
                         </div>
 
                         {/* Immediate Payment Section (Create only) */}
-                        {isCreate && bankAccounts.length > 0 && (
+                        {isCreate && isElectronicDocument && (
+                            <div className="mt-8 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                                <div className="flex items-start gap-3">
+                                    <AlertTriangle className="mt-0.5 h-5 w-5 text-blue-600" />
+                                    <div>
+                                        <p className="text-sm text-blue-800">
+                                            Las facturas electrónicas solo permiten registrar pagos después de ser emitidas y aceptadas por la DGII.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {isCreate && bankAccounts.length > 0 && !isElectronicDocument && (
                             <div className="mt-8 border-t border-gray-200 pt-8">
                                 <div className="mb-6 flex items-center justify-between">
                                     <div>
                                         <h3 className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-100 text-yellow-600">
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                                 <CreditCard className="h-4 w-4" />
                                             </div>
                                             Registrar pago inmediato
@@ -1031,11 +1140,11 @@ export default function InvoiceForm({
 
                                 {data.register_payment && (
                                     <div className="space-y-6">
-                                        <div className="rounded-lg border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100/50 p-5 shadow-sm">
+                                        <div className="to-primary/10/50 rounded-lg border-2 border-primary/80 bg-gradient-to-br from-primary/10 p-5 shadow-sm">
                                             <div className="flex items-center justify-between">
                                                 <div>
-                                                    <p className="text-xs font-medium tracking-wide text-yellow-700 uppercase">Total de la factura</p>
-                                                    <p className="text-2xl font-bold text-yellow-600">{formatCurrency(data.total)}</p>
+                                                    <p className="text-xs font-medium tracking-wide text-primary uppercase">Total de la factura</p>
+                                                    <p className="text-2xl font-bold text-primary">{formatCurrency(data.total)}</p>
                                                 </div>
                                                 {hasPendingBalance && (
                                                     <div className="text-right">
@@ -1059,7 +1168,7 @@ export default function InvoiceForm({
                                                     onValueChange={(value) => setData('payment_bank_account_id', parseInt(value))}
                                                 >
                                                     <SelectTrigger
-                                                        className={`h-11 ${data.payment_bank_account_id ? 'border-yellow-300 bg-yellow-50/30' : 'border-gray-300'}`}
+                                                        className={`h-11 ${data.payment_bank_account_id ? 'bg-primary/10/30 border-primary/30' : 'border-gray-300'}`}
                                                     >
                                                         <SelectValue placeholder="Selecciona una cuenta" />
                                                     </SelectTrigger>
@@ -1080,7 +1189,7 @@ export default function InvoiceForm({
                                                 </Label>
                                                 <Select value={data.payment_method} onValueChange={(value) => setData('payment_method', value)}>
                                                     <SelectTrigger
-                                                        className={`h-11 ${data.payment_method ? 'border-yellow-300 bg-yellow-50/30' : 'border-gray-300'}`}
+                                                        className={`h-11 ${data.payment_method ? 'bg-primary/10/30 border-primary/30' : 'border-gray-300'}`}
                                                     >
                                                         <SelectValue placeholder="Selecciona un método" />
                                                     </SelectTrigger>
@@ -1108,7 +1217,7 @@ export default function InvoiceForm({
                                                             setPaymentAmountInput(String(data.total));
                                                             setData('payment_amount', data.total);
                                                         }}
-                                                        className="h-7 border-yellow-300 px-3 py-1 text-xs text-yellow-700 hover:bg-yellow-50"
+                                                        className="h-7 border-primary/30 px-3 py-1 text-xs text-primary hover:bg-primary/10"
                                                     >
                                                         Monto completo
                                                     </Button>
@@ -1132,7 +1241,7 @@ export default function InvoiceForm({
                                                             setPaymentAmountInput(parsedAmount > 0 ? String(parsedAmount) : '');
                                                         }}
                                                         placeholder="0.00"
-                                                        className={`h-12 pl-14 text-lg font-semibold ${data.payment_amount > 0 ? 'border-yellow-300 bg-yellow-50/30 text-yellow-700' : 'border-gray-300'}`}
+                                                        className={`h-12 pl-14 text-lg font-semibold ${data.payment_amount > 0 ? 'bg-primary/10/30 border-primary/30 text-primary' : 'border-gray-300'}`}
                                                     />
                                                     <span className="absolute top-1/2 left-4 -translate-y-1/2 text-lg font-semibold text-gray-500">
                                                         RD$
@@ -1199,8 +1308,8 @@ export default function InvoiceForm({
                     <Button
                         type="submit"
                         size="lg"
-                        disabled={processing || !ncf || !data.contact_id || data.items.length === 0}
-                        className={`flex min-w-[160px] items-center justify-center gap-2 ${processing || !ncf ? 'bg-gray-400 hover:bg-gray-400' : 'bg-primary hover:bg-primary/90'}`}
+                        disabled={processing || !data.ncf || !data.contact_id || data.items.length === 0}
+                        className={`flex min-w-[160px] items-center justify-center gap-2 ${processing || !data.ncf ? 'bg-gray-400 hover:bg-gray-400' : 'bg-primary hover:bg-primary/90'}`}
                     >
                         {processing ? (
                             <>
@@ -1228,8 +1337,8 @@ export default function InvoiceForm({
                 isOpen={showNcfModal}
                 onClose={() => setShowNcfModal(false)}
                 currentNcf={data.ncf}
-                prefix={documentSubtypes.find((d) => d.id === data.document_subtype_id)?.prefix || ''}
-                nextNumber={documentSubtypes.find((d) => d.id === data.document_subtype_id)?.next_number || 0}
+                prefix={selectedDocumentSubtype?.prefix || ''}
+                nextNumber={selectedDocumentSubtype?.next_number || 0}
                 onSave={(newNcf) => setData('ncf', newNcf)}
                 invoiceId={invoiceId}
             />

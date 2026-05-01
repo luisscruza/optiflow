@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 final class CreateInvoiceRequest extends FormRequest
 {
@@ -25,7 +26,7 @@ final class CreateInvoiceRequest extends FormRequest
     {
         return [
             'contact_id' => ['required', 'integer', 'exists:contacts,id'],
-            'document_subtype_id' => ['required', 'integer', 'exists:document_subtypes,id'],
+            'document_subtype_id' => ['required', 'integer', Rule::exists('document_subtypes', 'id')->where('is_active', true)],
             'ncf' => ['nullable', 'string', 'max:255'],
             'issue_date' => ['required', 'date'],
             'due_date' => ['nullable', 'date', 'after_or_equal:issue_date'],

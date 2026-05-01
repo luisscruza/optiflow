@@ -11,12 +11,14 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
  * @property string $name
+ * @property bool $is_active
  * @property bool $is_default
  * @property \Carbon\CarbonImmutable|null $valid_until_date
  * @property string $prefix
@@ -38,6 +40,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereIsActive($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereIsDefault($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereValidUntilDate($value)
@@ -48,9 +51,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentSubtype whereUpdatedAt($value)
  *
  * @property DocumentType $type
+ * @property bool $is_electronic
  *
  * @method static Builder<static>|DocumentSubtype forInvoice()
  * @method static Builder<static>|DocumentSubtype forQuotation()
+ * @method static Builder<static>|DocumentSubtype electronic()
+ * @method static Builder<static>|DocumentSubtype nonElectronic()
  * @method static Builder<static>|DocumentSubtype whereType($value)
  *
  * @mixin \Eloquent
@@ -60,12 +66,28 @@ final class DocumentSubtype extends Model
     /** @use HasFactory<\Database\Factories\DocumentSubtypeFactory> */
     use HasFactory;
 
+    public const ACTIVE_SCOPE = 'is_active';
+
     /**
      * Get document subtype by prefix.
      */
     public static function findByPrefix(string $prefix): ?self
     {
         return self::query()->where('prefix', $prefix)->first();
+    }
+
+    /**
+     * Retrieve the model for a bound value, including disabled records in admin routes.
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return EloquentModel|null
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->withoutGlobalScope(self::ACTIVE_SCOPE)
+            ->where($field ?? $this->getRouteKeyName(), $value)
+            ->first();
     }
 
     /**
@@ -85,6 +107,11 @@ final class DocumentSubtype extends Model
      */
     public function getNextNcfNumber(): string
     {
+        // Electronic types have sequences managed by EasyFactu, not locally
+        if ($this->is_electronic) {
+            throw new ReportableActionException("Las secuencias para {$this->name} son gestionadas por EasyFactu. No se puede generar un NCF local.");
+        }
+
         if (! $this->isValid()) {
             throw new ReportableActionException("La secuencia de NCF para {$this->name} es inválida o ha expirado. Por favor, actualice la configuración de NCF para este tipo de documento.");
         }
@@ -102,13 +129,31 @@ final class DocumentSubtype extends Model
      *
      * @throws Exception
      */
-    public function generateNCF(): string
+    public function generateNCF(): ?string
     {
+        // Electronic types have sequences managed by EasyFactu
+        if ($this->is_electronic) {
+            return null;
+        }
+
         if (! $this->isValid()) {
             throw new ReportableActionException("La secuencia de NCF para {$this->name} es inválida o ha expirado. Por favor, actualice la configuración de NCF para este tipo de documento.");
         }
 
         return $this->prefix.mb_str_pad((string) $this->next_number, 8, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Get the e-CF type code extracted from the prefix (e.g., 'E31' -> '31').
+     */
+    public function getEcfTypeCode(): ?string
+    {
+        if (! $this->is_electronic) {
+            return null;
+        }
+
+        // Prefix is 'E31', 'E32', etc. — strip the leading 'E'
+        return mb_substr($this->prefix, 1);
     }
 
     /**
@@ -188,6 +233,31 @@ final class DocumentSubtype extends Model
         return $this->getNextNcfNumber();
     }
 
+    protected static function booted(): void
+    {
+        self::addGlobalScope(self::ACTIVE_SCOPE, function (Builder $builder): void {
+            $builder->where('is_active', true);
+        });
+    }
+
+    /**
+     * Scope to get electronic (e-CF) subtypes only.
+     */
+    #[Scope]
+    protected function electronic(Builder $query): void
+    {
+        $query->where('is_electronic', true);
+    }
+
+    /**
+     * Scope to get non-electronic (regular NCF) subtypes only.
+     */
+    #[Scope]
+    protected function nonElectronic(Builder $query): void
+    {
+        $query->where('is_electronic', false);
+    }
+
     /**
      * Scope to get payment subtypes.
      */
@@ -233,7 +303,9 @@ final class DocumentSubtype extends Model
     protected function casts(): array
     {
         return [
+            'is_active' => 'boolean',
             'is_default' => 'boolean',
+            'is_electronic' => 'boolean',
             'valid_until_date' => 'date',
             'start_number' => 'integer',
             'end_number' => 'integer',

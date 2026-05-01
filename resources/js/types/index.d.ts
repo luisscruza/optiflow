@@ -15,13 +15,17 @@ export interface NavGroup {
     items: NavItem[];
 }
 
-export interface NavItem {
-    title: string;
-    href?: NonNullable<InertiaLinkProps['href']>;
-    icon?: LucideIcon | null;
-    isActive?: boolean;
-    items?: NavItem[];
-    badge?: number | string;
+export type NavItem = {
+  title: string
+  href?: string | { url: string }
+  icon?: any
+  badge?: number
+  items?: NavItem[]
+
+  section?: {
+    id: string
+    label?: string
+  }
 }
 
 export interface Currency {
@@ -230,6 +234,8 @@ export interface StockMovement {
     to_workspace_id?: number | null;
     type: 'in' | 'out' | 'adjustment' | 'transfer' | 'initial' | 'transfer_in' | 'transfer_out' | 'set_quantity' | 'add_quantity' | 'remove_quantity';
     quantity: number;
+    previous_quantity?: number;
+    current_quantity?: number;
     reference_number?: string | null;
     note?: string | null;
     notes?: string | null;
@@ -240,6 +246,7 @@ export interface StockMovement {
     product?: Product;
     from_workspace?: Workspace;
     to_workspace?: Workspace;
+    workspace?: Workspace;
 }
 
 export interface StockAdjustment {
@@ -272,6 +279,28 @@ export interface StockTransfer {
     from_workspace?: Workspace;
     to_workspace?: Workspace;
     created_by?: User;
+}
+
+export interface Expense {
+    id: number;
+    workspace_id: number;
+    contact_id: number;
+    document_number: string;
+    issue_date: string;
+    subtotal_amount: number;
+    itbis_amount: number;
+    isc_amount: number;
+    withheld_itbis_amount: number;
+    withheld_isr_amount: number;
+    total_amount: number;
+    is_informal: boolean;
+    status: 'pending' | 'paid' | 'cancelled';
+    notes?: string | null;
+    created_at: string;
+    updated_at: string;
+    contact?: Contact;
+    workspace?: Workspace;
+    media?: Media[];
 }
 
 export interface PaginatedStockMovements {
@@ -558,6 +587,7 @@ export interface DocumentSubtype {
     prefix: string;
     next_number: number;
     is_default: boolean;
+    is_electronic?: boolean;
     valid_until_date?: string | null;
     start_number: number;
     end_number: number;
@@ -630,7 +660,10 @@ export interface Invoice {
         | 'expired'
         | 'converted'
         | 'pending_payment'
-        | 'partially_paid';
+        | 'partially_paid'
+        | 'submitted'
+        | 'dgii_accepted'
+        | 'dgii_rejected';
     amount_due: number;
     amount_paid: number;
     document_number: string;
@@ -656,6 +689,72 @@ export interface Invoice {
     comments?: CommentData[];
     salesmen?: Salesman[];
     workspace?: Workspace;
+    // Electronic invoicing (e-CF) fields
+    is_electronic?: boolean;
+    easyfactu_invoice_id?: string | null;
+    encf?: string | null;
+    dgii_status?: string | null;
+    dgii_track_id?: string | null;
+    dgii_security_code?: string | null;
+    dgii_qr_code_url?: string | null;
+    dgii_signed_at?: string | null;
+    dgii_environment?: string | null;
+}
+
+export interface ReceivedDocumentSupplierSummary {
+    id: string | null;
+    rnc: string | null;
+    name: string | null;
+}
+
+export interface ReceivedDocumentSupplierFilterOption {
+    id: string;
+    rnc: string | null;
+    name: string;
+}
+
+export interface ReceivedDocumentSupplierDetail extends ReceivedDocumentSupplierSummary {
+    email: string | null;
+    address: string | null;
+    phone: string | null;
+}
+
+export interface ReceivedDocumentSummary {
+    id: string;
+    ecf_type: string;
+    encf: string;
+    issue_date: string | null;
+    buyer_rnc: string | null;
+    buyer_name: string | null;
+    currency: string;
+    subtotal: number;
+    tax_amount: number;
+    total_amount: number;
+    status: string;
+    received_at: string;
+    supplier: ReceivedDocumentSupplierSummary | null;
+}
+
+export interface ReceivedDocumentItem {
+    id: string;
+    line_number: number;
+    description: string;
+    quantity: number;
+    unit_price: number;
+    tax_rate: number;
+    subtotal: number;
+    tax_amount: number;
+    total_amount: number;
+}
+
+export interface ReceivedDocumentDetail extends ReceivedDocumentSummary {
+    created_at: string | null;
+    updated_at: string | null;
+    qr_code_url: string | null;
+    security_code: string | null;
+    signed_at: string | null;
+    supplier: ReceivedDocumentSupplierDetail | null;
+    items: ReceivedDocumentItem[];
 }
 
 export interface Quotation {

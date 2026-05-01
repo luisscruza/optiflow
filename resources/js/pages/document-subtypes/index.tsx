@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
+import { Switch } from "@/components/ui/switch"
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -32,11 +33,13 @@ interface DocumentSubtype {
     end_number: number | null;
     next_number: number;
     valid_until_date: string | null;
+    is_active: boolean;
     is_default: boolean;
     electronica: string;
     siguiente_numero: number;
     fecha_finalizacion: string | null;
     preferida: string;
+    estado: string;
 }
 
 interface PaginatedSubtypes {
@@ -107,6 +110,19 @@ export default function DocumentSubtypesIndex({ subtypes, filters, documentTypes
     const handleSetDefault = (subtypeId: number) => {
         router.patch(
             `/document-subtypes/${subtypeId}/set-default`,
+            {},
+            {
+                preserveState: true,
+                onSuccess: () => {
+                    router.reload({ only: ['subtypes'] });
+                },
+            },
+        );
+    };
+
+    const handleToggleActive = (subtypeId: number) => {
+        router.patch(
+            `/document-subtypes/${subtypeId}/toggle-active`,
             {},
             {
                 preserveState: true,
@@ -198,6 +214,7 @@ export default function DocumentSubtypesIndex({ subtypes, filters, documentTypes
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Nombre</TableHead>
+                                        <TableHead>Estado</TableHead>
                                         <TableHead>Preferida</TableHead>
                                         <TableHead>Fecha de finalización</TableHead>
                                         <TableHead>Prefijo</TableHead>
@@ -222,8 +239,18 @@ export default function DocumentSubtypesIndex({ subtypes, filters, documentTypes
                                                 <TableCell className="font-medium">{subtype.name}</TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-2">
+                                                        <Switch
+                                                            checked={subtype.is_active}
+                                                            onCheckedChange={() => handleToggleActive(subtype.id)}
+                                                            size="sm"
+                                                        />
+
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
                                                         {subtype.preferida}
-                                                        {subtype.is_default && <Star className="h-4 w-4 fill-current text-yellow-500" />}
+                                                        {subtype.is_default && <Star className="h-4 w-4 fill-current text-primary" />}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>

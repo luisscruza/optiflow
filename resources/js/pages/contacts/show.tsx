@@ -205,8 +205,8 @@ export default function ContactShow({
             optometrist: {
                 icon: <Glasses className="h-4 w-4" />,
                 label: 'Optometrista',
-                color: 'text-yellow-700 dark:text-yellow-400',
-                bgColor: 'bg-yellow-100 dark:bg-yellow-900/30',
+                color: 'text-primary dark:text-primary/40',
+                bgColor: 'bg-primary/10 dark:bg-primary/90/30',
             },
         };
         return configs[type] || configs.customer;
@@ -1149,8 +1149,8 @@ export default function ContactShow({
                                                     className="flex items-center justify-between rounded-lg border border-gray-100 p-4 transition-all hover:border-gray-200 hover:bg-gray-50 dark:border-gray-800 dark:hover:border-gray-700 dark:hover:bg-gray-800/50"
                                                 >
                                                     <div className="flex items-center gap-4">
-                                                        <div className="rounded-lg bg-yellow-100 p-3 dark:bg-yellow-900/30">
-                                                            <Glasses className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                                                        <div className="dark:bg-primary/90/30 rounded-lg bg-primary/10 p-3">
+                                                            <Glasses className="h-5 w-5 text-primary dark:text-primary/40" />
                                                         </div>
                                                         <div>
                                                             <p className="font-semibold text-gray-900 dark:text-white">Receta #{prescription.id}</p>

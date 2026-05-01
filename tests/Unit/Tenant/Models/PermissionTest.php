@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Permission as PermissionEnum;
 use Database\Factories\PermissionFactory;
 
 test('to array', function (): void {
@@ -23,4 +24,13 @@ test('derives label and group', function (): void {
 
     expect($permission->getLabel())->toBe('Custom permission')
         ->and($permission->getGroup())->toBe('Custom');
+});
+
+test('derives label and group for history logs permission', function (): void {
+    $permission = PermissionFactory::new()->make([
+        'name' => PermissionEnum::ViewHistoryLogs->value,
+    ]);
+
+    expect($permission->getLabel())->toBe('Ver historial de cambios')
+        ->and($permission->getGroup())->toBe('Facturas');
 });

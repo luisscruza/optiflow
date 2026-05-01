@@ -19,6 +19,8 @@ interface Props {
     contact_types?: Array<{ value: ContactType; label: string }>;
     identification_types?: Array<{ value: IdentificationType; label: string }>;
     types?: ContactType[];
+    defaultType?: ContactType;
+    title?: string;
 }
 
 interface DuplicateWarnings {
@@ -42,8 +44,11 @@ export default function QuickContactModal({
         { value: 'pasaporte', label: 'Pasaporte' },
     ],
     types = ['customer', 'supplier'],
+    defaultType,
+    title = 'Nuevo contacto',
 }: Props) {
-    const [selectedContactType, setSelectedContactType] = useState<ContactType | ''>('customer');
+    const resolvedDefaultType = defaultType && types.includes(defaultType) ? defaultType : (types[0] ?? 'customer');
+    const [selectedContactType, setSelectedContactType] = useState<ContactType | ''>(resolvedDefaultType);
     const [selectedIdentificationType, setSelectedIdentificationType] = useState<IdentificationType | ''>('');
     const [identificationNumber, setIdentificationNumber] = useState('');
     const [contactName, setContactName] = useState('');
@@ -64,7 +69,7 @@ export default function QuickContactModal({
     // Reset form state when modal opens
     useEffect(() => {
         if (open) {
-            setSelectedContactType('customer');
+            setSelectedContactType(resolvedDefaultType);
             setSelectedIdentificationType('');
             setIdentificationNumber('');
             setContactName('');
@@ -86,7 +91,7 @@ export default function QuickContactModal({
                 contactNameRef.current.value = '';
             }
         }
-    }, [open]);
+    }, [open, resolvedDefaultType]);
 
     const handleAdvancedForm = () => {
         onOpenChange(false);
@@ -168,7 +173,7 @@ export default function QuickContactModal({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                    <DialogTitle>Nuevo contacto</DialogTitle>
+                    <DialogTitle>{title}</DialogTitle>
                 </DialogHeader>
 
                 <Form
@@ -286,7 +291,9 @@ export default function QuickContactModal({
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="quick_lead_source_id">Procedencia  <span className="text-destructive">*</span></Label>
+                                <Label htmlFor="quick_lead_source_id">
+                                    Procedencia <span className="text-destructive">*</span>
+                                </Label>
                                 <select
                                     required
                                     id="quick_lead_source_id"

@@ -8,14 +8,15 @@ use App\Enums\StockMovementType;
 use App\Exceptions\ReportableActionException;
 use App\Models\Product;
 use App\Models\ProductStock;
-use App\Models\StockMovement;
 use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-final class StockTransferAction
+final readonly class StockTransferAction
 {
+    public function __construct(private ApplyInventoryMovementAction $applyInventoryMovementAction) {}
+
     /**
      * Transfer stock between workspaces.
      *
@@ -41,7 +42,7 @@ final class StockTransferAction
         $fromWorkspace = Workspace::query()->findOrFail($data['from_workspace_id']);
         $toWorkspace = Workspace::query()->findOrFail($data['to_workspace_id']);
 
-        if (! $user->workspaces()->whereIn('workspaces.id', [$fromWorkspace->id, $toWorkspace->id])->count() === 2) {
+        if ($user->workspaces()->whereIn('workspaces.id', [$fromWorkspace->id, $toWorkspace->id])->count() !== 2) {
             throw new ReportableActionException('El usuario no tiene acceso a ambas ubicaciones de trabajo para realizar la transferencia.');
         }
 
@@ -59,40 +60,39 @@ final class StockTransferAction
                 );
             }
 
-            // Get or create destination stock record
-            $toStock = ProductStock::query()->withoutGlobalScopes()->firstOrCreate(
-                [
-                    'product_id' => $product->id,
-                    'workspace_id' => $toWorkspace->id,
-                ],
-                [
-                    'quantity' => 0,
-                    'minimum_quantity' => 0,
-                ]
-            );
-
-            $fromStock->quantity -= $data['quantity'];
-            $fromStock->save();
-
-            $toStock->quantity += $data['quantity'];
-            $toStock->save();
-
             $reference = $data['reference'] ?? "TRANSFERENCIA-{$fromWorkspace->id}-{$toWorkspace->id}-".time();
+            $note = $data['notes'] ?? "Transferido desde {$fromWorkspace->name} hacia {$toWorkspace->name}";
 
-            $transferMovement = StockMovement::query()->withoutGlobalScopes()->create([
-                'workspace_id' => $fromWorkspace->id, // Primary workspace (where it's initiated from)
-                'product_id' => $product->id,
+            $transferOutMovement = $this->applyInventoryMovementAction->handle($product, [
+                'workspace_id' => $fromWorkspace->id,
+                'quantity' => -abs((float) $data['quantity']),
                 'type' => StockMovementType::TRANSFER_OUT,
-                'quantity' => $data['quantity'],
+                'user_id' => Auth::id(),
+                'note' => $note,
+                'reference_number' => $reference,
                 'from_workspace_id' => $fromWorkspace->id,
                 'to_workspace_id' => $toWorkspace->id,
-                'reference_number' => $reference,
-                'note' => $data['notes'] ?? "Transferido desde {$fromWorkspace->name} hacia {$toWorkspace->name}",
-                'user_id' => Auth::id(),
             ]);
 
+            $transferInMovement = $this->applyInventoryMovementAction->handle($product, [
+                'workspace_id' => $toWorkspace->id,
+                'quantity' => abs((float) $data['quantity']),
+                'type' => StockMovementType::TRANSFER_IN,
+                'user_id' => Auth::id(),
+                'note' => $note,
+                'reference_number' => $reference,
+                'from_workspace_id' => $fromWorkspace->id,
+                'to_workspace_id' => $toWorkspace->id,
+            ]);
+
+            $toStock = ProductStock::query()->withoutGlobalScopes()->where([
+                'product_id' => $product->id,
+                'workspace_id' => $toWorkspace->id,
+            ])->firstOrFail();
+
             return [
-                'transfer_movement' => $transferMovement->load(['product', 'fromWorkspace', 'toWorkspace']),
+                'transfer_movement' => $transferOutMovement->load(['product', 'fromWorkspace', 'toWorkspace']),
+                'transfer_in_movement' => $transferInMovement->load(['product', 'fromWorkspace', 'toWorkspace']),
                 'from_stock' => $fromStock->fresh(),
                 'to_stock' => $toStock->fresh(),
             ];

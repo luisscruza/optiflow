@@ -50,7 +50,7 @@ function SwitchControl({ checked, onChange, disabled }: { checked: boolean; onCh
             className={cn(
                 'relative inline-flex h-7 w-12 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200',
                 'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
-                checked ? 'bg-yellow-500' : 'bg-muted',
+                checked ? 'bg-primary' : 'bg-muted',
             )}
         >
             <span
@@ -235,7 +235,7 @@ export default function ProductsEdit({ product, taxes, workspace_stocks }: Props
                                                 className={cn(
                                                     'flex h-12 items-center justify-between rounded-lg border px-4 text-sm font-medium transition',
                                                     data.product_type === 'product'
-                                                        ? 'border-yellow-500 bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300'
+                                                        ? 'dark:bg-primary/90/20 border-primary bg-primary/10 text-primary dark:text-primary/30'
                                                         : 'border-border bg-background text-muted-foreground hover:text-foreground',
                                                 )}
                                             >
@@ -248,7 +248,7 @@ export default function ProductsEdit({ product, taxes, workspace_stocks }: Props
                                                 className={cn(
                                                     'flex h-12 items-center justify-between rounded-lg border px-4 text-sm font-medium transition',
                                                     data.product_type === 'service'
-                                                        ? 'border-yellow-500 bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300'
+                                                        ? 'dark:bg-primary/90/20 border-primary bg-primary/10 text-primary dark:text-primary/30'
                                                         : 'border-border bg-background text-muted-foreground hover:text-foreground',
                                                 )}
                                             >
@@ -302,7 +302,7 @@ export default function ProductsEdit({ product, taxes, workspace_stocks }: Props
                                             {errors.price && <p className="text-sm text-red-600 dark:text-red-400">{errors.price}</p>}
                                         </div>
 
-                                        <div className="hidden items-end justify-center pb-2 text-2xl font-semibold text-yellow-600 md:flex">+</div>
+                                        <div className="hidden items-end justify-center pb-2 text-2xl font-semibold text-primary md:flex">+</div>
 
                                         <div className="space-y-2">
                                             <Label htmlFor="default_tax_id">Impuesto</Label>
@@ -327,7 +327,7 @@ export default function ProductsEdit({ product, taxes, workspace_stocks }: Props
                                             )}
                                         </div>
 
-                                        <div className="hidden items-end justify-center pb-2 text-2xl font-semibold text-yellow-600 md:flex">=</div>
+                                        <div className="hidden items-end justify-center pb-2 text-2xl font-semibold text-primary md:flex">=</div>
 
                                         <div className="space-y-2">
                                             <Label htmlFor="price_total">Precio total *</Label>
@@ -388,7 +388,7 @@ export default function ProductsEdit({ product, taxes, workspace_stocks }: Props
                                                             className="flex items-center justify-between rounded-lg border bg-background p-4"
                                                         >
                                                             <div className="flex items-center gap-4">
-                                                                <div className="flex h-14 w-14 items-center justify-center rounded-md border border-yellow-500/60 bg-yellow-50/40 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-300">
+                                                                <div className="dark:bg-primary/90/20 bg-primary/10/40 flex h-14 w-14 items-center justify-center rounded-md border border-primary/60 text-primary dark:text-primary/30">
                                                                     <Tag className="h-5 w-5" />
                                                                 </div>
                                                                 <div>
@@ -435,7 +435,7 @@ export default function ProductsEdit({ product, taxes, workspace_stocks }: Props
                                     <div className="space-y-5 p-6">
                                         <div>
                                             <h3 className="text-2xl font-semibold text-foreground">{data.name || product.name}</h3>
-                                            <p className="mt-1 text-4xl font-semibold tracking-tight text-yellow-600 dark:text-yellow-400">
+                                            <p className="mt-1 text-4xl font-semibold tracking-tight text-primary dark:text-primary/40">
                                                 {formatCurrency(totalPrice)}
                                             </p>
                                             <p className="mt-2 text-sm text-muted-foreground">
@@ -472,11 +472,7 @@ export default function ProductsEdit({ product, taxes, workspace_stocks }: Props
                                         </div>
 
                                         <div className="space-y-3 border-t pt-5">
-                                            <Button
-                                                type="submit"
-                                                className="w-full bg-yellow-600 text-white hover:bg-yellow-700"
-                                                disabled={processing}
-                                            >
+                                            <Button type="submit" className="w-full bg-primary text-white hover:bg-primary" disabled={processing}>
                                                 <Save className="mr-2 h-4 w-4" />
                                                 {processing ? 'Guardando...' : 'Guardar cambios'}
                                             </Button>
@@ -543,7 +539,7 @@ export default function ProductsEdit({ product, taxes, workspace_stocks }: Props
                                 <Button type="button" variant="outline" onClick={closeQuickStockDialog} disabled={stockAdjustmentProcessing}>
                                     Cancelar
                                 </Button>
-                                <Button type="submit" className="bg-yellow-600 text-white hover:bg-yellow-700" disabled={stockAdjustmentProcessing}>
+                                <Button type="submit" className="bg-primary text-white hover:bg-primary" disabled={stockAdjustmentProcessing}>
                                     {stockAdjustmentProcessing ? 'Guardando...' : 'Guardar'}
                                 </Button>
                             </div>

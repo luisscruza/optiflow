@@ -21,10 +21,10 @@ interface Invoice {
     due_date: string;
     payment_term: string;
     notes: string;
-    subtotal: number;
-    discount_total: number;
+    subtotal_amount: number;
+    discount_amount: number;
     tax_amount: number;
-    total: number;
+    total_amount: number;
     status: string;
     contact: Contact;
     document_subtype: DocumentSubtype;
@@ -126,10 +126,10 @@ export default function EditInvoice({
         notes: invoice.notes || '',
         ncf: ncf || invoice.ncf || '',
         items: convertInvoiceItems(invoice.items),
-        subtotal: invoice.subtotal,
-        discount_total: invoice.discount_total,
+        subtotal: invoice.subtotal_amount,
+        discount_total: invoice.discount_amount,
         tax_amount: invoice.tax_amount,
-        total: invoice.total,
+        total: invoice.total_amount,
         salesmen_ids: invoice.salesmen?.map((s) => s.id) ?? [],
         // Payment fields not used in edit mode but required by type
         register_payment: false,

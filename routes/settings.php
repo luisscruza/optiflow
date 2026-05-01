@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Settings\EasyFactuSettingsController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -21,4 +22,9 @@ Route::middleware('auth')->group(function (): void {
         ->name('password.update');
 
     Route::get('settings/appearance', fn () => Inertia::render('settings/appearance'))->name('appearance');
+
+    // Electronic invoicing settings
+    Route::get('settings/electronic-invoicing', [EasyFactuSettingsController::class, 'show'])->name('settings.electronic-invoicing');
+    Route::post('settings/electronic-invoicing', [EasyFactuSettingsController::class, 'update'])->name('settings.electronic-invoicing.update');
+    Route::post('settings/electronic-invoicing/test', [EasyFactuSettingsController::class, 'testConnection'])->name('settings.electronic-invoicing.test');
 });

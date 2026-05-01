@@ -18,6 +18,14 @@ final class ContactSearch
     }
 
     /**
+     * @return array<int, array{id: int, name: string, phone_primary: string|null, identification_number: string|null, email: string|null}>
+     */
+    public function searchSuppliers(string $query, int $limit = 25): array
+    {
+        return $this->search($query, ['supplier'], $limit, 'active');
+    }
+
+    /**
      * Search all active contacts regardless of contact type.
      *
      * @return array<int, array{id: int, name: string, phone_primary: string|null, identification_number: string|null, email: string|null}>
@@ -106,6 +114,14 @@ final class ContactSearch
     public function findCustomerById(?int $contactId): ?array
     {
         return $this->findById($contactId, ['customer']);
+    }
+
+    /**
+     * @return array{id: int, name: string, phone_primary: string|null, identification_number: string|null, email: string|null}|null
+     */
+    public function findSupplierById(?int $contactId): ?array
+    {
+        return $this->findById($contactId, ['supplier'], 'active');
     }
 
     /**
