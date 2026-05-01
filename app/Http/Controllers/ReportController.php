@@ -12,6 +12,7 @@ use App\Reports\CustomerSalesReport;
 use App\Reports\CustomersByBranchReport;
 use App\Reports\ExpensesSummaryReport;
 use App\Reports\GeneralSalesReport;
+use App\Reports\InvoicesVsExpensesReport;
 use App\Reports\PrescriptionsByDoctorReport;
 use App\Reports\PrescriptionsSummaryReport;
 use App\Reports\ProductSalesReport;
@@ -119,6 +120,7 @@ final class ReportController
             ReportType::SalesByProduct => new ProductSalesReport,
             ReportType::SalesByCustomer => new CustomerSalesReport,
             ReportType::CustomersByBranch => new CustomersByBranchReport,
+            ReportType::InvoicesVsExpenses => new InvoicesVsExpensesReport,
             ReportType::SalesBySalesman => new SalesmanSalesReport,
             ReportType::ExpensesSummary => new ExpensesSummaryReport,
             ReportType::PrescriptionsSummary => new PrescriptionsSummaryReport,

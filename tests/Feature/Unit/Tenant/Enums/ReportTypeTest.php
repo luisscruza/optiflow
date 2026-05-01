@@ -10,8 +10,13 @@ it('keeps sales and expenses report metadata available after the merge', functio
         ->and(ReportType::CustomersByBranch->description())
         ->toBe('Exporta clientes consolidando las sucursales donde tuvieron facturas o recetas en el rango seleccionado.')
         ->and(ReportType::CustomersByBranch->group())->toBe(ReportGroup::Sales)
+        ->and(ReportType::InvoicesVsExpenses->label())->toBe('Facturas vs gastos')
+        ->and(ReportType::InvoicesVsExpenses->description())
+        ->toBe('Compara facturas y gastos para calcular el ITBIS vendido, comprado y neto por pagar.')
+        ->and(ReportType::InvoicesVsExpenses->group())->toBe(ReportGroup::Sales)
         ->and(ReportType::ExpensesSummary->label())->toBe('Gastos generales')
         ->and(ReportType::ExpensesSummary->description())
         ->toBe('Consulta los gastos registrados por suplidor, sucursal, estado e impuestos.')
-        ->and(ReportType::ExpensesSummary->group())->toBe(ReportGroup::Expenses);
+        ->and(ReportType::ExpensesSummary->group())->toBe(ReportGroup::Expenses)
+        ->and(ReportType::InvoicesVsExpenses->implemented())->toBeTrue();
 });

@@ -1,12 +1,13 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, Download, Filter, Search, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Check, ChevronDown, Download, Filter, Search, X } from 'lucide-react';
 import { useState } from 'react';
 import { DateRange } from 'react-day-picker';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,7 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type PaginatedData } from '@/types';
+import { type BreadcrumbItem, type PaginatedResponse } from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 interface Report {
@@ -65,11 +66,22 @@ interface Props {
     filters: ReportFilter[];
     columns: ReportColumn[];
     summary: SummaryItem[];
-    data: PaginatedData<Record<string, unknown>>;
+    data: PaginatedResponse<Record<string, unknown>>;
     appliedFilters: Record<string, string>;
     sortBy: string | null;
     sortDirection: 'asc' | 'desc';
 }
+
+const parseMultiSelectValue = (value: string | undefined): string[] => {
+    if (!value) {
+        return [];
+    }
+
+    return value
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+};
 
 const breadcrumbs = (reportName: string, groupLabel: string, groupValue: string): BreadcrumbItem[] => [
     {
@@ -114,6 +126,21 @@ export default function ReportShow({ report, filters, columns, summary, data, ap
 
     const handleFilterChange = (name: string, value: string) => {
         const newFilters = { ...filterValues, [name]: value };
+        setFilterValues(newFilters);
+        router.get(`/reports/${report.type}`, newFilters, { preserveState: true, preserveScroll: true });
+    };
+
+    const handleMultiSelectFilterChange = (name: string, optionValue: string) => {
+        const selectedValues = parseMultiSelectValue(filterValues[name]);
+        const newSelectedValues = selectedValues.includes(optionValue)
+            ? selectedValues.filter((value) => value !== optionValue)
+            : [...selectedValues, optionValue];
+
+        const newFilters = {
+            ...filterValues,
+            [name]: newSelectedValues.join(','),
+        };
+
         setFilterValues(newFilters);
         router.get(`/reports/${report.type}`, newFilters, { preserveState: true, preserveScroll: true });
     };
@@ -189,6 +216,12 @@ export default function ReportShow({ report, filters, columns, summary, data, ap
             } else if (filter.type === 'select') {
                 const option = filter.options?.find((opt) => opt.value === value);
                 displayValue = option?.label || String(value);
+            } else if (filter.type === 'multiselect') {
+                const selectedValues = parseMultiSelectValue(value as string);
+                const selectedLabels = filter.options?.filter((option) => selectedValues.includes(option.value)).map((option) => option.label) ?? [];
+
+                displayValue =
+                    selectedLabels.length > 2 ? `${selectedLabels.slice(0, 2).join(', ')} +${selectedLabels.length - 2}` : selectedLabels.join(', ');
             } else {
                 displayValue = String(value);
             }
@@ -402,9 +435,73 @@ export default function ReportShow({ report, filters, columns, summary, data, ap
 
     // Get filters by type and visibility
     const searchFilter = filters.find((f) => f.type === 'search');
-    const visibleFilters = filters.filter((f) => f.type === 'select' && !f.hidden);
-    const hiddenFilters = filters.filter((f) => f.type === 'select' && f.hidden);
+    const visibleFilters = filters.filter((f) => ['select', 'multiselect'].includes(f.type) && !f.hidden);
+    const hiddenFilters = filters.filter((f) => ['select', 'multiselect'].includes(f.type) && f.hidden);
     const hasDateRangeFilter = filters.some((f) => f.name === 'start_date' || f.name === 'end_date');
+
+    const renderFilterControl = (filter: ReportFilter, triggerClassName?: string) => {
+        if (filter.type === 'multiselect') {
+            const selectedValues = parseMultiSelectValue(filterValues[filter.name]);
+            const selectedLabels = filter.options?.filter((option) => selectedValues.includes(option.value)).map((option) => option.label) ?? [];
+
+            return (
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="outline" className={triggerClassName ?? 'w-full justify-between'}>
+                            <span className="truncate text-left">
+                                {selectedLabels.length > 0 ? `${filter.label}: ${selectedLabels.length}` : filter.label}
+                            </span>
+                            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[260px] p-0" align="start">
+                        <Command>
+                            <CommandInput placeholder={`Buscar ${filter.label.toLowerCase()}...`} />
+                            <CommandList>
+                                <CommandEmpty>No se encontraron opciones.</CommandEmpty>
+                                <CommandGroup>
+                                    {filter.options?.map((option) => {
+                                        const selected = selectedValues.includes(option.value);
+
+                                        return (
+                                            <CommandItem
+                                                key={option.value}
+                                                value={`${option.label}-${option.value}`}
+                                                onSelect={() => handleMultiSelectFilterChange(filter.name, option.value)}
+                                            >
+                                                <div
+                                                    className={`mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary ${selected ? 'bg-primary text-primary-foreground' : 'opacity-50 [&_svg]:invisible'}`}
+                                                >
+                                                    <Check className="h-4 w-4" />
+                                                </div>
+                                                <span className="flex-1">{option.label}</span>
+                                            </CommandItem>
+                                        );
+                                    })}
+                                </CommandGroup>
+                            </CommandList>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
+            );
+        }
+
+        return (
+            <Select value={filterValues[filter.name] || 'all'} onValueChange={(value) => handleFilterChange(filter.name, value)}>
+                <SelectTrigger className={triggerClassName} id={filter.name}>
+                    <SelectValue placeholder={`Seleccionar ${filter.label.toLowerCase()}`} />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    {filter.options?.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        );
+    };
 
     // Initialize date range from applied filters
     const getInitialDateRange = (): DateRange | undefined => {
@@ -449,23 +546,9 @@ export default function ReportShow({ report, filters, columns, summary, data, ap
 
                         {/* Visible Filters (not hidden) */}
                         {visibleFilters.map((filter) => (
-                            <Select
-                                key={filter.name}
-                                value={filterValues[filter.name] || ''}
-                                onValueChange={(value) => handleFilterChange(filter.name, value)}
-                            >
-                                <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder={filter.label} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Todos</SelectItem>
-                                    {filter.options?.map((option) => (
-                                        <SelectItem key={option.value} value={option.value}>
-                                            {option.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <div key={filter.name} className="w-[180px]">
+                                {renderFilterControl(filter, 'w-[180px] justify-between')}
+                            </div>
                         ))}
 
                         {/* Hidden Filters Popover */}
@@ -502,22 +585,7 @@ export default function ReportShow({ report, filters, columns, summary, data, ap
                                             {hiddenFilters.map((filter) => (
                                                 <div key={filter.name} className="grid gap-2">
                                                     <Label htmlFor={filter.name}>{filter.label}</Label>
-                                                    <Select
-                                                        value={filterValues[filter.name] || ''}
-                                                        onValueChange={(value) => handleFilterChange(filter.name, value)}
-                                                    >
-                                                        <SelectTrigger id={filter.name}>
-                                                            <SelectValue placeholder={`Seleccionar ${filter.label.toLowerCase()}`} />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="all">Todos</SelectItem>
-                                                            {filter.options?.map((option) => (
-                                                                <SelectItem key={option.value} value={option.value}>
-                                                                    {option.label}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
+                                                    {renderFilterControl(filter, 'w-full justify-between')}
                                                 </div>
                                             ))}
                                         </div>
