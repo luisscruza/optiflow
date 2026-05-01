@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Edit, Paperclip } from 'lucide-react';
+import { Edit, Paperclip, Receipt } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { useCurrency } from '@/utils/currency';
 
 interface Props {
     expense: Expense;
+    receivedDocumentId: string | null;
 }
 
 const statusStyles: Record<Expense['status'], string> = {
@@ -25,7 +26,7 @@ const statusLabels: Record<Expense['status'], string> = {
     cancelled: 'Cancelado',
 };
 
-export default function ExpensesShow({ expense }: Props) {
+export default function ExpensesShow({ expense, receivedDocumentId }: Props) {
     const { can } = usePermissions();
     const { format: formatCurrency } = useCurrency();
 
@@ -53,6 +54,16 @@ export default function ExpensesShow({ expense }: Props) {
                             <Badge variant="outline">{expense.is_informal ? 'Informal' : 'Fiscal'}</Badge>
                         </div>
                         <p className="text-gray-600 dark:text-gray-400">Detalle del gasto registrado para el suplidor seleccionado.</p>
+                        {receivedDocumentId && (
+                            <div className="mt-3">
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link href={`/electronic-invoicing/received/${receivedDocumentId}`}>
+                                        <Receipt className="mr-2 h-4 w-4" />
+                                        Ver documento recibido
+                                    </Link>
+                                </Button>
+                            </div>
+                        )}
                     </div>
 
                     {can('edit expenses') && (

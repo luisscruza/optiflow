@@ -17,6 +17,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property int $workspace_id
  * @property int $contact_id
  * @property string $document_number
+ * @property string|null $easyfactu_received_document_id
  * @property \Carbon\CarbonImmutable $issue_date
  * @property numeric $subtotal_amount
  * @property numeric $itbis_amount
@@ -39,6 +40,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Expense query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Expense whereContactId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Expense whereDocumentNumber($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Expense whereEasyfactuReceivedDocumentId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Expense whereIssueDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Expense whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Expense whereWorkspaceId($value)

@@ -21,7 +21,7 @@ export default ({ children, breadcrumbs, ...props }: AppLayoutProps) => {
     const page = usePage<SharedData>();
 
     useEffect(() => {
-        const notify = (payload: FlashPayload | undefined, type: 'success' | 'error', duration?: number) => {
+        const notify = (payload: FlashPayload | undefined, type: 'success' | 'error' | 'warning' | 'info', duration?: number) => {
             if (!payload) {
                 return;
             }
@@ -44,6 +44,8 @@ export default ({ children, breadcrumbs, ...props }: AppLayoutProps) => {
 
         notify(page.props.flash?.success, 'success');
         notify(page.props.flash?.error, 'error');
+        notify(page.props.flash?.warning, 'warning');
+        notify(page.props.flash?.info, 'info');
         notify(page.props.flash?.persistentError, 'error', 9999999);
     }, [page.props.flash]);
 

@@ -5,11 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type ReceivedDocumentDetail } from '@/types';
-import { Head, Link } from '@inertiajs/react';
-import { AlertCircle, ArrowLeft, Printer } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { AlertCircle, ArrowLeft, Printer, Receipt } from 'lucide-react';
 
 interface Props {
     document: ReceivedDocumentDetail | null;
+    canConvertToExpense: boolean;
 }
 
 const formatDate = (value: string | null): string => {
@@ -30,7 +31,9 @@ const formatAmount = (amount: number, currency: string): string => {
     return new Intl.NumberFormat('es-DO', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
-    }).format(amount).concat(` ${currency}`);
+    })
+        .format(amount)
+        .concat(` ${currency}`);
 };
 
 const statusLabelMap: Record<string, string> = {
@@ -47,7 +50,7 @@ const statusClassMap: Record<string, string> = {
     rejected: 'bg-red-100 text-red-700 hover:bg-red-100',
 };
 
-export default function ElectronicInvoicingReceivedShow({ document }: Props) {
+export default function ElectronicInvoicingReceivedShow({ document, canConvertToExpense }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Facturación electrónica',
@@ -78,6 +81,10 @@ export default function ElectronicInvoicingReceivedShow({ document }: Props) {
         );
     }
 
+    const convertToExpense = () => {
+        router.post(`/electronic-invoicing/received/${document.id}/convert-to-expense`);
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Documento ${document.encf || ''}`} />
@@ -96,6 +103,13 @@ export default function ElectronicInvoicingReceivedShow({ document }: Props) {
                                 Volver
                             </Link>
                         </Button>
+
+                        {canConvertToExpense && (
+                            <Button type="button" variant="outline" onClick={convertToExpense}>
+                                <Receipt className="mr-2 h-4 w-4" />
+                                Convertir en gasto
+                            </Button>
+                        )}
 
                         <Button asChild>
                             <Link href={`/electronic-invoicing/received/${document.id}/print`}>
@@ -196,7 +210,9 @@ export default function ElectronicInvoicingReceivedShow({ document }: Props) {
                                             <TableCell className="text-right">{item.quantity}</TableCell>
                                             <TableCell className="text-right">{formatAmount(item.unit_price, document.currency)}</TableCell>
                                             <TableCell className="text-right">{formatAmount(item.tax_amount, document.currency)}</TableCell>
-                                            <TableCell className="text-right font-medium">{formatAmount(item.total_amount, document.currency)}</TableCell>
+                                            <TableCell className="text-right font-medium">
+                                                {formatAmount(item.total_amount, document.currency)}
+                                            </TableCell>
                                         </TableRow>
                                     ))
                                 )}

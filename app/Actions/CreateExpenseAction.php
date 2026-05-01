@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 final class CreateExpenseAction
 {
     /**
-     * @param  array{workspace_id:int,contact_id:int,document_number:string,issue_date:string,subtotal_amount:numeric-string|int|float,itbis_amount:numeric-string|int|float,isc_amount:numeric-string|int|float,withheld_itbis_amount:numeric-string|int|float,withheld_isr_amount:numeric-string|int|float,is_informal:bool,status:string,notes?:string|null,attachments?:array<UploadedFile>}  $data
+     * @param  array{workspace_id:int,contact_id:int,document_number:string,easyfactu_received_document_id?:string|null,issue_date:string,subtotal_amount:numeric-string|int|float,itbis_amount:numeric-string|int|float,isc_amount:numeric-string|int|float,withheld_itbis_amount:numeric-string|int|float,withheld_isr_amount:numeric-string|int|float,is_informal:bool,status:string,notes?:string|null,attachments?:array<UploadedFile>}  $data
      */
     public function handle(User $user, array $data): Expense
     {
@@ -26,6 +26,7 @@ final class CreateExpenseAction
                 'workspace_id' => $workspace->id,
                 'contact_id' => $data['contact_id'],
                 'document_number' => mb_trim($data['document_number']),
+                'easyfactu_received_document_id' => $data['easyfactu_received_document_id'] ?? null,
                 'issue_date' => $data['issue_date'],
                 'subtotal_amount' => $data['subtotal_amount'],
                 'itbis_amount' => $data['itbis_amount'],

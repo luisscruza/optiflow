@@ -219,6 +219,7 @@ final class ElectronicInvoicingReceivedDocumentController
 
         return Inertia::render('electronic-invoicing/received/show', [
             'document' => $this->mapDetailDocument($document),
+            'canConvertToExpense' => $user->can(Permission::ElectronicInvoicingView) && $user->can(Permission::ExpensesCreate),
         ]);
     }
 

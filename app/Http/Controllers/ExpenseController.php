@@ -83,6 +83,7 @@ final class ExpenseController
 
         return Inertia::render('expenses/show', [
             'expense' => $expenseModel,
+            'receivedDocumentId' => $expenseModel->easyfactu_received_document_id ?: (request()->string('receivedDocument')->toString() ?: null),
         ]);
     }
 

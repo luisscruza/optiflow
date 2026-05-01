@@ -24,6 +24,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ContactImportController;
 use App\Http\Controllers\ContactRelationshipController;
 use App\Http\Controllers\ConvertQuotationToInvoiceController;
+use App\Http\Controllers\ConvertReceivedDocumentToExpenseController;
 use App\Http\Controllers\CreateInvoiceFromQuotationController;
 use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\CurrencyRateController;
@@ -255,6 +256,8 @@ Route::middleware([
                 ->name('electronic-invoicing.received.export');
             Route::get('electronic-invoicing/received/{receivedDocument}', [ElectronicInvoicingReceivedDocumentController::class, 'show'])
                 ->name('electronic-invoicing.received.show');
+            Route::post('electronic-invoicing/received/{receivedDocument}/convert-to-expense', ConvertReceivedDocumentToExpenseController::class)
+                ->name('electronic-invoicing.received.convert-to-expense');
             Route::get('electronic-invoicing/received/{receivedDocument}/print', [ElectronicInvoicingReceivedDocumentController::class, 'print'])
                 ->name('electronic-invoicing.received.print');
 
