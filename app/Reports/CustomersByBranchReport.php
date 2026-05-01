@@ -87,6 +87,12 @@ final readonly class CustomersByBranchReport implements ReportContract
                 href: '/contacts/{contact_id}',
             ),
             new ReportColumn(
+                key: 'phone_number',
+                label: 'Telefono',
+                type: 'text',
+                sortable: true,
+            ),
+            new ReportColumn(
                 key: 'workspace_names',
                 label: 'Sucursales',
                 type: 'text',
@@ -141,6 +147,7 @@ final readonly class CustomersByBranchReport implements ReportContract
         return $this->baseQuery($filters)->select([
             'contacts.id',
             'contacts.name as customer_name',
+            DB::raw("COALESCE(contacts.mobile, contacts.phone_primary, contacts.phone_secondary, '') as phone_number"),
             DB::raw("COALESCE(workspace_activity.workspace_names, '') as workspace_names"),
             DB::raw('COALESCE(invoice_stats.invoice_count, 0) as invoice_count'),
             DB::raw('COALESCE(prescription_stats.prescription_count, 0) as prescription_count'),
@@ -159,6 +166,7 @@ final readonly class CustomersByBranchReport implements ReportContract
 
         $sortColumn = match ($sortBy) {
             'customer_name' => 'customer_name',
+            'phone_number' => 'phone_number',
             'workspace_names' => 'workspace_names',
             'invoice_count' => 'invoice_count',
             'prescription_count' => 'prescription_count',
@@ -179,6 +187,7 @@ final readonly class CustomersByBranchReport implements ReportContract
                 /** @var Contact&object{
                  *     id: int,
                  *     customer_name: string,
+                 *     phone_number: string,
                  *     workspace_names: string,
                  *     invoice_count: int|string,
                  *     prescription_count: int|string,
@@ -192,6 +201,7 @@ final readonly class CustomersByBranchReport implements ReportContract
                     'id' => $id,
                     'contact_id' => $id,
                     'customer_name' => $item->customer_name,
+                    'phone_number' => $item->phone_number,
                     'workspace_names' => $item->workspace_names,
                     'report_range' => $this->formatRange($filters),
                     'invoice_count' => (int) $item->invoice_count,
@@ -216,6 +226,7 @@ final readonly class CustomersByBranchReport implements ReportContract
                 /** @var Contact&object{
                  *     id: int,
                  *     customer_name: string,
+                 *     phone_number: string,
                  *     workspace_names: string,
                  *     invoice_count: int|string,
                  *     prescription_count: int|string,
@@ -229,6 +240,7 @@ final readonly class CustomersByBranchReport implements ReportContract
                     'id' => $id,
                     'contact_id' => $id,
                     'customer_name' => $item->customer_name,
+                    'phone_number' => $item->phone_number,
                     'workspace_names' => $item->workspace_names,
                     'report_range' => $this->formatRange($filters),
                     'invoice_count' => (int) $item->invoice_count,
