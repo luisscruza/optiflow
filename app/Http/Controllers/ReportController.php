@@ -9,6 +9,7 @@ use App\Enums\ReportGroup;
 use App\Enums\ReportType;
 use App\Models\Report;
 use App\Reports\CustomerSalesReport;
+use App\Reports\CustomersByBranchReport;
 use App\Reports\ExpensesSummaryReport;
 use App\Reports\GeneralSalesReport;
 use App\Reports\PrescriptionsByDoctorReport;
@@ -116,6 +117,7 @@ final class ReportController
             ReportType::GeneralSales => new GeneralSalesReport,
             ReportType::SalesByProduct => new ProductSalesReport,
             ReportType::SalesByCustomer => new CustomerSalesReport,
+            ReportType::CustomersByBranch => new CustomersByBranchReport,
             ReportType::SalesBySalesman => new SalesmanSalesReport,
             ReportType::ExpensesSummary => new ExpensesSummaryReport,
             ReportType::PrescriptionsSummary => new PrescriptionsSummaryReport,
