@@ -630,10 +630,10 @@ export default function InvoiceForm({
                                         >
                                             <SelectValue placeholder="Seleccionar tipo" />
                                         </SelectTrigger>
-                                        <SelectContent>
+                                        <SelectContent className="w-fit">
                                             {documentSubtypes.map((subtype) => (
                                                 <SelectItem key={subtype.id} value={subtype.id.toString()}>
-                                                    {subtype.name} ({subtype.prefix})
+                                                    {subtype.name} ({subtype.prefix}) { subtype.is_electronic && <span className="ml-1 rounded bg-green-100 px-1 text-xs text-green-700">Comprobante electrónico</span> }
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
