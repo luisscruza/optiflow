@@ -86,7 +86,7 @@ export default function ElectronicInvoicing({ settings }: Props) {
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Facturación electrónica</h1>
                         <p className="text-gray-600 dark:text-gray-400">
-                            Configura la conexión con EasyFactu para emitir comprobantes fiscales electrónicos (e-CF).
+                            Configura la conexión con la DGII para emitir comprobantes fiscales electrónicos (e-CF).
                         </p>
                     </div>
 

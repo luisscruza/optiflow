@@ -653,7 +653,7 @@ export default function InvoiceForm({
                                 <div className="flex items-start gap-3">
                                     <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-600" />
                                     <div className="space-y-2">
-                                        <p className="text-sm font-semibold text-amber-900">EasyFactu no está configurado</p>
+                                        <p className="text-sm font-semibold text-amber-900">La facturación electrónica no está configurada</p>
                                         <p className="text-sm text-amber-800">
                                             No podrás previsualizar ni emitir facturas electrónicas hasta completar la configuración del entorno y la
                                             clave API.
@@ -673,7 +673,7 @@ export default function InvoiceForm({
                                     <div className="space-y-1">
                                         <p className="text-sm font-semibold text-amber-900">No se pudo previsualizar el próximo eNCF</p>
                                         <p className="text-sm text-amber-800">
-                                            Esta pantalla debe traer el próximo eNCF desde EasyFactu. Revisa la configuración o el mensaje de error
+                                            Esta pantalla debe traer el próximo eNCF desde el sistema de facturación electrónica. Revisa la configuración o el mensaje de error
                                             del sistema.
                                         </p>
                                     </div>
