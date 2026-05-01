@@ -228,7 +228,7 @@ export function AppSidebar() {
                 <WorkspaceSwitcher />
             </SidebarHeader>
 
-            <SidebarContent>
+            <SidebarContent className="overflow-x-hidden">
                 <NavMain items={mainNavItems} />
 
                 {electronicInvoicingItems.length > 0 && (
