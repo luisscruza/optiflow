@@ -324,11 +324,16 @@
             $chunks[] = $remaining;
         }
 
-        $codigoSeguridad = $invoice->dgii_security_code ?? '';
-        $fechaFirma = $invoice->dgii_signed_at?->format('d-m-Y H:i:s') ?? '';
+        $codigoSeguridad = $invoice->dgii_security_code;
+        $signedAt = $invoice->dgii_signed_at ?? $invoice->created_at;
+        $fechaFirma = $signedAt?->copy()->setTimezone('America/Santo_Domingo')->format('d-m-Y H:i:s') ?? '';
         $qrImageSrc = null;
 
         if ($invoice->dgii_qr_code_url) {
+            if (! $codigoSeguridad) {
+                $codigoSeguridad = request()->create($invoice->dgii_qr_code_url)->query('codigoseguridad', '');
+            }
+
             $qrSvg = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(128)->margin(0)->generate($invoice->dgii_qr_code_url);
             $qrImageSrc = 'data:image/svg+xml;base64,'.base64_encode($qrSvg);
         }
@@ -498,12 +503,12 @@
                                 </div>
                                 @if($codigoSeguridad)
                                     <div class="electronic-proof-line">
-                                        <strong>Código seguridad:</strong> {{ $codigoSeguridad }}
+                                        <strong>Codigo Seguridad:</strong> {{ $codigoSeguridad }}
                                     </div>
                                 @endif
                                 @if($fechaFirma)
                                     <div class="electronic-proof-line">
-                                        <strong>Fecha firma:</strong> {{ $fechaFirma }}
+                                        <strong>Fecha Firma:</strong> {{ $fechaFirma }}
                                     </div>
                                 @endif
                             </div>

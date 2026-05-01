@@ -65,15 +65,55 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
         },
     ];
 
-    // Helper function to format date for display
+    const getSecurityCodeFromQrUrl = (qrCodeUrl?: string | null): string | null => {
+        if (!qrCodeUrl) {
+            return null;
+        }
+
+        try {
+            return new URL(qrCodeUrl).searchParams.get('codigoseguridad');
+        } catch {
+            return null;
+        }
+    };
+
     const formatDate = (dateString: string): string => {
-        if (!dateString) return '';
+        if (!dateString) {
+            return '';
+        }
+
         const date = new Date(dateString);
-        if (isNaN(date.getTime())) return '';
+
+        if (isNaN(date.getTime())) {
+            return '';
+        }
+
         return date.toLocaleDateString('es-DO');
     };
 
-    // Helper function to format payment method
+    const formatSignedAt = (dateString?: string | null): string => {
+        if (!dateString) {
+            return 'No disponible';
+        }
+
+        const date = new Date(dateString);
+
+        if (isNaN(date.getTime())) {
+            return 'No disponible';
+        }
+
+        return new Intl.DateTimeFormat('es-DO', {
+            timeZone: 'America/Santo_Domingo',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+        }).format(date);
+    };
+
     const formatPaymentMethod = (method: string): string => {
         const methods: Record<string, string> = {
             cash: 'Efectivo',
@@ -101,6 +141,9 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
             .map(([name, amount]) => ({ name, amount }))
             .sort((a, b) => b.amount - a.amount); // Sort by amount descending
     };
+
+    const dgiiSecurityCode = invoice.dgii_security_code || getSecurityCodeFromQrUrl(invoice.dgii_qr_code_url) || 'No disponible';
+    const dgiiSignedAt = formatSignedAt(invoice.dgii_signed_at || invoice.created_at);
 
     // Get status badge styling
     const getStatusBadge = (status: string) => {
@@ -541,13 +584,11 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                         </div>
                                         <div>
                                             <Label className="text-sm font-medium text-gray-700">Código de seguridad</Label>
-                                            <p className="mt-1 text-sm text-gray-900">{invoice.dgii_security_code || 'No disponible'}</p>
+                                            <p className="mt-1 text-sm text-gray-900">{dgiiSecurityCode}</p>
                                         </div>
                                         <div>
                                             <Label className="text-sm font-medium text-gray-700">Fecha de firma</Label>
-                                            <p className="mt-1 text-sm text-gray-900">
-                                                {invoice.dgii_signed_at ? formatDate(invoice.dgii_signed_at) : 'No disponible'}
-                                            </p>
+                                            <p className="mt-1 text-sm text-gray-900">{dgiiSignedAt}</p>
                                         </div>
                                         <div>
                                             <Label className="text-sm font-medium text-gray-700">Entorno</Label>
