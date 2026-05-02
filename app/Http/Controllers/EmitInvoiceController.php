@@ -37,6 +37,6 @@ final class EmitInvoiceController
 
         SubmitInvoiceToEasyFactuJob::dispatch($invoice->id);
 
-        return redirect()->back()->with('success', 'Factura en proceso de envío a la DGII. Reintentaremos automáticamente si el servicio tarda en responder.');
+        return redirect()->back()->with('success', 'Factura en proceso de envío a la DGII. Consulta el estado en unos momentos.');
     }
 }

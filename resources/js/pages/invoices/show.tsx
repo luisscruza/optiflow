@@ -45,7 +45,7 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
     const shouldPollElectronicStatus = invoice.is_electronic && invoice.status === 'submitted' && Boolean(invoice.easyfactu_invoice_id);
 
     const { start: startPollingElectronicStatus, stop: stopPollingElectronicStatus } = usePoll(
-        5000,
+        2000,
         {
             only: ['invoice'],
         },
@@ -607,7 +607,7 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                             {shouldPollElectronicStatus && (
                                                 <p className="mt-2 flex items-center gap-2 text-xs text-blue-700">
                                                     <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                                                    Actualizando estado automáticamente cada 5 segundos.
+                                                    Actualizando estado.
                                                 </p>
                                             )}
                                         </div>
