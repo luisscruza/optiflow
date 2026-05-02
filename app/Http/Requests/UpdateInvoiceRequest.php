@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Models\Contact;
+use App\Models\DocumentSubtype;
 use App\Models\Invoice;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 final class UpdateInvoiceRequest extends FormRequest
 {
@@ -110,6 +113,40 @@ final class UpdateInvoiceRequest extends FormRequest
             'salesmen_ids.array' => 'Los vendedores deben ser un array.',
             'salesmen_ids.*.exists' => 'Uno de los vendedores seleccionados no existe.',
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            $documentSubtypeId = $this->integer('document_subtype_id');
+            $contactId = $this->integer('contact_id');
+
+            if ($documentSubtypeId <= 0 || $contactId <= 0) {
+                return;
+            }
+
+            $documentSubtype = DocumentSubtype::query()
+                ->select(['id', 'prefix', 'is_electronic'])
+                ->find($documentSubtypeId);
+
+            if (! $documentSubtype?->is_electronic || $documentSubtype->prefix !== 'E31') {
+                return;
+            }
+
+            $contact = Contact::query()
+                ->select(['id', 'identification_number'])
+                ->find($contactId);
+
+            $identificationNumber = preg_replace('/\D/', '', $contact?->identification_number ?? '');
+            $length = mb_strlen($identificationNumber);
+
+            if (! in_array($length, [9, 11], true)) {
+                $validator->errors()->add(
+                    'contact_id',
+                    'Para facturas electronicas E31, el contacto debe tener un RNC o Cedula de 9 o 11 caracteres.'
+                );
+            }
+        });
     }
 
     /**

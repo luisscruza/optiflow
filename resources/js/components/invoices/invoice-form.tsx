@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { AlertTriangle, CreditCard, Plus, Save, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import { EditNcfModal } from '@/components/invoices/edit-ncf-modal';
@@ -546,6 +547,8 @@ export default function InvoiceForm({
     const isCreate = mode === 'create';
     const selectedDocumentSubtype = documentSubtypes.find((subtype) => subtype.id === data.document_subtype_id) ?? null;
     const isElectronicDocument = Boolean(selectedDocumentSubtype?.is_electronic);
+    const normalizedIdentificationNumber = selectedContact?.identification_number?.replace(/\D/g, '') ?? '';
+    const requiresFiscalIdentification = selectedDocumentSubtype?.prefix === 'E31' && isElectronicDocument;
     const submitButtonText = isCreate ? 'Guardar factura' : 'Actualizar factura';
     const processingText = isCreate ? 'Guardando...' : 'Actualizando...';
     const roundedPaymentAmount = roundCurrencyAmount(data.payment_amount);
@@ -566,9 +569,20 @@ export default function InvoiceForm({
         setData('payment_notes', '');
     }, [data.register_payment, isElectronicDocument, setData]);
 
+    const handleFormSubmit = (e: React.FormEvent): void => {
+        if (requiresFiscalIdentification && ![9, 11].includes(normalizedIdentificationNumber.length)) {
+            e.preventDefault();
+            toast.error('Para facturas electronicas E31, el RNC o Cedula del contacto debe tener 9 o 11 caracteres.');
+
+            return;
+        }
+
+        onSubmit(e);
+    };
+
     return (
         <>
-            <form onSubmit={onSubmit}>
+            <form onSubmit={handleFormSubmit}>
                 <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
                     <CardContent className="px-6 py-6">
                         {/* Header */}
@@ -633,7 +647,12 @@ export default function InvoiceForm({
                                         <SelectContent className="w-fit">
                                             {documentSubtypes.map((subtype) => (
                                                 <SelectItem key={subtype.id} value={subtype.id.toString()}>
-                                                    {subtype.name} ({subtype.prefix}) { subtype.is_electronic && <span className="ml-1 rounded bg-green-100 px-1 text-xs text-green-700">Comprobante electrónico</span> }
+                                                    {subtype.name} ({subtype.prefix}){' '}
+                                                    {subtype.is_electronic && (
+                                                        <span className="ml-1 rounded bg-green-100 px-1 text-xs text-green-700">
+                                                            Comprobante electrónico
+                                                        </span>
+                                                    )}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -673,8 +692,8 @@ export default function InvoiceForm({
                                     <div className="space-y-1">
                                         <p className="text-sm font-semibold text-amber-900">No se pudo previsualizar el próximo eNCF</p>
                                         <p className="text-sm text-amber-800">
-                                            Esta pantalla debe traer el próximo eNCF desde el sistema de facturación electrónica. Revisa la configuración o el mensaje de error
-                                            del sistema.
+                                            Esta pantalla debe traer el próximo eNCF desde el sistema de facturación electrónica. Revisa la
+                                            configuración o el mensaje de error del sistema.
                                         </p>
                                     </div>
                                 </div>
