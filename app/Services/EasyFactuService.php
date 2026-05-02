@@ -6,6 +6,8 @@ namespace App\Services;
 
 use App\Exceptions\EasyFactuException;
 use App\Models\CompanyDetail;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -84,7 +86,10 @@ final class EasyFactuService
      */
     public function submitInvoice(string $invoiceId): array
     {
-        $response = $this->post("/v1/invoices/{$invoiceId}/submit");
+        $response = $this->post(
+            "/v1/invoices/{$invoiceId}/submit",
+            retryConnectionIssues: true,
+        );
 
         return $this->parseResponse($response, 'Error emitiendo factura en EasyFactu.');
     }
@@ -202,9 +207,8 @@ final class EasyFactuService
         try {
             return Http::withHeaders($this->buildHeaders())
                 ->timeout(self::TIMEOUT_SECONDS)
-                ->get($this->baseUrl().$path, $query)
-                ->throw();
-        } catch (Throwable $e) {
+                ->get($this->baseUrl().$path, $query);
+        } catch (ConnectionException $e) {
             throw new EasyFactuException('Error de conexión con EasyFactu: '.$e->getMessage(), 0, $e);
         }
     }
@@ -217,14 +221,21 @@ final class EasyFactuService
      *
      * @throws EasyFactuException
      */
-    private function post(string $path, array $data = [], array $extraHeaders = []): Response
+    private function post(string $path, array $data = [], array $extraHeaders = [], bool $retryConnectionIssues = false): Response
     {
         try {
-            return Http::withHeaders([...$this->buildHeaders(), ...$extraHeaders])
-                ->timeout(self::TIMEOUT_SECONDS)
-                ->post($this->baseUrl().$path, $data)
-                ->throw();
-        } catch (Throwable $e) {
+            $request = Http::withHeaders([...$this->buildHeaders(), ...$extraHeaders])
+                ->timeout(self::TIMEOUT_SECONDS);
+
+            if ($retryConnectionIssues) {
+                $request = $request->retry(
+                    [1000, 3000],
+                    static fn (Throwable $exception, PendingRequest $pendingRequest): bool => $exception instanceof ConnectionException,
+                );
+            }
+
+            return $request->post($this->baseUrl().$path, $data);
+        } catch (ConnectionException $e) {
             throw new EasyFactuException('Error de conexión con EasyFactu: '.$e->getMessage(), 0, $e);
         }
     }
@@ -241,9 +252,8 @@ final class EasyFactuService
         try {
             return Http::withHeaders($this->buildHeaders())
                 ->timeout(self::TIMEOUT_SECONDS)
-                ->put($this->baseUrl().$path, $data)
-                ->throw();
-        } catch (Throwable $e) {
+                ->put($this->baseUrl().$path, $data);
+        } catch (ConnectionException $e) {
             throw new EasyFactuException('Error de conexión con EasyFactu: '.$e->getMessage(), 0, $e);
         }
     }

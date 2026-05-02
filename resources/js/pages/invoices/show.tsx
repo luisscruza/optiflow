@@ -1,6 +1,6 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage, usePoll } from '@inertiajs/react';
 import { AlertTriangle, Calendar, CreditCard, DownloadCloud, Edit, FileText, Plus, Printer, RefreshCw, Send, Share2, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import QRCode from 'react-qr-code';
 
 import { usePermissions } from '@/hooks/use-permissions';
@@ -35,12 +35,36 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [activeShareModal, setActiveShareModal] = useState<{ share: ShareData; title: string } | null>(null);
+    const hasElectronicSyncError = invoice.is_electronic && invoice.status === 'draft' && Boolean(invoice.dgii_status?.startsWith('Error sincronización:'));
     const canEditInvoice = can('edit invoices') && (invoice.status === 'pending_payment' || (invoice.is_electronic && invoice.status === 'draft'));
     const canDeleteInvoice = can('delete invoices') && invoice.status === 'draft';
     const canEmitInvoice = can('edit invoices') && invoice.is_electronic && invoice.status === 'draft' && Boolean(invoice.easyfactu_invoice_id);
-    const canRefreshElectronicStatus = invoice.is_electronic && invoice.status === 'submitted' && Boolean(invoice.easyfactu_invoice_id);
+    const canRefreshElectronicStatus = invoice.is_electronic && Boolean(invoice.easyfactu_invoice_id) && (invoice.status === 'submitted' || hasElectronicSyncError);
     const canRegisterPayment = can('create payments') && invoice.amount_due > 0 && !['draft', 'submitted', 'dgii_rejected'].includes(invoice.status);
     const showElectronicLockBanner = invoice.is_electronic && invoice.status !== 'draft';
+    const shouldPollElectronicStatus = invoice.is_electronic && invoice.status === 'submitted' && Boolean(invoice.easyfactu_invoice_id);
+
+    const { start: startPollingElectronicStatus, stop: stopPollingElectronicStatus } = usePoll(
+        5000,
+        {
+            only: ['invoice'],
+        },
+        {
+            autoStart: false,
+        },
+    );
+
+    useEffect(() => {
+        if (shouldPollElectronicStatus) {
+            startPollingElectronicStatus();
+
+            return () => {
+                stopPollingElectronicStatus();
+            };
+        }
+
+        stopPollingElectronicStatus();
+    }, [shouldPollElectronicStatus, startPollingElectronicStatus, stopPollingElectronicStatus]);
 
     const emitInvoice = () => {
         if (!confirm('¿Deseas emitir esta factura a la DGII ahora?')) {
@@ -149,6 +173,9 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'draft':
+                if (hasElectronicSyncError) {
+                    return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Borrador con error DGII</Badge>;
+                }
                 return <Badge variant="secondary">Borrador</Badge>;
             case 'sent':
                 return <Badge variant="outline">Enviada</Badge>;
@@ -577,6 +604,12 @@ export default function ShowInvoice({ invoice, activities, activityFieldLabels, 
                                         <div>
                                             <Label className="text-sm font-medium text-gray-700">Estado DGII</Label>
                                             <p className="mt-1 text-sm text-gray-900">{invoice.dgii_status || 'Pendiente de respuesta'}</p>
+                                            {shouldPollElectronicStatus && (
+                                                <p className="mt-2 flex items-center gap-2 text-xs text-blue-700">
+                                                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                                                    Actualizando estado automáticamente cada 5 segundos.
+                                                </p>
+                                            )}
                                         </div>
                                         <div>
                                             <Label className="text-sm font-medium text-gray-700">Track ID</Label>

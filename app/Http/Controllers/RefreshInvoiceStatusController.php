@@ -42,8 +42,9 @@ final class RefreshInvoiceStatusController
                 'dgii_signed_at' => EasyFactuInvoiceMetadata::extractSignedAt($efInvoice) ?? $invoice->dgii_signed_at,
             ];
 
-            // Transition status based on EasyFactu response
-            if ($efStatus === 'accepted' && $invoice->status === InvoiceStatus::Submitted) {
+            // Transition status based on EasyFactu response, including invoices that were
+            // restored to draft after a transient sync error.
+            if ($efStatus === 'accepted' && $invoice->status !== InvoiceStatus::PendingPayment && $invoice->status !== InvoiceStatus::Paid) {
                 $updateData['status'] = InvoiceStatus::PendingPayment;
 
                 $invoice->update($updateData);
@@ -51,7 +52,7 @@ final class RefreshInvoiceStatusController
                 return redirect()->back()->with('success', 'La factura fue aceptada por la DGII.');
             }
 
-            if ($efStatus === 'rejected' && $invoice->status === InvoiceStatus::Submitted) {
+            if ($efStatus === 'rejected' && $invoice->status !== InvoiceStatus::DgiiRejected) {
                 $updateData['status'] = InvoiceStatus::DgiiRejected;
 
                 $invoice->update($updateData);
