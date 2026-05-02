@@ -74,7 +74,7 @@ final class InvoicesTable extends Table
                         ->permission('edit invoices')
                         ->visibleWhen(fn (Invoice $invoice) => $invoice->canBeEdited()),
 
-                    Action::make('print', 'Descargar PDF')
+                    Action::make('download', 'Descargar PDF')
                         ->icon('download')
                         ->href('/invoices/{id}/pdf')
                         ->download()

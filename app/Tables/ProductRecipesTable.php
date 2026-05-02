@@ -47,7 +47,7 @@ final class ProductRecipesTable extends Table
                         ->target('_blank')
                         ->href('/product-recipes/{id}/pdf')
                         ->permission('view prescriptions'),
-                    Action::make('print', 'Descargar PDF')
+                    Action::make('download', 'Descargar PDF')
                         ->inline()
                         ->tooltip('Descargar PDF')
                         ->icon('download')
