@@ -60,10 +60,6 @@ final readonly class AutomationContext
             'input' => $input,
             'job' => $this->job ? [
                 'id' => $this->job->id,
-                'workspace' => [
-                    'id' => $this->job?->workflow?->workspace_id,
-                    'name' => $this->job?->workflow?->workspace?->name,
-                ],
                 'workflow_id' => $this->job->workflow_id,
                 'workflow_stage_id' => $this->job->workflow_stage_id,
                 'contact_id' => $this->job->contact_id,
