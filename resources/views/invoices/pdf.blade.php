@@ -236,13 +236,12 @@
         }
 
         .electronic-proof {
-            margin-top: 14px;
             page-break-inside: avoid;
         }
 
         .qr-wrapper {
-            width: 128px;
-            height: 128px;
+            width: 70px;
+            height: 70px;
         }
 
         .qr-wrapper svg {
@@ -499,11 +498,11 @@
                         @if($isLastPage && $invoice->is_electronic && $qrImageSrc)
                             <div class="electronic-proof">
                                 <div class="qr-wrapper">
-                                    <img src="{{ $qrImageSrc }}" alt="Código QR" style="width: 128px; height: 128px; display: block;">
+                                    <img src="{{ $qrImageSrc }}" alt="Código QR" style="width: 70px; height: 70px; display: block;">
                                 </div>
                                 @if($codigoSeguridad)
                                     <div class="electronic-proof-line">
-                                        <strong>Codigo Seguridad:</strong> {{ $codigoSeguridad }}
+                                        <strong>Código Seguridad:</strong> {{ $codigoSeguridad }}
                                     </div>
                                 @endif
                                 @if($fechaFirma)
