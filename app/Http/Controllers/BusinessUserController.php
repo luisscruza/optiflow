@@ -23,7 +23,7 @@ final class BusinessUserController
         $users = User::query()
             ->with([
                 'workspaces' => function ($query) {
-                    $query->select('workspaces.id', 'workspaces.name', 'workspaces.owner_id')
+                    $query->select('workspaces.id', 'workspaces.name', 'workspaces.slug', 'workspaces.owner_id')
                         ->withPivot(['role', 'joined_at']);
                 },
             ])
@@ -60,6 +60,7 @@ final class BusinessUserController
                         return [
                             'id' => $workspace->id,
                             'name' => $workspace->name,
+                            'slug' => $workspace->slug,
                             'is_owner' => $workspace->owner_id === $user->id,
                             'pivot_role' => $pivot?->getAttribute('role'),
                             'joined_at' => $pivot?->getAttribute('joined_at'),
@@ -73,7 +74,7 @@ final class BusinessUserController
             });
 
         $workspaces = Workspace::query()
-            ->select('id', 'name')
+            ->select('id', 'name', 'slug')
             ->orderBy('name')
             ->get();
 

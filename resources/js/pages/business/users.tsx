@@ -33,6 +33,7 @@ interface Role {
 interface WorkspaceMembership {
     id: number;
     name: string;
+    slug: string;
     is_owner: boolean;
     pivot_role: string;
     joined_at: string;
@@ -53,6 +54,7 @@ interface User {
 interface Workspace {
     id: number;
     name: string;
+    slug: string;
 }
 
 interface RolesByWorkspace {
@@ -132,7 +134,7 @@ export default function BusinessUsers({ users, workspaces, rolesByWorkspace }: P
         if (!selectedUser || !selectedWorkspaceForRoles) return;
 
         router.patch(
-            `/business/users/${selectedUser.id}/workspaces/${selectedWorkspaceForRoles.id}/roles`,
+            `/business/users/${selectedUser.id}/workspaces/${selectedWorkspaceForRoles.slug}/roles`,
             {
                 role_ids: selectedRoleIds,
             },
@@ -183,11 +185,11 @@ export default function BusinessUsers({ users, workspaces, rolesByWorkspace }: P
         );
     };
 
-    const handleRemoveFromWorkspace = (workspaceId: number) => {
+    const handleRemoveFromWorkspace = (workspaceSlug: string) => {
         if (!selectedUser) return;
 
         if (confirm('¿Estás seguro de que deseas remover este usuario del workspace?')) {
-            router.delete(`/business/users/${selectedUser.id}/workspaces/${workspaceId}`, {
+            router.delete(`/business/users/${selectedUser.id}/workspaces/${workspaceSlug}`, {
                 preserveScroll: true,
             });
         }
@@ -458,7 +460,7 @@ export default function BusinessUsers({ users, workspaces, rolesByWorkspace }: P
                                                             variant="outline"
                                                             size="sm"
                                                             className="text-red-600 hover:text-red-700"
-                                                            onClick={() => handleRemoveFromWorkspace(workspace.id)}
+                                                            onClick={() => handleRemoveFromWorkspace(workspace.slug)}
                                                         >
                                                             <Trash2 className="h-4 w-4" />
                                                         </Button>
