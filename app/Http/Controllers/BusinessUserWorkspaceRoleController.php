@@ -20,14 +20,11 @@ final class BusinessUserWorkspaceRoleController
      */
     public function update(
         UpdateUserWorkspaceRolesRequest $request,
-        int $userId,
-        int $workspaceId,
+        User $user,
+        Workspace $workspace,
         UpdateBusinessUserWorkspaceRolesAction $action,
         #[CurrentUser] User $currentUser,
     ): RedirectResponse {
-        $user = User::findOrFail($userId);
-        $workspace = Workspace::findOrFail($workspaceId);
-
         if (! in_array($currentUser->business_role, [UserRole::Owner, UserRole::Admin])) {
             abort(403, 'Solo el propietario del negocio puede modificar roles.');
         }
