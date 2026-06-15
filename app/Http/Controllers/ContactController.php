@@ -21,6 +21,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 final class ContactController
 {
@@ -87,6 +88,7 @@ final class ContactController
             'primaryAddress',
             'addresses',
             'leadSource',
+            'media',
             'comments.commentator',
             'comments.comments.commentator',
             'comments.comments.comments.commentator',
@@ -158,6 +160,19 @@ final class ContactController
             'prescriptions' => $prescriptions,
             'workflowJobs' => $workflowJobs,
             'stats' => $stats,
+            'documents' => $contact->getMedia('documents')
+                ->map(fn (Media $media): array => [
+                    'id' => $media->id,
+                    'name' => $media->name,
+                    'file_name' => $media->file_name,
+                    'mime_type' => $media->mime_type,
+                    'size' => $media->size,
+                    'human_readable_size' => $media->human_readable_size,
+                    'url' => $media->getFullUrl(),
+                    'created_at' => $media->created_at?->toIso8601String(),
+                ])
+                ->values()
+                ->toArray(),
             'relatedContacts' => $contact->relationships,
             'relationshipSearchResults' => Inertia::optional(
                 fn (): array => $contactSearch->searchActive(

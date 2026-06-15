@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataTable, type TableResource } from '@/components/ui/datatable';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type ReceivedDocumentSummary } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { AlertCircle, Download, RefreshCw } from 'lucide-react';
 
 interface Props {
@@ -35,6 +35,10 @@ const formatAmount = (amount: number, currency: string): string => {
     })
         .format(amount)
         .concat(` ${currency}`);
+};
+
+const formatType = (document: ReceivedDocumentSummary): string => {
+    return document.is_credit_note ? `E${document.ecf_type} · Nota de crédito` : document.ecf_type;
 };
 
 const formatDate = (value: string | null): string => {
@@ -132,7 +136,27 @@ export default function ElectronicInvoicingReceivedIndex({ documents, summary, e
                         }
 
                         if (key === 'encf') {
-                            return <div className="font-medium text-gray-900">{String(value ?? '-')}</div>;
+                            return (
+                                <div>
+                                    <div className="font-medium text-gray-900">{String(value ?? '-')}</div>
+                                    {row.reference?.modified_encf && (
+                                        <div className="mt-1 text-xs text-muted-foreground">
+                                            Modifica:{' '}
+                                            {row.modified_document?.id ? (
+                                                <Link href={`/electronic-invoicing/received/${row.modified_document.id}`} className="font-medium text-primary hover:underline">
+                                                    {row.reference.modified_encf}
+                                                </Link>
+                                            ) : (
+                                                <span>{row.reference.modified_encf}</span>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        }
+
+                        if (key === 'ecf_type') {
+                            return formatType(row);
                         }
 
                         if (key === 'total_amount') {

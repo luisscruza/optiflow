@@ -36,6 +36,10 @@ const formatAmount = (amount: number, currency: string): string => {
         .concat(` ${currency}`);
 };
 
+const formatType = (ecfType: string, isCreditNote: boolean): string => {
+    return isCreditNote ? `E${ecfType} · Nota de crédito` : ecfType;
+};
+
 const statusLabelMap: Record<string, string> = {
     received: 'Recibido',
     processed: 'Procesado',
@@ -134,7 +138,7 @@ export default function ElectronicInvoicingReceivedShow({ document, canConvertTo
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground">Tipo e-CF</p>
-                            <p className="font-medium">{document.ecf_type || '-'}</p>
+                            <p className="font-medium">{formatType(document.ecf_type || '-', document.is_credit_note)}</p>
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground">Fecha emisión</p>
@@ -236,6 +240,38 @@ export default function ElectronicInvoicingReceivedShow({ document, canConvertTo
                         <span className="text-right font-semibold">{formatAmount(document.total_amount, document.currency)}</span>
                     </CardContent>
                 </Card>
+
+                {document.reference && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Referencia de nota de crédito</CardTitle>
+                        </CardHeader>
+                        <CardContent className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
+                            <div>
+                                <p className="text-xs text-muted-foreground">Documento modificado</p>
+                                {document.modified_document?.id ? (
+                                    <Link href={`/electronic-invoicing/received/${document.modified_document.id}`} className="font-medium text-primary hover:underline">
+                                        {document.reference.modified_encf || '-'}
+                                    </Link>
+                                ) : (
+                                    <p className="font-medium">{document.reference.modified_encf || '-'}</p>
+                                )}
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Fecha documento modificado</p>
+                                <p className="font-medium">{document.reference.modified_issue_date || '-'}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Código modificación</p>
+                                <p className="font-medium">{document.reference.modification_code || '-'}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Razón</p>
+                                <p className="font-medium">{document.reference.modification_reason || '-'}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
         </AppLayout>
     );

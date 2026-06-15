@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
  * @property int $id
@@ -91,10 +93,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  *
  * @mixin \Eloquent
  */
-final class Contact extends Model implements Commentable
+final class Contact extends Model implements Commentable, HasMedia
 {
     /** @use HasFactory<\Database\Factories\ContactFactory> */
-    use HasComments, HasFactory;
+    use HasComments, HasFactory, InteractsWithMedia;
 
     public const LEAD_SOURCES_MASTERTABLE_ALIAS = 'lead_sources';
 
@@ -136,14 +138,17 @@ final class Contact extends Model implements Commentable
         return $this->addresses()->one()->where('is_primary', true);
     }
 
-    /**
-     * Get the documents for this contact.
-     *
-     * @return HasMany<Invoice, $this>
-     */
-    public function documents(): HasMany
+    public function registerMediaCollections(): void
     {
-        return $this->hasMany(Invoice::class);
+        $this->addMediaCollection('documents')
+            ->useDisk('r2')
+            ->acceptsMimeTypes([
+                'application/pdf',
+                'image/jpeg',
+                'image/png',
+                'image/gif',
+                'image/webp',
+            ]);
     }
 
     /**

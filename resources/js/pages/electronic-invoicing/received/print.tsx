@@ -32,6 +32,10 @@ const formatAmount = (amount: number, currency: string): string => {
     }).format(amount).concat(` ${currency}`);
 };
 
+const formatType = (ecfType: string, isCreditNote: boolean): string => {
+    return isCreditNote ? `E${ecfType} · Nota de crédito` : ecfType;
+};
+
 export default function ElectronicInvoicingReceivedPrint({ document }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -93,7 +97,7 @@ export default function ElectronicInvoicingReceivedPrint({ document }: Props) {
                             <div className="space-y-1">
                                 <p className="text-xs text-muted-foreground uppercase">Datos del documento</p>
                                 <p><span className="font-medium">e-NCF:</span> {document.encf || '-'}</p>
-                                <p><span className="font-medium">Tipo e-CF:</span> {document.ecf_type || '-'}</p>
+                                <p><span className="font-medium">Tipo e-CF:</span> {formatType(document.ecf_type || '-', document.is_credit_note)}</p>
                                 <p><span className="font-medium">Emisión:</span> {formatDate(document.issue_date)}</p>
                                 <p><span className="font-medium">Recepción:</span> {formatDate(document.received_at)}</p>
                             </div>
@@ -111,6 +115,16 @@ export default function ElectronicInvoicingReceivedPrint({ document }: Props) {
                             <p>{document.buyer_name || '-'}</p>
                             <p>RNC: {document.buyer_rnc || '-'}</p>
                         </div>
+
+                        {document.reference && (
+                            <div className="space-y-1">
+                                <p className="text-xs text-muted-foreground uppercase">Referencia</p>
+                                <p><span className="font-medium">Documento modificado:</span> {document.reference.modified_encf || '-'}</p>
+                                <p><span className="font-medium">Fecha documento modificado:</span> {document.reference.modified_issue_date || '-'}</p>
+                                <p><span className="font-medium">Código modificación:</span> {document.reference.modification_code || '-'}</p>
+                                <p><span className="font-medium">Razón:</span> {document.reference.modification_reason || '-'}</p>
+                            </div>
+                        )}
 
                         <Table>
                             <TableHeader>

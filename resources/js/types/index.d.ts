@@ -478,6 +478,17 @@ export interface Contact {
     relationships?: Contact[];
 }
 
+export interface ContactDocument {
+    id: number;
+    name: string;
+    file_name: string;
+    mime_type: string;
+    size: number;
+    human_readable_size: string;
+    url: string;
+    created_at: string | null;
+}
+
 export type ShareTemplateEntity = 'invoice' | 'quotation' | 'prescription' | 'payment';
 export type ShareTemplateChannel = 'email' | 'whatsapp';
 
@@ -732,6 +743,17 @@ export interface ReceivedDocumentSummary {
     total_amount: number;
     status: string;
     received_at: string;
+    is_credit_note: boolean;
+    reference: {
+        modified_encf: string | null;
+        modified_issue_date: string | null;
+        modification_code: string | null;
+        modification_reason: string | null;
+    } | null;
+    modified_document: {
+        id: string | null;
+        encf: string | null;
+    } | null;
     supplier: ReceivedDocumentSupplierSummary | null;
 }
 

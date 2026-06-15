@@ -21,6 +21,7 @@ import {
     Settings2,
     Trash2,
     TrendingUp,
+    Upload,
     Users,
     Workflow,
 } from 'lucide-react';
@@ -40,7 +41,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
-import { Address, ContactStats, Invoice, Prescription, Quotation, SharedData, WorkflowJob, type BreadcrumbItem, type Contact } from '@/types';
+import {
+    Address,
+    ContactDocument,
+    ContactStats,
+    Invoice,
+    Prescription,
+    Quotation,
+    SharedData,
+    WorkflowJob,
+    type BreadcrumbItem,
+    type Contact,
+} from '@/types';
 import { useCurrency } from '@/utils/currency';
 
 type RelationshipSearchResult = {
@@ -53,6 +65,7 @@ type RelationshipSearchResult = {
 
 interface Props {
     contact: Contact;
+    documents: ContactDocument[];
     invoices: Invoice[];
     quotations: Quotation[];
     prescriptions: Prescription[];
@@ -64,6 +77,7 @@ interface Props {
 
 export default function ContactShow({
     contact,
+    documents,
     invoices,
     quotations,
     prescriptions,
@@ -76,6 +90,11 @@ export default function ContactShow({
     const { can } = usePermissions();
     const { format: formatCurrency } = useCurrency();
     const [activeTab, setActiveTab] = useState('overview');
+    const [isDraggingDocuments, setIsDraggingDocuments] = useState(false);
+    const [documentError, setDocumentError] = useState<string | null>(null);
+    const [isUploadingDocuments, setIsUploadingDocuments] = useState(false);
+    const [deletingDocumentId, setDeletingDocumentId] = useState<number | null>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     // Relationship modal state
     const [relationshipModalOpen, setRelationshipModalOpen] = useState(false);
@@ -87,6 +106,8 @@ export default function ContactShow({
     const [isDeletingRelationship, setIsDeletingRelationship] = useState<number | null>(null);
     const [selectedContactLabel, setSelectedContactLabel] = useState('');
     const relationshipSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const maxDocumentSizeInBytes = 3 * 1024 * 1024;
 
     useEffect(() => {
         if (typeof window !== 'undefined' && window.location.hash.startsWith('#comment-')) {
@@ -234,6 +255,98 @@ export default function ContactShow({
             month: 'short',
             day: 'numeric',
         });
+    };
+
+    const formatDateTime = (dateString: string | null) => {
+        if (!dateString) {
+            return 'Fecha no disponible';
+        }
+
+        return new Date(dateString).toLocaleString('es-DO', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    };
+
+    const validateDocuments = (files: File[]) => {
+        if (files.length === 0) {
+            setDocumentError('Debes seleccionar al menos un documento.');
+            return false;
+        }
+
+        const oversizedDocument = files.find((file) => file.size > maxDocumentSizeInBytes);
+
+        if (oversizedDocument) {
+            setDocumentError(`El archivo ${oversizedDocument.name} excede el límite de 3MB.`);
+            return false;
+        }
+
+        setDocumentError(null);
+
+        return true;
+    };
+
+    const uploadDocuments = (files: File[]) => {
+        if (!validateDocuments(files)) {
+            return;
+        }
+
+        setIsUploadingDocuments(true);
+
+        router.post(`/contacts/${contact.id}/documents`, { documents: files }, {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                setDocumentError(null);
+
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
+
+                router.reload({ only: ['documents'] });
+            },
+            onError: (errors) => {
+                setDocumentError((errors.documents as string | undefined) ?? (errors['documents.0'] as string | undefined) ?? null);
+            },
+            onFinish: () => {
+                setIsUploadingDocuments(false);
+            },
+        });
+    };
+
+    const handleDocumentSelection = (files: FileList | null) => {
+        if (!files) {
+            return;
+        }
+
+        uploadDocuments(Array.from(files));
+    };
+
+    const handleDocumentDelete = (documentId: number) => {
+        setDeletingDocumentId(documentId);
+
+        router.delete(`/contacts/${contact.id}/documents/${documentId}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                router.reload({ only: ['documents'] });
+            },
+            onFinish: () => setDeletingDocumentId(null),
+        });
+    };
+
+    const getDocumentTypeLabel = (mimeType: string) => {
+        if (mimeType === 'application/pdf') {
+            return 'PDF';
+        }
+
+        if (mimeType.startsWith('image/')) {
+            return 'Imagen';
+        }
+
+        return 'Documento';
     };
 
     const getInvoiceStatusBadge = (status: string) => {
@@ -480,6 +593,18 @@ export default function ContactShow({
                             >
                                 <MessageSquare className="h-4 w-4" />
                                 Comentarios
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="documents"
+                                className="flex items-center gap-2 rounded-md px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-900"
+                            >
+                                <FileText className="h-4 w-4" />
+                                Documentos
+                                {documents.length > 0 && (
+                                    <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                                        {documents.length}
+                                    </Badge>
+                                )}
                             </TabsTrigger>
                         </TabsList>
 
@@ -1305,6 +1430,141 @@ export default function ContactShow({
                                         currentUser={auth.user}
                                         title="Comentarios del contacto"
                                     />
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        {/* Documents Tab */}
+                        <TabsContent value="documents" className="space-y-4">
+                            <Card className="border-0 shadow-sm">
+                                <CardHeader>
+                                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                                        <div>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <FileText className="h-5 w-5" />
+                                                Documentos del contacto
+                                            </CardTitle>
+                                            <CardDescription>
+                                                Sube PDFs o imágenes de hasta 3MB y consérvalos asociados a este contacto.
+                                            </CardDescription>
+                                        </div>
+                                        {can('edit contacts') && (
+                                            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                                                <Upload className="mr-2 h-4 w-4" />
+                                                Seleccionar archivos
+                                            </Button>
+                                        )}
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    {can('edit contacts') && (
+                                        <>
+                                            <input
+                                                ref={fileInputRef}
+                                                type="file"
+                                                accept=".pdf,image/png,image/jpeg,image/gif,image/webp"
+                                                multiple
+                                                className="hidden"
+                                                onChange={(event) => handleDocumentSelection(event.target.files)}
+                                            />
+
+                                            <button
+                                                type="button"
+                                                className={cn(
+                                                    'flex w-full flex-col items-center justify-center rounded-xl border border-dashed px-6 py-10 text-center transition-colors',
+                                                    isDraggingDocuments
+                                                        ? 'border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-950/30'
+                                                        : 'border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600 dark:hover:bg-gray-800',
+                                                )}
+                                                onDragOver={(event) => {
+                                                    event.preventDefault();
+                                                    setIsDraggingDocuments(true);
+                                                }}
+                                                onDragLeave={(event) => {
+                                                    event.preventDefault();
+                                                    setIsDraggingDocuments(false);
+                                                }}
+                                                onDrop={(event) => {
+                                                    event.preventDefault();
+                                                    setIsDraggingDocuments(false);
+                                                    handleDocumentSelection(event.dataTransfer.files);
+                                                }}
+                                                onClick={() => fileInputRef.current?.click()}
+                                            >
+                                                {isUploadingDocuments ? (
+                                                    <Loader2 className="h-10 w-10 animate-spin text-blue-600 dark:text-blue-400" />
+                                                ) : (
+                                                    <Upload className="h-10 w-10 text-gray-400" />
+                                                )}
+                                                <div className="mt-4 space-y-1">
+                                                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                        Arrastra archivos aquí o haz clic para subirlos
+                                                    </p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                        Formatos permitidos: PDF, JPG, PNG, GIF, WEBP. Tamaño máximo: 3MB por archivo.
+                                                    </p>
+                                                </div>
+                                            </button>
+
+                                            {documentError && (
+                                                <p className="text-sm text-red-600 dark:text-red-400">
+                                                    {documentError}
+                                                </p>
+                                            )}
+                                        </>
+                                    )}
+
+                                    {documents.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {documents.map((document) => (
+                                                <div
+                                                    key={document.id}
+                                                    className="flex flex-col gap-4 rounded-lg border border-gray-100 p-4 dark:border-gray-800 lg:flex-row lg:items-center lg:justify-between"
+                                                >
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="rounded-lg bg-gray-100 p-3 dark:bg-gray-800">
+                                                            <FileText className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <p className="font-medium text-gray-900 dark:text-white">{document.file_name}</p>
+                                                            <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                                                <Badge variant="outline">{getDocumentTypeLabel(document.mime_type)}</Badge>
+                                                                <span>{document.human_readable_size}</span>
+                                                                <span>•</span>
+                                                                <span>{formatDateTime(document.created_at)}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 self-end lg:self-auto">
+                                                        <Button variant="outline" asChild>
+                                                            <a href={document.url} target="_blank" rel="noreferrer">
+                                                                Ver documento
+                                                            </a>
+                                                        </Button>
+                                                        {can('edit contacts') && (
+                                                            <Button
+                                                                variant="outline"
+                                                                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                                                                disabled={deletingDocumentId === document.id}
+                                                                onClick={() => handleDocumentDelete(document.id)}
+                                                            >
+                                                                {deletingDocumentId === document.id ? (
+                                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                                ) : (
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                )}
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="py-12 text-center">
+                                            <FileText className="mx-auto h-12 w-12 text-gray-300" />
+                                            <p className="mt-4 text-gray-500">No hay documentos cargados</p>
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         </TabsContent>

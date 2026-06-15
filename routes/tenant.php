@@ -21,6 +21,7 @@ use App\Http\Controllers\CloneAutomationController;
 use App\Http\Controllers\CompanyDetailsController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\ContactDocumentController;
 use App\Http\Controllers\ContactImportController;
 use App\Http\Controllers\ContactRelationshipController;
 use App\Http\Controllers\ConvertQuotationToInvoiceController;
@@ -219,6 +220,8 @@ Route::middleware([
 
             Route::resource('contacts', ContactController::class);
             Route::get('api/contacts/check-duplicates', CheckContactDuplicatesController::class)->name('contacts.check-duplicates');
+            Route::post('contacts/{contact}/documents', [ContactDocumentController::class, 'store'])->name('contacts.documents.store');
+            Route::delete('contacts/{contact}/documents/{media}', [ContactDocumentController::class, 'destroy'])->name('contacts.documents.destroy');
 
             Route::get('contacts/{contact}/relationships/create', [ContactRelationshipController::class, 'create'])->name('contacts.relationships.create');
             Route::post('contacts/{contact}/relationships', [ContactRelationshipController::class, 'store'])->name('contacts.relationships.store');
