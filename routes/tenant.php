@@ -13,6 +13,7 @@ use App\Http\Controllers\BulkDownloadInvoicePdfController;
 use App\Http\Controllers\BulkDownloadQuotationPdfController;
 use App\Http\Controllers\BusinessUserController;
 use App\Http\Controllers\BusinessUserInvitationController;
+use App\Http\Controllers\BusinessUserPrimaryWorkspaceController;
 use App\Http\Controllers\BusinessUserWorkspaceController;
 use App\Http\Controllers\BusinessUserWorkspaceRoleController;
 use App\Http\Controllers\CashRegisterCloseController;
@@ -174,6 +175,7 @@ Route::middleware([
         Route::patch('business/users/{user}/workspaces/{workspace}/roles', [BusinessUserWorkspaceRoleController::class, 'update'])->name('business.users.workspaces.roles.update');
         Route::post('business/users/{user}/workspaces', [BusinessUserWorkspaceController::class, 'store'])->name('business.users.workspaces.store');
         Route::delete('business/users/{user}/workspaces/{workspace}', [BusinessUserWorkspaceController::class, 'destroy'])->name('business.users.workspaces.destroy');
+        Route::patch('business/users/{user}/primary-workspace', [BusinessUserPrimaryWorkspaceController::class, 'update'])->name('business.users.primary-workspace.update');
 
         // Business-wide role management (global roles synced across all workspaces)
         Route::get('business/roles', [GlobalRoleController::class, 'index'])->name('business.roles.index');

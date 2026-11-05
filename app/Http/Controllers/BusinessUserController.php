@@ -51,6 +51,7 @@ final class BusinessUserController
                         ? $lastActivity->diffForHumans()
                         : 'Sin actividad',
                     'business_role' => $user->business_role->label(),
+                    'primary_workspace_id' => $user->primary_workspace_id,
                     'workspaces_count' => $user->workspaces_count,
                     'workspaces' => $user->workspaces->map(function ($workspace) use ($user, $roles): array {
                         /** @var \Illuminate\Database\Eloquent\Relations\Pivot|null $pivot */

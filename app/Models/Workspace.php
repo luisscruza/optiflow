@@ -20,6 +20,7 @@ use Illuminate\Support\Str;
  * @property int $id
  * @property string $name
  * @property string $slug
+ * @property string|null $color
  * @property string|null $description
  * @property string|null $address
  * @property string|null $phone
@@ -68,7 +69,28 @@ final class Workspace extends Model
     /** @use HasFactory<WorkspaceFactory> */
     use HasFactory;
 
+    /**
+     * Branch colors, dark enough to sit behind white text.
+     *
+     * @var array<int, string>
+     */
+    public const array COLORS = [
+        '#2563eb',
+        '#16a34a',
+        '#dc2626',
+        '#9333ea',
+        '#ea580c',
+        '#0891b2',
+        '#db2777',
+        '#4f46e5',
+    ];
+
     protected $appends = ['members_count'];
+
+    public static function randomColor(): string
+    {
+        return self::COLORS[array_rand(self::COLORS)];
+    }
 
     /**
      * Get the owner of the workspace.
@@ -195,6 +217,10 @@ final class Workspace extends Model
         self::creating(function ($workspace): void {
             if (empty($workspace->slug)) {
                 $workspace->slug = Str::slug($workspace->name);
+            }
+
+            if (empty($workspace->color)) {
+                $workspace->color = self::randomColor();
             }
         });
     }

@@ -25,6 +25,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at
  * @property int|null $current_workspace_id
+ * @property int|null $primary_workspace_id
  * @property-read \Carbon\CarbonImmutable|null $last_activity_at
  * @property-read Workspace|null $currentWorkspace
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
@@ -92,6 +93,16 @@ final class User extends Authenticatable
     public function currentWorkspace(): BelongsTo
     {
         return $this->belongsTo(Workspace::class, 'current_workspace_id');
+    }
+
+    /**
+     * Get the branch the user normally works at.
+     *
+     * @return BelongsTo<Workspace, $this>
+     */
+    public function primaryWorkspace(): BelongsTo
+    {
+        return $this->belongsTo(Workspace::class, 'primary_workspace_id');
     }
 
     /**

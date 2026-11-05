@@ -54,6 +54,7 @@ final class SetWorkspaceContext
                     'workspace' => [
                         'current' => $workspace,
                         'available' => $user->workspaces,
+                        'primary' => $user->primaryWorkspace,
                     ],
                     'userPermissions' => $allPermissions,
                 ]);
@@ -66,6 +67,7 @@ final class SetWorkspaceContext
                     'workspace' => [
                         'current' => $workspace,
                         'available' => $user->workspaces,
+                        'primary' => $user->primaryWorkspace,
                     ],
                     'userPermissions' => $workspacePermissions,
                 ]);
