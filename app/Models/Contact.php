@@ -353,7 +353,7 @@ final class Contact extends Model implements Commentable, HasMedia
         return [
             'metadata' => 'array',
             'credit_limit' => 'decimal:2',
-            'birth_date' => 'immutable_date',
+            'birth_date' => 'immutable_date:Y-m-d',
             'gender' => Gender::class,
             'contact_type' => ContactType::class,
         ];

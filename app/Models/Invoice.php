@@ -115,6 +115,23 @@ final class Invoice extends Model implements Auditable, Commentable
     ];
 
     /**
+     * Statuses of invoices that cannot receive payments.
+     *
+     * @return array<int, InvoiceStatus>
+     */
+    public static function statusesBlockingPayment(): array
+    {
+        return [
+            InvoiceStatus::Paid,
+            InvoiceStatus::Deleted,
+            InvoiceStatus::Cancelled,
+            InvoiceStatus::Draft,
+            InvoiceStatus::Submitted,
+            InvoiceStatus::DgiiRejected,
+        ];
+    }
+
+    /**
      * Get the contact for this invoice.
      *
      * @return BelongsTo<Contact, $this>
@@ -287,14 +304,7 @@ final class Invoice extends Model implements Auditable, Commentable
      */
     public function canRegisterPayment(): bool
     {
-        return ! in_array($this->status, [
-            InvoiceStatus::Paid,
-            InvoiceStatus::Deleted,
-            InvoiceStatus::Cancelled,
-            InvoiceStatus::Draft,
-            InvoiceStatus::Submitted,
-            InvoiceStatus::DgiiRejected,
-        ]);
+        return ! in_array($this->status, self::statusesBlockingPayment());
     }
 
     /**
@@ -340,11 +350,20 @@ final class Invoice extends Model implements Auditable, Commentable
     }
 
     /**
+     * Scope to exclude cancelled and voided invoices.
+     */
+    #[Scope]
+    protected function excludingVoided(Builder $query): void
+    {
+        $query->whereNotIn('status', InvoiceStatus::voidedValues());
+    }
+
+    /**
      * Get the status attribute.
      */
     protected function amountDue(): Attribute
     {
-        return Attribute::make(get: fn (): float|int => max(0, $this->total_amount - $this->payments()->sum('amount')));
+        return Attribute::make(get: fn (): float|int => max(0, round($this->total_amount - $this->payments()->sum('amount'), 2)));
     }
 
     /**

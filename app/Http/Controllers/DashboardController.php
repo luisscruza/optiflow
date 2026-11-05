@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\DashboardWidget;
+use App\Enums\InvoiceStatus;
 use App\Models\Contact;
 use App\Models\Invoice;
 use App\Models\Mastertable;
@@ -141,7 +142,7 @@ final class DashboardController
         // We need to calculate amount_due = total_amount - sum(payments)
         $invoices = Invoice::query()
             ->whereBetween('issue_date', [$startDate, $endDate])
-            ->whereNotIn('status', ['cancelled'])
+            ->excludingVoided()
             ->select([
                 'invoices.id',
                 'invoices.total_amount',
@@ -209,12 +210,12 @@ final class DashboardController
     {
         $currentTax = (float) Invoice::query()
             ->whereBetween('issue_date', [$startDate, $endDate])
-            ->whereNotIn('status', ['cancelled'])
+            ->excludingVoided()
             ->sum('tax_amount');
 
         $previousTax = (float) Invoice::query()
             ->whereBetween('issue_date', [$previousStartDate, $previousEndDate])
-            ->whereNotIn('status', ['cancelled'])
+            ->excludingVoided()
             ->sum('tax_amount');
 
         $changePercentage = $this->calculatePercentageChange($previousTax, $currentTax);
@@ -237,7 +238,7 @@ final class DashboardController
             ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
             ->where('invoices.workspace_id', Auth::user()?->current_workspace_id)
             ->whereBetween('invoices.issue_date', [$startDate, $endDate])
-            ->whereNotIn('invoices.status', ['cancelled'])
+            ->whereNotIn('invoices.status', InvoiceStatus::voidedValues())
             ->whereNotNull('invoice_items.product_id')
             ->distinct('invoice_items.product_id')
             ->count('invoice_items.product_id');
@@ -246,7 +247,7 @@ final class DashboardController
             ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
             ->where('invoices.workspace_id', Auth::user()?->current_workspace_id)
             ->whereBetween('invoices.issue_date', [$previousStartDate, $previousEndDate])
-            ->whereNotIn('invoices.status', ['cancelled'])
+            ->whereNotIn('invoices.status', InvoiceStatus::voidedValues())
             ->whereNotNull('invoice_items.product_id')
             ->distinct('invoice_items.product_id')
             ->count('invoice_items.product_id');
@@ -267,13 +268,13 @@ final class DashboardController
     {
         $currentCount = Invoice::query()
             ->whereBetween('issue_date', [$startDate, $endDate])
-            ->whereNotIn('status', ['cancelled'])
+            ->excludingVoided()
             ->distinct('contact_id')
             ->count('contact_id');
 
         $previousCount = Invoice::query()
             ->whereBetween('issue_date', [$previousStartDate, $previousEndDate])
-            ->whereNotIn('status', ['cancelled'])
+            ->excludingVoided()
             ->distinct('contact_id')
             ->count('contact_id');
 
@@ -394,6 +395,7 @@ final class DashboardController
         $currentDailySales = Invoice::query()
             ->selectRaw('DATE(issue_date) as date, SUM(total_amount) as total')
             ->whereBetween('issue_date', [$startDate, $endDate])
+            ->excludingVoided()
             ->groupBy('date')
             ->orderBy('date')
             ->pluck('total', 'date')
@@ -403,6 +405,7 @@ final class DashboardController
         $previousDailySales = Invoice::query()
             ->selectRaw('DATE(issue_date) as date, SUM(total_amount) as total')
             ->whereBetween('issue_date', [$previousStartDate, $previousEndDate])
+            ->excludingVoided()
             ->groupBy('date')
             ->orderBy('date')
             ->pluck('total', 'date')

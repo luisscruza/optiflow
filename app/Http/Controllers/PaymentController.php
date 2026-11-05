@@ -8,6 +8,7 @@ use App\Actions\BuildShareDataAction;
 use App\Actions\CreatePaymentAction;
 use App\Actions\DeletePaymentAction;
 use App\Actions\UpdatePaymentAction;
+use App\Enums\InvoiceStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentType;
 use App\Enums\Permission;
@@ -53,8 +54,10 @@ final class PaymentController
         $pendingInvoices = Invoice::query()
             ->with(['contact', 'documentSubtype'])
             ->withSum('payments', 'amount')
-            ->whereColumn('total_amount', '>', 'payments_sum_amount')
-            ->where('status', '!=', 'voided')
+            ->whereNotIn('status', array_map(
+                fn (InvoiceStatus $status): string => $status->value,
+                Invoice::statusesBlockingPayment(),
+            ))
             ->orderBy('issue_date', 'desc')
             ->get()
             ->map(function ($invoice) {
@@ -63,7 +66,9 @@ final class PaymentController
                 $invoice->setAttribute('paid_amount', $paidAmount);
 
                 return $invoice;
-            });
+            })
+            ->filter(fn (Invoice $invoice): bool => (float) $invoice->total_amount - (float) $invoice->getAttribute('paid_amount') > 0)
+            ->values();
 
         return Inertia::render('payments/create', [
             'pendingInvoices' => $pendingInvoices,
@@ -86,7 +91,7 @@ final class PaymentController
                 ->active()
                 ->orderBy('name')
                 ->get(),
-            'taxes' => Tax::query()->where('is_active', true)->orderBy('name')->get(),
+            'taxes' => Tax::query()->orderBy('name')->get(),
         ]);
     }
 
@@ -176,7 +181,7 @@ final class PaymentController
                 ->active()
                 ->orderBy('name')
                 ->get(),
-            'taxes' => Tax::query()->where('is_active', true)->orderBy('name')->get(),
+            'taxes' => Tax::query()->orderBy('name')->get(),
         ]);
     }
 

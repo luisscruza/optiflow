@@ -37,6 +37,19 @@ enum InvoiceStatus: string
     }
 
     /**
+     * Statuses of invoices that no longer count as sales.
+     *
+     * @return array<int, string>
+     */
+    public static function voidedValues(): array
+    {
+        return [
+            self::Cancelled->value,
+            self::Deleted->value,
+        ];
+    }
+
+    /**
      * Get the display label for the document type.
      */
     public function label(): string
