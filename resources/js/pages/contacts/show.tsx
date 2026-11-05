@@ -28,6 +28,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 
 import { CommentList } from '@/components/CommentList';
+import { InformedConsentDialog } from '@/components/contacts/informed-consent-dialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -87,9 +88,10 @@ export default function ContactShow({
     relationshipSearchResults = [],
 }: Props) {
     const { auth } = usePage<SharedData>().props;
+    const pageUrl = usePage().url;
     const { can } = usePermissions();
     const { format: formatCurrency } = useCurrency();
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useState(() => new URLSearchParams(pageUrl.split('?')[1] ?? '').get('tab') ?? 'overview');
     const [isDraggingDocuments, setIsDraggingDocuments] = useState(false);
     const [documentError, setDocumentError] = useState<string | null>(null);
     const [isUploadingDocuments, setIsUploadingDocuments] = useState(false);
@@ -296,25 +298,29 @@ export default function ContactShow({
 
         setIsUploadingDocuments(true);
 
-        router.post(`/contacts/${contact.id}/documents`, { documents: files }, {
-            forceFormData: true,
-            preserveScroll: true,
-            onSuccess: () => {
-                setDocumentError(null);
+        router.post(
+            `/contacts/${contact.id}/documents`,
+            { documents: files },
+            {
+                forceFormData: true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    setDocumentError(null);
 
-                if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                }
+                    if (fileInputRef.current) {
+                        fileInputRef.current.value = '';
+                    }
 
-                router.reload({ only: ['documents'] });
+                    router.reload({ only: ['documents'] });
+                },
+                onError: (errors) => {
+                    setDocumentError((errors.documents as string | undefined) ?? (errors['documents.0'] as string | undefined) ?? null);
+                },
+                onFinish: () => {
+                    setIsUploadingDocuments(false);
+                },
             },
-            onError: (errors) => {
-                setDocumentError((errors.documents as string | undefined) ?? (errors['documents.0'] as string | undefined) ?? null);
-            },
-            onFinish: () => {
-                setIsUploadingDocuments(false);
-            },
-        });
+        );
     };
 
     const handleDocumentSelection = (files: FileList | null) => {
@@ -491,6 +497,10 @@ export default function ContactShow({
 
                             {/* Actions */}
                             <div className="flex flex-wrap gap-2">
+                                <InformedConsentDialog
+                                    patient={{ id: contact.id, name: contact.name, birth_date: contact.birth_date }}
+                                    onUploadSignedCopy={() => setActiveTab('documents')}
+                                />
                                 {can('edit contacts') && (
                                     <Button variant="outline" asChild>
                                         <Link href={`/contacts/${contact.id}/edit`}>
@@ -1510,11 +1520,7 @@ export default function ContactShow({
                                                 </div>
                                             </button>
 
-                                            {documentError && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">
-                                                    {documentError}
-                                                </p>
-                                            )}
+                                            {documentError && <p className="text-sm text-red-600 dark:text-red-400">{documentError}</p>}
                                         </>
                                     )}
 
@@ -1523,7 +1529,7 @@ export default function ContactShow({
                                             {documents.map((document) => (
                                                 <div
                                                     key={document.id}
-                                                    className="flex flex-col gap-4 rounded-lg border border-gray-100 p-4 dark:border-gray-800 lg:flex-row lg:items-center lg:justify-between"
+                                                    className="flex flex-col gap-4 rounded-lg border border-gray-100 p-4 lg:flex-row lg:items-center lg:justify-between dark:border-gray-800"
                                                 >
                                                     <div className="flex items-start gap-3">
                                                         <div className="rounded-lg bg-gray-100 p-3 dark:bg-gray-800">
