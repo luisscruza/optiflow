@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { Download, Edit, FileText, Printer, Share2 } from 'lucide-react';
 import { useState } from 'react';
 
+import { InformedConsentDialog } from '@/components/contacts/informed-consent-dialog';
 import ShareModal from '@/components/share-modal';
 import { usePermissions } from '@/hooks/use-permissions';
 
@@ -87,6 +88,12 @@ export default function PrescriptionShow({ prescription, company, share }: Props
                             Generar certificado visual
                         </Button>
                     </a>
+                    {prescription.patient && (
+                        <InformedConsentDialog
+                            patient={{ id: prescription.patient.id, name: prescription.patient.name, birth_date: prescription.patient.birth_date }}
+                            prescriptionId={prescription.id}
+                        />
+                    )}
                     <a target="_blank" href={prescriptions.optometry_history(prescription).url} rel="noreferrer">
                         <Button variant="outline" size="sm">
                             <Printer className="mr-2 h-4 w-4" />

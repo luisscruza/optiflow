@@ -35,6 +35,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DashboardLayoutController;
 use App\Http\Controllers\DeactivateProductController;
 use App\Http\Controllers\DocumentSubtypeController;
+use App\Http\Controllers\DownloadInformedConsentController;
 use App\Http\Controllers\DownloadInvoicePdfController;
 use App\Http\Controllers\DownloadOptometryHistoryController;
 use App\Http\Controllers\DownloadPrescriptionController;
@@ -223,6 +224,7 @@ Route::middleware([
 
             Route::resource('contacts', ContactController::class);
             Route::get('api/contacts/check-duplicates', CheckContactDuplicatesController::class)->name('contacts.check-duplicates');
+            Route::get('contacts/{contact}/informed-consent', DownloadInformedConsentController::class)->name('contacts.informed-consent');
             Route::post('contacts/{contact}/documents', [ContactDocumentController::class, 'store'])->name('contacts.documents.store');
             Route::delete('contacts/{contact}/documents/{media}', [ContactDocumentController::class, 'destroy'])->name('contacts.documents.destroy');
 
