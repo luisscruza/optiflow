@@ -27,6 +27,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+const BRANCH_COLORS = ['#2563eb', '#16a34a', '#dc2626', '#9333ea', '#ea580c', '#0891b2', '#db2777', '#4f46e5'];
+
 interface Workspace {
     id: number;
     slug: string;
@@ -35,6 +37,7 @@ interface Workspace {
     description: string | null;
     address?: string | null;
     phone?: string | null;
+    color?: string | null;
     is_owner: boolean;
     members_count: number;
     created_at: string;
@@ -47,6 +50,7 @@ interface WorkspaceFormData {
     description: string;
     address: string;
     phone: string;
+    color: string;
 }
 
 interface Props {
@@ -66,6 +70,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
         description: '',
         address: '',
         phone: '',
+        color: '',
     });
     const [errors, setErrors] = useState<Partial<WorkspaceFormData>>({});
 
@@ -80,6 +85,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
             description: '',
             address: '',
             phone: '',
+            color: '',
         });
         setErrors({});
     };
@@ -96,6 +102,7 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
             description: workspace.description || '',
             address: workspace.address || '',
             phone: workspace.phone || '',
+            color: workspace.color || BRANCH_COLORS[0],
         });
         setEditingWorkspace(workspace);
         setErrors({});
@@ -223,7 +230,10 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                                     >
                                         <TableCell>
                                             <div className="flex items-center gap-2">
-                                                <Building2 className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                                                <Building2
+                                                    className="h-4 w-4 text-gray-600 dark:text-gray-400"
+                                                    style={workspace.color ? { color: workspace.color } : undefined}
+                                                />
                                                 <span className="font-medium">{workspace.name}</span>
                                                 {current_workspace?.id === workspace.id && (
                                                     <div className="flex items-center gap-1">
@@ -415,6 +425,32 @@ export default function WorkspacesIndex({ workspaces, current_workspace }: Props
                                 placeholder="Ej: 809 533 7019"
                             />
                             {errors.phone && <p className="text-sm text-red-600 dark:text-red-400">{errors.phone}</p>}
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-color">Color de la sucursal</Label>
+                            <div className="flex flex-wrap items-center gap-2">
+                                {BRANCH_COLORS.map((color) => (
+                                    <button
+                                        key={color}
+                                        type="button"
+                                        aria-label={`Usar color ${color}`}
+                                        onClick={() => handleInputChange('color', color)}
+                                        className={`h-8 w-8 rounded-full border-2 transition ${formData.color.toLowerCase() === color ? 'border-gray-900 ring-2 ring-offset-2 dark:border-white' : 'border-transparent'}`}
+                                        style={{ backgroundColor: color }}
+                                    />
+                                ))}
+                                <Input
+                                    id="edit-color"
+                                    type="color"
+                                    value={formData.color || BRANCH_COLORS[0]}
+                                    onChange={(e) => handleInputChange('color', e.target.value)}
+                                    className="h-8 w-14 cursor-pointer p-1"
+                                />
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                Se muestra en la factura para identificar en qué sucursal se está facturando.
+                            </p>
+                            {errors.color && <p className="text-sm text-red-600 dark:text-red-400">{errors.color}</p>}
                         </div>
                     </div>
                     <DialogFooter>

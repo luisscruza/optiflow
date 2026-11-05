@@ -29,6 +29,10 @@ final readonly class RemoveBusinessUserFromWorkspaceAction
             }
 
             $workspace->removeUser($user);
+
+            if ($user->primary_workspace_id === $workspace->id) {
+                $user->update(['primary_workspace_id' => null]);
+            }
         });
     }
 }

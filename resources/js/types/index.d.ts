@@ -158,6 +158,7 @@ export interface Workspace {
     id: number;
     name: string;
     slug: string;
+    color?: string | null;
     description?: string | null;
     owner_id: number;
     settings?: Record<string, unknown> | null;

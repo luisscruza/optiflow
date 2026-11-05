@@ -45,6 +45,7 @@ interface User {
     name: string;
     email: string;
     business_role: string;
+    primary_workspace_id: number | null;
     created_at: string;
     workspaces_count: number;
     workspaces: WorkspaceMembership[];
@@ -185,6 +186,19 @@ export default function BusinessUsers({ users, workspaces, rolesByWorkspace }: P
         );
     };
 
+    const handleSetPrimaryWorkspace = (workspaceId: number) => {
+        if (!selectedUser) return;
+
+        router.patch(
+            `/business/users/${selectedUser.id}/primary-workspace`,
+            { workspace_id: workspaceId },
+            {
+                preserveScroll: true,
+                onSuccess: () => setSelectedUser({ ...selectedUser, primary_workspace_id: workspaceId }),
+            },
+        );
+    };
+
     const handleRemoveFromWorkspace = (workspaceSlug: string) => {
         if (!selectedUser) return;
 
@@ -280,7 +294,7 @@ export default function BusinessUsers({ users, workspaces, rolesByWorkspace }: P
                                             <TableCell>
                                                 <Badge variant="outline">{user.business_role}</Badge>
                                             </TableCell>
-                                                <TableCell className="text-center">
+                                            <TableCell className="text-center">
                                                 <Badge variant="secondary">{user.last_activity_at}</Badge>
                                             </TableCell>
                                             <TableCell className="text-center">
@@ -433,6 +447,11 @@ export default function BusinessUsers({ users, workspaces, rolesByWorkspace }: P
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-2">
                                                             <p className="font-medium">{workspace.name}</p>
+                                                            {selectedUser.primary_workspace_id === workspace.id && (
+                                                                <Badge className="bg-blue-100 text-xs text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                                                    Principal
+                                                                </Badge>
+                                                            )}
                                                             {selectedUser.business_role === 'owner' && (
                                                                 <Badge variant="default" className="text-xs">
                                                                     Owner
@@ -453,6 +472,15 @@ export default function BusinessUsers({ users, workspaces, rolesByWorkspace }: P
                                                         </div>
                                                     </div>
                                                     <div className="flex gap-2">
+                                                        {selectedUser.primary_workspace_id !== workspace.id && (
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => handleSetPrimaryWorkspace(workspace.id)}
+                                                            >
+                                                                Hacer principal
+                                                            </Button>
+                                                        )}
                                                         <Button variant="outline" size="sm" onClick={() => openEditRolesDialog(workspace)}>
                                                             Editar roles
                                                         </Button>

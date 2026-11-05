@@ -32,6 +32,7 @@ final class UpdateWorkspaceRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:1000'],
             'address' => ['nullable', 'string', 'max:500'],
             'phone' => ['nullable', 'string', 'max:50'],
+            'color' => ['sometimes', 'required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ];
     }
 
@@ -48,6 +49,7 @@ final class UpdateWorkspaceRequest extends FormRequest
             'description.max' => 'The description may not be greater than 1000 characters.',
             'address.max' => 'The address may not be greater than 500 characters.',
             'phone.max' => 'The phone may not be greater than 50 characters.',
+            'color.regex' => 'El color debe ser un código hexadecimal como #2563eb.',
         ];
     }
 }

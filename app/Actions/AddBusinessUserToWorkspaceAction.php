@@ -23,6 +23,10 @@ final readonly class AddBusinessUserToWorkspaceAction
 
             $workspace->addUser($user);
 
+            if ($user->primary_workspace_id === null) {
+                $user->update(['primary_workspace_id' => $workspace->id]);
+            }
+
             if ($roleId) {
                 $role = Role::find($roleId);
                 $roleWorkspaceId = $role?->getAttribute('workspace_id');

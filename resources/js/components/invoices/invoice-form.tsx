@@ -1,7 +1,9 @@
-import { router } from '@inertiajs/react';
-import { AlertTriangle, CreditCard, Plus, Save, Trash2 } from 'lucide-react';
+import { router, usePage } from '@inertiajs/react';
+import { AlertTriangle, Building2, CreditCard, Plus, Save, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+
+import { update as switchWorkspace } from '@/actions/App/Http/Controllers/WorkspaceContextController';
 
 import QuickContactModal from '@/components/contacts/quick-contact-modal';
 import { EditNcfModal } from '@/components/invoices/edit-ncf-modal';
@@ -11,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SearchableSelect } from '@/components/ui/searchable-select';
@@ -569,6 +572,14 @@ export default function InvoiceForm({
         setData('payment_notes', '');
     }, [data.register_payment, isElectronicDocument, setData]);
 
+    const { workspace: sharedWorkspace } = usePage().props as { workspace?: { primary?: Workspace | null } };
+    const primaryWorkspace = sharedWorkspace?.primary ?? null;
+    const isOutsidePrimaryWorkspace = isCreate && primaryWorkspace !== null && !!currentWorkspace && primaryWorkspace.id !== currentWorkspace.id;
+    const [isBranchConfirmOpen, setIsBranchConfirmOpen] = useState(false);
+    const [isSwitchingBranch, setIsSwitchingBranch] = useState(false);
+    const isBranchConfirmedRef = useRef(false);
+    const formRef = useRef<HTMLFormElement>(null);
+
     const handleFormSubmit = (e: React.FormEvent): void => {
         if (requiresFiscalIdentification && ![9, 11].includes(normalizedIdentificationNumber.length)) {
             e.preventDefault();
@@ -577,12 +588,62 @@ export default function InvoiceForm({
             return;
         }
 
+        if (isOutsidePrimaryWorkspace && !isBranchConfirmedRef.current) {
+            e.preventDefault();
+            setIsBranchConfirmOpen(true);
+
+            return;
+        }
+
         onSubmit(e);
+    };
+
+    const handleConfirmBranch = (): void => {
+        isBranchConfirmedRef.current = true;
+        setIsBranchConfirmOpen(false);
+        formRef.current?.requestSubmit();
+    };
+
+    const handleSwitchToPrimaryBranch = (): void => {
+        if (!primaryWorkspace) {
+            return;
+        }
+
+        router.patch(
+            switchWorkspace(primaryWorkspace.slug).url,
+            { stay: true },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onStart: () => setIsSwitchingBranch(true),
+                onFinish: () => setIsSwitchingBranch(false),
+                onSuccess: () => setIsBranchConfirmOpen(false),
+            },
+        );
     };
 
     return (
         <>
-            <form onSubmit={handleFormSubmit}>
+            <form ref={formRef} onSubmit={handleFormSubmit}>
+                {isCreate && currentWorkspace && (
+                    <div
+                        className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg px-5 py-4 text-white shadow-sm"
+                        style={{ backgroundColor: currentWorkspace.color ?? '#2563eb' }}
+                    >
+                        <div className="flex items-center gap-3">
+                            <Building2 className="h-7 w-7 shrink-0" />
+                            <div>
+                                <p className="text-xs font-medium tracking-wide text-white/80 uppercase">Estás facturando en</p>
+                                <p className="text-2xl font-bold">{currentWorkspace.name}</p>
+                            </div>
+                        </div>
+                        {isOutsidePrimaryWorkspace && (
+                            <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-medium">
+                                Tu sucursal principal es {primaryWorkspace.name}
+                            </span>
+                        )}
+                    </div>
+                )}
                 <Card className="border-0 bg-white shadow-sm ring-1 ring-gray-950/5">
                     <CardContent className="px-6 py-6">
                         {/* Header */}
@@ -1368,6 +1429,26 @@ export default function InvoiceForm({
                 onSuccess={handleProductCreated}
                 onAdvancedForm={() => router.visit('/products/create')}
             />
+
+            <Dialog open={isBranchConfirmOpen} onOpenChange={setIsBranchConfirmOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Estás facturando en {currentWorkspace?.name}. ¿Es correcto?</DialogTitle>
+                        <DialogDescription>
+                            Tu sucursal principal es <span className="font-semibold text-gray-900">{primaryWorkspace?.name}</span>. Si esta venta es
+                            de tu sucursal, cámbiate antes de guardar para no tener que anular la factura.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button type="button" variant="outline" onClick={handleSwitchToPrimaryBranch} disabled={isSwitchingBranch}>
+                            {isSwitchingBranch ? 'Cambiando...' : `Cambiar a ${primaryWorkspace?.name}`}
+                        </Button>
+                        <Button type="button" onClick={handleConfirmBranch} disabled={isSwitchingBranch}>
+                            Sí, facturar aquí
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
