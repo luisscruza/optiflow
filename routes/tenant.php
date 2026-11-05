@@ -20,6 +20,7 @@ use App\Http\Controllers\CheckContactDuplicatesController;
 use App\Http\Controllers\CloneAutomationController;
 use App\Http\Controllers\CompanyDetailsController;
 use App\Http\Controllers\ConfigurationController;
+use App\Http\Controllers\ConsolidatedStockController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ContactDocumentController;
 use App\Http\Controllers\ContactImportController;
@@ -286,6 +287,7 @@ Route::middleware([
             Route::patch('document-subtypes/{documentSubtype}/workspace/{workspace}/set-preferred', SetWorkspacePreferredDocumentSubtypeController::class)->name('document-subtypes.set-workspace-preferred');
 
             Route::get('inventory', fn () => Inertia::render('inventory/index'))->name('inventory.index');
+            Route::get('inventory/consolidated-stock', ConsolidatedStockController::class)->name('inventory.consolidated-stock');
 
             Route::resource('stock-adjustments', StockAdjustmentController::class)->only(['index', 'create', 'store', 'show'])->parameters([
                 'stock-adjustments' => 'product',
