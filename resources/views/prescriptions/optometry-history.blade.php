@@ -1122,12 +1122,12 @@
         </tr>
     </table>
 
-    @if ($prescription->closed_at)
+    @if ($prescription->closure)
         <div class="section" style="margin-top: 8px;">
             <div class="section-title">Cierre de la historia clínica</div>
             <div>
-                Cerrada el {{ $prescription->closed_at->timezone('America/Santo_Domingo')->format('d/m/Y h:i A') }}
-                con el PIN de {{ $prescription->closedByOptometrist?->name ?? 'el evaluador' }}.
+                Cerrada el {{ $prescription->closure->closed_at->timezone('America/Santo_Domingo')->format('d/m/Y h:i A') }}
+                con el PIN de {{ $prescription->closure->optometrist?->name ?? 'el evaluador' }}.
             </div>
         </div>
     @endif

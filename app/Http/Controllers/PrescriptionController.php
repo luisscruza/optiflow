@@ -102,8 +102,8 @@ final class PrescriptionController
             'estadoActual',
             'historiaOcularFamiliar',
             'lentesRecomendados',
-            'closedByOptometrist',
-            'closedByUser',
+            'closure.optometrist',
+            'closure.user',
             'addenda.optometrist',
             'addenda.user',
         ]);
