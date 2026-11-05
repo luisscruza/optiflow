@@ -1,6 +1,3 @@
-import { InertiaLinkProps } from '@inertiajs/react';
-import { LucideIcon } from 'lucide-react';
-
 export interface Auth {
     user: User;
 }
@@ -16,17 +13,17 @@ export interface NavGroup {
 }
 
 export type NavItem = {
-  title: string
-  href?: string | { url: string }
-  icon?: any
-  badge?: number
-  items?: NavItem[]
+    title: string;
+    href?: string | { url: string };
+    icon?: any;
+    badge?: number;
+    items?: NavItem[];
 
-  section?: {
-    id: string
-    label?: string
-  }
-}
+    section?: {
+        id: string;
+        label?: string;
+    };
+};
 
 export interface Currency {
     id: number;
@@ -868,9 +865,11 @@ export interface Prescription {
     optometrist?: Contact;
     workspace: Workspace;
     created_at: string;
-    closed_at?: string | null;
-    closed_by_optometrist?: Pick<Contact, 'id' | 'name'> | null;
-    closed_by_user?: Pick<User, 'id' | 'name'> | null;
+    closure?: {
+        closed_at: string;
+        optometrist?: Pick<Contact, 'id' | 'name'> | null;
+        user?: Pick<User, 'id' | 'name'> | null;
+    } | null;
     addenda?: PrescriptionAddendum[];
     proximo_control_visual?: string;
     human_readable_date: string;

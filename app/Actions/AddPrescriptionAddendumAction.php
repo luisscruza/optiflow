@@ -18,7 +18,7 @@ final readonly class AddPrescriptionAddendumAction
             throw new ActionValidationException(['content' => 'La historia clínica aún está abierta; corrígela editándola.']);
         }
 
-        $optometrist = $prescription->closedByOptometrist ?? $prescription->optometrist;
+        $optometrist = $prescription->closure?->optometrist ?? $prescription->optometrist;
 
         if (! $optometrist?->matchesClinicalPin($pin)) {
             throw new ActionValidationException(['pin' => 'PIN incorrecto. La adenda debe firmarla '.($optometrist->name ?? 'el evaluador').'.']);

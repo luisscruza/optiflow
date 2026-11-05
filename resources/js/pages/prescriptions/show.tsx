@@ -28,7 +28,7 @@ interface Props {
 
 export default function PrescriptionShow({ prescription, company, share, optometristHasPin }: Props) {
     const { can } = usePermissions();
-    const isClosed = Boolean(prescription.closed_at);
+    const isClosed = Boolean(prescription.closure);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [

@@ -36,11 +36,11 @@ final readonly class ClosePrescriptionAction
                 throw new ActionValidationException(['pin' => "PIN incorrecto. Solo {$optometrist->name} puede cerrar esta historia."]);
             }
 
-            $prescription->forceFill([
+            $prescription->closure()->create([
+                'optometrist_id' => $optometrist->id,
+                'user_id' => $user->id,
                 'closed_at' => now(),
-                'closed_by_optometrist_id' => $optometrist->id,
-                'closed_by_user_id' => $user->id,
-            ])->save();
+            ]);
 
             activity()
                 ->performedOn($prescription)

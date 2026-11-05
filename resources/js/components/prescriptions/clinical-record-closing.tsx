@@ -117,9 +117,9 @@ export function ClosePrescriptionButton({ prescription, optometristHasPin }: { p
 export function ClinicalRecordAddenda({ prescription, canAdd }: { prescription: Prescription; canAdd: boolean }) {
     const [open, setOpen] = useState(false);
     const form = useForm({ content: '', pin: '' });
-    const signer = prescription.closed_by_optometrist?.name ?? prescription.optometrist?.name ?? 'el evaluador';
+    const signer = prescription.closure?.optometrist?.name ?? prescription.optometrist?.name ?? 'el evaluador';
 
-    if (!prescription.closed_at) {
+    if (!prescription.closure) {
         return null;
     }
 
@@ -144,8 +144,8 @@ export function ClinicalRecordAddenda({ prescription, canAdd }: { prescription: 
                         Historia clínica cerrada
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                        Cerrada el {formatDateTime(prescription.closed_at)} con el PIN de {signer}
-                        {prescription.closed_by_user && ` (sesión de ${prescription.closed_by_user.name})`}.
+                        Cerrada el {formatDateTime(prescription.closure.closed_at)} con el PIN de {signer}
+                        {prescription.closure.user && ` (sesión de ${prescription.closure.user.name})`}.
                     </p>
                 </div>
                 {canAdd && (
