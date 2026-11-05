@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowLeftRight, Calendar, DollarSign, Package, Plus, RotateCcw, TrendingUp } from 'lucide-react';
+import { AlertTriangle, ArrowLeftRight, Calendar, DollarSign, Package, Plus, RotateCcw, TrendingUp, Warehouse } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -181,6 +181,12 @@ export default function InventoryOverview({ stats }: Props) {
                             <CardContent className="space-y-4">
                                 {can('view inventory') && (
                                     <>
+                                        <Button asChild variant="outline" className="w-full justify-start">
+                                            <Link href="/inventory/consolidated-stock">
+                                                <Warehouse className="mr-2 h-4 w-4" />
+                                                Stock consolidado por sucursal
+                                            </Link>
+                                        </Button>
                                         <Button asChild variant="outline" className="w-full justify-start">
                                             <Link href="/inventory-adjustments">
                                                 <RotateCcw className="mr-2 h-4 w-4" />
