@@ -5,21 +5,23 @@ declare(strict_types=1);
 use App\Enums\Permission;
 use App\Models\Contact;
 use App\Models\Mastertable;
+use App\Models\Permission as PermissionModel;
 use App\Models\User;
 use App\Models\Workspace;
-use Database\Factories\PermissionFactory;
 use Inertia\Testing\AssertableInertia as Assert;
+use Spatie\Permission\PermissionRegistrar;
 
 beforeEach(function (): void {
     $workspace = Workspace::factory()->create();
-    $this->user = User::factory()->create(['current_workspace_id' => $workspace->id]);
+    $this->user = User::factory()->create([
+        'current_workspace_id' => $workspace->id,
+        'password_changed_at' => now(),
+    ]);
+    app(PermissionRegistrar::class)->setPermissionsTeamId($workspace->id);
 });
 
 test('edit page loads without error when contacts have appended attributes', function (): void {
-    $permission = PermissionFactory::new()->create([
-        'name' => Permission::ContactsEdit->value,
-        'guard_name' => 'web',
-    ]);
+    $permission = PermissionModel::findOrCreate(Permission::ContactsEdit->value, 'web');
 
     $this->user->givePermissionTo($permission);
 
@@ -38,10 +40,7 @@ test('edit page loads without error when contacts have appended attributes', fun
 });
 
 test('create page loads without error when contacts have appended attributes', function (): void {
-    $permission = PermissionFactory::new()->create([
-        'name' => Permission::ContactsCreate->value,
-        'guard_name' => 'web',
-    ]);
+    $permission = PermissionModel::findOrCreate(Permission::ContactsCreate->value, 'web');
 
     $this->user->givePermissionTo($permission);
 
@@ -58,10 +57,7 @@ test('create page loads without error when contacts have appended attributes', f
 });
 
 test('it stores the selected lead source when creating a contact', function (): void {
-    $permission = PermissionFactory::new()->create([
-        'name' => Permission::ContactsCreate->value,
-        'guard_name' => 'web',
-    ]);
+    $permission = PermissionModel::findOrCreate(Permission::ContactsCreate->value, 'web');
 
     $this->user->givePermissionTo($permission);
 
@@ -89,10 +85,7 @@ test('it stores the selected lead source when creating a contact', function (): 
 });
 
 test('it updates the selected lead source for a contact', function (): void {
-    $permission = PermissionFactory::new()->create([
-        'name' => Permission::ContactsEdit->value,
-        'guard_name' => 'web',
-    ]);
+    $permission = PermissionModel::findOrCreate(Permission::ContactsEdit->value, 'web');
 
     $this->user->givePermissionTo($permission);
 
@@ -121,10 +114,7 @@ test('it updates the selected lead source for a contact', function (): void {
 });
 
 test('show page includes the contact lead source', function (): void {
-    $permission = PermissionFactory::new()->create([
-        'name' => Permission::ContactsView->value,
-        'guard_name' => 'web',
-    ]);
+    $permission = PermissionModel::findOrCreate(Permission::ContactsView->value, 'web');
 
     $this->user->givePermissionTo($permission);
 
@@ -148,10 +138,7 @@ test('show page includes the contact lead source', function (): void {
 });
 
 test('index page can filter contacts by lead source', function (): void {
-    $permission = PermissionFactory::new()->create([
-        'name' => Permission::ContactsView->value,
-        'guard_name' => 'web',
-    ]);
+    $permission = PermissionModel::findOrCreate(Permission::ContactsView->value, 'web');
 
     $this->user->givePermissionTo($permission);
 
@@ -180,4 +167,37 @@ test('index page can filter contacts by lead source', function (): void {
         ->has('contacts.data', 1)
         ->where('contacts.data.0.id', $matchingContact->id)
         ->where('contacts.data.0.lead_source_id', $leadSources[0]->id));
+});
+
+test('edit page sends the birth date in a format the date input can display', function (): void {
+    $this->user->givePermissionTo(PermissionModel::findOrCreate(Permission::ContactsEdit->value, 'web'));
+
+    $contact = Contact::factory()->create(['birth_date' => '1990-05-10']);
+
+    $this->actingAs($this->user)
+        ->get("/contacts/{$contact->id}/edit")
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page->where('contact.birth_date', '1990-05-10'));
+});
+
+test('saving the edit form unchanged keeps the birth date', function (): void {
+    $this->user->givePermissionTo(PermissionModel::findOrCreate(Permission::ContactsEdit->value, 'web'));
+
+    $contact = Contact::factory()->create(['birth_date' => '1990-05-10'])->fresh();
+
+    $birthDateSentByEditForm = $contact->toArray()['birth_date'];
+
+    $this->actingAs($this->user)
+        ->put("/contacts/{$contact->id}", [
+            'contact_type' => $contact->contact_type->value,
+            'name' => $contact->name,
+            'status' => $contact->status,
+            'birth_date' => $birthDateSentByEditForm,
+            'identification_type' => $contact->identification_type,
+            'identification_number' => $contact->identification_number,
+            'credit_limit' => '0',
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($contact->fresh()->birth_date?->format('Y-m-d'))->toBe('1990-05-10');
 });
