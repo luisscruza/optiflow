@@ -10,6 +10,7 @@ use App\Actions\UpdateContactAction;
 use App\Enums\ContactType;
 use App\Enums\IdentificationType;
 use App\Enums\Permission;
+use App\Enums\UserRole;
 use App\Http\Requests\CreateContactRequest;
 use App\Http\Requests\UpdateContactRequest;
 use App\Models\Contact;
@@ -161,6 +162,10 @@ final class ContactController
 
         return Inertia::render('contacts/show', [
             'contact' => $contact,
+            'clinicalPin' => $contact->contact_type === ContactType::Optometrist ? [
+                'is_set' => $contact->hasClinicalPin(),
+                'can_reset' => $user->hasBusinessRole(UserRole::Owner) || $user->hasBusinessRole(UserRole::Admin),
+            ] : null,
             'invoices' => $invoices,
             'quotations' => $quotations,
             'prescriptions' => $prescriptions,

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property-read \Illuminate\Database\Eloquent\Collection<int, MastertableItem> $canalesDeReferimiento
@@ -48,6 +49,7 @@ final class Prescription extends Model
 
     protected $casts = [
         'proximo_control_visual' => 'date',
+        'closed_at' => 'datetime',
     ];
 
     protected $appends = [
@@ -68,6 +70,35 @@ final class Prescription extends Model
     public function optometrist(): BelongsTo
     {
         return $this->belongsTo(Contact::class, 'optometrist_id');
+    }
+
+    /**
+     * @return BelongsTo<Contact, $this>
+     */
+    public function closedByOptometrist(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class, 'closed_by_optometrist_id');
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function closedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'closed_by_user_id');
+    }
+
+    /**
+     * @return HasMany<PrescriptionAddendum, $this>
+     */
+    public function addenda(): HasMany
+    {
+        return $this->hasMany(PrescriptionAddendum::class)->oldest();
+    }
+
+    public function isClosed(): bool
+    {
+        return $this->closed_at !== null;
     }
 
     /**

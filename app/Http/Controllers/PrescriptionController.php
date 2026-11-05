@@ -102,18 +102,27 @@ final class PrescriptionController
             'estadoActual',
             'historiaOcularFamiliar',
             'lentesRecomendados',
+            'closedByOptometrist',
+            'closedByUser',
+            'addenda.optometrist',
+            'addenda.user',
         ]);
 
         return inertia('prescriptions/show', [
             'prescription' => $prescription,
+            'optometristHasPin' => (bool) $prescription->optometrist?->hasClinicalPin(),
             'company' => $this->getCompanyDetails(),
             'share' => $buildShareDataAction->forPrescription($prescription),
         ]);
     }
 
-    public function edit(Request $request, Prescription $prescription, #[CurrentUser] User $user, ContactSearch $contactSearch): Response
+    public function edit(Request $request, Prescription $prescription, #[CurrentUser] User $user, ContactSearch $contactSearch): Response|RedirectResponse
     {
         abort_unless($user->can(Permission::PrescriptionsEdit), 403);
+
+        if ($prescription->isClosed()) {
+            return $this->redirectClosed($prescription);
+        }
 
         $prescription->load([
             'patient',
@@ -171,9 +180,20 @@ final class PrescriptionController
     {
         abort_unless($user->can(Permission::PrescriptionsEdit), 403);
 
+        if ($prescription->isClosed()) {
+            return $this->redirectClosed($prescription);
+        }
+
         $action->handle($prescription, $user, $request->validated());
 
         return redirect()->route('prescriptions.show', $prescription)->with('success', 'Receta actualizada exitosamente.');
+    }
+
+    private function redirectClosed(Prescription $prescription): RedirectResponse
+    {
+        return redirect()
+            ->route('prescriptions.show', $prescription)
+            ->with('error', 'La historia clínica está cerrada. Las correcciones se hacen con una adenda.');
     }
 
     /**

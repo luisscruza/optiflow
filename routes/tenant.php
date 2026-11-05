@@ -19,9 +19,11 @@ use App\Http\Controllers\BusinessUserWorkspaceRoleController;
 use App\Http\Controllers\CashRegisterCloseController;
 use App\Http\Controllers\CheckContactDuplicatesController;
 use App\Http\Controllers\CloneAutomationController;
+use App\Http\Controllers\ClosePrescriptionController;
 use App\Http\Controllers\CompanyDetailsController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\ConsolidatedStockController;
+use App\Http\Controllers\ContactClinicalPinController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ContactDocumentController;
 use App\Http\Controllers\ContactImportController;
@@ -63,6 +65,7 @@ use App\Http\Controllers\MastertableController;
 use App\Http\Controllers\MastertableItemController;
 use App\Http\Controllers\PasswordChangeController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PrescriptionAddendumController;
 use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\ProcessContactImportController;
 use App\Http\Controllers\ProcessProductImportController;
@@ -225,6 +228,10 @@ Route::middleware([
             Route::resource('contacts', ContactController::class);
             Route::get('api/contacts/check-duplicates', CheckContactDuplicatesController::class)->name('contacts.check-duplicates');
             Route::get('contacts/{contact}/informed-consent', DownloadInformedConsentController::class)->name('contacts.informed-consent');
+            Route::put('contacts/{contact}/clinical-pin', [ContactClinicalPinController::class, 'update'])
+                ->middleware('throttle:10,1')
+                ->name('contacts.clinical-pin.update');
+            Route::delete('contacts/{contact}/clinical-pin', [ContactClinicalPinController::class, 'destroy'])->name('contacts.clinical-pin.destroy');
             Route::post('contacts/{contact}/documents', [ContactDocumentController::class, 'store'])->name('contacts.documents.store');
             Route::delete('contacts/{contact}/documents/{media}', [ContactDocumentController::class, 'destroy'])->name('contacts.documents.destroy');
 
@@ -317,6 +324,12 @@ Route::middleware([
             Route::post('workspace/invitations', [WorkspaceInvitationController::class, 'store'])->name('workspace.invitations.store');
 
             Route::resource('prescriptions', PrescriptionController::class);
+            Route::post('prescriptions/{prescription}/close', ClosePrescriptionController::class)
+                ->middleware('throttle:10,1')
+                ->name('prescriptions.close');
+            Route::post('prescriptions/{prescription}/addenda', [PrescriptionAddendumController::class, 'store'])
+                ->middleware('throttle:10,1')
+                ->name('prescriptions.addenda.store');
             Route::get('prescriptions/{prescription}/pdf', DownloadPrescriptionController::class)->name('prescriptions.pdf');
             Route::get('prescriptions/{prescription}/visual-certificate', DownloadVisualCertificateController::class)
                 ->name('prescriptions.visual_certificate');

@@ -28,6 +28,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 
 import { CommentList } from '@/components/CommentList';
+import { ClinicalPinCard } from '@/components/contacts/clinical-pin-card';
 import { InformedConsentDialog } from '@/components/contacts/informed-consent-dialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -74,6 +75,7 @@ interface Props {
     stats: ContactStats;
     relatedContacts: Contact[];
     relationshipSearchResults?: RelationshipSearchResult[];
+    clinicalPin?: { is_set: boolean; can_reset: boolean } | null;
 }
 
 export default function ContactShow({
@@ -86,6 +88,7 @@ export default function ContactShow({
     stats,
     relatedContacts,
     relationshipSearchResults = [],
+    clinicalPin = null,
 }: Props) {
     const { auth } = usePage<SharedData>().props;
     const pageUrl = usePage().url;
@@ -627,6 +630,14 @@ export default function ContactShow({
                             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                                 {/* Main Content */}
                                 <div className="space-y-6 lg:col-span-2">
+                                    {clinicalPin && (
+                                        <ClinicalPinCard
+                                            contactId={contact.id}
+                                            contactName={contact.name}
+                                            isSet={clinicalPin.is_set}
+                                            canReset={clinicalPin.can_reset}
+                                        />
+                                    )}
                                     {/* Contact Details Card */}
                                     <Card className="border-0 shadow-sm">
                                         <CardHeader className="pb-3">
