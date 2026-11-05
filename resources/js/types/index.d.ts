@@ -1302,6 +1302,7 @@ export interface WorkflowEvent {
 
 export interface ContactStats {
     total_invoices: number;
+    billed_invoices: number;
     total_quotations: number;
     total_prescriptions: number;
     total_workflow_jobs: number;

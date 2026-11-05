@@ -358,8 +358,12 @@ export default function ContactShow({
             pending_payment: { label: 'Pendiente', className: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
             overdue: { label: 'Vencida', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
             cancelled: { label: 'Cancelada', className: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400' },
+            deleted: { label: 'Anulada', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+            submitted: { label: 'Enviada a DGII', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+            dgii_accepted: { label: 'Aceptada por DGII', className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+            dgii_rejected: { label: 'Rechazada por DGII', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
         };
-        const config = configs[status] || configs.draft;
+        const config = configs[status] ?? { label: status, className: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400' };
         return <Badge className={cn('font-medium', config.className)}>{config.label}</Badge>;
     };
 
@@ -403,7 +407,7 @@ export default function ContactShow({
             title: 'Total facturado',
             value: formatCurrency(stats.total_invoiced),
             icon: <TrendingUp className="h-5 w-5" />,
-            description: `${stats.total_invoices} facturas`,
+            description: `${stats.billed_invoices} facturas`,
             color: 'text-blue-600 dark:text-blue-400',
             bgColor: 'bg-blue-50 dark:bg-blue-900/20',
         },
