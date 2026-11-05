@@ -1122,6 +1122,28 @@
         </tr>
     </table>
 
+    @if ($prescription->closed_at)
+        <div class="section" style="margin-top: 8px;">
+            <div class="section-title">Cierre de la historia clínica</div>
+            <div>
+                Cerrada el {{ $prescription->closed_at->timezone('America/Santo_Domingo')->format('d/m/Y h:i A') }}
+                con el PIN de {{ $prescription->closedByOptometrist?->name ?? 'el evaluador' }}.
+            </div>
+        </div>
+    @endif
+
+    @if ($prescription->addenda->isNotEmpty())
+        <div class="section" style="margin-top: 8px;">
+            <div class="section-title">Adendas / notas aclaratorias</div>
+            @foreach ($prescription->addenda as $addendum)
+                <div style="margin-bottom: 4px;">
+                    <strong>{{ $addendum->created_at?->timezone('America/Santo_Domingo')->format('d/m/Y h:i A') }} — {{ $addendum->optometrist?->name ?? 'Evaluador' }}:</strong>
+                    {!! nl2br(e($addendum->content)) !!}
+                </div>
+            @endforeach
+        </div>
+    @endif
+
     <div class="signature">
         <div class="signature-line">FIRMA PROFESIONAL</div>
     </div>

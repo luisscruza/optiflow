@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Hash;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -105,6 +106,10 @@ final class Contact extends Model implements Commentable, HasMedia
      *
      * @var array<int, string>
      */
+    protected $hidden = [
+        'clinical_pin',
+    ];
+
     protected $appends = [
         'identification_object',
         'full_address',
@@ -262,6 +267,16 @@ final class Contact extends Model implements Commentable, HasMedia
             ?? $this->phone_secondary;
     }
 
+    public function hasClinicalPin(): bool
+    {
+        return filled($this->clinical_pin);
+    }
+
+    public function matchesClinicalPin(string $pin): bool
+    {
+        return $this->hasClinicalPin() && Hash::check($pin, $this->clinical_pin);
+    }
+
     /**
      * Scope to filter by contact type.
      */
@@ -354,6 +369,7 @@ final class Contact extends Model implements Commentable, HasMedia
             'metadata' => 'array',
             'credit_limit' => 'decimal:2',
             'birth_date' => 'immutable_date:Y-m-d',
+            'clinical_pin' => 'hashed',
             'gender' => Gender::class,
             'contact_type' => ContactType::class,
         ];

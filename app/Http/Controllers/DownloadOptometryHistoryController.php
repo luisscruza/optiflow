@@ -21,6 +21,8 @@ final class DownloadOptometryHistoryController
         }
 
         $prescription->load([
+            'closedByOptometrist',
+            'addenda.optometrist',
             'motivos',
             'estadoActual',
             'historiaOcularFamiliar',

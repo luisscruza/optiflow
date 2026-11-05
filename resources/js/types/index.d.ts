@@ -854,12 +854,24 @@ export interface Currency {
     updated_at: string;
 }
 
+export interface PrescriptionAddendum {
+    id: number;
+    content: string;
+    created_at: string;
+    optometrist?: Pick<Contact, 'id' | 'name'> | null;
+    user?: Pick<User, 'id' | 'name'> | null;
+}
+
 export interface Prescription {
     id: number;
     patient: Contact;
     optometrist?: Contact;
     workspace: Workspace;
     created_at: string;
+    closed_at?: string | null;
+    closed_by_optometrist?: Pick<Contact, 'id' | 'name'> | null;
+    closed_by_user?: Pick<User, 'id' | 'name'> | null;
+    addenda?: PrescriptionAddendum[];
     proximo_control_visual?: string;
     human_readable_date: string;
 

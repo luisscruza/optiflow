@@ -1,8 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
-import { Download, Edit, FileText, Printer, Share2 } from 'lucide-react';
+import { Download, Edit, FileText, Lock, Printer, Share2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { InformedConsentDialog } from '@/components/contacts/informed-consent-dialog';
+import { ClinicalRecordAddenda, ClosePrescriptionButton } from '@/components/prescriptions/clinical-record-closing';
 import ShareModal from '@/components/share-modal';
 import { usePermissions } from '@/hooks/use-permissions';
 
@@ -22,10 +23,12 @@ interface Props {
     prescription: Prescription;
     company: CompanyData;
     share: ShareData;
+    optometristHasPin: boolean;
 }
 
-export default function PrescriptionShow({ prescription, company, share }: Props) {
+export default function PrescriptionShow({ prescription, company, share, optometristHasPin }: Props) {
     const { can } = usePermissions();
+    const isClosed = Boolean(prescription.closed_at);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -73,8 +76,17 @@ export default function PrescriptionShow({ prescription, company, share }: Props
 
             <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
                 {/* Action buttons */}
-                <div className="mb-6 flex justify-end gap-2 print:hidden">
-                    {can('edit prescriptions') && (
+                <div className="mb-6 flex flex-wrap justify-end gap-2 print:hidden">
+                    {isClosed && (
+                        <span className="mr-auto inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
+                            <Lock className="h-3.5 w-3.5" />
+                            Historia cerrada
+                        </span>
+                    )}
+                    {!isClosed && can('edit prescriptions') && (
+                        <ClosePrescriptionButton prescription={prescription} optometristHasPin={optometristHasPin} />
+                    )}
+                    {!isClosed && can('edit prescriptions') && (
                         <Link href={prescriptions.edit(prescription).url}>
                             <Button variant="outline" size="sm">
                                 <Edit className="mr-2 h-4 w-4" />
@@ -332,6 +344,8 @@ export default function PrescriptionShow({ prescription, company, share }: Props
                         <div className="mx-auto w-72 border-t-2 border-blue-700 pt-2 text-sm text-gray-700 dark:text-gray-300">FIRMA PROFESIONAL</div>
                     </div>
                 </div>
+
+                <ClinicalRecordAddenda prescription={prescription} canAdd={can('edit prescriptions')} />
 
                 <ShareModal open={isShareModalOpen} onOpenChange={setIsShareModalOpen} share={share} title={`Receta #${prescription.id}`} />
             </div>
