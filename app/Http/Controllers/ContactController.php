@@ -131,22 +131,28 @@ final class ContactController
             ->get();
 
         // Calculate summary statistics
-        $invoiceQuery = \App\Models\Invoice::query()->whereIn('contact_id', $contactIds);
         $quotationQuery = \App\Models\Quotation::query()->whereIn('contact_id', $contactIds);
 
+        $billedInvoices = \App\Models\Invoice::query()
+            ->whereIn('contact_id', $contactIds)
+            ->excludingVoided()
+            ->withSum('payments', 'amount')
+            ->get();
+
+        $totalInvoiced = (float) $billedInvoices->sum('total_amount');
+        $totalPaid = (float) $billedInvoices->sum('payments_sum_amount');
+
         $stats = [
-            'total_invoices' => (clone $invoiceQuery)->count(),
+            'total_invoices' => \App\Models\Invoice::query()->whereIn('contact_id', $contactIds)->count(),
+            'billed_invoices' => $billedInvoices->count(),
             'total_quotations' => (clone $quotationQuery)->count(),
             'total_prescriptions' => $contact->prescriptions()->count(),
             'total_workflow_jobs' => $contact->workflowJobs()->count(),
-            'total_invoiced' => (clone $invoiceQuery)->sum('total_amount'),
-            'total_paid' => (clone $invoiceQuery)
-                ->whereIn('status', ['paid', 'partially_paid'])
-                ->get()
-                ->sum(fn ($invoice) => $invoice->total_amount - $invoice->amount_due),
-            'pending_amount' => (clone $invoiceQuery)
-                ->whereNotIn('status', ['paid', 'cancelled'])
-                ->sum('total_amount'),
+            'total_invoiced' => round($totalInvoiced, 2),
+            'total_paid' => round($totalPaid, 2),
+            'pending_amount' => round($billedInvoices->sum(
+                fn (\App\Models\Invoice $invoice): float => max(0, (float) $invoice->total_amount - (float) $invoice->payments_sum_amount)
+            ), 2),
             'pending_workflow_jobs' => $contact->workflowJobs()
                 ->whereNull('completed_at')
                 ->whereNull('canceled_at')
